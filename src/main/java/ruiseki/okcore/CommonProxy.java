@@ -1,27 +1,36 @@
 package ruiseki.okcore;
 
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.common.MinecraftForge;
 
-public class CommonProxy {
+import cpw.mods.fml.common.FMLCommonHandler;
+import ruiseki.okcore.capabilities.fluid.CapabilityFluidHandler;
+import ruiseki.okcore.event.TickHandler;
+import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.network.PacketHandler;
+import ruiseki.okcore.network.packet.PacketSound;
+import ruiseki.okcore.proxy.CommonProxyComponent;
 
-    // preInit "Run before anything else. Read your config, create blocks, items, etc, and register them with the
-    // GameRegistry." (Remove if not needed)
-    public void preInit(FMLPreInitializationEvent event) {
-        Config.synchronizeConfiguration(event.getSuggestedConfigurationFile());
+public class CommonProxy extends CommonProxyComponent {
 
-        OKCore.LOG.info(Config.greeting);
-        OKCore.LOG.info("I am MyMod at version " + Tags.VERSION);
+    public CommonProxy() {}
+
+    @Override
+    public ModBase getMod() {
+        return OKCore.instance;
     }
 
-    // load "Do your mod setup. Build whatever data structures you care about. Register recipes." (Remove if not needed)
-    public void init(FMLInitializationEvent event) {}
+    @Override
+    public void registerPacketHandlers(PacketHandler packetHandler) {
+        super.registerPacketHandlers(packetHandler);
+        packetHandler.register(PacketSound.class);
+    }
 
-    // postInit "Handle interaction with other mods, complete your setup based on this." (Remove if not needed)
-    public void postInit(FMLPostInitializationEvent event) {}
-
-    // register server commands in this event handler (Remove if not needed)
-    public void serverStarting(FMLServerStartingEvent event) {}
+    @Override
+    public void registerTickHandlers() {
+        super.registerTickHandlers();
+        FMLCommonHandler.instance()
+            .bus()
+            .register(TickHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(TickHandler.INSTANCE);
+    }
 }

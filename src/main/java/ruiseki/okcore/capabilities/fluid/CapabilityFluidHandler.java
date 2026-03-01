@@ -76,8 +76,7 @@ public class CapabilityFluidHandler implements IInitListener {
 
                 event.addCapability(
                     new ResourceLocation(Reference.MOD_ID, "fluid_handler"),
-                    new FluidHandlerItemStack(stack, capacity)
-                );
+                    new FluidHandlerItemStack(stack, capacity));
 
                 System.out.println("[OKCORE] Fluid capability attached.");
             } else {

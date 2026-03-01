@@ -3,7 +3,6 @@ package ruiseki.okcore;
 import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import ruiseki.okcore.capabilities.fluid.CapabilityFluidHandler;
 import ruiseki.okcore.event.TickHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;

@@ -1,11 +1,11 @@
 package ruiseki.okcore.mixins;
 
+import java.util.List;
+import java.util.Set;
+
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
-
-import java.util.List;
-import java.util.Set;
 
 @LateMixin
 public class LateMixinsLoader implements ILateMixinLoader {

@@ -1,0 +1,13 @@
+//version: 1707058017
+
+plugins {
+    id 'com.gtnewhorizons.gtnhconvention'
+}
+
+minecraft {
+    //Creates a tag in Tags with the above generated mod version, instead of the "clean" one
+    injectedTags.put("RAW_VERSION", project.modVersion)
+    injectedTags.put("MOD_ID", project.modId)
+    injectedTags.put("MOD_NAME", project.modName)
+    injectedTags.put("MOD_GROUP", project.modGroup)
+}

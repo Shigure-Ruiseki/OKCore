@@ -11,7 +11,6 @@ import net.minecraft.util.StatCollector;
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import ruiseki.okcore.Reference;
-import ruiseki.okcore.item.IInformationProvider;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 /**
@@ -78,7 +77,10 @@ public class LangHelpers {
             if (MinecraftHelpers.isShifted()) {
                 String localized = localize(key);
                 list.addAll(
-                    StringHelpers.splitLines(localized, MAX_TOOLTIP_LINE_LENGTH, IInformationProvider.INFO_PREFIX));
+                    StringHelpers.splitLines(
+                        localized,
+                        MAX_TOOLTIP_LINE_LENGTH,
+                        ChatFormatting.DARK_PURPLE.toString() + ChatFormatting.ITALIC.toString()));
             } else {
                 list.add(
                     localize(

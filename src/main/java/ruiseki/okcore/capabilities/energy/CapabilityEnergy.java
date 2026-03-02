@@ -1,36 +1,24 @@
 package ruiseki.okcore.capabilities.energy;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraftforge.common.util.ForgeDirection;
-
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
-import ruiseki.okcore.energy.EnergyStorage;
+import ruiseki.okcore.init.IInitListener;
 
-public class CapabilityEnergy {
+public class CapabilityEnergy implements IInitListener {
 
     @CapabilityInject(IEnergyStorage.class)
     public static Capability<IEnergyStorage> ENERGY_CAPABILITY = null;
 
     public static void register() {
-        CapabilityManager.INSTANCE.register(IEnergyStorage.class, new Capability.IStorage<IEnergyStorage>() {
+        CapabilityManager.INSTANCE.register(IEnergyStorage.class, EnergyStorageDefault::new);
+    }
 
-            @Override
-            public NBTBase writeNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance,
-                ForgeDirection side) {
-                return new NBTTagInt(instance.getEnergyStored());
-            }
-
-            @Override
-            public void readNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance, ForgeDirection side,
-                NBTBase nbt) {
-                if (!(instance instanceof EnergyStorage)) throw new IllegalArgumentException(
-                    "Can not deserialize to an instance that isn't the default implementation");
-                ((EnergyStorage) instance).setEnergyStorage(((NBTTagInt) nbt).func_150287_d());
-            }
-        }, () -> new EnergyStorage(1000));
+    @Override
+    public void onInit(Step initStep) {
+        if (initStep == Step.PREINIT) {
+            register();
+        }
     }
 }

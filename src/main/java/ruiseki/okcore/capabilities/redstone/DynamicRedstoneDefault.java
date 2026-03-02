@@ -9,10 +9,10 @@ import ruiseki.okcore.block.IDynamicRedstone;
  */
 public class DynamicRedstoneDefault implements IDynamicRedstone {
 
-    private int redstoneLevel = 0;
-    private boolean strongPower = false;
-    private boolean allowRedstoneInput = true;
-    private int lastPulseValue = 0;
+    protected int redstoneLevel = 0;
+    protected boolean strongPower = false;
+    protected boolean allowRedstoneInput = true;
+    protected int lastPulseValue = 0;
 
     @Override
     public void setRedstoneLevel(int level, boolean strongPower) {

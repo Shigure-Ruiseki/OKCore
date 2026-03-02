@@ -9,11 +9,16 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
 import cpw.mods.fml.common.registry.GameData;
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 
@@ -214,4 +219,27 @@ public final class ItemStackHelpers {
             && ((a == null && b == null) || (a != null && a.stackSize == b.stackSize));
     }
 
+    public static <T> T getCapability(ItemStack stack, Capability<T> capability, @Nullable ForgeDirection facing) {
+        if (stack == null) return null;
+        try {
+            ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
+
+            return provider.getCapability(capability, null);
+
+        } catch (ClassCastException ignored) {
+            return null;
+        }
+    }
+
+    public static boolean hasCapability(ItemStack stack, Capability<?> capability, @Nullable ForgeDirection facing) {
+        if (stack == null) return false;
+        try {
+            ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
+
+            return provider.hasCapability(capability, null);
+
+        } catch (ClassCastException ignored) {
+            return false;
+        }
+    }
 }

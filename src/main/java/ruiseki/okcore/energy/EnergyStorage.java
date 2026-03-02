@@ -2,27 +2,10 @@ package ruiseki.okcore.energy;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-import cofh.api.energy.IEnergyStorage;
-import lombok.Getter;
-import lombok.Setter;
+import ruiseki.okcore.capabilities.energy.EnergyStorageDefault;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-/**
- * Reference implementation of {@link IEnergyStorage}. Use/extend this or implement your own.
- *
- * @author King Lemming
- */
-
-public class EnergyStorage implements IEnergyStorage, INBTSerializable {
-
-    protected int energy;
-    protected int capacity;
-    @Setter
-    @Getter
-    protected int maxReceive;
-    @Setter
-    @Getter
-    protected int maxExtract;
+public class EnergyStorage extends EnergyStorageDefault implements INBTSerializable {
 
     public EnergyStorage(int capacity) {
         this(capacity, capacity, capacity, 0);
@@ -37,29 +20,7 @@ public class EnergyStorage implements IEnergyStorage, INBTSerializable {
     }
 
     public EnergyStorage(int capacity, int maxReceive, int maxExtract, int energy) {
-        this.capacity = capacity;
-        this.maxReceive = maxReceive;
-        this.maxExtract = maxExtract;
-        this.energy = Math.max(0, Math.min(capacity, energy));
-    }
-
-    public void readFromNBT(NBTTagCompound nbt) {
-        readFromNBT(nbt, "energy");
-    }
-
-    public void writeToNBT(NBTTagCompound nbt) {
-        writeToNBT(nbt, "energy");
-    }
-
-    public void readFromNBT(NBTTagCompound nbt, String tag) {
-        this.energy = nbt.getInteger(tag);
-        if (this.energy > this.capacity) {
-            this.energy = this.capacity;
-        }
-    }
-
-    public void writeToNBT(NBTTagCompound nbt, String tag) {
-        nbt.setInteger(tag, getEnergyStored());
+        super(capacity, maxReceive, maxExtract, energy);
     }
 
     public void setCapacity(int capacity) {
@@ -121,26 +82,6 @@ public class EnergyStorage implements IEnergyStorage, INBTSerializable {
         return energyExtracted;
     }
 
-    @Override
-    public int getEnergyStored() {
-        return energy;
-    }
-
-    @Override
-    public int getMaxEnergyStored() {
-        return capacity;
-    }
-
-    @Override
-    public boolean canExtract() {
-        return this.maxExtract > 0;
-    }
-
-    @Override
-    public boolean canReceive() {
-        return this.maxReceive > 0;
-    }
-
     public void onEnergyChanged() {}
 
     protected int clampEnergy(int value) {
@@ -166,6 +107,25 @@ public class EnergyStorage implements IEnergyStorage, INBTSerializable {
     @Override
     public void deserializeNBT(NBTTagCompound tag) {
         readFromNBT(tag);
+    }
+
+    public void readFromNBT(NBTTagCompound nbt) {
+        readFromNBT(nbt, "energy");
+    }
+
+    public void writeToNBT(NBTTagCompound nbt) {
+        writeToNBT(nbt, "energy");
+    }
+
+    public void readFromNBT(NBTTagCompound nbt, String tag) {
+        this.energy = nbt.getInteger(tag);
+        if (this.energy > this.capacity) {
+            this.energy = this.capacity;
+        }
+    }
+
+    public void writeToNBT(NBTTagCompound nbt, String tag) {
+        nbt.setInteger(tag, getEnergyStored());
     }
 
 }

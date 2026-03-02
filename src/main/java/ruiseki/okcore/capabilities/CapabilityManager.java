@@ -26,6 +26,8 @@ import java.util.function.Function;
 
 import net.minecraftforge.common.util.EnumHelper;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.Type;
 
 import com.google.common.base.Preconditions;
@@ -39,28 +41,13 @@ public enum CapabilityManager {
 
     INSTANCE;
 
-    /**
-     * Registers a capability to be consumed by others.
-     * APIs who define the capability should call this.
-     * To retrieve the Capability instance, use the @CapabilityInject annotation.
-     *
-     * @param type           The Interface to be registered
-     * @param storage        A default implementation of the storage handler.
-     * @param implementation A default implementation of the interface.
-     * @deprecated Use the overload that takes a factory instead of a class.
-     *             You can easily do this by passing a constructor reference
-     */
-    @Deprecated
-    public <T> void register(Class<T> type, Capability.IStorage<T> storage, final Class<? extends T> implementation) {
-        Preconditions
-            .checkArgument(implementation != null, "Attempted to register a capability with no default implementation");
-        register(type, storage, () -> {
-            try {
-                return implementation.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        });
+    static final Logger LOGGER = LogManager.getLogger();
+
+    @SuppressWarnings("unchecked")
+    public <T> Capability<T> get(Class<T> type) {
+        return (Capability<T>) providers.get(
+            type.getName()
+                .intern());
     }
 
     /**
@@ -69,13 +56,10 @@ public enum CapabilityManager {
      * To retrieve the Capability instance, use the @CapabilityInject annotation.
      *
      * @param type    The Interface to be registered
-     * @param storage A default implementation of the storage handler.
      * @param factory A Factory that will produce new instances of the default implementation.
      */
-    public <T> void register(Class<T> type, Capability.IStorage<T> storage, Callable<? extends T> factory) {
+    public <T> void register(Class<T> type, Callable<? extends T> factory) {
         Preconditions.checkArgument(type != null, "Attempted to register a capability with invalid type");
-        Preconditions
-            .checkArgument(storage != null, "Attempted to register a capability with no storage implementation");
         Preconditions.checkArgument(
             factory != null,
             "Attempted to register a capability with no default implementation factory");
@@ -86,7 +70,7 @@ public enum CapabilityManager {
             "Can not register a capability implementation multiple times: %s",
             realName);
 
-        Capability<T> cap = new Capability<T>(realName, storage, factory);
+        Capability<T> cap = new Capability<T>(realName, factory);
         providers.put(realName, cap);
 
         List<Function<Capability<?>, Object>> list = callbacks.get(realName);
@@ -95,13 +79,6 @@ public enum CapabilityManager {
                 func.apply(cap);
             }
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> Capability<T> get(Class<T> type) {
-        return (Capability<T>) providers.get(
-            type.getName()
-                .intern());
     }
 
     // INTERNAL

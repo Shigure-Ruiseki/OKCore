@@ -9,7 +9,7 @@ import ruiseki.okcore.block.IDynamicLight;
  */
 public class DynamicLightDefault implements IDynamicLight {
 
-    private int light = 0;
+    protected int light = 0;
 
     @Override
     public void setLightLevel(int level) {

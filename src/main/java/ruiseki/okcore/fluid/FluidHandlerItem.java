@@ -6,7 +6,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidContainerItem;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +21,7 @@ import ruiseki.okcore.capabilities.fluid.CapabilityFluidHandler;
  * Additional examples are provided to enable consumable fluid containers (see {@link Consumable}),
  * fluid containers with different empty and full items (see {@link SwapEmpty},
  */
-public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProvider {
+public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider {
 
     public static final String FLUID_NBT_KEY = "Fluid";
 
@@ -34,7 +33,7 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
      * @param container The container itemStack, data is stored on it directly as NBT.
      * @param capacity  The maximum capacity of this fluid tank.
      */
-    public FluidHandlerItemStack(@NotNull ItemStack container, int capacity) {
+    public FluidHandlerItem(@NotNull ItemStack container, int capacity) {
         this.container = container;
         this.capacity = capacity;
     }
@@ -132,11 +131,6 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
     public FluidStack drain(int maxDrain, boolean doDrain) {
         if (container == null || maxDrain <= 0) return null;
 
-        if (container.getItem() instanceof IFluidContainerItem containerItem) {
-            FluidStack drained = containerItem.drain(container, maxDrain, doDrain);
-            return drained;
-        }
-
         if (container.stackSize != 1) return null;
 
         FluidStack contained = getFluid();
@@ -194,7 +188,7 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
     /**
      * Destroys the container item when it's emptied.
      */
-    public static class Consumable extends FluidHandlerItemStack {
+    public static class Consumable extends FluidHandlerItem {
 
         public Consumable(ItemStack container, int capacity) {
             super(container, capacity);
@@ -213,7 +207,7 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
     /**
      * Swaps the container item for a different one when it's emptied.
      */
-    public static class SwapEmpty extends FluidHandlerItemStack {
+    public static class SwapEmpty extends FluidHandlerItem {
 
         private final ItemStack emptyContainer;
 

@@ -1,4 +1,4 @@
-package ruiseki.okcore.capabilities.energy;
+package ruiseki.okcore.energy.capability;
 
 import cofh.api.energy.IEnergyStorage;
 

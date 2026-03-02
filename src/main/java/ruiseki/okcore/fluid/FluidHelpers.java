@@ -5,12 +5,12 @@ import net.minecraftforge.fluids.IFluidHandler;
 
 import org.intellij.lang.annotations.MagicConstant;
 
-import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
-
+import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.capability.FluidSink;
 import ruiseki.okcore.fluid.capability.FluidSource;
-import ruiseki.okcore.fluid.capability.OKFluidSink;
-import ruiseki.okcore.fluid.capability.OKFluidSource;
+import ruiseki.okcore.fluid.capability.IFluidSink;
+import ruiseki.okcore.fluid.capability.IFluidSource;
 
 public class FluidHelpers {
 
@@ -20,30 +20,36 @@ public class FluidHelpers {
     public static final int FOR_EXTRACTS = 0b1 << counter++;
     public static final int DEFAULT = WRAP_HANDLER | FOR_INSERTS | FOR_EXTRACTS;
 
-    public static FluidSource getFluidSource(Object obj, ForgeDirection side) {
+    public static IFluidSource getFluidSource(Object obj, ForgeDirection side) {
         return getFluidSource(obj, side, DEFAULT);
     }
 
-    public static FluidSource getFluidSource(Object obj, ForgeDirection side,
+    public static IFluidSource getFluidSource(Object obj, ForgeDirection side,
         @MagicConstant(flagsFromClass = FluidHelpers.class) int usage) {
         if ((usage & FOR_EXTRACTS) == 0) {
             return null;
         }
 
-        if (obj instanceof FluidSource source) {
+        if (obj instanceof IFluidSource source) {
             return source;
         }
 
-        if (obj instanceof CapabilityProvider capabilityProvider) {
-            FluidSource source = capabilityProvider.getCapability(FluidSource.class, side);
+        if (obj instanceof ICapabilityProvider capabilityProvider) {
+            IFluidSource source = capabilityProvider
+                .getCapability(CapabilityFluidHandler.FLUID_SOURCE_CAPABILITY, side);
 
             if (source != null) {
                 return source;
             }
         }
 
+        IFluidSource reSource = tryGTNHCapability(obj, IFluidSource.class, side);
+        if (reSource != null) {
+            return reSource;
+        }
+
         if (obj instanceof IFluidHandler handler) {
-            FluidSource source = new OKFluidSource(handler, side);
+            IFluidSource source = new FluidSource(handler, side);
             if (source != null) {
                 return source;
             }
@@ -52,35 +58,60 @@ public class FluidHelpers {
         return null;
     }
 
-    public static FluidSink getFluidSink(Object obj, ForgeDirection side) {
+    public static IFluidSink getFluidSink(Object obj, ForgeDirection side) {
         return getFluidSink(obj, side, DEFAULT);
     }
 
-    public static FluidSink getFluidSink(Object obj, ForgeDirection side,
+    public static IFluidSink getFluidSink(Object obj, ForgeDirection side,
         @MagicConstant(flagsFromClass = FluidHelpers.class) int usage) {
         if ((usage & FOR_INSERTS) == 0) {
             return null;
         }
 
-        if (obj instanceof FluidSink sink) {
+        if (obj instanceof IFluidSink sink) {
             return sink;
         }
 
-        if (obj instanceof CapabilityProvider capabilityProvider) {
-            FluidSink sink = capabilityProvider.getCapability(FluidSink.class, side);
+        if (obj instanceof ICapabilityProvider capabilityProvider) {
+            IFluidSink sink = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SINK_CAPABILITY, side);
 
             if (sink != null) {
                 return sink;
             }
         }
 
+        IFluidSink reSink = tryGTNHCapability(obj, IFluidSink.class, side);
+        if (reSink != null) {
+            return reSink;
+        }
+
         if (obj instanceof IFluidHandler handler) {
-            FluidSink source = new OKFluidSink(handler, side);
-            if (source != null) {
-                return source;
+            IFluidSink sink = new FluidSink(handler, side);
+            if (sink != null) {
+                return sink;
             }
         }
+
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    private static <T> T tryGTNHCapability(Object obj, Class<T> clazz, ForgeDirection side) {
+
+        try {
+            Class<?> providerClass = Class.forName("com.gtnewhorizon.gtnhlib.capability.CapabilityProvider");
+
+            if (!providerClass.isInstance(obj)) {
+                return null;
+            }
+
+            Object result = providerClass.getMethod("getCapability", Class.class, ForgeDirection.class)
+                .invoke(obj, clazz, side);
+
+            return (T) result;
+
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
 }

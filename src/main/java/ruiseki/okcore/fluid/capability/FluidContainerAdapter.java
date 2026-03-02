@@ -1,4 +1,4 @@
-package ruiseki.okcore.capabilities.fluid;
+package ruiseki.okcore.fluid.capability;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;

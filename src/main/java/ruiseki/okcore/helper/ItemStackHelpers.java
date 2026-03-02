@@ -1,5 +1,6 @@
 package ruiseki.okcore.helper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -21,6 +22,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
+import ruiseki.okcore.item.weighted.WeightedStackBase;
 
 /**
  * Contains helper methods for various itemstack specific things.
@@ -241,5 +243,16 @@ public final class ItemStackHelpers {
         } catch (ClassCastException ignored) {
             return false;
         }
+    }
+
+    public static void copyWSList(List<WeightedStackBase> dest, List<WeightedStackBase> src) {
+        if (dest == null) {
+            dest = new ArrayList<>();
+        }
+
+        for (WeightedStackBase weightedStackBase : src) {
+            dest.add(weightedStackBase.copy());
+        }
+
     }
 }

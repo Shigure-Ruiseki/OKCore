@@ -81,7 +81,8 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
                 boolean reachedLimit = stack.stackSize > limit;
                 if (!simulate) {
                     if (existing == null) {
-                        this.stacks.set(slot, reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, limit) : stack);
+                        this.stacks
+                            .set(slot, reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, limit) : stack);
                     } else {
                         existing.stackSize += reachedLimit ? limit : stack.stackSize;
                     }

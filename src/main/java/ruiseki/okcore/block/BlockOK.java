@@ -323,7 +323,7 @@ public class BlockOK extends Block {
             }
 
             if (tile instanceof TileEntityOK.ITickingTile) {
-                ((TileEntityOK.ITickingTile) tile).updateEntity();
+                ((TileEntityOK.ITickingTile) tile).update();
             }
         }
         super.onBlockPlacedBy(world, x, y, z, entity, stack);

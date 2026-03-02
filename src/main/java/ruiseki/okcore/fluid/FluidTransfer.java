@@ -1,24 +1,20 @@
 package ruiseki.okcore.fluid;
 
-import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 
-import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
-import com.gtnewhorizon.gtnhlib.blockpos.IWorldReferent;
-
 import lombok.Getter;
 import lombok.Setter;
-import ruiseki.okcore.fluid.capability.FluidSink;
-import ruiseki.okcore.fluid.capability.FluidSource;
+import ruiseki.okcore.fluid.capability.IFluidSink;
+import ruiseki.okcore.fluid.capability.IFluidSource;
 
 public class FluidTransfer {
 
     @Getter
-    protected FluidSource source;
+    protected IFluidSource source;
     @Getter
-    protected FluidSink sink;
+    protected IFluidSink sink;
     @Setter
     protected int maxPerTransfer = Integer.MAX_VALUE;
     @Setter
@@ -27,7 +23,7 @@ public class FluidTransfer {
     protected int transferredThisTick = 0;
 
     // --- Set source ---
-    public void source(FluidSource source) {
+    public void source(IFluidSource source) {
         this.source = source;
     }
 
@@ -35,7 +31,7 @@ public class FluidTransfer {
         this.source = FluidHelpers.getFluidSource(source, side); //
     }
 
-    public void sink(FluidSink sink) {
+    public void sink(IFluidSink sink) {
         this.sink = sink;
     }
 
@@ -43,25 +39,9 @@ public class FluidTransfer {
         this.sink = FluidHelpers.getFluidSink(sink, side);
     }
 
-    public <Coord extends IBlockPos & IWorldReferent> void push(Coord pos, ForgeDirection side) {
-        TileEntity self = pos.getWorld()
-            .getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        TileEntity adj = pos.getWorld()
-            .getTileEntity(pos.getX() + side.offsetX, pos.getY() + side.offsetY, pos.getZ() + side.offsetZ);
-        push(self, side, adj);
-    }
-
     public void push(Object self, ForgeDirection side, Object target) {
         source(self, side);
         sink(target, side.getOpposite());
-    }
-
-    public <Coord extends IBlockPos & IWorldReferent> void pull(Coord pos, ForgeDirection side) {
-        TileEntity self = pos.getWorld()
-            .getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        TileEntity adj = pos.getWorld()
-            .getTileEntity(pos.getX() + side.offsetX, pos.getY() + side.offsetY, pos.getZ() + side.offsetZ);
-        pull(self, side, adj);
     }
 
     public void pull(Object self, ForgeDirection side, Object target) {

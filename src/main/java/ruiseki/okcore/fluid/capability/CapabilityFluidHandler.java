@@ -1,4 +1,4 @@
-package ruiseki.okcore.capabilities.fluid;
+package ruiseki.okcore.fluid.capability;
 
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -24,8 +24,15 @@ public class CapabilityFluidHandler implements IInitListener {
 
     @CapabilityInject(IFluidHandler.class)
     public static Capability<IFluidHandler> FLUID_HANDLER_CAPABILITY = null;
+
     @CapabilityInject(IFluidHandlerItem.class)
     public static Capability<IFluidHandlerItem> FLUID_HANDLER_ITEM_CAPABILITY = null;
+
+    @CapabilityInject(IFluidSink.class)
+    public static Capability<IFluidSink> FLUID_SINK_CAPABILITY = null;
+
+    @CapabilityInject(IFluidSource.class)
+    public static Capability<IFluidSource> FLUID_SOURCE_CAPABILITY = null;
 
     @Override
     public void onInit(Step initStep) {
@@ -40,6 +47,8 @@ public class CapabilityFluidHandler implements IInitListener {
         CapabilityManager.INSTANCE.register(
             IFluidHandlerItem.class,
             () -> new FluidHandlerItem(new ItemStack(Items.bucket), FluidContainerRegistry.BUCKET_VOLUME));
+        CapabilityManager.INSTANCE.register(IFluidSink.class, () -> new FluidSink(null, null));
+        CapabilityManager.INSTANCE.register(IFluidSource.class, () -> new FluidSource(null, null));
 
         MinecraftForge.EVENT_BUS.register(new CapabilityFluidHandler());
     }

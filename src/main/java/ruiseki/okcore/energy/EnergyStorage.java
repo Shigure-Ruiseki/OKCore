@@ -2,7 +2,7 @@ package ruiseki.okcore.energy;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-import ruiseki.okcore.capabilities.energy.EnergyStorageDefault;
+import ruiseki.okcore.energy.capability.EnergyStorageDefault;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 public class EnergyStorage extends EnergyStorageDefault implements INBTSerializable {

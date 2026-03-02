@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
-import ruiseki.okcore.capabilities.fluid.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 
 /**
  * FluidHandlerItemStack is a template capability provider for ItemStacks.

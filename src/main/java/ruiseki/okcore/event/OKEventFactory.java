@@ -16,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import ruiseki.okcore.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilityCompat;
 import ruiseki.okcore.capabilities.ICapabilityProvider;

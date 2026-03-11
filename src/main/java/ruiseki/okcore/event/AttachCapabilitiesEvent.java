@@ -1,4 +1,4 @@
-package ruiseki.okcore.capabilities;
+package ruiseki.okcore.event;
 
 import java.util.Collections;
 import java.util.Map;
@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import com.google.common.collect.Maps;
 
 import cpw.mods.fml.common.eventhandler.Event;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 
 public class AttachCapabilitiesEvent<T> extends Event {
 

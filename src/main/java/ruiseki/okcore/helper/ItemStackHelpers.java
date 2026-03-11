@@ -2,6 +2,7 @@ package ruiseki.okcore.helper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import net.minecraft.entity.item.EntityItem;
@@ -254,5 +255,85 @@ public final class ItemStackHelpers {
             dest.add(weightedStackBase.copy());
         }
 
+    }
+
+    public static int getStackMeta(ItemStack stack) {
+        return stack.getItemDamage();
+    }
+
+    public static boolean isStackEmpty(ItemStack stack) {
+        return stack == null || stack.getItem() == null || stack.stackSize <= 0;
+    }
+
+    public static boolean isStackInvalid(ItemStack stack) {
+        return stack == null || stack.getItem() == null || stack.stackSize < 0;
+    }
+
+    public static boolean areStacksEqual(ItemStack stack1, ItemStack stack2) {
+        return areStacksEqual(stack1, stack2, false);
+    }
+
+    public static boolean areStacksEqual(ItemStack stack1, ItemStack stack2, boolean ignoreNBT) {
+        return stack1 != null && stack2 != null
+            && stack1.getItem() == stack2.getItem()
+            && doStackMetasMatch(getStackMeta(stack1), getStackMeta(stack2))
+            && (ignoreNBT || Objects.equals(stack1.getTagCompound(), stack2.getTagCompound()));
+    }
+
+    public static boolean doStackMetasMatch(int meta1, int meta2) {
+        if (meta1 == OreDictionary.WILDCARD_VALUE) return true;
+        if (meta2 == OreDictionary.WILDCARD_VALUE) return true;
+
+        return meta1 == meta2;
+    }
+
+    public static void grow(ItemStack stack, int amount) {
+        if (stack == null) return;
+        stack.stackSize += amount;
+    }
+
+    public static void shrink(ItemStack stack, int amount) {
+        if (stack == null) return;
+        stack.stackSize -= amount;
+
+        if (stack.stackSize <= 0) {
+            stack.stackSize = 0;
+        }
+    }
+
+    public static ItemStack split(ItemStack stack, int amount) {
+        if (stack == null) return null;
+
+        int removed = Math.min(amount, stack.stackSize);
+        ItemStack result = stack.copy();
+        result.stackSize = removed;
+
+        stack.stackSize -= removed;
+
+        if (stack.stackSize <= 0) {
+            stack.stackSize = 0;
+        }
+
+        return result;
+    }
+
+    public static ItemStack copyWithSize(ItemStack stack, int size) {
+        if (stack == null) return null;
+
+        ItemStack copy = stack.copy();
+        copy.stackSize = size;
+        return copy;
+    }
+
+    public static boolean canStack(ItemStack a, ItemStack b) {
+        if (a == null || b == null) return false;
+
+        return a.getItem() == b.getItem() && a.getItemDamage() == b.getItemDamage()
+            && ItemStack.areItemStackTagsEqual(a, b);
+    }
+
+    public static int getSpace(ItemStack stack) {
+        if (stack == null) return 64;
+        return stack.getMaxStackSize() - stack.stackSize;
     }
 }

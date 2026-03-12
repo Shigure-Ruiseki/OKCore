@@ -40,7 +40,7 @@ import ruiseki.okcore.tileentity.IOrientable;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class BlockOK extends Block {
+public class BlockOK extends Block implements IBlock {
 
     protected final Class<? extends TileEntityOK> teClass;
     protected final String name;
@@ -51,8 +51,6 @@ public class BlockOK extends Block {
     protected boolean isOpaque = true;
     protected boolean isFullSize = true;
     public boolean hasSubtypes = false;
-
-    private boolean rotatable;
 
     protected BlockOK(String name) {
         this(name, null, new Material(MapColor.ironColor));
@@ -76,11 +74,21 @@ public class BlockOK extends Block {
         this.setStepSound(getSoundForMaterial(mat));
     }
 
+    @Override
     public void init() {
         registerBlock();
         registerTileEntity();
-        registerBlockColor();
         registerComponent();
+    }
+
+    @Override
+    public Block getBlock() {
+        return this;
+    }
+
+    @Override
+    public boolean isHasSubtypes() {
+        return hasSubtypes;
     }
 
     protected void registerBlock() {
@@ -96,8 +104,6 @@ public class BlockOK extends Block {
             GameRegistry.registerTileEntity(teClass, name + "TileEntity");
         }
     }
-
-    protected void registerBlockColor() {}
 
     protected void registerComponent() {}
 

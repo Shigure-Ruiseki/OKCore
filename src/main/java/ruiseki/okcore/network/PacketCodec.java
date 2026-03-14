@@ -226,7 +226,7 @@ public abstract class PacketCodec extends PacketBase {
             @Override
             public Object decode(ExtendedBuffer input) {
                 try {
-                    return input.readNBTTagCompoundFromBuffer();
+                    return input.readItemStackFromBuffer();
                 } catch (IOException ioexception) {
                     throw new EncoderException(ioexception);
                 }

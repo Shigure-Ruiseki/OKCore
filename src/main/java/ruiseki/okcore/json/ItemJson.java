@@ -25,14 +25,32 @@ public class ItemJson implements IJsonMaterial {
 
     @Override
     public void read(JsonObject json) {
-        this.name = json.has("name") ? json.get("name")
+        String inputName = json.has("name") ? json.get("name")
             .getAsString() : null;
+        if (inputName == null && json.has("item")) {
+            inputName = json.get("item")
+                .getAsString();
+        }
+
+        if (inputName != null && inputName.contains(":") && inputName.split(":").length >= 3) {
+            String[] parts = inputName.split(":");
+            this.name = parts[0] + ":" + parts[1];
+            try {
+                this.meta = Integer.parseInt(parts[2]);
+            } catch (NumberFormatException e) {
+                this.meta = json.has("meta") ? json.get("meta")
+                    .getAsInt() : 0;
+            }
+        } else {
+            this.name = inputName;
+            this.meta = json.has("meta") ? json.get("meta")
+                .getAsInt() : 0;
+        }
+
         this.ore = json.has("ore") ? json.get("ore")
             .getAsString() : null;
         this.amount = json.has("amount") ? json.get("amount")
             .getAsInt() : 1;
-        this.meta = json.has("meta") ? json.get("meta")
-            .getAsInt() : 0;
 
         if (json.has("nbt")) {
             try {
@@ -99,10 +117,21 @@ public class ItemJson implements IJsonMaterial {
         if (data.name == null || data.name.isEmpty()) return null;
 
         try {
+            String itemName = data.name;
+            int itemMeta = data.meta;
+
+            if (itemName.contains(":") && itemName.split(":").length >= 3) {
+                String[] parts = itemName.split(":");
+                itemName = parts[0] + ":" + parts[1];
+                try {
+                    itemMeta = Integer.parseInt(parts[2]);
+                } catch (NumberFormatException ignored) {}
+            }
+
             Item item = GameData.getItemRegistry()
-                .getObject(data.name);
+                .getObject(itemName);
             if (item == null) return null;
-            ItemStack stack = new ItemStack(item, count, data.meta);
+            ItemStack stack = new ItemStack(item, count, itemMeta);
 
             if (data.nbt != null) {
                 stack.setTagCompound((NBTTagCompound) data.nbt.copy());

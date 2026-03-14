@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -18,6 +19,7 @@ import net.minecraft.util.EnumChatFormatting;
 import org.apache.logging.log4j.Level;
 
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.Reference;
 import ruiseki.okcore.init.ModBase;
 
 /**
@@ -117,16 +119,46 @@ public class JsonErrorCollector {
         if (notifiedPlayers.contains(playerName)) return;
         notifiedPlayers.add(playerName);
 
-        player.addChatMessage(
+        reportToChat(player);
+    }
+
+    /**
+     * Prints errors to Chat.
+     */
+    public void reportToChat(ICommandSender sender) {
+        if (!hasErrors()) return;
+
+        sender.addChatMessage(
             new ChatComponentText(
                 EnumChatFormatting.RED + "[OmoshiroiKamo] "
                     + EnumChatFormatting.YELLOW
-                    + "JSON Configuration has "
+                    + "Recipe system has "
                     + errors.size()
                     + " error(s)!"));
-        player.addChatMessage(
+
+        // Show first 3 errors in detail
+        int limit = Math.min(errors.size(), 3);
+        for (int i = 0; i < limit; i++) {
+            JsonErrorInfo info = errors.get(i);
+            sender.addChatMessage(
+                new ChatComponentText(
+                    EnumChatFormatting.RED + " Error in " + EnumChatFormatting.WHITE + info.fileName + ":"));
+
+            // Split message by lines to preserve snippet formatting
+            String[] lines = info.message.split("\n");
+            for (String line : lines) {
+                sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GRAY + line));
+            }
+        }
+
+        if (errors.size() > 3) {
+            sender.addChatMessage(
+                new ChatComponentText(EnumChatFormatting.GRAY + "... and " + (errors.size() - 3) + " more."));
+        }
+
+        sender.addChatMessage(
             new ChatComponentText(
-                EnumChatFormatting.GRAY + "Check: config/" + mod.getModId() + "/json_errors.txt for details."));
+                EnumChatFormatting.GRAY + "Check: config/" + Reference.MOD_ID + "/json_errors.txt for details."));
     }
 
     /**

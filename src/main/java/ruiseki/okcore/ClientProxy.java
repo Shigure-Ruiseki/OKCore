@@ -1,9 +1,7 @@
 package ruiseki.okcore;
 
-import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.client.render.block.WorldRender;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.proxy.ClientProxyComponent;
 
@@ -22,6 +20,5 @@ public class ClientProxy extends ClientProxyComponent {
     @Override
     public void registerRenderers() {
         super.registerRenderers();
-        RenderingRegistry.registerBlockHandler(WorldRender.INSTANCE);
     }
 }

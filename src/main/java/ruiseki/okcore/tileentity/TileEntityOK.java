@@ -2,7 +2,6 @@ package ruiseki.okcore.tileentity;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
@@ -26,8 +25,7 @@ import ruiseki.okcore.persist.nbt.INBTProvider;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 
-public abstract class TileEntityOK extends TileEntity
-    implements ITile, INBTProvider, ICapabilitySerializable, IOrientable {
+public abstract class TileEntityOK extends TileEntity implements ITile, INBTProvider, ICapabilitySerializable {
 
     @Delegate
     private final INBTProvider nbtProvider = new NBTProviderComponent(this);
@@ -60,29 +58,6 @@ public abstract class TileEntityOK extends TileEntity
         if (this.isInvalid()) {
             this.validate();
         }
-    }
-
-    @Override
-    public boolean canBeRotated() {
-        return true;
-    }
-
-    @Override
-    public ForgeDirection getForward() {
-        return this.forward;
-    }
-
-    @Override
-    public ForgeDirection getUp() {
-        return this.up;
-    }
-
-    @Override
-    public void setOrientation(final ForgeDirection inForward, final ForgeDirection inUp) {
-        this.forward = inForward;
-        this.up = inUp;
-        this.onSendUpdate();
-        worldObj.notifyBlockOfNeighborChange(xCoord, yCoord, zCoord, Blocks.air);
     }
 
     @Override
@@ -139,7 +114,7 @@ public abstract class TileEntityOK extends TileEntity
     }
 
     /**
-     * Override this method instead of {@link TileEntityOK#update()}.
+     * Override this method instead of {@link TileEntityOK#updateEntity()}.
      * This method is called each tick.
      */
     protected void doUpdate() {}

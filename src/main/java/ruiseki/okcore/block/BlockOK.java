@@ -24,19 +24,10 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
-import ruiseki.okcore.client.render.BaseBlockRender;
-import ruiseki.okcore.client.render.BlockRenderInfo;
-import ruiseki.okcore.client.render.block.WorldRender;
-import ruiseki.okcore.client.render.texture.FlippableIcon;
-import ruiseki.okcore.client.render.texture.MissingIcon;
 import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.ItemBlockOK;
-import ruiseki.okcore.tileentity.IOrientable;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -44,9 +35,6 @@ public class BlockOK extends Block implements IBlock {
 
     protected final Class<? extends TileEntityOK> teClass;
     protected final String name;
-
-    @SideOnly(Side.CLIENT)
-    private BlockRenderInfo renderInfo;
 
     protected boolean isOpaque = true;
     protected boolean isFullSize = true;
@@ -107,40 +95,8 @@ public class BlockOK extends Block implements IBlock {
 
     protected void registerComponent() {}
 
-    public void registerNoIcons() {
-        final BlockRenderInfo info = this.getRendererInstance();
-        final FlippableIcon i = new FlippableIcon(new MissingIcon(this));
-        info.updateIcons(i, i, i, i, i, i);
-    }
-
-    @SideOnly(Side.CLIENT)
-    public BlockRenderInfo getRendererInstance() {
-        if (this.renderInfo != null) {
-            return this.renderInfo;
-        }
-
-        final BaseBlockRender<? extends BlockOK, ? extends TileEntityOK> renderer = this.getRenderer();
-        this.renderInfo = new BlockRenderInfo(renderer);
-
-        return this.renderInfo;
-    }
-
-    @SideOnly(Side.CLIENT)
-    protected BaseBlockRender<? extends BlockOK, ? extends TileEntityOK> getRenderer() {
-        return new BaseBlockRender<>();
-    }
-
     public boolean hasSubtypes() {
         return this.hasSubtypes;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public void setRenderStateByMeta(final int itemDamage) {}
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public int getRenderType() {
-        return WorldRender.INSTANCE.getRenderId();
     }
 
     @Override
@@ -209,14 +165,6 @@ public class BlockOK extends Block implements IBlock {
         this.maxX = maxX;
         this.maxY = maxY;
         this.maxZ = maxZ;
-    }
-
-    // Orientable
-    public IOrientable getOrientable(final IBlockAccess world, final int x, final int y, final int z) {
-        if (this instanceof IOrientableBlock) {
-            return ((IOrientableBlock) this).getOrientable(world, x, y, z);
-        }
-        return TileHelpers.getSafeTile(world, x, y, z, IOrientable.class);
     }
 
     // Block Destroy

@@ -1,4 +1,4 @@
-package ruiseki.okcore.enums;
+package ruiseki.okcore.color;
 
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;

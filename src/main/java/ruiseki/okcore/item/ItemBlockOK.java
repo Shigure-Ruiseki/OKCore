@@ -4,12 +4,9 @@ import net.minecraft.block.Block;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemBlockWithMetadata;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.MinecraftForgeClient;
 
 import ruiseki.okcore.block.BlockOK;
 import ruiseki.okcore.block.IBlockRarityProvider;
-import ruiseki.okcore.client.render.item.ItemRenderer;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 public class ItemBlockOK extends ItemBlockWithMetadata {
 
@@ -25,10 +22,6 @@ public class ItemBlockOK extends ItemBlockWithMetadata {
         this.setHasSubtypes(hasSubtypes);
         if (block instanceof IBlockRarityProvider) {
             this.rarityProvider = (IBlockRarityProvider) this.field_150939_a;
-        }
-
-        if (MinecraftHelpers.isClientSide()) {
-            MinecraftForgeClient.registerItemRenderer(this, ItemRenderer.INSTANCE);
         }
     }
 

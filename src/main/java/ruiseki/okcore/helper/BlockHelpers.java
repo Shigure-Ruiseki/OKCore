@@ -11,12 +11,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
-import cpw.mods.fml.client.registry.ClientRegistry;
-import ruiseki.okcore.block.BlockOK;
-import ruiseki.okcore.client.render.BaseBlockRender;
-import ruiseki.okcore.client.render.tileentity.TESRWrapper;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
  * Contains helper methods for various block specific things.
@@ -109,15 +104,6 @@ public final class BlockHelpers {
             default -> ForgeDirection.UNKNOWN;
         };
 
-    }
-
-    public static <T extends TileEntityOK> void bindTileEntitySpecialRenderer(final Class<T> tile, final BlockOK blk) {
-        final BaseBlockRender bbr = blk.getRendererInstance()
-            .getRendererInstance();
-
-        if (bbr.hasTESR()) {
-            ClientRegistry.bindTileEntitySpecialRenderer(tile, new TESRWrapper<T>(bbr));
-        }
     }
 
 }

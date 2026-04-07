@@ -11,11 +11,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3i;
 
 import com.google.common.base.Strings;
 
-public class BlockPos extends Vector3i {
+public class BlockPos extends Vector3i implements Comparable<BlockPos> {
 
     public static final BlockPos ORIGIN = new BlockPos(0, 0, 0);
 
@@ -215,8 +216,20 @@ public class BlockPos extends Vector3i {
         return tag;
     }
 
+    public long distSqr(BlockPos other) {
+        long dx = this.getX() - other.getX();
+        long dy = this.getY() - other.getY();
+        long dz = this.getZ() - other.getZ();
+        return dx * dx + dy * dy + dz * dz;
+    }
+
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
+    }
+
+    @Override
+    public int compareTo(@NotNull BlockPos o) {
+        return compareBlockPos(this, o);
     }
 }

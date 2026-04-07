@@ -1,11 +1,5 @@
 package ruiseki.okcore.helper;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -17,7 +11,6 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.item.IItemHandler;
 
 /**
  * Contains helper methods involving {@link IInventory}S.
@@ -221,34 +214,5 @@ public class InventoryHelpers {
 
             world.spawnEntityInWorld(entityitem);
         }
-    }
-
-    public static void iterate(IItemHandler handler, BiConsumer<Integer, ItemStack> actOn) {
-        iterate(handler, actOn, () -> false);
-    }
-
-    public static void iterate(IItemHandler handler, BiConsumer<Integer, ItemStack> actOn, BooleanSupplier shouldExit) {
-        int slots = handler.getSlots();
-        for (int slot = 0; slot < slots; slot++) {
-            ItemStack stack = handler.getStackInSlot(slot);
-            actOn.accept(slot, stack);
-            if (shouldExit.getAsBoolean()) {
-                break;
-            }
-        }
-    }
-
-    public static <T> T iterate(IItemHandler handler, BiFunction<Integer, ItemStack, T> getFromSlotStack,
-        Supplier<T> supplyDefault, Predicate<T> shouldExit) {
-        T ret = supplyDefault.get();
-        int slots = handler.getSlots();
-        for (int slot = 0; slot < slots; slot++) {
-            ItemStack stack = handler.getStackInSlot(slot);
-            ret = getFromSlotStack.apply(slot, stack);
-            if (shouldExit.test(ret)) {
-                break;
-            }
-        }
-        return ret;
     }
 }

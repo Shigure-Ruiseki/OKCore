@@ -21,7 +21,6 @@ import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
@@ -43,7 +42,6 @@ public class OKCore extends ModBase {
         super(Reference.MOD_ID, Reference.MOD_NAME);
         putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
         addInitListeners(new CapabilityFluidHandler());
-        addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityEnergy());
         addInitListeners(new CapabilityLight());
         addInitListeners(new CapabilityRedstone());

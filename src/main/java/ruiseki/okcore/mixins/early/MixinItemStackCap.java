@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,73 +35,54 @@ public abstract class MixinItemStackCap {
     private CapabilityDispatcher capabilities;
     private NBTTagCompound capNBT;
 
-    @Inject(method = "<init>(Lnet/minecraft/item/Item;II)V", at = @At("RETURN"))
-    private void okcore$initItem(Item item, int size, int damage, CallbackInfo ci) {
-        this.initCaps();
-    }
-
     /*
      * INTERNAL CAP INIT
      */
 
-    private void initCaps() {
-        ItemStack self = (ItemStack) (Object) this;
+    @Inject(method = "func_150996_a", at = @At("RETURN"))
+    private void okcore$forgeInit(Item item, CallbackInfo ci) {
+        if (item instanceof IItemCapability capItem) {
+            ItemStack stack = (ItemStack) (Object) this;
 
-        if (self.getItem() == null) return;
-
-        ICapabilityProvider parent = null;
-
-        if (self.getItem() instanceof IItemCapability capItem) {
-            parent = capItem.initCapabilities(self, this.capNBT);
-        }
-
-        this.capabilities = OKEventFactory.gatherCapabilities(self, parent);
-
-        if (this.capNBT != null && this.capabilities != null) {
-            this.capabilities.deserializeNBT(this.capNBT);
+            ICapabilityProvider provider = capItem.initCapabilities(stack, this.capNBT);
+            this.capabilities = OKEventFactory.gatherCapabilities(stack, provider);
+            if (this.capNBT != null && this.capabilities != null) this.capabilities.deserializeNBT(this.capNBT);
         }
     }
 
-    /*
-     * WRITE NBT
-     */
-    @Inject(method = "writeToNBT", at = @At("RETURN"))
-    private void okcore$writeCaps(NBTTagCompound tag, CallbackInfoReturnable<NBTTagCompound> cir) {
+    @Inject(method = "readFromNBT", at = @At("HEAD"))
+    private void okcore$readFromNBT(NBTTagCompound tag, CallbackInfo ci) {
+        this.capNBT = tag.hasKey("OKCaps") ? (NBTTagCompound) tag.getTag("OKCaps") : null;
+    }
 
+    @Inject(method = "writeToNBT", at = @At("RETURN"))
+    private void okcore$writeToNBT(NBTTagCompound tag, CallbackInfoReturnable<NBTTagCompound> cir) {
         if (this.capabilities != null) {
-            NBTTagCompound caps = this.capabilities.serializeNBT();
-            if (!caps.hasNoTags()) {
-                tag.setTag("OKCaps", caps);
+            NBTTagCompound cnbt = this.capabilities.serializeNBT();
+            if (!cnbt.hasNoTags()) {
+                tag.setTag("OKCaps", cnbt);
             }
         }
     }
 
-    /*
-     * READ NBT
-     */
-    @Inject(method = "readFromNBT", at = @At("HEAD"))
-    private void okcore$readCaps(NBTTagCompound tag, CallbackInfo ci) {
-        if (tag.hasKey("OKCaps")) {
-            this.capNBT = tag.getCompoundTag("OKCaps");
+    @Inject(method = "copy", at = @At("RETURN"))
+    private void okcore$copyCaps(CallbackInfoReturnable<ItemStack> cir) {
+        ItemStack stack = cir.getReturnValue();
+        if (this.capabilities != null) {
+            NBTTagCompound caps = this.capabilities.serializeNBT();
+            if (!caps.hasNoTags()) {
+                stack.setTagInfo("OKCaps", caps);
+                ((MixinItemStackCap) (Object) stack).capNBT = caps;
+                stack.func_150996_a(stack.getItem());
+            }
         }
-    }
-
-    @Inject(method = "readFromNBT", at = @At("RETURN"))
-    private void okcore$applyCaps(NBTTagCompound tag, CallbackInfo ci) {
-        if (this.capabilities == null) {
-            this.initCaps();
-        } else if (this.capNBT != null) {
-            this.capabilities.deserializeNBT(this.capNBT);
-        }
-
-        this.capNBT = null;
     }
 
     /*
      * CAPABILITY API
      */
 
-    public boolean okstackcap$hasCapability(Capability<?> capability, ForgeDirection side) {
+    public boolean okstackcap$hasCapability(@NotNull Capability<?> capability, ForgeDirection side) {
         return this.capabilities != null && this.capabilities.hasCapability(capability, side);
     }
 

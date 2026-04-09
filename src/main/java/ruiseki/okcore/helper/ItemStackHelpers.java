@@ -227,7 +227,7 @@ public final class ItemStackHelpers {
         try {
             ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
 
-            return provider.getCapability(capability, null);
+            return provider.getCapability(capability, facing);
 
         } catch (ClassCastException ignored) {
             return null;
@@ -239,7 +239,7 @@ public final class ItemStackHelpers {
         try {
             ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
 
-            return provider.hasCapability(capability, null);
+            return provider.hasCapability(capability, facing);
 
         } catch (ClassCastException ignored) {
             return false;

@@ -1,5 +1,10 @@
 package ruiseki.okcore.energy.capability;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.util.EnumFacing;
+
+import org.jetbrains.annotations.Nullable;
+
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
@@ -20,9 +25,48 @@ public class CapabilityEnergy implements IInitListener {
     public static Capability<IEnergySource> ENERGY_SOURCE_CAPABILITY = null;
 
     public static void register() {
-        CapabilityManager.INSTANCE.register(IEnergyStorage.class, EnergyStorageDefault::new);
-        CapabilityManager.INSTANCE.register(IEnergySink.class, () -> new OKEnergySink(null, null));
-        CapabilityManager.INSTANCE.register(IEnergySource.class, () -> new OKEnergySource(null, null));
+        CapabilityManager.INSTANCE.register(IEnergyStorage.class, new Capability.IStorage<IEnergyStorage>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance,
+                EnumFacing side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance, EnumFacing side,
+                NBTBase nbt) {
+
+            }
+        }, EnergyStorageDefault::new);
+        CapabilityManager.INSTANCE.register(IEnergySink.class, new Capability.IStorage<IEnergySink>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IEnergySink> capability, IEnergySink instance,
+                EnumFacing side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IEnergySink> capability, IEnergySink instance, EnumFacing side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new OKEnergySink(null, null));
+        CapabilityManager.INSTANCE.register(IEnergySource.class, new Capability.IStorage<IEnergySource>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IEnergySource> capability, IEnergySource instance,
+                EnumFacing side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IEnergySource> capability, IEnergySource instance, EnumFacing side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new OKEnergySource(null, null));
     }
 
     @Override

@@ -10,7 +10,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.capabilities.IItemCapability;
 
-public class ItemOK extends Item implements IItem, IItemCapability {
+public class ItemOK extends Item implements IItem, IItemCapability, IItemSharedTag {
 
     private final String name;
 
@@ -33,5 +33,15 @@ public class ItemOK extends Item implements IItem, IItemCapability {
     @Override
     public @Nullable ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
         return null;
+    }
+
+    @Override
+    public NBTTagCompound getNBTShareTag(ItemStack stack) {
+        return stack.getTagCompound();
+    }
+
+    @Override
+    public void readNBTShareTag(ItemStack stack, @Nullable NBTTagCompound nbt) {
+        stack.setTagCompound(nbt);
     }
 }

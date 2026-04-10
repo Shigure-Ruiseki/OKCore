@@ -26,8 +26,6 @@ import java.util.function.Function;
 
 import net.minecraftforge.common.util.EnumHelper;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.Type;
 
 import com.google.common.base.Preconditions;
@@ -40,8 +38,6 @@ import cpw.mods.fml.common.discovery.ASMDataTable;
 public enum CapabilityManager {
 
     INSTANCE;
-
-    static final Logger LOGGER = LogManager.getLogger();
 
     @SuppressWarnings("unchecked")
     public <T> Capability<T> get(Class<T> type) {
@@ -56,9 +52,10 @@ public enum CapabilityManager {
      * To retrieve the Capability instance, use the @CapabilityInject annotation.
      *
      * @param type    The Interface to be registered
+     * @param storage A default implementation of the storage handler.
      * @param factory A Factory that will produce new instances of the default implementation.
      */
-    public <T> void register(Class<T> type, Callable<? extends T> factory) {
+    public <T> void register(Class<T> type, Capability.IStorage<T> storage, Callable<? extends T> factory) {
         Preconditions.checkArgument(type != null, "Attempted to register a capability with invalid type");
         Preconditions.checkArgument(
             factory != null,
@@ -70,7 +67,7 @@ public enum CapabilityManager {
             "Can not register a capability implementation multiple times: %s",
             realName);
 
-        Capability<T> cap = new Capability<T>(realName, factory);
+        Capability<T> cap = new Capability<T>(realName, storage, factory);
         providers.put(realName, cap);
 
         List<Function<Capability<?>, Object>> list = callbacks.get(realName);

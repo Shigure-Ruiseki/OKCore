@@ -23,6 +23,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
+import ruiseki.okcore.item.IItemSharedTag;
 import ruiseki.okcore.item.weighted.WeightedStackBase;
 
 /**
@@ -305,6 +306,28 @@ public final class ItemStackHelpers {
             return false;
         }
         return Objects.equals(stack1.getTagCompound(), stack2.getTagCompound());
+    }
+
+    public static boolean areItemStacksEqualUsingNBTShareTag(ItemStack stackA, ItemStack stackB) {
+        if (stackA == null) return stackB == null;
+        else return stackB != null && isItemStackEqualUsingNBTShareTag(stackA, stackB);
+    }
+
+    private static boolean isItemStackEqualUsingNBTShareTag(ItemStack self, ItemStack other) {
+        return self.stackSize == other.stackSize && self.getItem() == other.getItem()
+            && self.getItemDamage() == other.getItemDamage()
+            && areItemStackShareTagsEqual(self, other);
+    }
+
+    public static boolean areItemStackShareTagsEqual(ItemStack stackA, ItemStack stackB) {
+        NBTTagCompound shareTagA = stackA.getItem() instanceof IItemSharedTag sharedTagA
+            ? sharedTagA.getNBTShareTag(stackA)
+            : stackA.getTagCompound();
+        NBTTagCompound shareTagB = stackB.getItem() instanceof IItemSharedTag sharedTagB
+            ? sharedTagB.getNBTShareTag(stackB)
+            : stackB.getTagCompound();
+        if (shareTagA == null) return shareTagB == null;
+        else return shareTagB != null && shareTagA.equals(shareTagB);
     }
 
     public static ItemStack merge(ItemStack a, ItemStack b) {

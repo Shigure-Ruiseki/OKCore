@@ -1,9 +1,13 @@
 package ruiseki.okcore.helper;
 
+import java.util.Optional;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
@@ -140,6 +144,40 @@ public final class TileHelpers {
             return provider.getCapability(capability, side);
         }
         return null;
+    }
+
+    public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess level, BlockPos pos) {
+        if (level == null || pos == null) return Optional.empty();
+        return Optional.ofNullable(pos.getTileEntity(level));
+    }
+
+    public static Optional<TileEntity> getLoadedTileEntity(@Nullable World level, BlockPos pos) {
+        if (level != null && pos != null && pos.isLoaded(level)) {
+            return Optional.ofNullable(pos.getTileEntity(level));
+        }
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> getLoadedTileEntity(@Nullable World level, BlockPos pos, Class<T> teClass) {
+        if (level != null && pos != null && pos.isLoaded(level)) {
+            return Optional.ofNullable(getSafeTile(level, pos, teClass));
+        }
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> getTileEntity(@Nullable IBlockAccess level, BlockPos pos, Class<T> teClass) {
+        if (level == null || pos == null) return Optional.empty();
+        return Optional.ofNullable(getSafeTile(level, pos, teClass));
+    }
+
+    public static void notifyBlockUpdate(TileEntity tile) {
+        if (tile == null) return;
+
+        World world = tile.getWorldObj();
+        if (world == null) return;
+
+        tile.markDirty();
+        world.markBlockForUpdate(tile.xCoord, tile.yCoord, tile.zCoord);
     }
 
 }

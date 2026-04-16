@@ -1,4 +1,4 @@
-package ruiseki.okcore.mixins.early;
+package ruiseki.okcore.mixins.early.capabilities;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;

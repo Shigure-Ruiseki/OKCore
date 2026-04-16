@@ -7,10 +7,17 @@ import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
 public enum Mixins implements IMixins {
 
-    ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("MixinItemStackCap")
+    ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("capabilities.MixinItemStackCap")
         .setPhase(Phase.EARLY)),
 
-    ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Entity").addCommonMixins("MixinEntityCap")
+    ITEM_SHARED_NBT(
+        new MixinBuilder("Add shared nbt to Item").addCommonMixins("itemSharedNBT.MixinC0EPacketClickWindowNBT")
+            .addCommonMixins("itemSharedNBT.MixinC10PacketCreativeInventoryActionNBT")
+            .addCommonMixins("itemSharedNBT.MixinNetHandlerPlayServerNBT")
+            .addCommonMixins("itemSharedNBT.MixinPacketBufferNBT")
+            .setPhase(Phase.EARLY)),
+
+    ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Entity").addCommonMixins("capabilities.MixinEntityCap")
         .setPhase(Phase.EARLY)),
 
     ;

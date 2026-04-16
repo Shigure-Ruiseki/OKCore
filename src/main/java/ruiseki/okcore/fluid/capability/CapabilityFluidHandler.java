@@ -2,11 +2,15 @@ package ruiseki.okcore.fluid.capability;
 
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.IFluidContainerItem;
 import net.minecraftforge.fluids.IFluidHandler;
+
+import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.okcore.Reference;
@@ -42,13 +46,62 @@ public class CapabilityFluidHandler implements IInitListener {
     }
 
     public static void register() {
-        CapabilityManager.INSTANCE
-            .register(IFluidHandler.class, () -> new SmartTank(FluidContainerRegistry.BUCKET_VOLUME));
-        CapabilityManager.INSTANCE.register(
-            IFluidHandlerItem.class,
-            () -> new FluidHandlerItem(new ItemStack(Items.bucket), FluidContainerRegistry.BUCKET_VOLUME));
-        CapabilityManager.INSTANCE.register(IFluidSink.class, () -> new FluidSink(null, null));
-        CapabilityManager.INSTANCE.register(IFluidSource.class, () -> new FluidSource(null, null));
+        CapabilityManager.INSTANCE.register(IFluidHandler.class, new Capability.IStorage<IFluidHandler>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IFluidHandler> capability, IFluidHandler instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IFluidHandler> capability, IFluidHandler instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new SmartTank(FluidContainerRegistry.BUCKET_VOLUME));
+        CapabilityManager.INSTANCE.register(IFluidHandlerItem.class, new Capability.IStorage<IFluidHandlerItem>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IFluidHandlerItem> capability, IFluidHandlerItem instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IFluidHandlerItem> capability, IFluidHandlerItem instance,
+                ForgeDirection side, NBTBase nbt) {
+
+            }
+        }, () -> new FluidHandlerItem(new ItemStack(Items.bucket), FluidContainerRegistry.BUCKET_VOLUME));
+        CapabilityManager.INSTANCE.register(IFluidSink.class, new Capability.IStorage<IFluidSink>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IFluidSink> capability, IFluidSink instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IFluidSink> capability, IFluidSink instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new FluidSink(null, null));
+        CapabilityManager.INSTANCE.register(IFluidSource.class, new Capability.IStorage<IFluidSource>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IFluidSource> capability, IFluidSource instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IFluidSource> capability, IFluidSource instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new FluidSource(null, null));
 
         MinecraftForge.EVENT_BUS.register(new CapabilityFluidHandler());
     }

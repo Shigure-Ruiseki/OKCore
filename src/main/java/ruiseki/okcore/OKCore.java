@@ -5,6 +5,8 @@ import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
+import com.gtnewhorizon.gtnhlib.config.ConfigException;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
@@ -18,9 +20,11 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
+import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
@@ -29,8 +33,17 @@ import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
     modid = Reference.MOD_ID,
     name = Reference.MOD_NAME,
     version = Reference.VERSION,
-    dependencies = Reference.DEPENDENCIES)
+    dependencies = Reference.DEPENDENCIES,
+    guiFactory = Reference.GUI_FACTORY)
 public class OKCore extends ModBase {
+
+    static {
+        try {
+            ModConfig.registerConfig();
+        } catch (ConfigException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @SidedProxy(serverSide = Reference.PROXY_COMMON, clientSide = Reference.PROXY_CLIENT)
     public static ICommonProxy proxy;
@@ -41,6 +54,7 @@ public class OKCore extends ModBase {
     public OKCore() {
         super(Reference.MOD_ID, Reference.MOD_NAME);
         putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
+        addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());
         addInitListeners(new CapabilityEnergy());
         addInitListeners(new CapabilityLight());

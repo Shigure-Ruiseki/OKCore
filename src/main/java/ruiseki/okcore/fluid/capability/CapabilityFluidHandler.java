@@ -3,9 +3,9 @@ package ruiseki.okcore.fluid.capability;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.IFluidContainerItem;
 import net.minecraftforge.fluids.IFluidHandler;
@@ -50,12 +50,12 @@ public class CapabilityFluidHandler implements IInitListener {
 
             @Override
             public @Nullable NBTBase writeNBT(Capability<IFluidHandler> capability, IFluidHandler instance,
-                EnumFacing side) {
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IFluidHandler> capability, IFluidHandler instance, EnumFacing side,
+            public void readNBT(Capability<IFluidHandler> capability, IFluidHandler instance, ForgeDirection side,
                 NBTBase nbt) {
 
             }
@@ -64,25 +64,27 @@ public class CapabilityFluidHandler implements IInitListener {
 
             @Override
             public @Nullable NBTBase writeNBT(Capability<IFluidHandlerItem> capability, IFluidHandlerItem instance,
-                EnumFacing side) {
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IFluidHandlerItem> capability, IFluidHandlerItem instance, EnumFacing side,
-                NBTBase nbt) {
+            public void readNBT(Capability<IFluidHandlerItem> capability, IFluidHandlerItem instance,
+                ForgeDirection side, NBTBase nbt) {
 
             }
         }, () -> new FluidHandlerItem(new ItemStack(Items.bucket), FluidContainerRegistry.BUCKET_VOLUME));
         CapabilityManager.INSTANCE.register(IFluidSink.class, new Capability.IStorage<IFluidSink>() {
 
             @Override
-            public @Nullable NBTBase writeNBT(Capability<IFluidSink> capability, IFluidSink instance, EnumFacing side) {
+            public @Nullable NBTBase writeNBT(Capability<IFluidSink> capability, IFluidSink instance,
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IFluidSink> capability, IFluidSink instance, EnumFacing side, NBTBase nbt) {
+            public void readNBT(Capability<IFluidSink> capability, IFluidSink instance, ForgeDirection side,
+                NBTBase nbt) {
 
             }
         }, () -> new FluidSink(null, null));
@@ -90,12 +92,12 @@ public class CapabilityFluidHandler implements IInitListener {
 
             @Override
             public @Nullable NBTBase writeNBT(Capability<IFluidSource> capability, IFluidSource instance,
-                EnumFacing side) {
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IFluidSource> capability, IFluidSource instance, EnumFacing side,
+            public void readNBT(Capability<IFluidSource> capability, IFluidSource instance, ForgeDirection side,
                 NBTBase nbt) {
 
             }

@@ -8,7 +8,7 @@ package ruiseki.okcore.capabilities;
 import java.util.concurrent.Callable;
 
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -42,7 +42,7 @@ public class Capability<T> {
          * @return a NBT holding the data. Null if no data needs to be stored.
          */
         @javax.annotation.Nullable
-        NBTBase writeNBT(Capability<T> capability, T instance, EnumFacing side);
+        NBTBase writeNBT(Capability<T> capability, T instance, ForgeDirection side);
 
         /**
          * Read the capability instance from a NBT tag.
@@ -64,7 +64,7 @@ public class Capability<T> {
          * @param nbt        A NBT holding the data. Must not be null, as doesn't make sense to call this function with
          *                   nothing to read...
          */
-        void readNBT(Capability<T> capability, T instance, EnumFacing side, NBTBase nbt);
+        void readNBT(Capability<T> capability, T instance, ForgeDirection side, NBTBase nbt);
     }
 
     /**
@@ -85,18 +85,18 @@ public class Capability<T> {
 
     /**
      * Quick access to the IStorage's readNBT.
-     * See {@link IStorage#readNBT(Capability, Object, EnumFacing, NBTBase)} for documentation.
+     * See {@link IStorage#readNBT(Capability, Object, ForgeDirection, NBTBase)} for documentation.
      */
-    public void readNBT(T instance, EnumFacing side, NBTBase nbt) {
+    public void readNBT(T instance, ForgeDirection side, NBTBase nbt) {
         storage.readNBT(this, instance, side, nbt);
     }
 
     /**
      * Quick access to the IStorage's writeNBT.
-     * See {@link IStorage#writeNBT(Capability, Object, EnumFacing)} for documentation.
+     * See {@link IStorage#writeNBT(Capability, Object, ForgeDirection)} for documentation.
      */
     @javax.annotation.Nullable
-    public NBTBase writeNBT(T instance, EnumFacing side) {
+    public NBTBase writeNBT(T instance, ForgeDirection side) {
         return storage.writeNBT(this, instance, side);
     }
 

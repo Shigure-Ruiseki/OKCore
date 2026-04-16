@@ -1,7 +1,7 @@
 package ruiseki.okcore.energy.capability;
 
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -29,12 +29,12 @@ public class CapabilityEnergy implements IInitListener {
 
             @Override
             public @Nullable NBTBase writeNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance,
-                EnumFacing side) {
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance, EnumFacing side,
+            public void readNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance, ForgeDirection side,
                 NBTBase nbt) {
 
             }
@@ -43,12 +43,12 @@ public class CapabilityEnergy implements IInitListener {
 
             @Override
             public @Nullable NBTBase writeNBT(Capability<IEnergySink> capability, IEnergySink instance,
-                EnumFacing side) {
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IEnergySink> capability, IEnergySink instance, EnumFacing side,
+            public void readNBT(Capability<IEnergySink> capability, IEnergySink instance, ForgeDirection side,
                 NBTBase nbt) {
 
             }
@@ -57,12 +57,12 @@ public class CapabilityEnergy implements IInitListener {
 
             @Override
             public @Nullable NBTBase writeNBT(Capability<IEnergySource> capability, IEnergySource instance,
-                EnumFacing side) {
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IEnergySource> capability, IEnergySource instance, EnumFacing side,
+            public void readNBT(Capability<IEnergySource> capability, IEnergySource instance, ForgeDirection side,
                 NBTBase nbt) {
 
             }

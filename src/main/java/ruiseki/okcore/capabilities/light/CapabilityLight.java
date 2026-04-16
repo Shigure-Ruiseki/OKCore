@@ -1,7 +1,7 @@
 package ruiseki.okcore.capabilities.light;
 
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -21,12 +21,12 @@ public class CapabilityLight implements IInitListener {
 
             @Override
             public @Nullable NBTBase writeNBT(Capability<IDynamicLight> capability, IDynamicLight instance,
-                EnumFacing side) {
+                ForgeDirection side) {
                 return null;
             }
 
             @Override
-            public void readNBT(Capability<IDynamicLight> capability, IDynamicLight instance, EnumFacing side,
+            public void readNBT(Capability<IDynamicLight> capability, IDynamicLight instance, ForgeDirection side,
                 NBTBase nbt) {
 
             }

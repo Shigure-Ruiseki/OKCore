@@ -3,14 +3,17 @@ package ruiseki.okcore.item;
 import java.util.Arrays;
 import java.util.List;
 
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.helper.ItemHandlerHelpers;
+import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, INBTSerializable {
@@ -193,4 +196,162 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     protected void onLoad() {}
 
     protected void onContentsChanged(int slot) {}
+
+    public ItemStack getAndRemoveSlot(int slot) {
+        ItemStack stack = this.getStackInSlot(slot);
+
+        if (stack == null) {
+            return null;
+        }
+
+        ItemStack extract = stack.copy();
+        this.setStackInSlot(slot, null);
+        return extract;
+    }
+
+    public int voidItem(int slot, int amount) {
+        if (amount <= 0) return 0;
+
+        ItemStack stack = getStackInSlot(slot);
+        if (stack == null) return amount;
+
+        int oldCount = stack.stackSize;
+        int toVoid = Math.min(oldCount, amount);
+
+        stack.stackSize -= toVoid;
+        if (stack.stackSize <= 0) {
+            setStackInSlot(slot, null);
+        } else {
+            setStackInSlot(slot, stack);
+        }
+
+        return amount - toVoid;
+    }
+
+    public int growItem(int slot, int amount) {
+        if (amount <= 0) return 0;
+
+        ItemStack stack = getStackInSlot(slot);
+        if (stack == null) return amount;
+
+        int oldCount = stack.stackSize;
+        int max = stack.getMaxStackSize();
+
+        int toAdd = Math.min(amount, max - oldCount);
+        stack.stackSize += toAdd;
+
+        setStackInSlot(slot, stack);
+        return amount - toAdd;
+    }
+
+    public boolean hasRoomForItem(ItemStack stack) {
+        if (stack == null || stack.stackSize <= 0) {
+            return false;
+        }
+
+        int remaining = stack.stackSize;
+
+        for (int i = 0; i < getSlots(); i++) {
+            ItemStack slotStack = getStackInSlot(i);
+
+            if (slotStack == null) {
+                remaining -= Math.min(stack.getMaxStackSize(), remaining);
+            }
+
+            else if (ItemStackHelpers.areStacksEqual(slotStack, stack)) {
+                int space = slotStack.getMaxStackSize() - slotStack.stackSize;
+                if (space > 0) {
+                    remaining -= Math.min(space, remaining);
+                }
+            }
+
+            if (remaining <= 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasEmptySlot() {
+        for (int i = 0; i < getSlots(); i++) {
+            ItemStack stack = getStackInSlot(i);
+            if (stack == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int addItemToAvailableSlots(ItemStack stack) {
+        if (stack == null || stack.stackSize <= 0) {
+            return 0;
+        }
+
+        int remaining = stack.stackSize;
+
+        for (int i = 0; i < getSlots() && remaining > 0; i++) {
+            ItemStack slotStack = getStackInSlot(i);
+
+            if (slotStack == null) continue;
+
+            if (slotStack.getItem() == stack.getItem() && slotStack.getItemDamage() == stack.getItemDamage()
+                && ItemStack.areItemStackTagsEqual(slotStack, stack)) {
+
+                int max = slotStack.getMaxStackSize();
+                int canAdd = max - slotStack.stackSize;
+
+                if (canAdd > 0) {
+                    int toAdd = Math.min(canAdd, remaining);
+                    slotStack.stackSize += toAdd;
+                    setStackInSlot(i, slotStack);
+                    remaining -= toAdd;
+                }
+            }
+        }
+
+        for (int i = 0; i < getSlots() && remaining > 0; i++) {
+            ItemStack slotStack = getStackInSlot(i);
+
+            if (slotStack != null) continue;
+
+            ItemStack newStack = stack.copy();
+            int toAdd = Math.min(newStack.getMaxStackSize(), remaining);
+            newStack.stackSize = toAdd;
+
+            setStackInSlot(i, newStack);
+            remaining -= toAdd;
+        }
+
+        return remaining;
+    }
+
+    public void dropAll(World world, int x, int y, int z) {
+        for (int i = 0; i < getSlots(); i++) {
+            ItemStack stack = getStackInSlot(i);
+            if (stack != null) {
+                dropStack(world, x, y, z, stack);
+            }
+        }
+    }
+
+    public static void dropStack(World world, int x, int y, int z, ItemStack stack) {
+        if (stack == null || stack.stackSize <= 0) {
+            return;
+        }
+
+        float dx = world.rand.nextFloat() * 0.8F + 0.1F;
+        float dy = world.rand.nextFloat() * 0.8F + 0.1F;
+        float dz = world.rand.nextFloat() * 0.8F + 0.1F;
+
+        EntityItem entityItem = new EntityItem(world, x + dx, y + dy, z + dz, stack.copy());
+
+        float motion = 0.05F;
+        entityItem.motionX = world.rand.nextGaussian() * motion;
+        entityItem.motionY = world.rand.nextGaussian() * motion + 0.2F;
+        entityItem.motionZ = world.rand.nextGaussian() * motion;
+
+        world.spawnEntityInWorld(entityItem);
+    }
+
 }

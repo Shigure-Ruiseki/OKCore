@@ -8,16 +8,15 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.cleanroommc.modularui.utils.item.IItemHandler;
-import com.cleanroommc.modularui.utils.item.PlayerMainInvWrapper;
+import ruiseki.okcore.item.IItemHandler;
+import ruiseki.okcore.item.PlayerMainInvWrapper;
 
 public class ItemHandlerHelpers {
 
     public ItemHandlerHelpers() {}
 
     @Nullable
-    public static ItemStack insertItem(com.cleanroommc.modularui.utils.item.IItemHandler dest,
-        @Nullable ItemStack stack, boolean simulate) {
+    public static ItemStack insertItem(IItemHandler dest, @Nullable ItemStack stack, boolean simulate) {
         if (dest != null && stack != null) {
             for (int i = 0; i < dest.getSlots(); ++i) {
                 stack = dest.insertItem(i, stack, simulate);
@@ -69,8 +68,7 @@ public class ItemHandlerHelpers {
     }
 
     @Nullable
-    public static ItemStack insertItemStacked(com.cleanroommc.modularui.utils.item.IItemHandler inventory,
-        @Nullable ItemStack stack, boolean simulate) {
+    public static ItemStack insertItemStacked(IItemHandler inventory, @Nullable ItemStack stack, boolean simulate) {
         if (inventory != null && stack != null) {
             if (!stack.isStackable()) {
                 return insertItem(inventory, stack, simulate);
@@ -112,7 +110,7 @@ public class ItemHandlerHelpers {
 
     public static void giveItemToPlayer(EntityPlayer player, @Nullable ItemStack stack, int preferredSlot) {
         if (stack != null) {
-            com.cleanroommc.modularui.utils.item.IItemHandler inventory = new PlayerMainInvWrapper(player.inventory);
+            IItemHandler inventory = new PlayerMainInvWrapper(player.inventory);
             World world = player.worldObj;
             ItemStack remainder = stack;
             if (preferredSlot >= 0 && preferredSlot < inventory.getSlots()) {

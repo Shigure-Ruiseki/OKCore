@@ -28,7 +28,6 @@ import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
-import ruiseki.okcore.test.OKCoreItems;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -71,7 +70,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
-        OKCoreItems.preInit();
     }
 
     @Override

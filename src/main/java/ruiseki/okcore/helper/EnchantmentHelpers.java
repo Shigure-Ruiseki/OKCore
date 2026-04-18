@@ -13,10 +13,6 @@ public class EnchantmentHelpers {
         return new ItemStack(Items.enchanted_book, 1, meta);
     }
 
-    public static ItemStack createEnchantment(Enchantment effect) {
-        return createEnchantment(effect.effectId);
-    }
-
     public static Map<Integer, Integer> getEnchantments(ItemStack stack) {
         if (stack == null) return null;
         return EnchantmentHelper.getEnchantments(stack);

@@ -13,10 +13,6 @@ public class PotionHelpers {
         return new ItemStack(Items.potionitem, 1, meta);
     }
 
-    public static ItemStack createPotion(Potion potion) {
-        return createPotion(potion.getId());
-    }
-
     public static List<PotionEffect> getEffects(ItemStack stack) {
         if (stack == null || stack.getItem() != Items.potionitem) return null;
         return Items.potionitem.getEffects(stack);

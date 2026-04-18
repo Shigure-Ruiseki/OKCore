@@ -1,10 +1,9 @@
 package ruiseki.okcore.block;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.material.MapColor;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,45 +20,37 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
-
 import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.Reference;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.ItemBlockOK;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class BlockOK extends Block implements IBlock {
+public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvider {
 
     protected final Class<? extends TileEntityOK> teClass;
     protected final String name;
-
-    protected boolean isOpaque = true;
-    protected boolean isFullSize = true;
     public boolean hasSubtypes = false;
 
     protected BlockOK(String name) {
-        this(name, null, new Material(MapColor.ironColor));
+        this(name, null, BlockProperties.of());
     }
 
-    public BlockOK(String name, Material material) {
-        this(name, null, material);
+    public BlockOK(String name, BlockProperties properties) {
+        this(name, null, properties);
     }
 
     protected BlockOK(String name, Class<? extends TileEntityOK> teClass) {
-        this(name, teClass, new Material(MapColor.ironColor));
+        this(name, teClass, BlockProperties.of());
     }
 
-    protected BlockOK(String name, @Nullable Class<? extends TileEntityOK> teClass, Material mat) {
-        super(mat);
+    protected BlockOK(String name, @Nullable Class<? extends TileEntityOK> teClass, BlockProperties properties) {
+        super(properties);
         this.teClass = teClass;
         this.name = name;
-        setHardness(0.5F);
-        setBlockName(name);
-        setHarvestLevel("pickaxe", 0);
-        this.setStepSound(getSoundForMaterial(mat));
+        this.setBlockName(name);
     }
 
     @Override
@@ -95,9 +86,7 @@ public class BlockOK extends Block implements IBlock {
 
     protected void registerComponent() {}
 
-    public boolean hasSubtypes() {
-        return this.hasSubtypes;
-    }
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {}
 
     @Override
     public boolean hasTileEntity(int metadata) {
@@ -108,9 +97,10 @@ public class BlockOK extends Block implements IBlock {
     public TileEntity createTileEntity(World world, int metadata) {
         if (teClass != null) {
             try {
-                return teClass.newInstance();
+                return teClass.getDeclaredConstructor()
+                    .newInstance();
             } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Could not create tile entity for block " + name + " for class " + teClass);
+                OKCore.okLog(Level.ERROR, "Failed to create TileEntity for " + name + e);
             }
         }
         return null;
@@ -128,34 +118,10 @@ public class BlockOK extends Block implements IBlock {
 
     @Override
     public void registerBlockIcons(IIconRegister reg) {
-        if (getRenderType() != ModelISBRH.JSON_ISBRH_ID) {
-            blockIcon = reg.registerIcon(Reference.PREFIX_MOD + getTextureName());
-        }
+        blockIcon = reg.registerIcon(getTextureName());
     }
 
     /* Subclass Helpers */
-
-    @Override
-    public final boolean isOpaqueCube() {
-        return this.isOpaque;
-    }
-
-    @Override
-    public boolean renderAsNormalBlock() {
-        return this.isFullSize && this.isOpaque;
-    }
-
-    @Override
-    public final boolean isNormalCube(final IBlockAccess world, final int x, final int y, final int z) {
-        return this.isFullSize;
-    }
-
-    public SoundType getSoundForMaterial(Material mat) {
-        if (mat == Material.glass) return Block.soundTypeGlass;
-        if (mat == Material.rock) return Block.soundTypeStone;
-        if (mat == Material.wood) return Block.soundTypeWood;
-        return Block.soundTypeMetal;
-    }
 
     // Because the vanilla method takes floats...
     public void setBlockBounds(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
@@ -265,7 +231,7 @@ public class BlockOK extends Block implements IBlock {
     @Override
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
         if (entity != null) {
-            TileEntityOK tile = (TileEntityOK) world.getTileEntity(x, y, z);
+            TileEntityOK tile = TileHelpers.getSafeTile(world, x, y, z, TileEntityOK.class);
             if (tile != null && stack.getTagCompound() != null) {
                 stack.getTagCompound()
                     .setInteger("x", x);
@@ -276,8 +242,8 @@ public class BlockOK extends Block implements IBlock {
                 tile.readFromNBT(stack.getTagCompound());
             }
 
-            if (tile instanceof TileEntityOK.ITickingTile) {
-                ((TileEntityOK.ITickingTile) tile).update();
+            if (tile instanceof TileEntityOK.ITickingTile ticking) {
+                ticking.update();
             }
         }
         super.onBlockPlacedBy(world, x, y, z, entity, stack);

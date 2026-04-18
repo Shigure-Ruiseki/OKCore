@@ -44,8 +44,8 @@ dependencies {
 
     compileOnly("com.github.GTNewHorizons:ModularUI:1.2.20:dev") { transitive = false }
     compileOnly('org.jetbrains:annotations:26.0.1')
-    compileOnly("org.projectlombok:lombok:1.18.36") { transitive = false }
-    annotationProcessor('org.projectlombok:lombok:1.18.30')
+    compileOnly("org.projectlombok:lombok:1.18.40") { transitive = false }
+    annotationProcessor('org.projectlombok:lombok:1.18.40')
 
     shadowImplementation("org.joml:joml:1.10.8") { transitive = false } // MIT
 }

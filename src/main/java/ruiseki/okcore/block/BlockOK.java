@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.MapColor;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -28,29 +30,35 @@ import ruiseki.okcore.item.ItemBlockOK;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvider {
+public class BlockOK extends Block implements IBlock, IBlockTooltipProvider {
 
     protected final Class<? extends TileEntityOK> teClass;
     protected final String name;
+
+    protected boolean isOpaque = true;
+    protected boolean isFullSize = true;
     public boolean hasSubtypes = false;
 
     protected BlockOK(String name) {
-        this(name, null, BlockProperties.of());
+        this(name, null, new Material(MapColor.ironColor));
     }
 
-    public BlockOK(String name, BlockProperties properties) {
-        this(name, null, properties);
+    public BlockOK(String name, Material material) {
+        this(name, null, material);
     }
 
     protected BlockOK(String name, Class<? extends TileEntityOK> teClass) {
-        this(name, teClass, BlockProperties.of());
+        this(name, teClass, new Material(MapColor.ironColor));
     }
 
-    protected BlockOK(String name, @Nullable Class<? extends TileEntityOK> teClass, BlockProperties properties) {
-        super(properties);
+    protected BlockOK(String name, @Nullable Class<? extends TileEntityOK> teClass, Material mat) {
+        super(mat);
         this.teClass = teClass;
         this.name = name;
-        this.setBlockName(name);
+        setHardness(0.5F);
+        setBlockName(name);
+        setHarvestLevel("pickaxe", 0);
+        this.setStepSound(getSoundForMaterial(mat));
     }
 
     @Override
@@ -100,7 +108,7 @@ public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvi
                 return teClass.getDeclaredConstructor()
                     .newInstance();
             } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Failed to create TileEntity for " + name + e);
+                OKCore.okLog(Level.ERROR, "Could not create tile entity for block " + name + " for class " + teClass);
             }
         }
         return null;
@@ -122,6 +130,28 @@ public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvi
     }
 
     /* Subclass Helpers */
+
+    @Override
+    public final boolean isOpaqueCube() {
+        return this.isOpaque;
+    }
+
+    @Override
+    public boolean renderAsNormalBlock() {
+        return this.isFullSize && this.isOpaque;
+    }
+
+    @Override
+    public final boolean isNormalCube(final IBlockAccess world, final int x, final int y, final int z) {
+        return this.isFullSize;
+    }
+
+    public SoundType getSoundForMaterial(Material mat) {
+        if (mat == Material.glass) return Block.soundTypeGlass;
+        if (mat == Material.rock) return Block.soundTypeStone;
+        if (mat == Material.wood) return Block.soundTypeWood;
+        return Block.soundTypeMetal;
+    }
 
     // Because the vanilla method takes floats...
     public void setBlockBounds(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {

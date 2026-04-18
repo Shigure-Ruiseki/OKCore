@@ -4,13 +4,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
+import ruiseki.okcore.config.ModConfig;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
 public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
+
+    static {
+        try {
+            ModConfig.registerConfig();
+        } catch (ConfigException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public String[] getASMTransformerClass() {

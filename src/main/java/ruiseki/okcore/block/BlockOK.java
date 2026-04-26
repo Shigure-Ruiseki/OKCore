@@ -1,14 +1,14 @@
 package ruiseki.okcore.block;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.MapColor;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -24,40 +24,38 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
-import ruiseki.okcore.item.ItemBlockOK;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvider {
+public class BlockOK extends Block implements IBlock {
 
     protected final Class<? extends TileEntityOK> teClass;
     protected final String name;
+
+    protected boolean isOpaque = true;
+    protected boolean isFullSize = true;
     public boolean hasSubtypes = false;
 
     protected BlockOK(String name) {
-        this(name, null, BlockProperties.of());
+        this(name, null, new Material(MapColor.ironColor));
     }
 
-    public BlockOK(String name, BlockProperties properties) {
-        this(name, null, properties);
+    public BlockOK(String name, Material material) {
+        this(name, null, material);
     }
 
     protected BlockOK(String name, Class<? extends TileEntityOK> teClass) {
-        this(name, teClass, BlockProperties.of());
+        this(name, teClass, new Material(MapColor.ironColor));
     }
 
-    protected BlockOK(String name, @Nullable Class<? extends TileEntityOK> teClass, BlockProperties properties) {
-        super(properties);
+    protected BlockOK(String name, @Nullable Class<? extends TileEntityOK> teClass, Material mat) {
+        super(mat);
         this.teClass = teClass;
         this.name = name;
-        this.setBlockName(name);
-    }
-
-    @Override
-    public void init() {
-        registerBlock();
-        registerTileEntity();
-        registerComponent();
+        setHardness(0.5F);
+        setBlockName(name);
+        setHarvestLevel("pickaxe", 0);
+        this.setStepSound(getSoundForMaterial(mat));
     }
 
     @Override
@@ -70,23 +68,17 @@ public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvi
         return hasSubtypes;
     }
 
-    protected void registerBlock() {
-        GameRegistry.registerBlock(this, getItemBlockClass(), name);
+    @Override
+    public String getName() {
+        return name;
     }
 
-    protected Class<? extends ItemBlock> getItemBlockClass() {
-        return ItemBlockOK.class;
-    }
-
-    protected void registerTileEntity() {
+    @Override
+    public void registerTileEntity() {
         if (teClass != null) {
-            GameRegistry.registerTileEntity(teClass, name + "TileEntity");
+            GameRegistry.registerTileEntity(teClass, getName() + "TileEntity");
         }
     }
-
-    protected void registerComponent() {}
-
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {}
 
     @Override
     public boolean hasTileEntity(int metadata) {
@@ -100,7 +92,7 @@ public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvi
                 return teClass.getDeclaredConstructor()
                     .newInstance();
             } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Failed to create TileEntity for " + name + e);
+                OKCore.okLog(Level.ERROR, "Could not create tile entity for block " + name + " for class " + teClass);
             }
         }
         return null;
@@ -122,6 +114,28 @@ public class BlockOK extends BlockPropBase implements IBlock, IBlockTooltipProvi
     }
 
     /* Subclass Helpers */
+
+    @Override
+    public final boolean isOpaqueCube() {
+        return this.isOpaque;
+    }
+
+    @Override
+    public boolean renderAsNormalBlock() {
+        return this.isFullSize && this.isOpaque;
+    }
+
+    @Override
+    public final boolean isNormalCube(final IBlockAccess world, final int x, final int y, final int z) {
+        return this.isFullSize;
+    }
+
+    public SoundType getSoundForMaterial(Material mat) {
+        if (mat == Material.glass) return Block.soundTypeGlass;
+        if (mat == Material.rock) return Block.soundTypeStone;
+        if (mat == Material.wood) return Block.soundTypeWood;
+        return Block.soundTypeMetal;
+    }
 
     // Because the vanilla method takes floats...
     public void setBlockBounds(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {

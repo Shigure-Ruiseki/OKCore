@@ -8,5 +8,7 @@ import org.jetbrains.annotations.Nullable;
 public interface IItemCapability {
 
     @Nullable
-    ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt);
+    default ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
+        return null;
+    }
 }

@@ -3,8 +3,6 @@ package ruiseki.okcore.item;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 
-import cpw.mods.fml.common.registry.GameRegistry;
-
 public class ItemFoodOK extends ItemFood implements IItem {
 
     private final String name;
@@ -16,12 +14,12 @@ public class ItemFoodOK extends ItemFood implements IItem {
     }
 
     @Override
-    public void init() {
-        GameRegistry.registerItem(this, this.name);
+    public Item getItem() {
+        return this;
     }
 
     @Override
-    public Item getItem() {
-        return this;
+    public String getName() {
+        return this.name;
     }
 }

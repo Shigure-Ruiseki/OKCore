@@ -1,7 +1,6 @@
 package ruiseki.okcore.block;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
@@ -10,7 +9,6 @@ import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -26,11 +24,10 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
-import ruiseki.okcore.item.ItemBlockOK;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class BlockOK extends Block implements IBlock, IBlockTooltipProvider {
+public class BlockOK extends Block implements IBlock {
 
     protected final Class<? extends TileEntityOK> teClass;
     protected final String name;
@@ -62,13 +59,6 @@ public class BlockOK extends Block implements IBlock, IBlockTooltipProvider {
     }
 
     @Override
-    public void init() {
-        registerBlock();
-        registerTileEntity();
-        registerComponent();
-    }
-
-    @Override
     public Block getBlock() {
         return this;
     }
@@ -78,24 +68,17 @@ public class BlockOK extends Block implements IBlock, IBlockTooltipProvider {
         return hasSubtypes;
     }
 
-    protected void registerBlock() {
-        GameRegistry.registerBlock(this, getItemBlockClass(), name);
+    @Override
+    public String getName() {
+        return name;
     }
-
-    protected Class<? extends ItemBlock> getItemBlockClass() {
-        return ItemBlockOK.class;
-    }
-
-    protected void registerTileEntity() {
-        if (teClass != null) {
-            GameRegistry.registerTileEntity(teClass, name + "TileEntity");
-        }
-    }
-
-    protected void registerComponent() {}
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {}
+    public void registerTileEntity() {
+        if (teClass != null) {
+            GameRegistry.registerTileEntity(teClass, getName() + "TileEntity");
+        }
+    }
 
     @Override
     public boolean hasTileEntity(int metadata) {

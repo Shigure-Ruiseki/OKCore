@@ -2,12 +2,13 @@ package ruiseki.okcore.helper;
 
 import java.io.IOException;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 
 public class PacketHelpers {
+
+    private static final ThreadLocal<Boolean> WRITING_CLIENT_TO_SERVER_ITEM_STACK = ThreadLocal
+        .withInitial(() -> false);
 
     private PacketHelpers() {}
 
@@ -16,26 +17,25 @@ public class PacketHelpers {
      * Item.getNBTShareTag.
      * One exception is items from the creative menu, which must be sent from Client to Server with their full NBT.
      * <br/>
-     * This method matches PacketBuffer.writeItemStack but without the Item.getNBTShareTag patch.
-     * It is compatible with PacketBuffer.readItemStack.
+     * This method keeps PacketBuffer.writeItemStackToBuffer available to other protocol mixins, but tells OKCore's
+     * share-tag mixin to use the full tag.
      */
     public static void writeItemStackFromClientToServer(PacketBuffer buffer, ItemStack stack) throws IOException {
-        if (stack == null) {
+        if (stack == null || stack.getItem() == null || stack.stackSize <= 0) {
             buffer.writeShort(-1);
-        } else {
-            buffer.writeShort(Item.getIdFromItem(stack.getItem()));
-            buffer.writeByte(stack.stackSize);
-            buffer.writeShort(stack.getItemDamage());
-            NBTTagCompound nbttagcompound = null;
-
-            if (stack.getItem()
-                .isDamageable()
-                || stack.getItem()
-                    .getShareTag()) {
-                nbttagcompound = stack.getTagCompound();
-            }
-
-            buffer.writeNBTTagCompoundToBuffer(nbttagcompound);
+            return;
         }
+
+        WRITING_CLIENT_TO_SERVER_ITEM_STACK.set(true);
+
+        try {
+            buffer.writeItemStackToBuffer(stack);
+        } finally {
+            WRITING_CLIENT_TO_SERVER_ITEM_STACK.set(false);
+        }
+    }
+
+    public static boolean isWritingClientToServerItemStack() {
+        return WRITING_CLIENT_TO_SERVER_ITEM_STACK.get();
     }
 }

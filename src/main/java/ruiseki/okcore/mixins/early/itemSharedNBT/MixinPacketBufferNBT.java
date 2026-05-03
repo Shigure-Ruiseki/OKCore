@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import ruiseki.okcore.helper.PacketHelpers;
 import ruiseki.okcore.item.IItemSharedTag;
 
 @Mixin(PacketBuffer.class)
@@ -24,7 +25,8 @@ public class MixinPacketBufferNBT {
             target = "Lnet/minecraft/item/ItemStack;stackTagCompound:Lnet/minecraft/nbt/NBTTagCompound;",
             opcode = Opcodes.GETFIELD))
     private NBTTagCompound okcore$getNBTShareTag(@NotNull ItemStack stack) {
-        return stack.getItem() instanceof IItemSharedTag sharedTag ? sharedTag.getNBTShareTag(stack)
+        return !PacketHelpers.isWritingClientToServerItemStack() && stack.getItem() instanceof IItemSharedTag sharedTag
+            ? sharedTag.getNBTShareTag(stack)
             : stack.stackTagCompound;
     }
 

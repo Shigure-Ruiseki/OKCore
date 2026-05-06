@@ -248,7 +248,8 @@ public class ItemJson implements IJsonMaterial {
         StringBuilder sb = new StringBuilder();
 
         if (this.ore != null && !this.ore.isEmpty()) {
-            sb.append("ore:").append(this.ore);
+            sb.append("ore:")
+                .append(this.ore);
         } else if (this.name != null) {
             sb.append(this.name);
         } else {
@@ -256,14 +257,17 @@ public class ItemJson implements IJsonMaterial {
         }
 
         // amount
-        sb.append(",").append(this.amount > 0 ? this.amount : 1);
+        sb.append(",")
+            .append(this.amount > 0 ? this.amount : 1);
 
         // meta
-        sb.append(",").append(this.meta);
+        sb.append(",")
+            .append(this.meta);
 
         // nbt
         if (this.nbt != null && !this.nbt.hasNoTags()) {
-            sb.append(",").append(this.nbt.toString());
+            sb.append(",")
+                .append(this.nbt.toString());
         }
 
         return sb.toString();

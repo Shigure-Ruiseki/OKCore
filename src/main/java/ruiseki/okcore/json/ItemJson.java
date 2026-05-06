@@ -243,4 +243,34 @@ public class ItemJson implements IJsonMaterial {
         }
         return new NBTTagCompound();
     }
+
+    public String toItemString() {
+        StringBuilder sb = new StringBuilder();
+
+        if (this.ore != null && !this.ore.isEmpty()) {
+            sb.append("ore:").append(this.ore);
+        } else if (this.name != null) {
+            sb.append(this.name);
+        } else {
+            return "";
+        }
+
+        // amount
+        sb.append(",").append(this.amount > 0 ? this.amount : 1);
+
+        // meta
+        sb.append(",").append(this.meta);
+
+        // nbt
+        if (this.nbt != null && !this.nbt.hasNoTags()) {
+            sb.append(",").append(this.nbt.toString());
+        }
+
+        return sb.toString();
+    }
+
+    public static String toItemString(ItemStack stack) {
+        ItemJson json = parseItemStack(stack);
+        return json != null ? json.toItemString() : "";
+    }
 }

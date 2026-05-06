@@ -20,7 +20,6 @@ import org.apache.logging.log4j.Level;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * Universal collector for JSON-related parsing and validation errors.
@@ -88,7 +87,7 @@ public class JsonErrorCollector {
         try (PrintWriter writer = new PrintWriter(new FileWriter(errorsFile))) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-            writer.println("=== OmoshiroiKamo JSON System Errors ===");
+            writer.println("=== OKCore JSON System Errors ===");
             writer.println("Generated: " + sdf.format(new Date()));
             writer.println("Total Error Count: " + errors.size());
             writer.println();
@@ -105,14 +104,14 @@ public class JsonErrorCollector {
 
             writer.println("--- End of Error Log ---");
         } catch (IOException e) {
-            OKCore.okLog(Level.ERROR, "Failed to write JSON errors file: " + e);
+            OKCore.okLog(Level.ERROR, "Failed to write JSON errors file" + e);
         }
     }
 
     /**
      * Notifies a player about errors when they join.
      */
-    public void notifyPlayer(EntityPlayer player, ModBase mod) {
+    public void notifyPlayer(EntityPlayer player) {
         if (!hasErrors()) return;
 
         String playerName = player.getCommandSenderName();

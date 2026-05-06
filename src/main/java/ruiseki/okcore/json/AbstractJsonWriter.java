@@ -11,6 +11,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * Base class for JSON writers.
@@ -54,7 +55,15 @@ public abstract class AbstractJsonWriter<T> {
 
     protected void writeCollection(Collection<?> collection) throws IOException {
         if (!path.isDirectory()) {
-            writeObjectToFile(path, collection);
+            JsonArray array = new JsonArray();
+            for (Object item : collection) {
+                if (item instanceof IJsonMaterial) {
+                    JsonObject json = new JsonObject();
+                    ((IJsonMaterial) item).write(json);
+                    array.add(json);
+                }
+            }
+            writeObjectToFile(path, array);
             return;
         }
         // Group by source file
@@ -64,8 +73,10 @@ public abstract class AbstractJsonWriter<T> {
                 AbstractJsonMaterial material = (AbstractJsonMaterial) item;
                 File target = material.getSourceFile();
                 if (target == null) target = new File(path, "generated.json");
+                JsonObject json = new JsonObject();
+                material.write(json);
                 filesMap.computeIfAbsent(target, k -> new JsonArray())
-                    .add(gson.toJsonTree(material));
+                    .add(json);
             }
         }
         for (Map.Entry<File, JsonArray> entry : filesMap.entrySet()) {

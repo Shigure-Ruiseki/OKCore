@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 
 import ruiseki.okcore.OKCore;
@@ -89,6 +90,9 @@ public abstract class AbstractJsonReader<T> {
             JsonReader reader = new JsonReader(fileReader);
             reader.setLenient(true);
             return new JsonParser().parse(reader);
+        } catch (JsonSyntaxException e) {
+            OKCore.okLog(Level.ERROR, "Malformed JSON file (perhaps empty or corrupted): " + file.getName() + e);
+            return null;
         }
     }
 

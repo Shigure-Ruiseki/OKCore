@@ -1,72 +1,36 @@
 package ruiseki.okcore.json;
 
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
-import com.google.gson.JsonObject;
-
-public class FluidJson implements IJsonMaterial {
+public class FluidJson {
 
     public String name;
-    public int amount = 1000;
-
-    @Override
-    public void read(JsonObject json) {
-        if (json == null) return;
-
-        this.name = json.has("name") ? json.get("name")
-            .getAsString() : null;
-        this.amount = json.has("amount") ? json.get("amount")
-            .getAsInt() : 1000;
-    }
-
-    @Override
-    public void write(JsonObject json) {
-        if (json == null) return;
-
-        if (name != null) {
-            json.addProperty("name", name);
-        }
-
-        if (amount != 1000) {
-            json.addProperty("amount", amount);
-        }
-    }
-
-    @Override
-    public boolean validate() {
-        return name != null && !name.isEmpty() && FluidRegistry.isFluidRegistered(name);
-    }
+    public int amount;
 
     public static FluidStack resolveFluidStack(FluidJson data) {
         if (data == null || data.name == null) return null;
-
         try {
-            Fluid fluid = FluidRegistry.getFluid(data.name);
-            if (fluid == null) return null;
-
-            return new FluidStack(fluid, data.amount > 0 ? data.amount : 1000);
-
-        } catch (Throwable ignored) {
+            if (FluidRegistry.isFluidRegistered(data.name)) {
+                return new FluidStack(FluidRegistry.getFluid(data.name), data.amount > 0 ? data.amount : 1000);
+            }
+        } catch (Throwable t) {
+            // fallback for test environment
             return null;
         }
+        return null;
     }
 
     public static FluidJson parseFluidStack(FluidStack stack) {
-        if (stack == null || stack.getFluid() == null) return null;
-
         FluidJson json = new FluidJson();
         json.name = stack.getFluid()
             .getName();
         json.amount = stack.amount;
-
         return json;
     }
 
     /**
-     * Parse from string like:
-     * "water,1000"
+     * Parse from string like "name,amount"
      */
     public static FluidJson parseFluidString(String string) {
         if (string == null || string.trim()
@@ -81,9 +45,11 @@ public class FluidJson implements IJsonMaterial {
         if (parts.length > 1) {
             try {
                 json.amount = Integer.parseInt(parts[1].trim());
-            } catch (NumberFormatException ignored) {
+            } catch (NumberFormatException e) {
                 json.amount = 1000;
             }
+        } else {
+            json.amount = 1000;
         }
 
         return json;

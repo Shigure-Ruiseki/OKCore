@@ -13,3 +13,10 @@ jobs:
     secrets:
       CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
       MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+  jitpack-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger JitPack
+        run: |
+          curl -s https://jitpack.io/api/builds/github/${{ github.repository }}/${{ github.ref_name }}
+          echo "JitPack build triggered for ${{ github.repository }} at tag ${{ github.ref_name }}"

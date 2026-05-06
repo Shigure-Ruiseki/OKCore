@@ -3,10 +3,12 @@ package ruiseki.okcore.helper;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -136,44 +138,6 @@ public class InventoryHelpers {
     }
 
     /**
-     * Try to add the given item to the given slot.
-     *
-     * @param inventory The inventory.
-     * @param slot      The slot to add to.
-     * @param itemStack The item to try to put in the production slot.
-     * @return If the item could be added or joined in the production slot.
-     */
-    public static boolean addToSlot(IInventory inventory, int slot, ItemStack itemStack) {
-        return addToSlot(inventory, slot, itemStack, false);
-    }
-
-    /**
-     * Try to add the given item to the given slot.
-     *
-     * @param inventory The inventory.
-     * @param slot      The slot to add to.
-     * @param itemStack The item to try to put in the production slot.
-     * @param simulate  If the operation should be simulated.
-     * @return If the item could be added or joined in the production slot.
-     */
-    public static boolean addToSlot(IInventory inventory, int slot, ItemStack itemStack, boolean simulate) {
-        ItemStack produceStack = inventory.getStackInSlot(slot);
-        if (produceStack == null) {
-            inventory.setInventorySlotContents(slot, itemStack);
-            return true;
-        } else {
-            if (produceStack.getItem() == itemStack.getItem()
-                && produceStack.getMaxStackSize() >= produceStack.stackSize + itemStack.stackSize) {
-                if (!simulate) {
-                    produceStack.stackSize += itemStack.stackSize;
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Drop an ItemStack into the world
      *
      * @param world     the world
@@ -214,5 +178,144 @@ public class InventoryHelpers {
 
             world.spawnEntityInWorld(entityitem);
         }
+    }
+
+    /**
+     * Core logic for inserting an ItemStack into a specific slot.
+     *
+     * @param inv      Target inventory
+     * @param stack    Stack to insert (will be modified)
+     * @param index    Slot index
+     * @param side     Access side (for sided inventories)
+     * @param simulate If true, inventory won't actually be modified
+     * @return Remaining stack (null if fully inserted)
+     */
+    private static ItemStack insertStack(IInventory inv, ItemStack stack, int index, @Nullable ForgeDirection side,
+        boolean simulate) {
+
+        if (stack == null || stack.stackSize <= 0) return null;
+
+        if (!canInsertItemInSlot(inv, stack, index, side)) return stack;
+
+        ItemStack existing = inv.getStackInSlot(index);
+        int limit = Math.min(stack.getMaxStackSize(), inv.getInventoryStackLimit());
+
+        // Empty slot
+        if (existing == null) {
+            int toMove = Math.min(stack.stackSize, limit);
+
+            if (!simulate) {
+                ItemStack newStack = stack.copy();
+                newStack.stackSize = toMove;
+                inv.setInventorySlotContents(index, newStack);
+                inv.markDirty();
+            }
+
+            stack.stackSize -= toMove;
+            return stack.stackSize <= 0 ? null : stack;
+        }
+
+        // Not mergeable
+        if (!ItemStackHelpers.areStackMergable(existing, stack)) return stack;
+
+        int max = Math.min(existing.getMaxStackSize(), limit);
+        int space = max - existing.stackSize;
+        if (space <= 0) return stack;
+
+        int toMove = Math.min(stack.stackSize, space);
+
+        if (!simulate) {
+            existing.stackSize += toMove;
+            inv.markDirty();
+        }
+
+        stack.stackSize -= toMove;
+        return stack.stackSize <= 0 ? null : stack;
+    }
+
+    /**
+     * Attempts to insert an ItemStack into all available slots of the inventory.
+     *
+     * Works with both IInventory and ISidedInventory.
+     *
+     * @param inventory Target inventory
+     * @param stack     Stack to insert
+     * @param side      Access side (important for sided inventories)
+     * @param simulate  If true, no changes will be applied
+     * @return Remaining stack (null if fully inserted)
+     */
+    public static ItemStack addToInventory(IInventory inventory, ItemStack stack, @Nullable ForgeDirection side,
+        boolean simulate) {
+
+        if (stack == null || stack.stackSize <= 0) return null;
+
+        if (inventory instanceof ISidedInventory sided && side != null) {
+            int[] slots = sided.getAccessibleSlotsFromSide(side.ordinal());
+
+            for (int slot : slots) {
+                stack = insertStack(inventory, stack, slot, side, simulate);
+                if (stack == null) return null;
+            }
+        } else {
+            for (int i = 0; i < inventory.getSizeInventory(); i++) {
+                stack = insertStack(inventory, stack, i, side, simulate);
+                if (stack == null) return null;
+            }
+        }
+
+        return stack;
+    }
+
+    /**
+     * Checks whether a stack can be inserted into a slot.
+     */
+    private static boolean canInsertItemInSlot(IInventory inventory, ItemStack stack, int index,
+        @Nullable ForgeDirection side) {
+        if (!inventory.isItemValidForSlot(index, stack)) return false;
+        if (inventory instanceof ISidedInventory sided) {
+            return side == null || sided.canInsertItem(index, stack, side.ordinal());
+        }
+
+        return true;
+    }
+
+    /**
+     * Try to add the given item to the given slot.
+     *
+     * @param inventory The inventory.
+     * @param slot      The slot to add to.
+     * @param itemStack The item to try to put in the production slot.
+     * @return If the item could be added or joined in the production slot.
+     */
+    public static ItemStack addToSlot(IInventory inventory, int slot, ItemStack itemStack) {
+        return addToSlot(inventory, slot, itemStack, false);
+    }
+
+    /**
+     * Try inserting a stack into a specific slot.
+     *
+     * @param inventory Target inventory
+     * @param slot      Slot index
+     * @param stack     Stack to insert
+     * @param simulate  If true, no actual change is made
+     * @return True if fully inserted
+     */
+    public static ItemStack addToSlot(IInventory inventory, int slot, ItemStack stack, boolean simulate) {
+        return insertStack(inventory, stack.copy(), slot, null, simulate);
+    }
+
+    /**
+     * Gets the inventory adjacent to a given position in a specific direction.
+     *
+     * @param world The world
+     * @param pos   The origin block position
+     * @param side  The direction to check
+     * @return The found inventory, or null if none exists
+     */
+    @Nullable
+    public static IInventory getInventoryAtSide(World world, BlockPos pos, ForgeDirection side) {
+        BlockPos targetPos = pos.offset(side);
+        if (!targetPos.isLoaded(world)) return null;
+        return TileHelpers.getSafeTile(world, targetPos, IInventory.class);
     }
 }

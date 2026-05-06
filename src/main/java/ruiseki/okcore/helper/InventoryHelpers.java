@@ -7,6 +7,7 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -303,5 +304,20 @@ public class InventoryHelpers {
     public static boolean addToSlot(IInventory inventory, int slot, ItemStack stack, boolean simulate) {
         ItemStack remaining = insertStack(inventory, stack.copy(), slot, null, simulate);
         return remaining == null;
+    }
+
+    /**
+     * Gets the inventory adjacent to a given position in a specific direction.
+     *
+     * @param world The world
+     * @param pos   The origin block position
+     * @param side  The direction to check
+     * @return The found inventory, or null if none exists
+     */
+    @Nullable
+    public static IInventory getInventoryAtSide(World world, BlockPos pos, ForgeDirection side) {
+        BlockPos targetPos = pos.offset(side);
+        if (!targetPos.isLoaded(world)) return null;
+        return TileHelpers.getSafeTile(world, targetPos, IInventory.class);
     }
 }

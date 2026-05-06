@@ -287,7 +287,7 @@ public class InventoryHelpers {
      * @param itemStack The item to try to put in the production slot.
      * @return If the item could be added or joined in the production slot.
      */
-    public static boolean addToSlot(IInventory inventory, int slot, ItemStack itemStack) {
+    public static ItemStack addToSlot(IInventory inventory, int slot, ItemStack itemStack) {
         return addToSlot(inventory, slot, itemStack, false);
     }
 
@@ -300,9 +300,8 @@ public class InventoryHelpers {
      * @param simulate  If true, no actual change is made
      * @return True if fully inserted
      */
-    public static boolean addToSlot(IInventory inventory, int slot, ItemStack stack, boolean simulate) {
-        ItemStack remaining = insertStack(inventory, stack.copy(), slot, null, simulate);
-        return remaining == null;
+    public static ItemStack addToSlot(IInventory inventory, int slot, ItemStack stack, boolean simulate) {
+        return insertStack(inventory, stack.copy(), slot, null, simulate);
     }
 
     /**

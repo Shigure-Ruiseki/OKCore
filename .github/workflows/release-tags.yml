@@ -19,5 +19,22 @@ jobs:
     steps:
       - name: Trigger JitPack
         run: |
-          curl -s https://jitpack.io/api/builds/github/${{ github.repository }}/${{ github.ref_name }}
-          echo "JitPack build triggered for ${{ github.repository }} at tag ${{ github.ref_name }}"
+          REPO="${{ github.repository }}"
+          TAG="${{ github.ref_name }}"
+          URL="https://jitpack.io/api/builds/github/${REPO}/${TAG}"
+
+          echo "Checking JitPack status for: $REPO at $TAG"
+
+          curl -sSL -i "$URL" > jitpack_result.txt
+
+          echo "--- JITPACK API RESPONSE ---"
+          cat jitpack_result.txt
+          echo -e "\n--- END OF RESPONSE ---"
+
+          if grep -qE "HTTP/1.1 20[0-1]|HTTP/2 20[0-1]" jitpack_result.txt; then
+            echo "SUCCESS: JitPack build triggered for ${REPO} at tag ${TAG}"
+          else
+            echo "ERROR: JitPack could not find your repository or tag."
+            echo "Double check if: https://github.com/${REPO}/tree/${TAG} exists."
+            exit 1
+          fi

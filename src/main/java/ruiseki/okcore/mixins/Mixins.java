@@ -20,6 +20,10 @@ public enum Mixins implements IMixins {
     ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Entity").addCommonMixins("capabilities.MixinEntityCap")
         .setPhase(Phase.EARLY)),
 
+    COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("cooldown.MixinEntityPlayer")
+        .addCommonMixins("cooldown.MixinRenderItem")
+        .setPhase(Phase.EARLY)),
+
     ;
 
     private final MixinBuilder builder;

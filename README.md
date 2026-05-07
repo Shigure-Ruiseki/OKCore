@@ -10,6 +10,7 @@ Just a core mod extracted to use in other mod
 ## Features:
 - Json Loader,
 - Capabilites system,
+- Item Cooldown,
 - Fast NBT write/read in TileEntity and WorldSavedData with NBTPersist system,
 - Fast Packet register with PacketCodec,
 - Many Helpers class help reducing code duplication,

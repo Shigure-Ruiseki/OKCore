@@ -14,12 +14,7 @@ public class ModConfig {
         ConfigurationManager.registerConfig(ModConfig.class);
     }
 
-    @Config.DefaultBoolean(true)
-    public static boolean useItemStackCap;
+    @Config.DefaultBoolean(false)
+    public static boolean useItemTest;
 
-    @Config.DefaultBoolean(true)
-    public static boolean useEntityCap;
-
-    @Config.DefaultBoolean(true)
-    public static boolean useItemSharedNBT;
 }

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
@@ -247,6 +248,19 @@ public abstract class PacketCodec extends PacketBase {
                 } catch (IOException ioexception) {
                     throw new EncoderException(ioexception);
                 }
+            }
+        });
+
+        codecActions.put(Item.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeInt(Item.getIdFromItem((Item) object));
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return Item.getItemById(input.readInt());
             }
         });
 

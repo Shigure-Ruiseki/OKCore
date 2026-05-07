@@ -18,6 +18,7 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
+import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.init.ModBase;
@@ -25,6 +26,7 @@ import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
+import ruiseki.okcore.test.ItemTest;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -59,6 +61,10 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
+
+        if (ModConfig.useItemTest) {
+            ItemTest.register();
+        }
     }
 
     @Override

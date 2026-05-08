@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
-import ruiseki.okcore.helper.EntityHelpers;
+import ruiseki.okcore.helper.CooldownHelpers;
 
 @Mixin(RenderItem.class)
 public abstract class MixinRenderItem {
@@ -28,10 +28,9 @@ public abstract class MixinRenderItem {
         int x, int y, String text, CallbackInfo ci) {
         if (stack == null || stack.getItem() == null) return;
 
-        EntityPlayerSP entityplayersp = Minecraft.getMinecraft().thePlayer;
-        float f3 = entityplayersp == null ? 0.0F
-            : EntityHelpers.getCooldownTracker(entityplayersp)
-                .getCooldown(stack.getItem(), Minecraft.getMinecraft().timer.renderPartialTicks);
+        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+        if (player == null) return;
+        float f3 = CooldownHelpers.getCooldownPercent(stack, player, Minecraft.getMinecraft().timer.renderPartialTicks);
 
         if (f3 > 0.0F) {
 

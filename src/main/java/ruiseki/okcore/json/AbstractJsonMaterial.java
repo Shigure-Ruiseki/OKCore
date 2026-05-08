@@ -228,7 +228,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
             .getSimpleName();
 
         // Log to terminal
-        OKCore.okLog(Level.ERROR, "Validation error in " + className + " (" + fileName + "): " + message);
+        OKCore.okLog(Level.ERROR, "Validation error in {} ({})", className, message);
 
         // Collect to unified error system
         JsonErrorCollector.getInstance()

@@ -13,6 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
@@ -37,6 +38,19 @@ public abstract class PacketCodec extends PacketBase {
 
     private static Map<Class<?>, ICodecAction> codecActions = Maps.newHashMap();
     static {
+        codecActions.put(ResourceLocation.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeString(object.toString());
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return new ResourceLocation(input.readString());
+            }
+        });
+
         codecActions.put(String.class, new ICodecAction() {
 
             @Override

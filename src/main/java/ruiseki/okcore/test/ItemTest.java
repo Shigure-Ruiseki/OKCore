@@ -5,7 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-import ruiseki.okcore.helper.CooldownHelpers;
+import ruiseki.okcore.datacomponent.component.UseCooldown;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.cooldown.IItemCooldown;
 
@@ -22,19 +22,21 @@ public class ItemTest extends ItemOK implements IItemCooldown {
     }
 
     @Override
-    public ItemStack onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer player) {
+    public UseCooldown getUseCooldown(ItemStack stack) {
+        return new UseCooldown(1);
+    }
+
+    @Override
+    public ItemStack onItemRightClick(ItemStack stack, World worldIn, EntityPlayer player) {
         if (!player.capabilities.isCreativeMode) {
-            --itemStackIn.stackSize;
+            --stack.stackSize;
         }
 
         worldIn.playSoundAtEntity(player, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-
-        CooldownHelpers.setCooldown(this, player, 20);
-
         if (!worldIn.isRemote) {
             worldIn.spawnEntityInWorld(new EntityEnderPearl(worldIn, player));
         }
 
-        return itemStackIn;
+        return stack;
     }
 }

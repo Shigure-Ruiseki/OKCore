@@ -1,4 +1,4 @@
-package ruiseki.okcore.datacomponent.components;
+package ruiseki.okcore.datacomponent.componenttype;
 
 import java.lang.reflect.Type;
 

@@ -2,7 +2,7 @@ package ruiseki.okcore.network.packet;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.helper.EntityHelpers;
@@ -12,14 +12,14 @@ import ruiseki.okcore.network.PacketCodec;
 public class PacketCooldown extends PacketCodec {
 
     @CodecField
-    private Item itemId;
+    private ResourceLocation group;
     @CodecField
     private int ticks;
 
     public PacketCooldown() {}
 
-    public PacketCooldown(Item itemIn, int ticksIn) {
-        this.itemId = itemIn;
+    public PacketCooldown(ResourceLocation group, int ticksIn) {
+        this.group = group;
         this.ticks = ticksIn;
     }
 
@@ -32,11 +32,11 @@ public class PacketCooldown extends PacketCodec {
     public void actionClient(World world, EntityPlayer player) {
         if (player != null) {
             if (this.ticks == 0) {
-                EntityHelpers.getCooldownTracker(player)
-                    .removeCooldown(this.itemId);
+                EntityHelpers.getItemCooldowns(player)
+                    .removeCooldown(this.group);
             } else {
-                EntityHelpers.getCooldownTracker(player)
-                    .setCooldown(this.itemId, this.ticks);
+                EntityHelpers.getItemCooldowns(player)
+                    .addCooldown(this.group, this.ticks);
             }
         }
     }

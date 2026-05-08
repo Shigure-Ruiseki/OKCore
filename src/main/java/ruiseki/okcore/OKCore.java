@@ -23,7 +23,7 @@ import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.config.ModConfig;
-import ruiseki.okcore.datacomponent.init.DataComponentInit;
+import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.init.ModBase;
@@ -55,7 +55,7 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityEnergy());
         addInitListeners(new CapabilityLight());
         addInitListeners(new CapabilityRedstone());
-        addInitListeners(new DataComponentInit());
+        addInitListeners(new DataComponents());
     }
 
     @Mod.EventHandler

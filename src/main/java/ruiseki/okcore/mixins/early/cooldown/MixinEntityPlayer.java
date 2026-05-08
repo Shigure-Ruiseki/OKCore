@@ -11,34 +11,34 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import ruiseki.okcore.entity.cooldown.CooldownTracker;
-import ruiseki.okcore.entity.cooldown.CooldownTrackerServer;
 import ruiseki.okcore.entity.cooldown.ICooldownHandler;
+import ruiseki.okcore.entity.cooldown.ItemCooldowns;
+import ruiseki.okcore.entity.cooldown.ItemCooldownsServer;
 
 @Mixin(EntityPlayer.class)
 @Implements(@Interface(iface = ICooldownHandler.class, prefix = "okCore$"))
 public abstract class MixinEntityPlayer {
 
     @Unique
-    private CooldownTracker cooldownTracker = this.oKCore$createCooldownTracker();
+    private ItemCooldowns oKCore$itemCooldowm = this.oKCore$createItemCooldowns();
 
     @Inject(method = "onUpdate", at = @At("HEAD"))
     private void onPlayerUpdate(CallbackInfo ci) {
-        if (this.cooldownTracker != null) {
-            this.cooldownTracker.tick();
+        if (this.oKCore$itemCooldowm != null) {
+            this.oKCore$itemCooldowm.tick();
         }
     }
 
     @Unique
-    private CooldownTracker oKCore$createCooldownTracker() {
+    private ItemCooldowns oKCore$createItemCooldowns() {
         if ((Object) this instanceof EntityPlayerMP) {
-            return this.cooldownTracker = new CooldownTrackerServer((EntityPlayerMP) (Object) this);
+            return this.oKCore$itemCooldowm = new ItemCooldownsServer((EntityPlayerMP) (Object) this);
         } else {
-            return this.cooldownTracker = new CooldownTracker();
+            return this.oKCore$itemCooldowm = new ItemCooldowns();
         }
     }
 
-    public CooldownTracker okCore$getCooldownTracker() {
-        return this.cooldownTracker;
+    public ItemCooldowns okCore$getItemCooldowns() {
+        return this.oKCore$itemCooldowm;
     }
 }

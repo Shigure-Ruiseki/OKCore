@@ -1,18 +1,23 @@
 package ruiseki.okcore.datacomponent.init;
 
+import java.lang.reflect.Type;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import ruiseki.okcore.datacomponent.components.BooleanComponent;
-import ruiseki.okcore.datacomponent.components.IntegerComponent;
-import ruiseki.okcore.datacomponent.components.StringComponent;
+import ruiseki.okcore.datacomponent.component.UseCooldown;
+import ruiseki.okcore.datacomponent.componenttype.BooleanComponent;
+import ruiseki.okcore.datacomponent.componenttype.IntegerComponent;
+import ruiseki.okcore.datacomponent.componenttype.StringComponent;
+import ruiseki.okcore.datacomponent.core.DataComponentType;
 import ruiseki.okcore.datacomponent.registry.DataComponentRegistry;
 import ruiseki.okcore.init.IInitListener;
+import ruiseki.okcore.item.cooldown.IItemCooldown;
 
-public class DataComponentInit implements IInitListener {
+public class DataComponents implements IInitListener {
 
     @Override
     public void onInit(Step step) {
@@ -31,6 +36,7 @@ public class DataComponentInit implements IInitListener {
         DataComponentRegistry.registerComponent(new RepairCostComponent());
         DataComponentRegistry.registerComponent(new UnbreakableComponent());
 
+        DataComponentRegistry.registerComponent(USE_COOLDOWN);
     }
 
     private static class DamagedComponent implements BooleanComponent {
@@ -211,4 +217,29 @@ public class DataComponentInit implements IInitListener {
         }
     }
 
+    public static final DataComponentType<UseCooldown> USE_COOLDOWN = new DataComponentType<>() {
+
+        @Override
+        public String getName() {
+            return "use_cooldown";
+        }
+
+        @Override
+        public Type getType() {
+            return UseCooldown.class;
+        }
+
+        @Override
+        public boolean appliesTo(ItemStack stack, Item item, int meta) {
+            return item instanceof IItemCooldown;
+        }
+
+        @Override
+        public UseCooldown getValue(ItemStack stack) {
+            if (stack == null || !(stack.getItem() instanceof IItemCooldown cooldown)) {
+                return null;
+            }
+            return cooldown.getUseCooldown(stack);
+        }
+    };
 }

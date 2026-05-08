@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datacomponent.core.DataComponent;
+import ruiseki.okcore.datacomponent.core.DataComponentType;
 import ruiseki.okcore.datacomponent.registry.DataComponentRegistry;
 
 /**
@@ -33,6 +34,25 @@ public class DataComponentHelpers {
 
         try (DataComponent component = DataComponentRegistry.getComponentMap(stack)) {
             return mapper.apply(component);
+        }
+    }
+
+    /**
+     * Retrieves a value from an ItemStack's DataComponent map.
+     * The component instance is automatically released/closed after the operation.
+     *
+     * @param stack The ItemStack to read from.
+     * @param <T>   The type of the value to return.
+     * @return The extracted value, or null if the stack is empty or invalid.
+     */
+    @Nullable
+    public static <T> T get(ItemStack stack, DataComponentType<T> componentType) {
+        if (stack == null || stack.getItem() == null) {
+            return null;
+        }
+
+        try (DataComponent component = DataComponentRegistry.getComponentMap(stack)) {
+            return component.get(componentType);
         }
     }
 

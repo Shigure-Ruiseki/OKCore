@@ -12,7 +12,7 @@ import lombok.Getter;
  * @author rubensworks
  *
  */
-public class LoggerHelper {
+public class LoggerHelpers {
 
     @Getter
     private final Logger logger;
@@ -22,17 +22,28 @@ public class LoggerHelper {
      *
      * @param modName The mod name.
      */
-    public LoggerHelper(String modName) {
+    public LoggerHelpers(String modName) {
         logger = LogManager.getLogger(modName);
     }
 
     /**
-     * Log a new message.
+     * Log a new message with support for placeholders {}.
      *
      * @param logLevel The level to log at.
      * @param message  The message to log.
      */
     public void log(Level logLevel, String message) {
         logger.log(logLevel, message);
+    }
+
+    /**
+     * Log a new message with support for placeholders {}.
+     *
+     * @param logLevel The level to log at.
+     * @param message  The message to log (can contain {}).
+     * @param params   Parameters to replace in the message.
+     */
+    public void log(Level logLevel, String message, Object... params) {
+        logger.log(logLevel, message, params);
     }
 }

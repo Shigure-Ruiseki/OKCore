@@ -92,7 +92,7 @@ public class BlockOK extends Block implements IBlock {
                 return teClass.getDeclaredConstructor()
                     .newInstance();
             } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Could not create tile entity for block " + name + " for class " + teClass);
+                OKCore.okLog(Level.ERROR, "Could not create tile entity for block {} for class {}", name, teClass);
             }
         }
         return null;

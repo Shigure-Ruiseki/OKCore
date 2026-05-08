@@ -55,7 +55,7 @@ public class JsonErrorCollector {
         JsonErrorInfo info = new JsonErrorInfo(materialType, fileName, message);
         errors.add(info);
 
-        OKCore.okLog(Level.ERROR, "[JSON Error] [" + materialType + "] in " + fileName + ": " + message);
+        OKCore.okLog(Level.ERROR, "[JSON Error] [{}] in {}: {}", materialType, fileName, message);
     }
 
     public boolean hasErrors() {
@@ -104,7 +104,7 @@ public class JsonErrorCollector {
 
             writer.println("--- End of Error Log ---");
         } catch (IOException e) {
-            OKCore.okLog(Level.ERROR, "Failed to write JSON errors file" + e);
+            OKCore.okLog(Level.ERROR, "Failed to write JSON errors file {}", e);
         }
     }
 

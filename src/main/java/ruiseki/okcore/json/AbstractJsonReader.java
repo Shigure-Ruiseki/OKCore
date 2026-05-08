@@ -91,7 +91,7 @@ public abstract class AbstractJsonReader<T> {
             reader.setLenient(true);
             return new JsonParser().parse(reader);
         } catch (JsonSyntaxException e) {
-            OKCore.okLog(Level.ERROR, "Malformed JSON file (perhaps empty or corrupted): " + file.getName() + e);
+            OKCore.okLog(Level.ERROR, "Malformed JSON file (perhaps empty or corrupted): {} {}", file.getName(), e);
             return null;
         }
     }
@@ -107,7 +107,7 @@ public abstract class AbstractJsonReader<T> {
             if (root == null) return null;
             return readFile(root, file);
         } catch (IOException e) {
-            OKCore.okLog(Level.ERROR, "Failed to read JSON file: " + file.getName() + e);
+            OKCore.okLog(Level.ERROR, "Failed to read JSON file: {} {}", file.getName(), e);
             return null;
         } finally {
             ParsingContext.clear();

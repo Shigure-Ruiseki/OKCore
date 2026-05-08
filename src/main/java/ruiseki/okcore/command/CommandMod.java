@@ -10,6 +10,7 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -199,5 +200,9 @@ public class CommandMod implements ICommand {
 
     protected void printLineToChat(ICommandSender sender, String line) {
         sender.addChatMessage(new ChatComponentText(line));
+    }
+
+    protected void printErrorToChat(ICommandSender sender, String line) {
+        sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + line));
     }
 }

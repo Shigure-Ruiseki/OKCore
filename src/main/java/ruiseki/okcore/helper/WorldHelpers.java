@@ -59,7 +59,7 @@ public class WorldHelpers {
                 chunks.add(new ChunkCoordIntPair(chunk.xPosition, chunk.zPosition));
             }
         } else {
-            OKCore.okLog(Level.WARN, "Tried changing biome at non-existing chunk for position " + pos);
+            OKCore.okLog(Level.WARN, "Tried changing biome at non-existing chunk for position {}", pos);
         }
     }
 

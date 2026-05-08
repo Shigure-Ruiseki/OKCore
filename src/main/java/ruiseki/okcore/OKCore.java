@@ -5,6 +5,8 @@ import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.Maps;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
@@ -18,7 +20,10 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
+import ruiseki.okcore.command.CommandMod;
+import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.config.ModConfig;
+import ruiseki.okcore.datacomponent.init.DataComponentInit;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.init.ModBase;
@@ -50,11 +55,19 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityEnergy());
         addInitListeners(new CapabilityLight());
         addInitListeners(new CapabilityRedstone());
+        addInitListeners(new DataComponentInit());
     }
 
     @Mod.EventHandler
     public void onConstruction(FMLConstructionEvent event) {
         CapabilityManager.INSTANCE.injectCapabilities(event.getASMHarvestedData());
+    }
+
+    @Override
+    protected CommandMod constructBaseCommand() {
+        CommandMod command = new CommandOKCore(this, Maps.newHashMap());
+        command.addAlias("ok");
+        return command;
     }
 
     @Override
@@ -141,5 +154,16 @@ public class OKCore extends ModBase {
      */
     public static void okLog(Level level, String message) {
         OKCore.instance.log(level, message);
+    }
+
+    /**
+     * Log a new message of the given level for this mod.
+     *
+     * @param level   The level in which the message must be shown.
+     * @param message The message to show.
+     * @param params  Parameters to replace in the message.
+     */
+    public static void okLog(Level level, String message, Object... params) {
+        OKCore.instance.log(level, message, params);
     }
 }

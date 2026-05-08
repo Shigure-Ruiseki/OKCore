@@ -14,22 +14,6 @@ public class CooldownTracker {
     private final Map<Item, Cooldown> cooldowns = Maps.newHashMap();
     private int ticks;
 
-    public boolean hasCooldown(Item itemIn) {
-        return this.getCooldown(itemIn, 0.0F) > 0.0F;
-    }
-
-    public float getCooldown(Item itemIn, float partialTicks) {
-        Cooldown cooldown = this.cooldowns.get(itemIn);
-
-        if (cooldown != null) {
-            float f = (float) (cooldown.expireTicks - cooldown.createTicks);
-            float f1 = (float) cooldown.expireTicks - ((float) this.ticks + partialTicks);
-            return MathHelper.clamp_float(f1 / f, 0.0F, 1.0F);
-        } else {
-            return 0.0F;
-        }
-    }
-
     public void tick() {
         ++this.ticks;
 
@@ -46,6 +30,27 @@ public class CooldownTracker {
                 }
             }
         }
+    }
+
+    public boolean hasCooldown(Item itemIn) {
+        return this.getCooldown(itemIn, 0.0F) > 0.0F;
+    }
+
+    public float getCooldown(Item itemIn, float partialTicks) {
+        Cooldown cooldown = this.cooldowns.get(itemIn);
+
+        if (cooldown != null) {
+            float f = (float) (cooldown.expireTicks - cooldown.createTicks);
+            float f1 = (float) cooldown.expireTicks - ((float) this.ticks + partialTicks);
+            return MathHelper.clamp_float(f1 / f, 0.0F, 1.0F);
+        } else {
+            return 0.0F;
+        }
+    }
+
+    public int getCooldown(Item itemIn) {
+        Cooldown cooldown = this.cooldowns.get(itemIn);
+        return cooldown.expireTicks - cooldown.createTicks;
     }
 
     public void setCooldown(Item itemIn, int ticksIn) {

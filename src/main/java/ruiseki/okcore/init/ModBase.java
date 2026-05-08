@@ -27,7 +27,7 @@ import lombok.Data;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyRegistry;
 import ruiseki.okcore.command.CommandMod;
-import ruiseki.okcore.helper.LoggerHelper;
+import ruiseki.okcore.helper.LoggerHelpers;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ICommonProxy;
@@ -58,7 +58,7 @@ public abstract class ModBase {
         .create("crash_on_modcompat_crash", Boolean.class);
 
     private final String modId, modName;
-    private final LoggerHelper loggerHelper;
+    private final LoggerHelpers loggerHelper;
     private final Set<IInitListener> initListeners;
     private final Map<EnumReferenceKey, Object> genericReference = Maps.newHashMap();
     private final List<WorldStorage> worldStorages = Lists.newLinkedList();
@@ -87,8 +87,8 @@ public abstract class ModBase {
         populateDefaultGenericReferences();
     }
 
-    protected LoggerHelper constructLoggerHelper() {
-        return new LoggerHelper(this.modName);
+    protected LoggerHelpers constructLoggerHelper() {
+        return new LoggerHelpers(this.modName);
     }
 
     protected RegistryManager constructRegistryManager() {
@@ -162,6 +162,17 @@ public abstract class ModBase {
      */
     public void log(Level level, String message) {
         loggerHelper.log(level, message);
+    }
+
+    /**
+     * Log a new message of the given level for this mod.
+     *
+     * @param level   The level in which the message must be shown.
+     * @param message The message to show.
+     * @param params  Parameters to replace in the message.
+     */
+    public void log(Level level, String message, Object... params) {
+        loggerHelper.log(level, message, params);
     }
 
     /**

@@ -3,7 +3,6 @@ package ruiseki.okcore.datacomponent.init;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -11,9 +10,7 @@ import ruiseki.okcore.datacomponent.components.BooleanComponent;
 import ruiseki.okcore.datacomponent.components.IntegerComponent;
 import ruiseki.okcore.datacomponent.components.StringComponent;
 import ruiseki.okcore.datacomponent.registry.DataComponentRegistry;
-import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.init.IInitListener;
-import ruiseki.okcore.item.cooldown.IItemCooldown;
 
 public class DataComponentInit implements IInitListener {
 
@@ -25,8 +22,6 @@ public class DataComponentInit implements IInitListener {
         DataComponentRegistry.registerComponent(new BrokenComponent());
         DataComponentRegistry.registerComponent(new CarriedComponent());
         DataComponentRegistry.registerComponent(new ExtendedViewComponent());
-        DataComponentRegistry.registerComponent(new FishingRodCastComponent());
-        DataComponentRegistry.registerComponent(new UsingItemComponent());
         DataComponentRegistry.registerComponent(new RarityComponent());
         DataComponentRegistry.registerComponent(new DamageComponent());
         DataComponentRegistry.registerComponent(new MaxDamageComponent());
@@ -35,7 +30,6 @@ public class DataComponentInit implements IInitListener {
         DataComponentRegistry.registerComponent(new RepairableComponent());
         DataComponentRegistry.registerComponent(new RepairCostComponent());
         DataComponentRegistry.registerComponent(new UnbreakableComponent());
-        DataComponentRegistry.registerComponent(new CooldownComponent());
 
     }
 
@@ -103,37 +97,6 @@ public class DataComponentInit implements IInitListener {
                 return false;
             }
             return GuiScreen.isShiftKeyDown();
-        }
-    }
-
-    private static class FishingRodCastComponent implements BooleanComponent {
-
-        @Override
-        public String getName() {
-            return "fishing_rod/cast";
-        }
-
-        @Override
-        public Boolean getValue(ItemStack stack) {
-            EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-            if (player == null) return false;
-
-            return player.inventory.getCurrentItem() == stack && player.fishEntity != null;
-        }
-    }
-
-    private static class UsingItemComponent implements BooleanComponent {
-
-        @Override
-        public String getName() {
-            return "using_item";
-        }
-
-        @Override
-        public Boolean getValue(ItemStack stack) {
-            EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-            if (player == null) return false;
-            return player.isUsingItem() && player.getItemInUse() == stack;
         }
     }
 
@@ -245,22 +208,6 @@ public class DataComponentInit implements IInitListener {
                 return false;
             }
             return stack.stackTagCompound.getBoolean("Unbreakable");
-        }
-    }
-
-    private static class CooldownComponent implements IntegerComponent {
-
-        @Override
-        public String getName() {
-            return "cooldown";
-        }
-
-        @Override
-        public Integer getValue(ItemStack stack) {
-            if (!(stack.getItem() instanceof IItemCooldown)) return 0;
-            EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-            return EntityHelpers.getCooldownTracker(player)
-                .getCooldown(stack.getItem());
         }
     }
 

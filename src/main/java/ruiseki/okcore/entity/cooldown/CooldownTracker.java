@@ -50,7 +50,11 @@ public class CooldownTracker {
 
     public int getCooldown(Item itemIn) {
         Cooldown cooldown = this.cooldowns.get(itemIn);
-        return cooldown.expireTicks - cooldown.createTicks;
+        if (cooldown != null) {
+            int remaining = cooldown.expireTicks - this.ticks;
+            return Math.max(0, remaining);
+        }
+        return 0;
     }
 
     public void setCooldown(Item itemIn, int ticksIn) {

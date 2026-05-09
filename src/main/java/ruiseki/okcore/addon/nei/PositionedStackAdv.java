@@ -71,6 +71,7 @@ public class PositionedStackAdv extends PositionedStack {
         this.tooltip.add(line);
         return this;
     }
+
     public void drawChance() {
         if (!showChance || chance > 1.0f || chance <= 0.0f) {
             return;

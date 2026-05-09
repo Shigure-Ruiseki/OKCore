@@ -23,23 +23,22 @@ public class DataComponents implements IInitListener {
     public void onInit(Step step) {
         if (step != Step.PREINIT) return;
 
-        DataComponentRegistry.registerComponent(new DamagedComponent());
-        DataComponentRegistry.registerComponent(new BrokenComponent());
-        DataComponentRegistry.registerComponent(new CarriedComponent());
-        DataComponentRegistry.registerComponent(new ExtendedViewComponent());
-        DataComponentRegistry.registerComponent(new RarityComponent());
-        DataComponentRegistry.registerComponent(new DamageComponent());
-        DataComponentRegistry.registerComponent(new MaxDamageComponent());
-        DataComponentRegistry.registerComponent(new StackSizeComponent());
-        DataComponentRegistry.registerComponent(new MaxStackSizeComponent());
-        DataComponentRegistry.registerComponent(new RepairableComponent());
-        DataComponentRegistry.registerComponent(new RepairCostComponent());
-        DataComponentRegistry.registerComponent(new UnbreakableComponent());
-
+        DataComponentRegistry.registerComponent(DAMAGED);
+        DataComponentRegistry.registerComponent(BROKEN);
+        DataComponentRegistry.registerComponent(CARRIED);
+        DataComponentRegistry.registerComponent(EXTENDED_VIEW);
+        DataComponentRegistry.registerComponent(RARITY);
+        DataComponentRegistry.registerComponent(DAMAGE);
+        DataComponentRegistry.registerComponent(MAX_DAMAGE);
+        DataComponentRegistry.registerComponent(STACK_SIZE);
+        DataComponentRegistry.registerComponent(MAX_STACK_SIZE);
+        DataComponentRegistry.registerComponent(REPAIRABLE);
+        DataComponentRegistry.registerComponent(REPAIR_COST);
+        DataComponentRegistry.registerComponent(UNBREAKABLE);
         DataComponentRegistry.registerComponent(USE_COOLDOWN);
     }
 
-    private static class DamagedComponent implements BooleanComponent {
+    public static final BooleanComponent DAMAGED = new BooleanComponent() {
 
         @Override
         public String getName() {
@@ -50,9 +49,9 @@ public class DataComponents implements IInitListener {
         public Boolean getValue(ItemStack stack) {
             return stack.isItemDamaged();
         }
-    }
+    };
 
-    private static class BrokenComponent implements BooleanComponent {
+    public static final BooleanComponent BROKEN = new BooleanComponent() {
 
         @Override
         public String getName() {
@@ -64,13 +63,11 @@ public class DataComponents implements IInitListener {
             if (stack == null) return false;
             Item item = stack.getItem();
             if (item == null || !item.isDamageable()) return false;
-            int maxDamage = stack.getMaxDamage();
-            int currentDamage = stack.getItemDamage();
-            return currentDamage >= (maxDamage - 1);
+            return stack.getItemDamage() >= (stack.getMaxDamage() - 1);
         }
-    }
+    };
 
-    private static class CarriedComponent implements BooleanComponent {
+    public static final BooleanComponent CARRIED = new BooleanComponent() {
 
         @Override
         public String getName() {
@@ -80,17 +77,14 @@ public class DataComponents implements IInitListener {
         @Override
         public Boolean getValue(ItemStack stack) {
             if (stack == null) return false;
-            GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
-            if (currentScreen instanceof GuiContainer) {
-                ItemStack mouseStack = Minecraft.getMinecraft().thePlayer.inventory.getItemStack();
-                return mouseStack == stack;
+            if (Minecraft.getMinecraft().currentScreen instanceof GuiContainer) {
+                return Minecraft.getMinecraft().thePlayer.inventory.getItemStack() == stack;
             }
-
             return false;
         }
-    }
+    };
 
-    private static class ExtendedViewComponent implements BooleanComponent {
+    public static final BooleanComponent EXTENDED_VIEW = new BooleanComponent() {
 
         @Override
         public String getName() {
@@ -99,14 +93,11 @@ public class DataComponents implements IInitListener {
 
         @Override
         public Boolean getValue(ItemStack stack) {
-            if (Minecraft.getMinecraft().currentScreen == null) {
-                return false;
-            }
-            return GuiScreen.isShiftKeyDown();
+            return Minecraft.getMinecraft().currentScreen != null && GuiScreen.isShiftKeyDown();
         }
-    }
+    };
 
-    private static class DamageComponent implements IntegerComponent {
+    public static final IntegerComponent DAMAGE = new IntegerComponent() {
 
         @Override
         public String getName() {
@@ -117,9 +108,9 @@ public class DataComponents implements IInitListener {
         public Integer getValue(ItemStack stack) {
             return stack.getItemDamage();
         }
-    }
+    };
 
-    private static class MaxDamageComponent implements IntegerComponent {
+    public static final IntegerComponent MAX_DAMAGE = new IntegerComponent() {
 
         @Override
         public String getName() {
@@ -130,9 +121,9 @@ public class DataComponents implements IInitListener {
         public Integer getValue(ItemStack stack) {
             return stack.getMaxDamage();
         }
-    }
+    };
 
-    private static class StackSizeComponent implements IntegerComponent {
+    public static final IntegerComponent STACK_SIZE = new IntegerComponent() {
 
         @Override
         public String getName() {
@@ -143,9 +134,9 @@ public class DataComponents implements IInitListener {
         public Integer getValue(ItemStack stack) {
             return stack.stackSize;
         }
-    }
+    };
 
-    private static class MaxStackSizeComponent implements IntegerComponent {
+    public static final IntegerComponent MAX_STACK_SIZE = new IntegerComponent() {
 
         @Override
         public String getName() {
@@ -156,9 +147,9 @@ public class DataComponents implements IInitListener {
         public Integer getValue(ItemStack stack) {
             return stack.getMaxStackSize();
         }
-    }
+    };
 
-    private static class RarityComponent implements StringComponent {
+    public static final StringComponent RARITY = new StringComponent() {
 
         @Override
         public String getName() {
@@ -169,9 +160,9 @@ public class DataComponents implements IInitListener {
         public String getValue(ItemStack stack) {
             return stack.getRarity().rarityName;
         }
-    }
+    };
 
-    private static class RepairCostComponent implements IntegerComponent {
+    public static final IntegerComponent REPAIR_COST = new IntegerComponent() {
 
         @Override
         public String getName() {
@@ -182,9 +173,9 @@ public class DataComponents implements IInitListener {
         public Integer getValue(ItemStack stack) {
             return stack.getRepairCost();
         }
-    }
+    };
 
-    private static class RepairableComponent implements BooleanComponent {
+    public static final BooleanComponent REPAIRABLE = new BooleanComponent() {
 
         @Override
         public String getName() {
@@ -193,15 +184,13 @@ public class DataComponents implements IInitListener {
 
         @Override
         public Boolean getValue(ItemStack stack) {
-            if (stack == null || stack.getItem() == null) {
-                return false;
-            }
-            return stack.getItem()
-                .isRepairable();
+            return stack != null && stack.getItem() != null
+                && stack.getItem()
+                    .isRepairable();
         }
-    }
+    };
 
-    private static class UnbreakableComponent implements BooleanComponent {
+    public static final BooleanComponent UNBREAKABLE = new BooleanComponent() {
 
         @Override
         public String getName() {
@@ -210,12 +199,9 @@ public class DataComponents implements IInitListener {
 
         @Override
         public Boolean getValue(ItemStack stack) {
-            if (stack == null || !stack.hasTagCompound()) {
-                return false;
-            }
-            return stack.stackTagCompound.getBoolean("Unbreakable");
+            return stack != null && stack.hasTagCompound() && stack.stackTagCompound.getBoolean("Unbreakable");
         }
-    }
+    };
 
     public static final DataComponentType<UseCooldown> USE_COOLDOWN = new DataComponentType<>() {
 

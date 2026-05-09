@@ -17,6 +17,7 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
@@ -28,6 +29,7 @@ import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
@@ -77,6 +79,9 @@ public class OKCore extends ModBase {
 
         if (ModConfig.useItemTest) {
             ItemTest.register();
+        }
+        if (LibMods.Waila.isLoaded()) {
+            BlockProvider.init();
         }
     }
 

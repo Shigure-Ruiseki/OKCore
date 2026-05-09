@@ -16,7 +16,9 @@ public class PositionedStackAdv extends PositionedStack {
 
     private final List<String> tooltip = new ArrayList<>();
     public float chance;
+    public boolean showChance = true;
     public int textYOffset = 0;
+    public float textScale = 0.8f;
     public int textColor = 0xFFFFFF;
     public String label = null;
     public int labelColor = 0x000000;
@@ -32,6 +34,11 @@ public class PositionedStackAdv extends PositionedStack {
 
     public PositionedStackAdv setTextColor(int color) {
         this.textColor = color;
+        return this;
+    }
+
+    public PositionedStackAdv setTextScale(float scale) {
+        this.textScale = scale;
         return this;
     }
 
@@ -64,46 +71,26 @@ public class PositionedStackAdv extends PositionedStack {
         this.tooltip.add(line);
         return this;
     }
-
     public void drawChance() {
-        if (chance > 1.0f) {
+        if (!showChance || chance > 1.0f || chance <= 0.0f) {
             return;
         }
-        float scale = 0.8f;
-        double percent = chance * 100.0;
 
-        String text;
-        if (chance <= 0.0f) {
-            // 0%: show as "-"
-            text = "-";
-        } else if (percent >= 10.0) {
-            // 10% - 99%: show 1 decimal place (3 sig figs)
-            text = String.format("%.1f%%", percent);
-        } else if (percent >= 1.0) {
-            // 1% - 10%: show 2 decimal places (3 sig figs)
-            text = String.format("%.2f%%", percent);
-        } else if (percent >= 0.1) {
-            // 0.1% - 1%: show 3 decimal places (3 sig figs)
-            text = String.format("%.3f%%", percent);
-        } else {
-            // Less than 0.1%: show 4 decimal places
-            text = String.format("%.4f%%", percent);
-        }
+        String text = (int) (chance * 100) + "%";
 
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
         int stringWidth = font.getStringWidth(text);
-
-        float inverse = 1f / scale;
+        float inverse = 1f / textScale;
 
         int x = this.relx + 1;
         int y = this.rely + 1;
 
         GL11.glPushMatrix();
-        GL11.glScalef(scale, scale, 1.0f);
+        GL11.glScalef(textScale, textScale, 1.0f);
         font.drawString(
             text,
-            (int) ((x + 8 - stringWidth * scale / 2) * inverse),
-            (int) ((y + 16 - font.FONT_HEIGHT * scale + textYOffset) * inverse),
+            (int) ((x + 8 - stringWidth * textScale / 2) * inverse),
+            (int) ((y + 16 - font.FONT_HEIGHT * textScale + textYOffset) * inverse),
             textColor);
         GL11.glPopMatrix();
     }

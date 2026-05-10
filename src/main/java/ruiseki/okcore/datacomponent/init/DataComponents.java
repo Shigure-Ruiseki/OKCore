@@ -15,7 +15,7 @@ import ruiseki.okcore.datacomponent.componenttype.StringComponent;
 import ruiseki.okcore.datacomponent.core.DataComponentType;
 import ruiseki.okcore.datacomponent.registry.DataComponentRegistry;
 import ruiseki.okcore.init.IInitListener;
-import ruiseki.okcore.item.cooldown.IItemCooldown;
+import ruiseki.okcore.item.IItemCooldown;
 
 public class DataComponents implements IInitListener {
 

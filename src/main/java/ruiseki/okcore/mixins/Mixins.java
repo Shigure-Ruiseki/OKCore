@@ -21,7 +21,10 @@ public enum Mixins implements IMixins {
         .setPhase(Phase.EARLY)),
 
     COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("cooldown.MixinEntityPlayer")
-        .addCommonMixins("cooldown.MixinRenderItem")
+        .addClientMixins("cooldown.MixinRenderItem")
+        .setPhase(Phase.EARLY)),
+
+    GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addClientMixins("event.gui.MixinGuiScreen")
         .setPhase(Phase.EARLY)),
 
     ;

@@ -21,16 +21,22 @@ import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameRegistry;
+import lombok.experimental.Delegate;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
+import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class BlockOK extends Block implements IBlock {
+public class BlockOK extends Block implements IBlock, IBlockPropertyProvider {
 
     protected final Class<? extends TileEntityOK> teClass;
     protected final String name;
+
+    @Delegate
+    private final IBlockPropertyProvider propertyComponent = new BlockPropertyProviderComponent(this);
 
     protected boolean isOpaque = true;
     protected boolean isFullSize = true;

@@ -11,9 +11,11 @@ import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.entity.cooldown.ItemCooldowns;
 import ruiseki.okcore.helper.DataComponentHelpers;
 import ruiseki.okcore.helper.EntityHelpers;
-import ruiseki.okcore.item.cooldown.IItemCooldown;
+import ruiseki.okcore.item.IItemCooldown;
 
 public class CooldownEvent {
+
+    public static final CooldownEvent INSTANCE = new CooldownEvent();
 
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent event) {

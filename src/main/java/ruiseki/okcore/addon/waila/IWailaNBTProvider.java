@@ -7,6 +7,6 @@ import net.minecraft.world.World;
 
 public interface IWailaNBTProvider {
 
-    void getWailaNBTData(final EntityPlayerMP player, final TileEntity tile, final NBTTagCompound tag,
-        final World world, int x, int y, int z);
+    default void getWailaNBTData(final EntityPlayerMP player, final TileEntity tile, final NBTTagCompound tag,
+        final World world, int x, int y, int z) {}
 }

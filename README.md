@@ -14,5 +14,6 @@ Just a core mod extracted to use in other mod
 - Data Component for Item to handle get/set more easy,
 - Fast NBT write/read in TileEntity and WorldSavedData with NBTPersist system,
 - Fast Packet register with PacketCodec,
+- Mouse and Key Input event,
 - Many Helpers class help reducing code duplication,
 - BaseMod class help handle recipe, packet, command, keybind, event,...

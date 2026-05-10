@@ -3,13 +3,15 @@ package ruiseki.okcore.test;
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.datacomponent.component.UseCooldown;
+import ruiseki.okcore.item.IItemCooldown;
+import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
-import ruiseki.okcore.item.cooldown.IItemCooldown;
 
-public class ItemTest extends ItemOK implements IItemCooldown {
+public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
     public ItemTest() {
         super("item_test");
@@ -38,5 +40,21 @@ public class ItemTest extends ItemOK implements IItemCooldown {
         }
 
         return stack;
+    }
+
+    @Override
+    public void toggle(EntityPlayer player, ItemStack held) {
+        boolean wasOn = isOn(held);
+        boolean newState = !wasOn;
+
+        setOn(held, newState);
+
+        if (!player.worldObj.isRemote) {
+            String statusColor = newState ? "§a" : "§c";
+            String statusText = newState ? "ON" : "OFF";
+
+            player.addChatComponentMessage(
+                new ChatComponentText("§7[" + held.getDisplayName() + "§7] " + statusColor + statusText));
+        }
     }
 }

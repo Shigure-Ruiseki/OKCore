@@ -23,7 +23,7 @@ import ruiseki.okcore.capabilities.IItemCapability;
 import ruiseki.okcore.event.OKEventFactory;
 
 @Mixin(ItemStack.class)
-@Implements(@Interface(iface = ICapabilitySerializable.class, prefix = "okCore$"))
+@Implements(@Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"))
 public abstract class MixinItemStackCap {
 
     @Shadow
@@ -82,21 +82,21 @@ public abstract class MixinItemStackCap {
      * CAPABILITY API
      */
 
-    public boolean okCore$hasCapability(@NotNull Capability<?> capability, ForgeDirection side) {
+    public boolean okcorecap$hasCapability(@NotNull Capability<?> capability, ForgeDirection side) {
         return this.capabilities != null && this.capabilities.hasCapability(capability, side);
     }
 
-    public <T> T okCore$getCapability(Capability<T> capability, ForgeDirection side) {
+    public <T> T okcorecap$getCapability(Capability<T> capability, ForgeDirection side) {
         return this.capabilities == null ? null : this.capabilities.getCapability(capability, side);
     }
 
-    public NBTTagCompound okCore$serializeNBT() {
+    public NBTTagCompound okcorecap$serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         this.writeToNBT(tag);
         return tag;
     }
 
-    public void okCore$deserializeNBT(NBTTagCompound tag) {
+    public void okcorecap$deserializeNBT(NBTTagCompound tag) {
         this.readFromNBT(tag);
     }
 }

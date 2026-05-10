@@ -4,10 +4,12 @@ import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.event.CooldownEvent;
+import ruiseki.okcore.event.GuiItemToggleEvent;
 import ruiseki.okcore.event.TickHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.network.packet.PacketCooldown;
+import ruiseki.okcore.network.packet.PacketItemToggle;
 import ruiseki.okcore.network.packet.PacketSound;
 import ruiseki.okcore.proxy.CommonProxyComponent;
 
@@ -25,6 +27,7 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerPacketHandlers(packetHandler);
         packetHandler.register(PacketSound.class);
         packetHandler.register(PacketCooldown.class);
+        packetHandler.register(PacketItemToggle.class);
     }
 
     @Override
@@ -34,6 +37,7 @@ public class CommonProxy extends CommonProxyComponent {
             .bus()
             .register(TickHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(TickHandler.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(new CooldownEvent());
+        MinecraftForge.EVENT_BUS.register(CooldownEvent.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(GuiItemToggleEvent.INSTANCE);
     }
 }

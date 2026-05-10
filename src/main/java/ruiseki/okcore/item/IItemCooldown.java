@@ -1,4 +1,4 @@
-package ruiseki.okcore.item.cooldown;
+package ruiseki.okcore.item;
 
 import net.minecraft.item.ItemStack;
 

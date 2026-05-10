@@ -16,29 +16,29 @@ import ruiseki.okcore.entity.cooldown.ItemCooldowns;
 import ruiseki.okcore.entity.cooldown.ItemCooldownsServer;
 
 @Mixin(EntityPlayer.class)
-@Implements(@Interface(iface = ICooldownHandler.class, prefix = "okCore$"))
+@Implements(@Interface(iface = ICooldownHandler.class, prefix = "okcorecool$"))
 public abstract class MixinEntityPlayer {
 
     @Unique
-    private ItemCooldowns oKCore$itemCooldowm = this.oKCore$createItemCooldowns();
+    private ItemCooldowns okcore$itemCooldowm = this.okcore$createItemCooldowns();
 
     @Inject(method = "onUpdate", at = @At("HEAD"))
-    private void onPlayerUpdate(CallbackInfo ci) {
-        if (this.oKCore$itemCooldowm != null) {
-            this.oKCore$itemCooldowm.tick();
+    private void okcore$onPlayerUpdate(CallbackInfo ci) {
+        if (this.okcore$itemCooldowm != null) {
+            this.okcore$itemCooldowm.tick();
         }
     }
 
     @Unique
-    private ItemCooldowns oKCore$createItemCooldowns() {
+    private ItemCooldowns okcore$createItemCooldowns() {
         if ((Object) this instanceof EntityPlayerMP) {
-            return this.oKCore$itemCooldowm = new ItemCooldownsServer((EntityPlayerMP) (Object) this);
+            return this.okcore$itemCooldowm = new ItemCooldownsServer((EntityPlayerMP) (Object) this);
         } else {
-            return this.oKCore$itemCooldowm = new ItemCooldowns();
+            return this.okcore$itemCooldowm = new ItemCooldowns();
         }
     }
 
-    public ItemCooldowns okCore$getItemCooldowns() {
-        return this.oKCore$itemCooldowm;
+    public ItemCooldowns okcorecool$getItemCooldowns() {
+        return this.okcore$itemCooldowm;
     }
 }

@@ -3,9 +3,9 @@ package ruiseki.okcore.energy.capability.cofh;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import cofh.api.energy.IEnergyProvider;
-import ruiseki.okcore.energy.capability.IEnergyIO;
+import ruiseki.okcore.energy.capability.IEnergySource;
 
-public class CoFHEnergyProvider implements IEnergyIO {
+public class CoFHEnergyProvider implements IEnergySource {
 
     private final IEnergyProvider handler;
     private final ForgeDirection side;
@@ -17,19 +17,12 @@ public class CoFHEnergyProvider implements IEnergyIO {
 
     @Override
     public int extract(int amount, boolean simulate) {
-        if (!canConnect()) {
-            return 0;
-        }
+        if (!canConnect()) return 0;
         return handler.extractEnergy(side, amount, simulate);
     }
 
     @Override
     public boolean canConnect() {
         return handler.canConnectEnergy(side);
-    }
-
-    @Override
-    public int insert(int amount, boolean simulate) {
-        return 0;
     }
 }

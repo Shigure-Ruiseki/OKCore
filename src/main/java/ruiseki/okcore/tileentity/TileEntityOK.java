@@ -16,24 +16,16 @@ import org.jetbrains.annotations.Nullable;
 
 import lombok.experimental.Delegate;
 import ruiseki.okcore.capabilities.Capability;
-import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.event.OKEventFactory;
 import ruiseki.okcore.persist.nbt.INBTProvider;
-import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 
 public abstract class TileEntityOK extends TileEntity implements ITile, INBTProvider, ICapabilitySerializable {
 
     @Delegate
     private final INBTProvider nbtProvider = new NBTProviderComponent(this);
-
-    @NBTPersist
-    private ForgeDirection forward = ForgeDirection.UNKNOWN;
-    @NBTPersist
-    private ForgeDirection up = ForgeDirection.UNKNOWN;
 
     private static final int UPDATE_BACKOFF_TICKS = 1;
     private boolean shouldSendUpdate = false;
@@ -43,10 +35,7 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
     private BlockPos cachedPos;
     private final int randomOffset = (int) (Math.random() * 20);
 
-    private final CapabilityDispatcher capabilities;
-
     public TileEntityOK() {
-        this.capabilities = OKEventFactory.gatherCapabilities(this);
         this.sendUpdateBackoff = (int) (Math.random() * UPDATE_BACKOFF_TICKS);
         this.ticking = this instanceof ITickingTile;
     }
@@ -159,13 +148,13 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
     @Override
     public Packet getDescriptionPacket() {
         NBTTagCompound tag = new NBTTagCompound();
-        writeToNBT(tag);
+        this.writeToNBT(tag);
         return new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, 1, tag);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
-        readFromNBT(pkt.func_148857_g());
+        this.readFromNBT(pkt.func_148857_g());
         onUpdateReceived();
     }
 
@@ -183,18 +172,10 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
 
     public void writeCommon(NBTTagCompound tag) {
         writeGeneratedFieldsToNBT(tag);
-
-        if (capabilities != null) {
-            tag.setTag("OKCaps", capabilities.serializeNBT());
-        }
     }
 
     public void readCommon(NBTTagCompound tag) {
         readGeneratedFieldsFromNBT(tag);
-
-        if (capabilities != null && tag.hasKey("OKCaps")) {
-            capabilities.deserializeNBT(tag.getCompoundTag("OKCaps"));
-        }
     }
 
     /**
@@ -245,12 +226,12 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
 
     @Override
     public boolean hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        return capabilities != null && capabilities.hasCapability(capability, facing);
+        return ((ICapabilitySerializable) (Object) this).hasCapability(capability, facing);
     }
 
     @Override
     public <T> T getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
-        return capabilities == null ? null : capabilities.getCapability(capability, facing);
+        return ((ICapabilitySerializable) (Object) this).getCapability(capability, facing);
     }
 
     @Override

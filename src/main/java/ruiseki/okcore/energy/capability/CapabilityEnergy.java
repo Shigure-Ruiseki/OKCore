@@ -1,22 +1,38 @@
 package ruiseki.okcore.energy.capability;
 
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
+import cofh.api.energy.IEnergyHandler;
+import cofh.api.energy.IEnergyProvider;
+import cofh.api.energy.IEnergyReceiver;
 import cofh.api.energy.IEnergyStorage;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import ruiseki.okcore.Reference;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.energy.capability.cofh.CoFHEnergyProvider;
+import ruiseki.okcore.energy.capability.cofh.CoFHEnergyReceiver;
+import ruiseki.okcore.energy.capability.cofh.CoFHHandlerWrapper;
+import ruiseki.okcore.energy.capability.cofh.CoFHProviderWrapper;
+import ruiseki.okcore.energy.capability.cofh.CoFHReceiverWrapper;
 import ruiseki.okcore.energy.capability.ok.OKEnergySink;
 import ruiseki.okcore.energy.capability.ok.OKEnergySource;
+import ruiseki.okcore.event.AttachCapabilitiesEvent;
 import ruiseki.okcore.init.IInitListener;
 
+@SuppressWarnings("unchecked")
 public class CapabilityEnergy implements IInitListener {
 
     @CapabilityInject(IEnergyStorage.class)
-    public static Capability<IEnergyStorage> ENERGY_CAPABILITY = null;
+    public static Capability<IEnergyStorage> ENERGY = null;
 
     @CapabilityInject(IEnergySink.class)
     public static Capability<IEnergySink> ENERGY_SINK_CAPABILITY = null;
@@ -24,11 +40,15 @@ public class CapabilityEnergy implements IInitListener {
     @CapabilityInject(IEnergySource.class)
     public static Capability<IEnergySource> ENERGY_SOURCE_CAPABILITY = null;
 
+    public static final ResourceLocation ENERGY_CAP = new ResourceLocation(Reference.MOD_ID, "energy");
+    public static final ResourceLocation ENERGY_SINK = new ResourceLocation(Reference.MOD_ID, "energy_sink");
+    public static final ResourceLocation ENERGY_SOURCE = new ResourceLocation(Reference.MOD_ID, "energy_source");
+
     public static void register() {
         CapabilityManager.INSTANCE.register(IEnergyStorage.class, new Capability.IStorage<IEnergyStorage>() {
 
             @Override
-            public @Nullable NBTBase writeNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance,
+            public NBTBase writeNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance,
                 ForgeDirection side) {
                 return null;
             }
@@ -42,8 +62,7 @@ public class CapabilityEnergy implements IInitListener {
         CapabilityManager.INSTANCE.register(IEnergySink.class, new Capability.IStorage<IEnergySink>() {
 
             @Override
-            public @Nullable NBTBase writeNBT(Capability<IEnergySink> capability, IEnergySink instance,
-                ForgeDirection side) {
+            public NBTBase writeNBT(Capability<IEnergySink> capability, IEnergySink instance, ForgeDirection side) {
                 return null;
             }
 
@@ -56,8 +75,7 @@ public class CapabilityEnergy implements IInitListener {
         CapabilityManager.INSTANCE.register(IEnergySource.class, new Capability.IStorage<IEnergySource>() {
 
             @Override
-            public @Nullable NBTBase writeNBT(Capability<IEnergySource> capability, IEnergySource instance,
-                ForgeDirection side) {
+            public NBTBase writeNBT(Capability<IEnergySource> capability, IEnergySource instance, ForgeDirection side) {
                 return null;
             }
 
@@ -69,10 +87,74 @@ public class CapabilityEnergy implements IInitListener {
         }, () -> new OKEnergySource(null, null));
     }
 
+    @SubscribeEvent
+    public void attachCoFHCapability(AttachCapabilitiesEvent<TileEntity> event) {
+        if (event.getType() != TileEntity.class) return;
+        TileEntity tile = event.getObject();
+
+        if (tile instanceof IEnergyReceiver || tile instanceof IEnergyProvider) {
+            event.addCapability(ENERGY_CAP, new ICapabilityProvider() {
+                @Override
+                public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
+                    return capability == CapabilityEnergy.ENERGY;
+                }
+
+                @Override
+                public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
+                    if (capability == CapabilityEnergy.ENERGY) {
+                        if (tile instanceof IEnergyHandler handler) {
+                            return (T) new CoFHHandlerWrapper(handler, facing);
+                        }
+
+                        if (tile instanceof IEnergyReceiver receiver) {
+                            return (T) new CoFHReceiverWrapper(receiver, facing);
+                        } else {
+                            IEnergyProvider provider = (IEnergyProvider) tile;
+                            return (T) new CoFHProviderWrapper(provider, facing);
+                        }
+                    }
+                    return null;
+                }
+            });
+            event.addCapability(ENERGY_SINK, new ICapabilityProvider() {
+
+                @Override
+                public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
+                    return capability == CapabilityEnergy.ENERGY_SINK_CAPABILITY;
+                }
+
+                @Override
+                public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
+                    if (capability == CapabilityEnergy.ENERGY_SINK_CAPABILITY
+                        && tile instanceof IEnergyReceiver receiver) {
+                        return (T) new CoFHEnergyReceiver(receiver, facing);
+                    }
+                    return null;
+                }
+            });
+            event.addCapability(ENERGY_SOURCE, new ICapabilityProvider() {
+                @Override
+                public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
+                    return capability == CapabilityEnergy.ENERGY_SOURCE_CAPABILITY;
+                }
+
+                @Override
+                public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
+                    if (capability == CapabilityEnergy.ENERGY_SOURCE_CAPABILITY
+                        && tile instanceof IEnergyProvider provider) {
+                        return (T) new CoFHEnergyProvider(provider, facing);
+                    }
+                    return null;
+                }
+            });
+        }
+    }
+
     @Override
     public void onInit(Step initStep) {
         if (initStep == Step.PREINIT) {
             register();
+            MinecraftForge.EVENT_BUS.register(this);
         }
     }
 }

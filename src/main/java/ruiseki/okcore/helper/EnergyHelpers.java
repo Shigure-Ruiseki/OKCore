@@ -1,4 +1,4 @@
-package ruiseki.okcore.energy;
+package ruiseki.okcore.helper;
 
 import net.minecraftforge.common.util.ForgeDirection;
 

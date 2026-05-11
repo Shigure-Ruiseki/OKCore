@@ -6,9 +6,9 @@ import net.minecraft.item.Item;
 
 /// Represents the component of a itemStack. Includes things like item damaged, max stack, energy, etc. Does not include
 /// things like the inventory.
-public interface DataComponent extends AutoCloseable, Cloneable {
+public interface DataComponentMap extends AutoCloseable, Cloneable {
 
-    DataComponent clone();
+    DataComponentMap clone();
 
     /// Gets the 'original' item for this component. Note that any item-changing components (such as the various 'item
     /// damaged'

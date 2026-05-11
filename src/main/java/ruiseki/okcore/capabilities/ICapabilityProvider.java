@@ -23,12 +23,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.capability.CapabilityProvider;
-
-import cpw.mods.fml.common.Optional;
-
-@Optional.Interface(modid = "gtnhlib", iface = "com.gtnewhorizon.gtnhlib.capability.CapabilityProvider")
-public interface ICapabilityProvider extends CapabilityProvider {
+public interface ICapabilityProvider {
 
     /**
      * Determines if this object has support for the capability in question on the specific side.
@@ -72,15 +67,4 @@ public interface ICapabilityProvider extends CapabilityProvider {
      */
     @Nullable
     <T> T getCapability(Capability<T> capability, ForgeDirection facing);
-
-    @Override
-    @Optional.Method(modid = "gtnhlib")
-    default @Nullable <T> T getCapability(@NotNull Class<T> capabilityClass, @NotNull ForgeDirection facing) {
-        Capability<T> cap = CapabilityManager.INSTANCE.get(capabilityClass);
-        if (cap == null) return null;
-
-        if (!hasCapability(cap, facing)) return null;
-
-        return getCapability(cap, facing);
-    }
 }

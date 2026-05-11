@@ -3,21 +3,22 @@ package ruiseki.okcore.helper;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.world.World;
-
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.FakePlayerFactory;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 
 import com.mojang.authlib.GameProfile;
-import org.apache.logging.log4j.Level;
+
+import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 
@@ -122,9 +123,8 @@ public class PlayerHelpers {
         WeakReference<FakePlayer> fakePlayer;
         try {
             fakePlayer = new WeakReference<>(FakePlayerFactory.get(ws, breakerProfile));
-        }
-        catch (Exception e) {
-            OKCore.okLog(Level.ERROR,"Exception thrown trying to create fake player : ", e);
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "Exception thrown trying to create fake player : ", e);
             return null;
         }
 
@@ -137,13 +137,13 @@ public class PlayerHelpers {
 
         try {
             player.playerNetServerHandler = new NetHandlerPlayServer(
-                FMLCommonHandler.instance().getMinecraftServerInstance(),
+                FMLCommonHandler.instance()
+                    .getMinecraftServerInstance(),
                 new NetworkManager(false),
-                player
-            ) {
+                player) {
+
                 @Override
-                public void sendPacket(Packet packetIn) {
-                }
+                public void sendPacket(Packet packetIn) {}
             };
         } catch (Exception ignore) {}
 

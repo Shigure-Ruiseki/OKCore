@@ -94,6 +94,7 @@ public class CapabilityEnergy implements IInitListener {
 
         if (tile instanceof IEnergyReceiver || tile instanceof IEnergyProvider) {
             event.addCapability(ENERGY_CAP, new ICapabilityProvider() {
+
                 @Override
                 public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
                     return capability == CapabilityEnergy.ENERGY;
@@ -133,6 +134,7 @@ public class CapabilityEnergy implements IInitListener {
                 }
             });
             event.addCapability(ENERGY_SOURCE, new ICapabilityProvider() {
+
                 @Override
                 public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
                     return capability == CapabilityEnergy.ENERGY_SOURCE_CAPABILITY;

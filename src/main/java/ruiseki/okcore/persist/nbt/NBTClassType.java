@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
@@ -18,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
@@ -60,6 +62,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Integer readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return tag.getInteger(name);
             }
 
@@ -79,6 +82,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Float readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return tag.getFloat(name);
             }
 
@@ -98,6 +102,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Boolean readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return tag.getBoolean(name);
             }
 
@@ -119,6 +124,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public String readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return tag.getString(name);
             }
 
@@ -137,6 +143,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public ForgeDirection readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return ForgeDirection.values()[tag.getInteger(name)];
             }
 
@@ -155,6 +162,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Byte readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return tag.getByte(name);
             }
 
@@ -174,8 +182,8 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Fluid readPersistedField(String name, NBTTagCompound tag) {
-                String fluidName = tag.getString(name);
-                return FluidRegistry.getFluid(fluidName);
+                if (!tag.hasKey(name)) return null;
+                return FluidRegistry.getFluid(tag.getString(name));
             }
 
             @Override
@@ -193,6 +201,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public NBTTagCompound readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return tag.getCompoundTag(name);
             }
 
@@ -264,6 +273,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Map readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 NBTTagCompound mapTag = tag.getCompoundTag(name);
                 Map map = Maps.newHashMap();
                 NBTTagList list = mapTag.getTagList("map", MinecraftHelpers.NBTTag_Types.NBTTagCompound.getId());
@@ -323,6 +333,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Vector3i readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 int[] array = tag.getIntArray(name);
                 return new Vector3i(array[0], array[1], array[2]);
             }
@@ -346,6 +357,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Vec3 readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 NBTTagCompound vec = tag.getCompoundTag(name);
                 return Vec3.createVectorHelper(vec.getDouble("x"), vec.getDouble("y"), vec.getDouble("z"));
             }
@@ -388,6 +400,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public Pair readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 NBTTagCompound pairTag = tag.getCompoundTag(name);
                 NBTTagCompound leftTag = pairTag.getCompoundTag("left");
                 NBTTagCompound rightTag = pairTag.getCompoundTag("right");
@@ -529,6 +542,7 @@ public abstract class NBTClassType<T> {
 
             @Override
             public DimPos readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 NBTTagCompound dimPos = tag.getCompoundTag(name);
                 int dim = dimPos.getInteger("dim");
                 World world;
@@ -563,17 +577,15 @@ public abstract class NBTClassType<T> {
 
             @Override
             public void writePersistedField(String name, BlockPos object, NBTTagCompound tag) {
-                NBTTagCompound pos = new NBTTagCompound();
-                pos.setInteger("x", object.getX());
-                pos.setInteger("y", object.getY());
-                pos.setInteger("z", object.getZ());
-                tag.setTag(name, pos);
+                if (object != null) {
+                    tag.setLong(name, object.toLong());
+                }
             }
 
             @Override
             public BlockPos readPersistedField(String name, NBTTagCompound tag) {
-                NBTTagCompound pos = tag.getCompoundTag(name);
-                return new BlockPos(pos.getInteger("x"), pos.getInteger("y"), pos.getInteger("z"));
+                if (!tag.hasKey(name)) return null;
+                return BlockPos.fromLong(tag.getLong(name));
             }
 
             @Override
@@ -596,11 +608,55 @@ public abstract class NBTClassType<T> {
 
             @Override
             public ItemStack readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
                 return ItemStack.loadItemStackFromNBT(tag.getCompoundTag(name));
             }
 
             @Override
             public ItemStack getDefaultValue() {
+                return null;
+            }
+        });
+
+        NBTYPES.put(FluidStack.class, new NBTClassType<FluidStack>() {
+
+            @Override
+            public void writePersistedField(String name, FluidStack object, NBTTagCompound tag) {
+                if (object != null) {
+                    tag.setTag(
+                        name,
+                        object.copy()
+                            .writeToNBT(new NBTTagCompound()));
+                }
+            }
+
+            @Override
+            public FluidStack readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
+                return FluidStack.loadFluidStackFromNBT(tag.getCompoundTag(name));
+            }
+
+            @Override
+            public FluidStack getDefaultValue() {
+                return null;
+            }
+        });
+
+        NBTYPES.put(UUID.class, new NBTClassType<UUID>() {
+
+            @Override
+            public void writePersistedField(String name, UUID object, NBTTagCompound tag) {
+                tag.setString(name, object.toString());
+            }
+
+            @Override
+            public UUID readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
+                return UUID.fromString(tag.getString(name));
+            }
+
+            @Override
+            public UUID getDefaultValue() {
                 return null;
             }
         });

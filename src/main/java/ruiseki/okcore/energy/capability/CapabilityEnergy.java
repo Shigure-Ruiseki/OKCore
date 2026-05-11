@@ -8,6 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 
+import cofh.api.energy.IEnergyConnection;
 import cofh.api.energy.IEnergyHandler;
 import cofh.api.energy.IEnergyProvider;
 import cofh.api.energy.IEnergyReceiver;
@@ -41,8 +42,6 @@ public class CapabilityEnergy implements IInitListener {
     public static Capability<IEnergySource> ENERGY_SOURCE_CAPABILITY = null;
 
     public static final ResourceLocation ENERGY_CAP = new ResourceLocation(Reference.MOD_ID, "energy");
-    public static final ResourceLocation ENERGY_SINK = new ResourceLocation(Reference.MOD_ID, "energy_sink");
-    public static final ResourceLocation ENERGY_SOURCE = new ResourceLocation(Reference.MOD_ID, "energy_source");
 
     public static void register() {
         CapabilityManager.INSTANCE.register(IEnergyStorage.class, new Capability.IStorage<IEnergyStorage>() {
@@ -92,60 +91,33 @@ public class CapabilityEnergy implements IInitListener {
         if (event.getType() != TileEntity.class) return;
         TileEntity tile = event.getObject();
 
-        if (tile instanceof IEnergyReceiver || tile instanceof IEnergyProvider) {
+        if (tile instanceof IEnergyConnection) {
             event.addCapability(ENERGY_CAP, new ICapabilityProvider() {
 
                 @Override
                 public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
-                    return capability == CapabilityEnergy.ENERGY;
+                    return capability == ENERGY || capability == ENERGY_SINK_CAPABILITY
+                        || capability == ENERGY_SOURCE_CAPABILITY;
                 }
 
                 @Override
                 public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
-                    if (capability == CapabilityEnergy.ENERGY) {
-                        if (tile instanceof IEnergyHandler handler) {
-                            return (T) new CoFHHandlerWrapper(handler, facing);
-                        }
-
-                        if (tile instanceof IEnergyReceiver receiver) {
+                    if (capability == ENERGY) {
+                        if (tile instanceof IEnergyHandler handler) return (T) new CoFHHandlerWrapper(handler, facing);
+                        if (tile instanceof IEnergyReceiver receiver)
                             return (T) new CoFHReceiverWrapper(receiver, facing);
-                        } else {
-                            IEnergyProvider provider = (IEnergyProvider) tile;
+                        if (tile instanceof IEnergyProvider provider)
                             return (T) new CoFHProviderWrapper(provider, facing);
-                        }
                     }
-                    return null;
-                }
-            });
-            event.addCapability(ENERGY_SINK, new ICapabilityProvider() {
 
-                @Override
-                public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
-                    return capability == CapabilityEnergy.ENERGY_SINK_CAPABILITY;
-                }
-
-                @Override
-                public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
-                    if (capability == CapabilityEnergy.ENERGY_SINK_CAPABILITY
-                        && tile instanceof IEnergyReceiver receiver) {
+                    if (capability == ENERGY_SINK_CAPABILITY && tile instanceof IEnergyReceiver receiver) {
                         return (T) new CoFHEnergyReceiver(receiver, facing);
                     }
-                    return null;
-                }
-            });
-            event.addCapability(ENERGY_SOURCE, new ICapabilityProvider() {
 
-                @Override
-                public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
-                    return capability == CapabilityEnergy.ENERGY_SOURCE_CAPABILITY;
-                }
-
-                @Override
-                public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
-                    if (capability == CapabilityEnergy.ENERGY_SOURCE_CAPABILITY
-                        && tile instanceof IEnergyProvider provider) {
+                    if (capability == ENERGY_SOURCE_CAPABILITY && tile instanceof IEnergyProvider provider) {
                         return (T) new CoFHEnergyProvider(provider, facing);
                     }
+
                     return null;
                 }
             });

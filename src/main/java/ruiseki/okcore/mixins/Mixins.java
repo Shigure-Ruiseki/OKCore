@@ -17,12 +17,16 @@ public enum Mixins implements IMixins {
             .addCommonMixins("itemSharedNBT.MixinPacketBufferNBT")
             .setPhase(Phase.EARLY)),
 
-    ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Entity").addCommonMixins("capabilities.MixinEntityCap")
-        .setPhase(Phase.EARLY)),
-
     COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("cooldown.MixinEntityPlayer")
         .addClientMixins("cooldown.MixinRenderItem")
         .setPhase(Phase.EARLY)),
+
+    ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Entity").addCommonMixins("capabilities.MixinEntityCap")
+        .setPhase(Phase.EARLY)),
+
+    TILE_ENTITY_CAPABILITIES(
+        new MixinBuilder("Add capabilities to Tile Entity").addCommonMixins("capabilities.MixinTileEntity")
+            .setPhase(Phase.EARLY)),
 
     GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addClientMixins("event.gui.MixinGuiScreen")
         .setPhase(Phase.EARLY)),

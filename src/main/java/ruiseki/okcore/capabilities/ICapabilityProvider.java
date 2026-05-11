@@ -76,7 +76,6 @@ public interface ICapabilityProvider extends CapabilityProvider {
     @Override
     @Optional.Method(modid = "gtnhlib")
     default @Nullable <T> T getCapability(@NotNull Class<T> capabilityClass, @NotNull ForgeDirection facing) {
-
         Capability<T> cap = CapabilityManager.INSTANCE.get(capabilityClass);
         if (cap == null) return null;
 

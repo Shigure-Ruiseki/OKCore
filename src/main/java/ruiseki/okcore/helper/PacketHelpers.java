@@ -21,13 +21,7 @@ public class PacketHelpers {
      * share-tag mixin to use the full tag.
      */
     public static void writeItemStackFromClientToServer(PacketBuffer buffer, ItemStack stack) throws IOException {
-        if (stack == null || stack.getItem() == null || stack.stackSize <= 0) {
-            buffer.writeShort(-1);
-            return;
-        }
-
         WRITING_CLIENT_TO_SERVER_ITEM_STACK.set(true);
-
         try {
             buffer.writeItemStackToBuffer(stack);
         } finally {

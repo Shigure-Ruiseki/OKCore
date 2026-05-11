@@ -3,8 +3,8 @@ package ruiseki.okcore.item.capability.base;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.item.IInventoryIterator;
 import ruiseki.okcore.item.IImmutableItemStack;
+import ruiseki.okcore.item.IInventoryIterator;
 import ruiseki.okcore.item.InsertionItemStack;
 import ruiseki.okcore.item.capability.IItemSink;
 

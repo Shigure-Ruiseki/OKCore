@@ -6,9 +6,8 @@ import net.minecraft.item.ItemStack;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import ruiseki.okcore.item.FastImmutableItemStack;
-import ruiseki.okcore.item.IInventoryIterator;
 import ruiseki.okcore.item.IImmutableItemStack;
-import ruiseki.okcore.item.ItemTransfer;
+import ruiseki.okcore.item.IInventoryIterator;
 
 /// An [IInventoryIterator] implementation for something [IInventory]-like. This does not make any assumptions about the
 /// backing inventory, it only implements the iterator portion of the logic. When an item was extracted from a slot, it

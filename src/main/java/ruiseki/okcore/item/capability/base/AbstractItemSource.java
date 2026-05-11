@@ -5,8 +5,8 @@ import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.item.IInventoryIterator;
 import ruiseki.okcore.item.IImmutableItemStack;
+import ruiseki.okcore.item.IInventoryIterator;
 import ruiseki.okcore.item.IItemStack2IntFunction;
 import ruiseki.okcore.item.IItemStackPredicate;
 import ruiseki.okcore.item.capability.IItemSource;

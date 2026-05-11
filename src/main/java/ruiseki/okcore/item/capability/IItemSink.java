@@ -10,10 +10,10 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
-import ruiseki.okcore.item.IInventoryIterator;
 import ruiseki.okcore.item.IImmutableItemStack;
-import ruiseki.okcore.item.InsertionItemStack;
+import ruiseki.okcore.item.IInventoryIterator;
 import ruiseki.okcore.item.IItemStackPredicate;
+import ruiseki.okcore.item.InsertionItemStack;
 
 /**
  * Something that can accept items. Should only be retrieved via

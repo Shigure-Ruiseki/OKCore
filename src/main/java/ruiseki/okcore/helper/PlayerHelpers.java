@@ -1,14 +1,26 @@
 package ruiseki.okcore.helper;
 
+import java.lang.ref.WeakReference;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.FakePlayerFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 
 import com.mojang.authlib.GameProfile;
+
+import cpw.mods.fml.common.FMLCommonHandler;
+import ruiseki.okcore.OKCore;
+import ruiseki.okcore.Reference;
 
 public class PlayerHelpers {
 
@@ -104,5 +116,37 @@ public class PlayerHelpers {
         }
 
         return new GameProfile(uuid, name);
+    }
+
+    public static WeakReference<FakePlayer> initFakePlayer(WorldServer ws, UUID uname, String blockName) {
+        GameProfile breakerProfile = new GameProfile(uname, Reference.MOD_ID + ".fake_player." + blockName);
+        WeakReference<FakePlayer> fakePlayer;
+        try {
+            fakePlayer = new WeakReference<>(FakePlayerFactory.get(ws, breakerProfile));
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "Exception thrown trying to create fake player : ", e);
+            return null;
+        }
+
+        if (fakePlayer.get() == null) return null;
+
+        FakePlayer player = fakePlayer.get();
+        if (player == null) return null;
+
+        player.onGround = true;
+
+        try {
+            player.playerNetServerHandler = new NetHandlerPlayServer(
+                FMLCommonHandler.instance()
+                    .getMinecraftServerInstance(),
+                new NetworkManager(false),
+                player) {
+
+                @Override
+                public void sendPacket(Packet packetIn) {}
+            };
+        } catch (Exception ignore) {}
+
+        return fakePlayer;
     }
 }

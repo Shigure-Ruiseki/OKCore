@@ -1,5 +1,6 @@
 [![](https://cf.way2muchnoise.eu/full_1475995_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/ok-core)
 [![](https://cf.way2muchnoise.eu/versions/For%20MC_1475995_all.svg)](https://www.curseforge.com/minecraft/mc-mods/ok-core)
+[![](https://jitpack.io/v/Shigure-Ruiseki/OKCore.svg)](https://jitpack.io/#Shigure-Ruiseki/OKCore)
 
 Just a core mod extracted to use in other mod
 

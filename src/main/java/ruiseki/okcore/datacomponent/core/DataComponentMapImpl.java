@@ -16,35 +16,35 @@ import ruiseki.okcore.datacomponent.registry.DataComponentRegistry;
 
 @SuppressWarnings({ "resource", "unchecked" })
 @ApiStatus.Internal
-public class DataComponentImpl implements DataComponent {
+public class DataComponentMapImpl implements DataComponentMap {
 
     private Item item;
 
     private final Map<String, DataComponentType<?>> components = new Object2ObjectOpenHashMap<>(4);
     private final Map<DataComponentType<?>, Object> values = new Object2ObjectOpenHashMap<>(4);
 
-    private static final ObjectPooler<DataComponentImpl> POOL = new ObjectPooler<>(DataComponentImpl::new);
+    private static final ObjectPooler<DataComponentMapImpl> POOL = new ObjectPooler<>(DataComponentMapImpl::new);
 
-    public static DataComponentImpl getInstance() {
+    public static DataComponentMapImpl getInstance() {
         return POOL.getInstance()
             .assertIsDefault();
     }
 
-    public DataComponentImpl assertIsDefault() {
+    public DataComponentMapImpl assertIsDefault() {
         if (item != null || !components.isEmpty() || !values.isEmpty()) {
             throw new RuntimeException("DataComponentImpl reference was mutated/dirty while in the pool!");
         }
         return this;
     }
 
-    public DataComponentImpl reset() {
+    public DataComponentMapImpl reset() {
         this.item = null;
         this.components.clear();
         this.values.clear();
         return this;
     }
 
-    public DataComponentImpl copy(DataComponentImpl other) {
+    public DataComponentMapImpl copy(DataComponentMapImpl other) {
         reset();
 
         this.item = other.item;
@@ -54,7 +54,7 @@ public class DataComponentImpl implements DataComponent {
         return this;
     }
 
-    public DataComponentImpl fromStack(ItemStack stack) {
+    public DataComponentMapImpl fromStack(ItemStack stack) {
         if (stack == null || stack.getItem() == null) {
             throw new IllegalArgumentException("ItemStack/Item cannot be null");
         }
@@ -72,8 +72,8 @@ public class DataComponentImpl implements DataComponent {
     }
 
     @Override
-    public DataComponent clone() {
-        DataComponentImpl cloned = POOL.getInstance()
+    public DataComponentMap clone() {
+        DataComponentMapImpl cloned = POOL.getInstance()
             .reset();
         cloned.item = this.item;
         cloned.components.putAll(this.components);
@@ -167,7 +167,7 @@ public class DataComponentImpl implements DataComponent {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof DataComponentImpl other)) return false;
+        if (!(obj instanceof DataComponentMapImpl other)) return false;
 
         return this.item == other.item && this.values.equals(other.values);
     }

@@ -20,8 +20,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import ruiseki.okcore.datacomponent.core.DataComponent;
-import ruiseki.okcore.datacomponent.core.DataComponentImpl;
+import ruiseki.okcore.datacomponent.core.DataComponentMap;
+import ruiseki.okcore.datacomponent.core.DataComponentMapImpl;
 import ruiseki.okcore.datacomponent.core.DataComponentType;
 
 public class DataComponentRegistry {
@@ -173,8 +173,8 @@ public class DataComponentRegistry {
             .removeIf(comp -> !comp.appliesTo(stack, item, meta));
     }
 
-    public static DataComponent getComponentMap(ItemStack stack) {
-        DataComponentImpl componentMap = DataComponentImpl.getInstance();
+    public static DataComponentMap getComponentMap(ItemStack stack) {
+        DataComponentMapImpl componentMap = DataComponentMapImpl.getInstance();
         componentMap.fromStack(stack);
         return componentMap;
     }

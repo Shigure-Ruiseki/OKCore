@@ -68,85 +68,22 @@ public final class TileHelpers {
         }
     }
 
-    /**
-     * Safely get a capability from a tile.
-     *
-     * @param dimPos     The dimensional position of the block providing the tile entity.
-     * @param capability The capability.
-     * @param <C>        The capability instance.
-     * @return The capability or null.
-     */
-    public static <C> C getCapability(DimPos dimPos, Capability<C> capability) {
-        World world = dimPos.getWorld();
-        if (world == null) {
-            return null;
-        }
-        return getCapability(world, dimPos.getBlockPos(), null, capability);
-    }
-
-    /**
-     * Safely get a capability from a tile.
-     *
-     * @param dimPos     The dimensional position of the block providing the tile entity.
-     * @param side       The side to get the capability from.
-     * @param capability The capability.
-     * @param <C>        The capability instance.
-     * @return The capability or null.
-     */
-    public static <C> C getCapability(DimPos dimPos, ForgeDirection side, Capability<C> capability) {
-        World world = dimPos.getWorld();
-        if (world == null) {
-            return null;
-        }
-        return getCapability(world, dimPos.getBlockPos(), side, capability);
-    }
-
-    /**
-     * Safely get a capability from a tile.
-     *
-     * @param world      The world.
-     * @param pos        The position of the block of the tile entity providing the capability.
-     * @param side       The side to get the capability from.
-     * @param capability The capability.
-     * @param <C>        The capability instance.
-     * @return The capability or null.
-     */
-    public static <C> C getCapability(World world, BlockPos pos, ForgeDirection side, Capability<C> capability) {
-        return getCapability((IBlockAccess) world, pos, side, capability);
-    }
-
-    /**
-     * Safely get a capability from a tile.
-     *
-     * @param world      The world.
-     * @param pos        The position of the block of the tile entity providing the capability.
-     * @param capability The capability.
-     * @param <C>        The capability instance.
-     * @return The capability or null.
-     */
-    public static <C> C getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability) {
-        return getCapability(world, pos, null, capability);
-    }
-
-    /**
-     * Safely get a capability from a tile.
-     *
-     * @param world      The world.
-     * @param pos        The position of the block of the tile entity providing the capability.
-     * @param side       The side to get the capability from.
-     * @param capability The capability.
-     * @param <C>        The capability instance.
-     * @return The capability or null.
-     */
-    public static <C> C getCapability(IBlockAccess world, BlockPos pos, ForgeDirection side, Capability<C> capability) {
-        return getCapability(TileHelpers.getSafeTile(world, pos, TileEntity.class), side, capability);
-    }
-
-    public static <C> C getCapability(TileEntity tile, ForgeDirection side, Capability<C> capability) {
+    public static <C> C getCapability(@Nullable TileEntity tile, Capability<C> capability,
+        @Nullable ForgeDirection side) {
         if (tile instanceof ICapabilityProvider provider) {
             return provider.getCapability(capability, side);
         }
         return null;
+    }
+
+    public static <C> C getCapability(DimPos dimPos, Capability<C> capability, @Nullable ForgeDirection side) {
+        World world = dimPos.getWorld();
+        return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : null;
+    }
+
+    public static <C> C getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
+        @Nullable ForgeDirection side) {
+        return getCapability(pos.getTileEntity(world), capability, side);
     }
 
     public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess level, BlockPos pos) {

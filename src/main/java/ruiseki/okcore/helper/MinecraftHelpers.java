@@ -5,7 +5,6 @@ import java.util.List;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.tileentity.TileEntity;
@@ -21,6 +20,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.BlockOK;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.item.IItemHandler;
+import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -234,9 +235,12 @@ public class MinecraftHelpers {
     public static void preDestroyBlock(BlockOK block, World world, int x, int y, int z, boolean saveNBT) {
         TileEntity tile = world.getTileEntity(x, y, z);
 
-        if (block.shouldDropInventory(world, x, y, z) && tile instanceof IInventory && !world.isRemote) {
-            InventoryHelpers.dropItems(world, (IInventory) tile, new BlockPos(x, y, z));
-            InventoryHelpers.clearInventory((IInventory) tile);
+        if (block.shouldDropInventory(world, x, y, z) && !world.isRemote) {
+            IItemHandler handler = TileHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+            if (handler != null) {
+                InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
+                InventoryHelpers.clearInventory(handler);
+            }
         }
 
         if (tile instanceof TileEntityOK teok && saveNBT) {

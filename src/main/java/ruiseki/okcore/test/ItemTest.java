@@ -2,14 +2,20 @@ package ruiseki.okcore.test;
 
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.datacomponent.component.UseCooldown;
+import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.IItemCooldown;
+import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
+import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
 public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
@@ -40,6 +46,40 @@ public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
         }
 
         return stack;
+    }
+
+    @Override
+    public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
+        if (world.isRemote) return true;
+
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te != null) {
+            ForgeDirection direction = ForgeDirection.getOrientation(side);
+
+            IItemHandler handler = TileHelpers
+                .getCapability(te, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction);
+
+            if (handler != null) {
+                ItemStack toInsert = new ItemStack(Items.stick);
+                ItemStack remainder = toInsert;
+
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    remainder = handler.insertItem(i, remainder, false);
+                    if (remainder == null || remainder.stackSize <= 0) {
+                        break;
+                    }
+                }
+
+                if (remainder == null || remainder.stackSize < toInsert.stackSize) {
+                    world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "random.pop", 0.5F, 1.0F);
+                    return true;
+                } else {
+                    player.addChatComponentMessage(new ChatComponentText("§cTile Entity full!"));
+                }
+            }
+        }
+        return false;
     }
 
     @Override

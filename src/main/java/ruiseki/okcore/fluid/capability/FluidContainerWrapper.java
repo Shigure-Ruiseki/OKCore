@@ -13,12 +13,12 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.fluid.IFluidHandlerItem;
 
-public class FluidContainerAdapter implements IFluidHandlerItem, ICapabilityProvider {
+public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProvider {
 
     private final ItemStack stack;
     private final IFluidContainerItem legacy;
 
-    public FluidContainerAdapter(ItemStack stack, IFluidContainerItem legacy) {
+    public FluidContainerWrapper(ItemStack stack, IFluidContainerItem legacy) {
         this.stack = stack;
         this.legacy = legacy;
     }

@@ -32,7 +32,9 @@ public enum Mixins implements IMixins {
     GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addClientMixins("event.gui.MixinGuiScreen")
         .setPhase(Phase.EARLY)),
 
-    ;
+    CHUNK_CAPABILITIES(new MixinBuilder("Add capabilities to Chunk").addCommonMixins("capabilities.MixinChunk")
+        .addCommonMixins("capabilities.MixinAnvilChunkLoader")
+        .setPhase(Phase.EARLY)),;
 
     private final MixinBuilder builder;
 

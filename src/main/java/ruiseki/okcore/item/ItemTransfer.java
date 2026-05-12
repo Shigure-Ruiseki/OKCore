@@ -7,6 +7,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import lombok.Getter;
 import lombok.Setter;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.item.capability.IItemSink;
 import ruiseki.okcore.item.capability.IItemSource;
@@ -50,7 +51,7 @@ public class ItemTransfer {
     }
 
     public void source(Object source, ForgeDirection side) {
-        this.source = ItemStackHelpers.getItemSource(source, side);
+        this.source = ItemHelpers.getItemSource(source, side);
     }
 
     public void sink(IItemSink sink) {
@@ -58,7 +59,7 @@ public class ItemTransfer {
     }
 
     public void sink(Object sink, ForgeDirection side) {
-        this.sink = ItemStackHelpers.getItemSink(sink, side);
+        this.sink = ItemHelpers.getItemSink(sink, side);
     }
 
     public void push(Object self, ForgeDirection side, Object target) {

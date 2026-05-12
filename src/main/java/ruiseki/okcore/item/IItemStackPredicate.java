@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * A predicate for ItemStacks.
@@ -167,7 +167,7 @@ public interface IItemStackPredicate extends Predicate<IImmutableItemStack> {
 
         ObjectOpenCustomHashSet<Object> stacks = new ObjectOpenCustomHashSet<>(
             ores,
-            checkNBT ? ItemStackHelpers.GENERIC_ITEM_META_NBT_STRATEGY : ItemStackHelpers.GENERIC_ITEM_META_STRATEGY);
+            checkNBT ? ItemHelpers.GENERIC_ITEM_META_NBT_STRATEGY : ItemHelpers.GENERIC_ITEM_META_STRATEGY);
 
         return new IItemStackPredicate() {
 

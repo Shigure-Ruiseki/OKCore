@@ -76,7 +76,8 @@ public class CapabilityItemHandler implements IInitListener {
             IInventory inventory = null;
             if (isInv) {
                 inventory = (IInventory) tile;
-                if (tile instanceof TileEntityChest && tile.getBlockType() instanceof BlockChest blockChest) {
+                if (tile instanceof TileEntityChest && tile.getWorldObj()
+                    .getBlock(tile.xCoord, tile.yCoord, tile.zCoord) instanceof BlockChest blockChest) {
                     inventory = blockChest.func_149951_m(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
                 }
             }

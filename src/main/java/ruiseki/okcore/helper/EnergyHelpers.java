@@ -23,9 +23,7 @@ public class EnergyHelpers {
 
     public static IEnergySource getEnergySource(Object obj, ForgeDirection side,
         @MagicConstant(flagsFromClass = EnergyHelpers.class) int usage) {
-        if ((usage & FOR_EXTRACTS) == 0) {
-            return null;
-        }
+        if ((usage & FOR_EXTRACTS) == 0) return null;
 
         if (obj instanceof IEnergySource source) {
             return source;
@@ -34,9 +32,7 @@ public class EnergyHelpers {
         if (obj instanceof ICapabilityProvider capabilityProvider) {
             IEnergySource source = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SOURCE_CAPABILITY, side);
 
-            if (source != null) {
-                return source;
-            }
+            if (source != null) return source;
         }
 
         return null;

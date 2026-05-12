@@ -43,11 +43,6 @@ public class FluidHelpers {
             }
         }
 
-        IFluidSource reSource = tryGTNHCapability(obj, IFluidSource.class, side);
-        if (reSource != null) {
-            return reSource;
-        }
-
         if (obj instanceof IFluidHandler handler) {
             IFluidSource source = new FluidSource(handler, side);
             if (source != null) {
@@ -80,11 +75,6 @@ public class FluidHelpers {
             }
         }
 
-        IFluidSink reSink = tryGTNHCapability(obj, IFluidSink.class, side);
-        if (reSink != null) {
-            return reSink;
-        }
-
         if (obj instanceof IFluidHandler handler) {
             IFluidSink sink = new FluidSink(handler, side);
             if (sink != null) {
@@ -93,25 +83,5 @@ public class FluidHelpers {
         }
 
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T tryGTNHCapability(Object obj, Class<T> clazz, ForgeDirection side) {
-
-        try {
-            Class<?> providerClass = Class.forName("com.gtnewhorizon.gtnhlib.capability.CapabilityProvider");
-
-            if (!providerClass.isInstance(obj)) {
-                return null;
-            }
-
-            Object result = providerClass.getMethod("getCapability", Class.class, ForgeDirection.class)
-                .invoke(obj, clazz, side);
-
-            return (T) result;
-
-        } catch (Throwable ignored) {
-            return null;
-        }
     }
 }

@@ -1,5 +1,7 @@
 package ruiseki.okcore.helper;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockChest;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -7,6 +9,8 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -316,6 +320,19 @@ public class InventoryHelpers {
     public static IInventory getInventoryAtSide(World world, BlockPos pos, ForgeDirection side) {
         BlockPos targetPos = pos.offset(side);
         if (!targetPos.isLoaded(world)) return null;
-        return TileHelpers.getSafeTile(world, targetPos, IInventory.class);
+        return getInventory(TileHelpers.getSafeTile(world, targetPos, TileEntity.class));
+    }
+
+    public static IInventory getInventory(TileEntity tile) {
+        if (tile instanceof IInventory inventory) {
+            if (tile instanceof TileEntityChest) {
+                Block block = tile.getBlockType();
+                if (block instanceof BlockChest blockChest) {
+                    inventory = blockChest.func_149951_m(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
+                }
+            }
+            return inventory;
+        }
+        return null;
     }
 }

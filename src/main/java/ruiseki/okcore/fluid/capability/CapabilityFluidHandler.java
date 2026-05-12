@@ -115,7 +115,7 @@ public class CapabilityFluidHandler implements IInitListener {
         if (stack.getItem() instanceof IFluidContainerItem legacy) {
             event.addCapability(
                 new ResourceLocation(Reference.MOD_ID, "fluid_container"),
-                new FluidContainerAdapter(stack, legacy));
+                new FluidContainerWrapper(stack, legacy));
         }
     }
 }

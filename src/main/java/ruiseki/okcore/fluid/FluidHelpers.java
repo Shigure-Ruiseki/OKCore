@@ -1,6 +1,8 @@
 package ruiseki.okcore.fluid;
 
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidHandler;
 
 import org.intellij.lang.annotations.MagicConstant;
@@ -11,6 +13,7 @@ import ruiseki.okcore.fluid.capability.FluidSink;
 import ruiseki.okcore.fluid.capability.FluidSource;
 import ruiseki.okcore.fluid.capability.IFluidSink;
 import ruiseki.okcore.fluid.capability.IFluidSource;
+import ruiseki.okcore.helper.ItemStackHelpers;
 
 public class FluidHelpers {
 
@@ -83,5 +86,14 @@ public class FluidHelpers {
         }
 
         return null;
+    }
+
+    public static int fill(ItemStack stack, FluidStack resource, boolean doFill) {
+        IFluidHandlerItem handler = ItemStackHelpers
+            .getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+        if (handler != null) {
+            return handler.fill(null, resource, doFill);
+        }
+        return 0;
     }
 }

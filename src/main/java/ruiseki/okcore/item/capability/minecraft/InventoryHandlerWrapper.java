@@ -20,6 +20,9 @@ public class InventoryHandlerWrapper implements IItemHandler {
 
     @Override
     public int getSlots() {
+        if (inventory instanceof ISidedInventory sided) {
+            return sided.getAccessibleSlotsFromSide(side.ordinal()).length;
+        }
         return inventory.getSizeInventory();
     }
 

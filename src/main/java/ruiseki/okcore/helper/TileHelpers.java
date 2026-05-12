@@ -139,7 +139,10 @@ public final class TileHelpers {
      * @return The capability or null.
      */
     public static <C> C getCapability(IBlockAccess world, BlockPos pos, ForgeDirection side, Capability<C> capability) {
-        TileEntity tile = TileHelpers.getSafeTile(world, pos, TileEntity.class);
+        return getCapability(TileHelpers.getSafeTile(world, pos, TileEntity.class), side, capability);
+    }
+
+    public static <C> C getCapability(TileEntity tile, ForgeDirection side, Capability<C> capability) {
         if (tile instanceof ICapabilityProvider provider) {
             return provider.getCapability(capability, side);
         }

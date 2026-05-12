@@ -26,6 +26,7 @@ public enum Mixins implements IMixins {
 
     TILE_ENTITY_CAPABILITIES(
         new MixinBuilder("Add capabilities to Tile Entity").addCommonMixins("capabilities.MixinTileEntity")
+            .addCommonMixins("capabilities.MixinTileEntityChest")
             .setPhase(Phase.EARLY)),
 
     GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addClientMixins("event.gui.MixinGuiScreen")

@@ -67,6 +67,7 @@ public class CapabilityItemHandler implements IInitListener {
     public void attachMCCapability(AttachCapabilitiesEvent<TileEntity> event) {
         if (event.getType() != TileEntity.class) return;
         TileEntity tile = event.getObject();
+        if (tile == null) return;
 
         boolean isInv = tile instanceof IInventory;
         boolean isDSU = tile instanceof IDeepStorageUnit;
@@ -76,9 +77,10 @@ public class CapabilityItemHandler implements IInitListener {
             IInventory inventory = null;
             if (isInv) {
                 inventory = (IInventory) tile;
-                if (tile instanceof TileEntityChest && tile.getWorldObj()
-                    .getBlock(tile.xCoord, tile.yCoord, tile.zCoord) instanceof BlockChest blockChest) {
-                    inventory = blockChest.func_149951_m(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
+                if (tile instanceof TileEntityChest && tile.getWorldObj() != null) {
+                    if (tile.getWorldObj().getBlock(tile.xCoord, tile.yCoord, tile.zCoord) instanceof BlockChest blockChest) {
+                        inventory = blockChest.func_149951_m(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
+                    }
                 }
             }
 

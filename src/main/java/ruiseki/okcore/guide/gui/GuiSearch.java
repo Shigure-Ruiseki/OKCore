@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -41,14 +40,14 @@ public class GuiSearch extends GuiBase {
     private int currentPage = 0;
     private String lastQuery = "";
 
-    public GuiSearch(Book book, EntityPlayer player, ItemStack bookStack, GuiScreen parent) {
-        super(player, bookStack);
+    public GuiSearch(Book book, EntityPlayer player, GuiScreen parent) {
+        super(player);
 
         this.book = book;
         this.pageTexture = book.getPageTexture();
         this.outlineTexture = book.getOutlineTexture();
         this.parent = parent;
-        this.searchResults = getMatches(book, null, player, bookStack);
+        this.searchResults = getMatches(book, null, player);
     }
 
     @Override
@@ -65,7 +64,7 @@ public class GuiSearch extends GuiBase {
         searchField = new GuiTextField(fontRendererObj, guiLeft + 43, guiTop + 12, 100, 10);
         searchField.setEnableBackgroundDrawing(false);
         searchField.setFocused(true);
-        searchResults = getMatches(book, null, player, bookStack);
+        searchResults = getMatches(book, null, player);
     }
 
     @Override
@@ -132,7 +131,7 @@ public class GuiSearch extends GuiBase {
                         fontRendererObj);
 
                     if (Mouse.isButtonDown(0)) {
-                        GuiHelpers.openBookClient(book, entry.getRight(), entry.getLeft(), player, bookStack);
+                        GuiHelpers.openBookClient(book, entry.getRight(), entry.getLeft(), player);
                         return;
                     }
                 }
@@ -161,7 +160,7 @@ public class GuiSearch extends GuiBase {
                 searchField.height)) {
                 searchField.setText("");
                 lastQuery = "";
-                searchResults = getMatches(book, "", player, bookStack);
+                searchResults = getMatches(book, "", player);
                 return;
             } else mc.displayGuiScreen(parent);
         }
@@ -188,7 +187,7 @@ public class GuiSearch extends GuiBase {
         if (!searchField.getText()
             .equalsIgnoreCase(lastQuery)) {
             lastQuery = searchField.getText();
-            searchResults = getMatches(book, searchField.getText(), player, bookStack);
+            searchResults = getMatches(book, searchField.getText(), player);
             if (currentPage > searchResults.size()) currentPage = searchResults.size() - 1;
         }
     }
@@ -213,14 +212,14 @@ public class GuiSearch extends GuiBase {
 
     @NotNull
     static List<List<Pair<EntryAbstract, CategoryAbstract>>> getMatches(Book book, @Nullable String query,
-        EntityPlayer player, ItemStack bookStack) {
+        EntityPlayer player) {
         List<Pair<EntryAbstract, CategoryAbstract>> discovered = Lists.newArrayList();
 
         for (CategoryAbstract category : book.getCategories()) {
-            if (!category.canSee(player, bookStack)) continue;
+            if (!category.canSee(player)) continue;
 
             for (EntryAbstract entry : category.entries.values()) {
-                if (!entry.canSee(player, bookStack)) continue;
+                if (!entry.canSee(player)) continue;
 
                 if (Strings.isNullOrEmpty(query) || entry.getLocalizedName()
                     .toLowerCase(Locale.ENGLISH)

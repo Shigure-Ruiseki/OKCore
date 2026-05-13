@@ -3,7 +3,6 @@ package ruiseki.okcore.guide.wrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 
 import ruiseki.okcore.guide.gui.GuiBase;
 import ruiseki.okcore.guide.gui.GuiCategory;
@@ -21,10 +20,9 @@ public class EntryWrapper extends AbstractWrapper {
     public EntityPlayer player;
     public FontRenderer renderer;
     public GuiCategory categoryGui;
-    public ItemStack bookStack;
 
     public EntryWrapper(GuiCategory categoryGui, Book book, CategoryAbstract category, EntryAbstract entry, int x,
-        int y, int width, int height, EntityPlayer player, FontRenderer renderer, ItemStack bookStack) {
+        int y, int width, int height, EntityPlayer player, FontRenderer renderer) {
         this.book = book;
         this.category = category;
         this.entry = entry;
@@ -35,7 +33,6 @@ public class EntryWrapper extends AbstractWrapper {
         this.player = player;
         this.renderer = renderer;
         this.categoryGui = categoryGui;
-        this.bookStack = bookStack;
     }
 
     @Override
@@ -43,7 +40,7 @@ public class EntryWrapper extends AbstractWrapper {
 
     @Override
     public boolean canPlayerSee() {
-        return entry.canSee(player, bookStack);
+        return entry.canSee(player);
     }
 
     @Override

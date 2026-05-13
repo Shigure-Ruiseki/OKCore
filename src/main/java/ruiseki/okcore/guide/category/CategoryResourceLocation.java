@@ -44,7 +44,7 @@ public class CategoryResourceLocation extends Category {
     @SideOnly(Side.CLIENT)
     public void drawExtras(Book book, int categoryX, int categoryY, int categoryWidth, int categoryHeight, int mouseX,
         int mouseY, GuiBase guiBase, boolean drawOnLeft, RenderItem renderItem) {
-        if (canSee(guiBase.player, guiBase.bookStack)
+        if (canSee(guiBase.player)
             && GuiHelpers.isMouseBetween(mouseX, mouseY, categoryX, categoryY, categoryWidth, categoryHeight))
             guiBase.drawHoveringText(this.getTooltip(), mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);
     }

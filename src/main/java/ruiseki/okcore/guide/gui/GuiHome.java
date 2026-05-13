@@ -6,7 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
@@ -35,8 +34,8 @@ public class GuiHome extends GuiBase {
     public ButtonSearch buttonSearch;
     public int categoryPage;
 
-    public GuiHome(Book book, EntityPlayer player, ItemStack bookStack) {
-        super(player, bookStack);
+    public GuiHome(Book book, EntityPlayer player) {
+        super(player);
         this.book = book;
         this.pageTexture = book.getPageTexture();
         this.outlineTexture = book.getOutlineTexture();
@@ -64,7 +63,7 @@ public class GuiHome extends GuiBase {
         for (CategoryAbstract category : book.getCategories()) {
             if (category.entries.isEmpty()) continue;
 
-            category.onInit(book, this, player, bookStack);
+            category.onInit(book, this, player);
             switch (drawLoc) {
                 case 0: {
                     categoryWrapperMap.put(
@@ -79,8 +78,7 @@ public class GuiHome extends GuiBase {
                             player,
                             this.fontRendererObj,
                             itemRender,
-                            false,
-                            bookStack));
+                            false));
                     cX += 27;
                     drawLoc = 1;
                     break;
@@ -98,8 +96,7 @@ public class GuiHome extends GuiBase {
                             player,
                             this.fontRendererObj,
                             itemRender,
-                            false,
-                            bookStack));
+                            false));
                     cX += 27;
                     drawLoc = 2;
                     break;
@@ -117,8 +114,7 @@ public class GuiHome extends GuiBase {
                             player,
                             this.fontRendererObj,
                             itemRender,
-                            false,
-                            bookStack));
+                            false));
                     cX += 27;
                     drawLoc = 3;
                     break;
@@ -136,8 +132,7 @@ public class GuiHome extends GuiBase {
                             player,
                             this.fontRendererObj,
                             itemRender,
-                            false,
-                            bookStack));
+                            false));
                     drawLoc = 0;
                     cX = guiLeft + 45;
                     cY += 30;
@@ -213,9 +208,9 @@ public class GuiHome extends GuiBase {
 
         for (CategoryWrapper wrapper : this.categoryWrapperMap.get(categoryPage)) {
             if (wrapper.isMouseOnWrapper(mouseX, mouseY) && wrapper.canPlayerSee()) {
-                if (typeofClick == 0) wrapper.category.onLeftClicked(book, mouseX, mouseY, player, bookStack);
+                if (typeofClick == 0) wrapper.category.onLeftClicked(book, mouseX, mouseY, player);
 
-                else if (typeofClick == 1) wrapper.category.onRightClicked(book, mouseX, mouseY, player, bookStack);
+                else if (typeofClick == 1) wrapper.category.onRightClicked(book, mouseX, mouseY, player);
             }
         }
     }
@@ -257,7 +252,7 @@ public class GuiHome extends GuiBase {
                 break;
             }
             case 2: {
-                mc.displayGuiScreen(new GuiSearch(book, player, bookStack, this));
+                mc.displayGuiScreen(new GuiSearch(book, player, this));
                 break;
             }
         }

@@ -2,10 +2,6 @@ package ruiseki.okcore.item;
 
 import java.util.List;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,10 +16,11 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Strings;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.event.BookEvent;
-import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.IGuideItem;
 import ruiseki.okcore.guide.IGuideLinked;
 import ruiseki.okcore.guide.impl.Book;
@@ -53,7 +50,7 @@ public class ItemGuideBook extends Item implements IGuideItem {
 
     @Override
     public ItemStack onItemRightClick(ItemStack heldStack, World world, EntityPlayer player) {
-        BookEvent.Open event = new BookEvent.Open(book, heldStack, player);
+        BookEvent.Open event = new BookEvent.Open(book, player);
         if (MinecraftForge.EVENT_BUS.post(event)) {
             player.addChatComponentMessage(event.getCanceledText());
             return heldStack;
@@ -83,7 +80,7 @@ public class ItemGuideBook extends Item implements IGuideItem {
             for (CategoryAbstract category : book.getCategories()) {
                 if (category.entries.containsKey(entryKey)) {
                     if (world.isRemote) {
-                        GuiHelpers.openBookClient(book, category, category.entries.get(entryKey), player, stack);
+                        GuiHelpers.openBookClient(book, category, category.entries.get(entryKey), player);
                     }
                     return true;
                 }
@@ -133,7 +130,8 @@ public class ItemGuideBook extends Item implements IGuideItem {
     public int getColorFromItemStack(ItemStack stack, int pass) {
         if (pass == 0 && customIcon == null) {
             if (book.getColor() != null) {
-                return book.getColor().getRGB();
+                return book.getColor()
+                    .getRGB();
             }
         }
         return super.getColorFromItemStack(stack, pass);

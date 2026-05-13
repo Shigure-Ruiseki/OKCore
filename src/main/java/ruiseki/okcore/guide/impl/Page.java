@@ -2,7 +2,6 @@ package ruiseki.okcore.guide.impl;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -28,7 +27,7 @@ public class Page implements IPage {
 
     @Override
     public boolean canSee(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player,
-        ItemStack bookStack, GuiEntry guiEntry) {
+        GuiEntry guiEntry) {
         return true;
     }
 
@@ -45,7 +44,7 @@ public class Page implements IPage {
     @Override
     @SideOnly(Side.CLIENT)
     public void onInit(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player,
-        ItemStack bookStack, GuiEntry guiEntry) {}
+        GuiEntry guiEntry) {}
 
     public void setUnicodeFlag(boolean flag) {
         this.unicode = flag;

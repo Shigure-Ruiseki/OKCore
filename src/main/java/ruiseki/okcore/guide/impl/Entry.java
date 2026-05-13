@@ -7,7 +7,6 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -89,7 +88,7 @@ public class Entry extends EntryAbstract {
     }
 
     @Override
-    public boolean canSee(EntityPlayer player, ItemStack bookStack) {
+    public boolean canSee(EntityPlayer player) {
         return true;
     }
 
@@ -98,7 +97,7 @@ public class Entry extends EntryAbstract {
     public void onLeftClicked(Book book, CategoryAbstract category, int mouseX, int mouseY, EntityPlayer player,
         GuiCategory guiCategory) {
         Minecraft.getMinecraft()
-            .displayGuiScreen(new GuiEntry(book, category, this, player, guiCategory.bookStack));
+            .displayGuiScreen(new GuiEntry(book, category, this, player));
     }
 
     @Override
@@ -108,6 +107,5 @@ public class Entry extends EntryAbstract {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void onInit(Book book, CategoryAbstract category, GuiCategory guiCategory, EntityPlayer player,
-        ItemStack bookStack) {}
+    public void onInit(Book book, CategoryAbstract category, GuiCategory guiCategory, EntityPlayer player) {}
 }

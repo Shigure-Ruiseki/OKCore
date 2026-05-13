@@ -8,7 +8,6 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
@@ -41,9 +40,8 @@ public class GuiEntry extends GuiBase {
     public ButtonSearch buttonSearch;
     public int pageNumber;
 
-    public GuiEntry(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player,
-        ItemStack bookStack) {
-        super(player, bookStack);
+    public GuiEntry(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player) {
+        super(player);
         this.book = book;
         this.category = category;
         this.entry = entry;
@@ -55,7 +53,7 @@ public class GuiEntry extends GuiBase {
     @Override
     public void initGui() {
         super.initGui();
-        entry.onInit(book, category, null, player, bookStack);
+        entry.onInit(book, category, null, player);
         this.buttonList.clear();
         this.pageWrapperList.clear();
 
@@ -68,19 +66,9 @@ public class GuiEntry extends GuiBase {
         this.buttonList.add(buttonSearch = new ButtonSearch(3, (guiLeft + xSize / 6) - 25, guiTop + 5, this));
 
         for (IPage page : this.entry.pageList) {
-            page.onInit(book, category, entry, player, bookStack, this);
-            pageWrapperList.add(
-                new PageWrapper(
-                    this,
-                    book,
-                    category,
-                    entry,
-                    page,
-                    guiLeft,
-                    guiTop,
-                    player,
-                    this.fontRendererObj,
-                    bookStack));
+            page.onInit(book, category, entry, player, this);
+            pageWrapperList
+                .add(new PageWrapper(this, book, category, entry, page, guiLeft, guiTop, player, this.fontRendererObj));
         }
     }
 
@@ -143,7 +131,7 @@ public class GuiEntry extends GuiBase {
         }
 
         if (typeofClick == 1) {
-            this.mc.displayGuiScreen(new GuiCategory(book, category, player, bookStack, entry));
+            this.mc.displayGuiScreen(new GuiCategory(book, category, player, entry));
         }
     }
 
@@ -160,7 +148,7 @@ public class GuiEntry extends GuiBase {
     public void keyTyped(char typedChar, int keyCode) {
         super.keyTyped(typedChar, keyCode);
         if (keyCode == Keyboard.KEY_BACK || keyCode == this.mc.gameSettings.keyBindUseItem.getKeyCode())
-            this.mc.displayGuiScreen(new GuiCategory(book, category, player, bookStack, entry));
+            this.mc.displayGuiScreen(new GuiCategory(book, category, player, entry));
         if ((keyCode == Keyboard.KEY_UP || keyCode == Keyboard.KEY_RIGHT) && pageNumber + 1 < pageWrapperList.size())
             nextPage();
         if ((keyCode == Keyboard.KEY_DOWN || keyCode == Keyboard.KEY_LEFT) && pageNumber > 0) prevPage();
@@ -168,10 +156,10 @@ public class GuiEntry extends GuiBase {
 
     @Override
     public void actionPerformed(GuiButton button) {
-        if (button.id == 0) this.mc.displayGuiScreen(new GuiCategory(book, category, player, bookStack, entry));
+        if (button.id == 0) this.mc.displayGuiScreen(new GuiCategory(book, category, player, entry));
         else if (button.id == 1 && pageNumber + 1 < pageWrapperList.size()) nextPage();
         else if (button.id == 2 && pageNumber > 0) prevPage();
-        else if (button.id == 3) this.mc.displayGuiScreen(new GuiSearch(book, player, bookStack, this));
+        else if (button.id == 3) this.mc.displayGuiScreen(new GuiSearch(book, player, this));
     }
 
     @Override

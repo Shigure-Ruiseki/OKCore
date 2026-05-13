@@ -41,7 +41,7 @@ public class Capability<T> {
          * @param side       The side of the object the instance is associated with.
          * @return a NBT holding the data. Null if no data needs to be stored.
          */
-        @javax.annotation.Nullable
+        @Nullable
         NBTBase writeNBT(Capability<T> capability, T instance, ForgeDirection side);
 
         /**
@@ -95,7 +95,7 @@ public class Capability<T> {
      * Quick access to the IStorage's writeNBT.
      * See {@link IStorage#writeNBT(Capability, Object, ForgeDirection)} for documentation.
      */
-    @javax.annotation.Nullable
+    @Nullable
     public NBTBase writeNBT(T instance, ForgeDirection side) {
         return storage.writeNBT(this, instance, side);
     }

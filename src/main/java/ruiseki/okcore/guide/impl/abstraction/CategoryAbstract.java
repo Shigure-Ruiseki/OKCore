@@ -5,7 +5,6 @@ import java.util.Map;
 
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.common.base.Strings;
@@ -142,16 +141,16 @@ public abstract class CategoryAbstract {
     public abstract void drawExtras(Book book, int categoryX, int categoryY, int categoryWidth, int categoryHeight,
         int mouseX, int mouseY, GuiBase guiBase, boolean drawOnLeft, RenderItem renderItem);
 
-    public abstract boolean canSee(EntityPlayer player, ItemStack bookStack);
+    public abstract boolean canSee(EntityPlayer player);
 
     @SideOnly(Side.CLIENT)
-    public abstract void onLeftClicked(Book book, int mouseX, int mouseY, EntityPlayer player, ItemStack bookStack);
+    public abstract void onLeftClicked(Book book, int mouseX, int mouseY, EntityPlayer player);
 
     @SideOnly(Side.CLIENT)
-    public abstract void onRightClicked(Book book, int mouseX, int mouseY, EntityPlayer player, ItemStack bookStack);
+    public abstract void onRightClicked(Book book, int mouseX, int mouseY, EntityPlayer player);
 
     @SideOnly(Side.CLIENT)
-    public abstract void onInit(Book book, GuiHome guiHome, EntityPlayer player, ItemStack bookStack);
+    public abstract void onInit(Book book, GuiHome guiHome, EntityPlayer player);
 
     @Override
     public boolean equals(Object o) {

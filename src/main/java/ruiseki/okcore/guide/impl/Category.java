@@ -5,7 +5,6 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import cpw.mods.fml.relauncher.Side;
@@ -37,22 +36,22 @@ public class Category extends CategoryAbstract {
         int mouseY, GuiBase guiBase, boolean drawOnLeft, RenderItem renderItem) {}
 
     @Override
-    public boolean canSee(EntityPlayer player, ItemStack bookStack) {
+    public boolean canSee(EntityPlayer player) {
         return true;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void onLeftClicked(Book book, int mouseX, int mouseY, EntityPlayer player, ItemStack bookStack) {
+    public void onLeftClicked(Book book, int mouseX, int mouseY, EntityPlayer player) {
         Minecraft.getMinecraft()
-            .displayGuiScreen(new GuiCategory(book, this, player, bookStack, null));
+            .displayGuiScreen(new GuiCategory(book, this, player, null));
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void onRightClicked(Book book, int mouseX, int mouseY, EntityPlayer player, ItemStack bookStack) {}
+    public void onRightClicked(Book book, int mouseX, int mouseY, EntityPlayer player) {}
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void onInit(Book book, GuiHome guiHome, EntityPlayer player, ItemStack bookStack) {}
+    public void onInit(Book book, GuiHome guiHome, EntityPlayer player) {}
 }

@@ -258,13 +258,13 @@ public class GuiHelpers {
 
     @SideOnly(Side.CLIENT)
     public static void openBookClient(Book book, CategoryAbstract category, EntryAbstract entryAbstract,
-        EntityPlayer player, ItemStack stack) {
-        BookEvent.Open event = new BookEvent.Open(book, stack, player);
+        EntityPlayer player) {
+        BookEvent.Open event = new BookEvent.Open(book, player);
         if (MinecraftForge.EVENT_BUS.post(event)) {
             player.addChatComponentMessage(event.getCanceledText());
             return;
         }
         Minecraft.getMinecraft()
-            .displayGuiScreen(new GuiEntry(book, category, entryAbstract, player, stack));
+            .displayGuiScreen(new GuiEntry(book, category, entryAbstract, player));
     }
 }

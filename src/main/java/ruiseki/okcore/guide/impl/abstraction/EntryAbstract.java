@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 
 import com.google.common.collect.Lists;
 
@@ -68,7 +67,7 @@ public abstract class EntryAbstract {
     public abstract void drawExtras(Book book, CategoryAbstract category, int entryX, int entryY, int entryWidth,
         int entryHeight, int mouseX, int mouseY, GuiBase guiBase, FontRenderer renderer);
 
-    public abstract boolean canSee(EntityPlayer player, ItemStack bookStack);
+    public abstract boolean canSee(EntityPlayer player);
 
     @SideOnly(Side.CLIENT)
     public abstract void onLeftClicked(Book book, CategoryAbstract category, int mouseX, int mouseY,
@@ -79,8 +78,7 @@ public abstract class EntryAbstract {
         EntityPlayer player, GuiCategory guiCategory);
 
     @SideOnly(Side.CLIENT)
-    public abstract void onInit(Book book, CategoryAbstract category, GuiCategory guiCategory, EntityPlayer player,
-        ItemStack bookStack);
+    public abstract void onInit(Book book, CategoryAbstract category, GuiCategory guiCategory, EntityPlayer player);
 
     @Override
     public boolean equals(Object o) {

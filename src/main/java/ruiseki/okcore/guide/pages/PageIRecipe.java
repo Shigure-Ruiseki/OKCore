@@ -83,7 +83,7 @@ public class PageIRecipe extends Page {
 
     @Override
     public boolean canSee(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player,
-        ItemStack bookStack, GuiEntry guiEntry) {
+        GuiEntry guiEntry) {
         return isValid;
     }
 

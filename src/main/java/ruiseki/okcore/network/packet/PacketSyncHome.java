@@ -2,12 +2,11 @@ package ruiseki.okcore.network.packet;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
-import ruiseki.okcore.guide.IGuideItem;
-import ruiseki.okcore.guide.NBTBookTags;
+import ruiseki.okcore.guide.capability.CapabilityGuide;
+import ruiseki.okcore.guide.capability.IGuideHandler;
+import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -36,13 +35,9 @@ public class PacketSyncHome extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        ItemStack book = player.getHeldItem();
-        if (book != null && book.getItem() instanceof IGuideItem && this.page != -1) {
-            if (!book.hasTagCompound()) book.setTagCompound(new NBTTagCompound());
-
-            book.stackTagCompound.setInteger(NBTBookTags.CATEGORY_PAGE_TAG, this.page);
-            book.stackTagCompound.removeTag(NBTBookTags.CATEGORY_TAG);
-            book.stackTagCompound.removeTag(NBTBookTags.ENTRY_TAG);
+        IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY, null);
+        if (cap != null && this.page != -1) {
+            cap.setLastPos("", -1, this.page);
         }
     }
 }

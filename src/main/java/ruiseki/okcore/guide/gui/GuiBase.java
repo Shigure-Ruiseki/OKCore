@@ -19,12 +19,10 @@ public class GuiBase extends GuiScreen {
     public int xSize = 192;
     public int ySize = 192;
     public EntityPlayer player;
-    public ItemStack bookStack;
     public float publicZLevel;
 
-    public GuiBase(EntityPlayer player, ItemStack bookStack) {
+    public GuiBase(EntityPlayer player) {
         this.player = player;
-        this.bookStack = bookStack;
         this.publicZLevel = zLevel;
     }
 

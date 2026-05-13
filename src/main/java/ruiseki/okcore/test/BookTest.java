@@ -36,7 +36,6 @@ public class BookTest implements IGuideBook {
         testCategory.addEntry("entry", new EntryItemStack("test.entry.name", new ItemStack(Items.potato)));
         testCategory.getEntry("entry")
             .addPage(new PageText("Hello, this is\nsome text"));
-        // testCategory.getEntry("entry").addPage(new PageFurnaceRecipe(Blocks.COBBLESTONE));
         testCategory.getEntry("entry")
             .addPage(PageIRecipe.newShaped(new ItemStack(Items.boat), "X X", "XXX", 'X', new ItemStack(Blocks.planks)));
         book.addCategory(testCategory);

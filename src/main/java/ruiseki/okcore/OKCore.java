@@ -32,6 +32,7 @@ import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideHandler;
 import ruiseki.okcore.guide.IGuideBook;
+import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.guide.impl.Book;
 import ruiseki.okcore.helper.GuideHelpers;
 import ruiseki.okcore.init.ModBase;
@@ -58,11 +59,14 @@ public class OKCore extends ModBase {
     public OKCore() {
         super(Reference.MOD_ID, Reference.MOD_NAME);
         putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
+
         addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());
         addInitListeners(new CapabilityEnergy());
         addInitListeners(new CapabilityLight());
         addInitListeners(new CapabilityRedstone());
+        addInitListeners(new CapabilityGuide());
+
         addInitListeners(new DataComponents());
     }
 

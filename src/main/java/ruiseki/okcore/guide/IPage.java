@@ -2,7 +2,6 @@ package ruiseki.okcore.guide;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -22,8 +21,7 @@ public interface IPage {
     void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj);
 
-    boolean canSee(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player, ItemStack bookStack,
-        GuiEntry guiEntry);
+    boolean canSee(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player, GuiEntry guiEntry);
 
     @SideOnly(Side.CLIENT)
     void onLeftClicked(Book book, CategoryAbstract category, EntryAbstract entry, int mouseX, int mouseY,
@@ -34,6 +32,5 @@ public interface IPage {
         EntityPlayer player, GuiEntry guiEntry);
 
     @SideOnly(Side.CLIENT)
-    void onInit(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player, ItemStack bookStack,
-        GuiEntry guiEntry);
+    void onInit(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player, GuiEntry guiEntry);
 }

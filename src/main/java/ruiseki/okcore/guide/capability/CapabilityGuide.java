@@ -4,14 +4,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
@@ -30,27 +27,12 @@ public class CapabilityGuide implements IInitListener {
     public static final ResourceLocation GUIDE_CAP = new ResourceLocation(Reference.MOD_ID, "guide");
 
     @SubscribeEvent
-    public void attachCoFHCapability(AttachCapabilitiesEvent<Entity> event) {
+    public void attachGuideCapability(AttachCapabilitiesEvent<Entity> event) {
         if (event.getType() != Entity.class) return;
         Entity entity = event.getObject();
         if (!(entity instanceof EntityPlayer)) return;
 
         event.addCapability(GUIDE_CAP, new GuideHandler());
-    }
-
-    @SubscribeEvent
-    public void onPlayerLogsIn(PlayerEvent.PlayerLoggedInEvent event) {
-        EntityPlayer player = event.player;
-        IGuideHandler handler = EntityHelpers.getCapability(player, GUIDE_CAPABILITY, null);
-        if (handler != null) {
-            int discoveredCount = handler.getDiscoveredBooks()
-                .size();
-
-            String message = String
-                .format("Welcome back! You have discovered §7%d§r books in your library.", discoveredCount);
-
-            player.addChatMessage(new ChatComponentText(message));
-        }
     }
 
     @SubscribeEvent
@@ -66,7 +48,7 @@ public class CapabilityGuide implements IInitListener {
     public void onInit(Step initStep) {
         if (initStep != Step.PREINIT) return;
 
-        CapabilityManager.INSTANCE.register(IGuideHandler.class, new Capability.IStorage<IGuideHandler>() {
+        CapabilityManager.INSTANCE.register(IGuideHandler.class, new Capability.IStorage<>() {
 
             @Override
             public NBTBase writeNBT(Capability<IGuideHandler> capability, IGuideHandler instance, ForgeDirection side) {
@@ -83,8 +65,5 @@ public class CapabilityGuide implements IInitListener {
         }, GuideHandler::new);
 
         MinecraftForge.EVENT_BUS.register(this);
-        FMLCommonHandler.instance()
-            .bus()
-            .register(this);
     }
 }

@@ -69,12 +69,14 @@ public class GuideHandler {
             Item guideItem = new ItemGuideBook(book);
             guideItem.setUnlocalizedName(
                 book.getRegistryName()
-                    .toString().replace(":", "_"));
+                    .toString()
+                    .replace(":", "_"));
 
             GameRegistry.registerItem(
                 guideItem,
                 book.getRegistryName()
-                    .getResourcePath().replace(":", "_"));
+                    .getResourcePath()
+                    .replace(":", "_"));
             GuideRegistry.setBookForStack(book, new ItemStack(guideItem));
         }
     }

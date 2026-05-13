@@ -26,6 +26,7 @@ public class Book {
     private String author;
     private ResourceLocation pageTexture = new ResourceLocation(Reference.PREFIX_GUI + "book_colored.png");
     private ResourceLocation outlineTexture = new ResourceLocation(Reference.PREFIX_GUI + "book_greyscale.png");
+    public String itemTexture;
     private Color color = new Color(171, 70, 30);
     private boolean spawnWithBook;
     private CreativeTabs creativeTab = CreativeTabs.tabMisc;
@@ -76,6 +77,10 @@ public class Book {
     public Book setHeader(String header) {
         this.header = header;
         return this;
+    }
+
+    public void setItemTexture(String itemTexture) {
+        this.itemTexture = itemTexture;
     }
 
     /**

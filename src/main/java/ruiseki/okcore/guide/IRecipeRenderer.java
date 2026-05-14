@@ -17,11 +17,11 @@ import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
 public interface IRecipeRenderer {
 
     @SideOnly(Side.CLIENT)
-    void draw(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    void draw(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj);
 
     @SideOnly(Side.CLIENT)
-    void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj);
 
     abstract class RecipeRendererBase<T extends IRecipe> implements IRecipeRenderer {
@@ -34,7 +34,7 @@ public interface IRecipeRenderer {
         }
 
         @Override
-        public void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop,
+        public void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop,
             int mouseX, int mouseY, GuiBase guiBase, FontRenderer fontRendererObj) {
             guiBase.drawHoveringText(tooltips, mouseX, mouseY, fontRendererObj);
             tooltips.clear();

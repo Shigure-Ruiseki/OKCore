@@ -33,13 +33,13 @@ public class ShapedOreRecipeRenderer extends BasicRecipeRenderer<ShapedOreRecipe
 
     @SuppressWarnings("unchecked")
     @Override
-    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRenderer) {
-        super.draw(book, category, entry, guiLeft, guiTop, mouseX, mouseY, guiBase, fontRenderer);
+        super.draw(book, category, entry, pageLeft, pageTop, mouseX, mouseY, guiBase, fontRenderer);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int stackX = (x + 1) * 17 + (guiLeft + 29);
-                int stackY = (y + 1) * 17 + (guiTop + 40);
+                int stackX = (x + 1) * 17 + (pageLeft - 39 + 53) + x;
+                int stackY = (y + 1) * 17 + (pageTop - 13 + 38) + y;
                 Object component = recipe.getInput()[y * width + x];
                 if (component != null) {
                     if (component instanceof ItemStack) {

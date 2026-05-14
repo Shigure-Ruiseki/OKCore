@@ -28,6 +28,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.lwjgl.opengl.GL11;
+
+import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.event.BookEvent;
@@ -186,23 +190,19 @@ public class GuiHelpers {
      */
     public static void drawSizedIconWithoutColor(int x, int y, int width, int height, float zLevel) {
         glPushMatrix();
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glColor4f(1F, 1F, 1F, 1F);
-        glScaled(0.5D, 0.5D, 0.5D);
-        glTranslated(x, y, zLevel);
-        RenderHelper.enableGUIStandardItemLighting();
-        glEnable(GL_RESCALE_NORMAL);
-        glEnable(GL_DEPTH_TEST);
-        Tessellator t = Tessellator.instance;
+        glEnable(GL11.GL_BLEND);
+        glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL11.GL_LIGHTING);
+        glEnable(GL11.GL_ALPHA_TEST);
+        glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        Tessellator t = TessellatorManager.get();
         t.startDrawingQuads();
-        t.addVertexWithUV(x + 0, y + height, zLevel, 0D, 1D);
-        t.addVertexWithUV(x + width, y + height, zLevel, 1D, 1D);
-        t.addVertexWithUV(x + width, y + 0, zLevel, 1D, 0D);
-        t.addVertexWithUV(x + 0, y + 0, zLevel, 0D, 0D);
+        t.addVertexWithUV(x, y + height, zLevel, 0.0D, 1.0D);
+        t.addVertexWithUV(x + width, y + height, zLevel, 1.0D, 1.0D);
+        t.addVertexWithUV(x + width, y, zLevel, 1.0D, 0.0D);
+        t.addVertexWithUV(x, y, zLevel, 0.0D, 0.0D);
         t.draw();
-        RenderHelper.disableStandardItemLighting();
-        glDisable(GL_LIGHTING);
+        glDisable(GL11.GL_BLEND);
         glPopMatrix();
     }
 

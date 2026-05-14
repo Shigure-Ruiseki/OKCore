@@ -28,7 +28,7 @@ public class BasicRecipeRenderer<T extends IRecipe> extends RecipeRendererBase<T
     }
 
     @Override
-    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRenderer) {
         Minecraft mc = Minecraft.getMinecraft();
 
@@ -44,11 +44,14 @@ public class BasicRecipeRenderer<T extends IRecipe> extends RecipeRendererBase<T
         Minecraft.getMinecraft()
             .getTextureManager()
             .bindTexture(new ResourceLocation(Reference.PREFIX_GUI + "recipe_elements.png"));
-        guiBase.drawTexturedModalRect(guiLeft + 42, guiTop + 53, 0, 0, 105, 65);
-        guiBase.drawCenteredString(fontRenderer, getRecipeName(), guiLeft + guiBase.screenWidth / 2, guiTop + 12, 0);
+        guiBase.drawTexturedModalRect(pageLeft - 39 + 68, pageTop - 13 + 53, 0, 48, 102, 56);
+        guiBase.drawCenteredString(fontRenderer, getRecipeName(), guiBase.pageXCenter(), pageTop, 0);
 
-        int outputX = (5 * 18) + (guiLeft + guiBase.screenWidth / 7);
-        int outputY = (2 * 18) + (guiTop + guiBase.screenWidth / 5);
+        int stationX = pageLeft - 39 + 125;
+        int stationY = pageTop - 13 + 55;
+
+        int outputX = pageLeft - 39 + 148;
+        int outputY = pageTop - 13 + 73;
         GuiHelpers.drawItemStack(recipe.getRecipeOutput(), outputX, outputY);
         if (GuiHelpers.isMouseBetween(mouseX, mouseY, outputX, outputY, 15, 15)) {
             tooltips = GuiHelpers.getTooltip(recipe.getRecipeOutput());

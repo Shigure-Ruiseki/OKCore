@@ -1,6 +1,7 @@
 package ruiseki.okcore.guide.category;
 
 import java.util.Map;
+import java.util.Objects;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -48,12 +49,10 @@ public class CategoryItemStack extends Category {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CategoryItemStack)) return false;
+        if (!(o instanceof CategoryItemStack that)) return false;
         if (!super.equals(o)) return false;
 
-        CategoryItemStack that = (CategoryItemStack) o;
-
-        return stack != null ? stack.equals(that.stack) : that.stack == null;
+        return Objects.equals(stack, that.stack);
     }
 
     @Override

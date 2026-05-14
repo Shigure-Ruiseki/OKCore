@@ -70,7 +70,7 @@ public class GuiSearch extends GuiBase {
         int entryX = pageLeft() + renderXOffset;
         int entryY = pageTop() + renderYOffset;
 
-        if (searchResults.size() != 0 && currentPage() >= 0 && currentPage() < searchResults.size()) {
+        if (!searchResults.isEmpty() && currentPage() >= 0 && currentPage() < searchResults.size()) {
             List<Pair<EntryAbstract, CategoryAbstract>> pageResults = searchResults.get(currentPage());
             for (Pair<EntryAbstract, CategoryAbstract> entry : pageResults) {
                 entry.getLeft()

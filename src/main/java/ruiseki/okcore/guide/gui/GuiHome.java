@@ -34,8 +34,8 @@ public class GuiHome extends GuiBase {
         super.initGui();
         this.categoryWrapperMap.clear();
 
-        int cX = pageLeft() + 45;
-        int cY = pageTop() + 40;
+        int cX = pageLeft() + 17;
+        int cY = pageTop() + 20;
         int i = 0;
         int pageNumber = 0;
 
@@ -71,6 +71,13 @@ public class GuiHome extends GuiBase {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float renderPartialTicks) {
+        drawCenteredStringWithShadow(
+            fontRendererObj,
+            I18n.format(book.getTitle()),
+            pageXCenter(),
+            screenTop() - 10,
+            Color.WHITE.getRGB());
+
         super.drawScreen(mouseX, mouseY, renderPartialTicks);
 
         drawCenteredString(
@@ -87,13 +94,6 @@ public class GuiHome extends GuiBase {
 
         for (CategoryWrapper wrapper : this.categoryWrapperMap.get(currentPage()))
             if (wrapper.canPlayerSee()) wrapper.drawExtras(mouseX, mouseY, this);
-
-        drawCenteredStringWithShadow(
-            fontRendererObj,
-            I18n.format(book.getTitle()),
-            pageXCenter(),
-            screenTop() - 10,
-            Color.WHITE.getRGB());
     }
 
     @Override

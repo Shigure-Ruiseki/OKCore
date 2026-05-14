@@ -61,6 +61,13 @@ public class GuiEntry extends GuiBase {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float renderPartialTicks) {
+        drawCenteredStringWithShadow(
+            fontRendererObj,
+            entry.getLocalizedName(),
+            pageXCenter(),
+            screenTop() - 10,
+            Color.WHITE.getRGB());
+
         super.drawScreen(mouseX, mouseY, renderPartialTicks);
 
         if (currentPage() < pageWrapperList.size()) {
@@ -72,13 +79,6 @@ public class GuiEntry extends GuiBase {
                     .drawExtras(mouseX, mouseY, this);
             }
         }
-
-        drawCenteredStringWithShadow(
-            fontRendererObj,
-            entry.getLocalizedName(),
-            pageXCenter(),
-            screenTop() - 10,
-            Color.WHITE.getRGB());
     }
 
     @Override

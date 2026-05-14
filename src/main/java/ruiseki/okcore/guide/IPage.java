@@ -14,11 +14,11 @@ import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
 public interface IPage {
 
     @SideOnly(Side.CLIENT)
-    void draw(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    void draw(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj);
 
     @SideOnly(Side.CLIENT)
-    void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj);
 
     boolean canSee(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player, GuiEntry guiEntry);

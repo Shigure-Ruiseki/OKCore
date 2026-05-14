@@ -92,7 +92,6 @@ public class OKCore extends ModBase {
         }
 
         GuideHandler.gatherBooks(event.getAsmData());
-        GuideHandler.registerGuideBookItems();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuideGuiHandler());
     }
 
@@ -100,6 +99,7 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         super.init(event);
+        GuideHandler.buildAllBooks();
 
         RecipeSorter.register(
             Reference.PREFIX_MOD + "nbtshaped",

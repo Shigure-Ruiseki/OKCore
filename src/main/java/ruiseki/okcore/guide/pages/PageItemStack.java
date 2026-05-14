@@ -67,9 +67,9 @@ public class PageItemStack extends PageText {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop,
+    public void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop,
         int mouseX, int mouseY, GuiBase guiBase, FontRenderer fontRendererObj) {
-        GuiHelpers.drawScaledItemStack(stack, guiLeft + 75, guiTop + 20, 3);
+        GuiHelpers.drawScaledItemStack(stack, pageLeft - 39 + 111, pageTop - 13 + 31, 3);
     }
 
     @Override

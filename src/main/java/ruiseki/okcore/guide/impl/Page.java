@@ -13,16 +13,14 @@ import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
 
 public class Page implements IPage {
 
-    protected boolean unicode;
-
     @Override
     @SideOnly(Side.CLIENT)
-    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj) {}
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop,
+    public void drawExtras(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop,
         int mouseX, int mouseY, GuiBase guiBase, FontRenderer fontRendererObj) {}
 
     @Override
@@ -45,10 +43,6 @@ public class Page implements IPage {
     @SideOnly(Side.CLIENT)
     public void onInit(Book book, CategoryAbstract category, EntryAbstract entry, EntityPlayer player,
         GuiEntry guiEntry) {}
-
-    public void setUnicodeFlag(boolean flag) {
-        this.unicode = flag;
-    }
 
     @Override
     public boolean equals(Object o) {

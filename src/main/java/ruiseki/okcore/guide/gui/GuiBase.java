@@ -98,10 +98,11 @@ public abstract class GuiBase extends GuiScreen implements IGuideBookScreen {
         if (getPageCount() > 1) {
             drawCenteredString(
                 fontRendererObj,
-                String.format("%d/%d", currentPage + 1, getPageCount()),
-                screenLeft + screenWidth / 2,
-                screenTop + 5 * screenHeight / 6,
-                0);
+                String.format("%d/%d", currentPage() + 1, getPageCount()),
+                pageLeft() + pageWidth / 2,
+                pageTop() + pageHeight() + 2,
+                book.getTextColor()
+                    .getRGB());
         }
     }
 

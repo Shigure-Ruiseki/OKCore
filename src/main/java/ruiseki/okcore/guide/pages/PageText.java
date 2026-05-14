@@ -34,15 +34,15 @@ public class PageText extends Page {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int guiLeft, int guiTop, int mouseX,
+    public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj) {
-        boolean startFlag = fontRendererObj.getUnicodeFlag();
-
-        if (unicode) fontRendererObj.setUnicodeFlag(true);
-
-        PageHelpers.drawFormattedText(guiLeft + 39, guiTop + 12 + yOffset, guiBase, I18n.format(draw));
-
-        if (unicode && !startFlag) fontRendererObj.setUnicodeFlag(false);
+        PageHelpers.drawFormattedText(
+            pageLeft - 39 + 56,
+            pageTop - 13 + 27 + yOffset,
+            guiBase,
+            I18n.format(draw),
+            book.getTextColor()
+                .getRGB());
     }
 
     @Override

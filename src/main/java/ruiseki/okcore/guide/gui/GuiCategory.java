@@ -75,6 +75,13 @@ public class GuiCategory extends GuiBase {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float renderPartialTicks) {
+        drawCenteredStringWithShadow(
+            fontRendererObj,
+            category.getLocalizedName(),
+            pageXCenter(),
+            screenTop() - 10,
+            Color.WHITE.getRGB());
+
         super.drawScreen(mouseX, mouseY, renderPartialTicks);
 
         for (EntryWrapper wrapper : this.entryWrapperMap.get(currentPage())) {
@@ -86,13 +93,6 @@ public class GuiCategory extends GuiBase {
                 wrapper.onHoverOver(mouseX, mouseY);
             }
         }
-
-        drawCenteredStringWithShadow(
-            fontRendererObj,
-            category.getLocalizedName(),
-            pageXCenter(),
-            pageYCenter() - 10,
-            Color.WHITE.getRGB());
     }
 
     @Override

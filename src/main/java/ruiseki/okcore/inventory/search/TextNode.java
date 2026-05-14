@@ -4,18 +4,15 @@ import ruiseki.okcore.inventory.ItemStackKey;
 
 final class TextNode implements SearchNode {
 
-    private final String text;
+    private final String query;
 
-    TextNode(String text) {
-        this.text = text;
+    TextNode(String query) {
+        this.query = query.toLowerCase();
     }
 
     @Override
     public boolean matches(ItemStackKey k) {
-        if (k.getStack() == null || k.getStack()
-            .getItem() == null) return false;
-        return k.getStack()
-            .getDisplayName()
-            .contains(text);
+        return k.getDisplayName()
+            .contains(query);
     }
 }

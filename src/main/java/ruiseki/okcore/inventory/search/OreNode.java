@@ -15,7 +15,7 @@ final class OreNode implements SearchNode {
     @Override
     public boolean matches(ItemStackKey k) {
         if (oreId == -1) return false;
-        for (int id : OreDictionary.getOreIDs(k.getStack())) {
+        for (int id : k.getOreIds()) {
             if (id == oreId) return true;
         }
         return false;

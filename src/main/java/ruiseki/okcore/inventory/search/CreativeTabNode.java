@@ -1,5 +1,7 @@
 package ruiseki.okcore.inventory.search;
 
+import net.minecraft.item.Item;
+
 import ruiseki.okcore.inventory.ItemStackKey;
 
 final class CreativeTabNode implements SearchNode {
@@ -12,13 +14,12 @@ final class CreativeTabNode implements SearchNode {
 
     @Override
     public boolean matches(ItemStackKey k) {
-        if (k.getStack() == null || k.getStack()
-            .getItem() == null) return false;
-        return k.getStack()
-            .getItem()
-            .getCreativeTab()
+        Item item = k.getItem();
+        if (item == null || item.getCreativeTab() == null) return false;
+
+        return item.getCreativeTab()
             .getTabLabel()
             .toLowerCase()
-            .contains(tab);
+            .contains(tab.toLowerCase());
     }
 }

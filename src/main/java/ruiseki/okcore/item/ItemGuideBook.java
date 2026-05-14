@@ -20,7 +20,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
-import ruiseki.okcore.event.BookEvent;
+import ruiseki.okcore.event.guide.BookEvent;
 import ruiseki.okcore.guide.IGuideItem;
 import ruiseki.okcore.guide.IGuideLinked;
 import ruiseki.okcore.guide.impl.Book;
@@ -91,7 +91,7 @@ public class ItemGuideBook extends Item implements IGuideItem {
 
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        return !Strings.isNullOrEmpty(book.getItemName()) ? LangHelpers.localize(getBook(stack).getItemName())
+        return !Strings.isNullOrEmpty(book.getItemName()) ? LangHelpers.localize(getBook().getItemName())
             : super.getItemStackDisplayName(stack);
     }
 
@@ -151,7 +151,7 @@ public class ItemGuideBook extends Item implements IGuideItem {
     }
 
     @Override
-    public Book getBook(ItemStack stack) {
+    public Book getBook() {
         return book;
     }
 }

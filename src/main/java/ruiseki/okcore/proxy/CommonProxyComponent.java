@@ -3,7 +3,9 @@ package ruiseki.okcore.proxy;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.client.event.sound.SoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 import ruiseki.okcore.OKCore;
@@ -114,5 +116,12 @@ public abstract class CommonProxyComponent implements ICommonProxy {
     @Override
     public void sendSound(double x, double y, double z, String sound, float volume, float frequency) {
         sendSound(x, y, z, sound, volume, frequency, getMod().getModId());
+    }
+
+    @Override
+    public void sendSound(EntityPlayer player, SoundEvent.SoundSourceEvent event) {
+        float vol = event.sound.getVolume();
+        float pitch = event.sound.getPitch();
+        sendSound(player.posX, player.posY, player.posZ, event.name, vol, pitch);
     }
 }

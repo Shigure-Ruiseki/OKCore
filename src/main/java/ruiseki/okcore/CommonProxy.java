@@ -11,6 +11,7 @@ import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.network.packet.PacketCooldown;
 import ruiseki.okcore.network.packet.PacketItemToggle;
 import ruiseki.okcore.network.packet.PacketSound;
+import ruiseki.okcore.network.packet.PacketSyncGuidePos;
 import ruiseki.okcore.proxy.CommonProxyComponent;
 
 public class CommonProxy extends CommonProxyComponent {
@@ -28,6 +29,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(PacketSound.class);
         packetHandler.register(PacketCooldown.class);
         packetHandler.register(PacketItemToggle.class);
+        packetHandler.register(PacketSyncGuidePos.class);
     }
 
     @Override

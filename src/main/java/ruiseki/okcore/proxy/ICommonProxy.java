@@ -3,7 +3,9 @@ package ruiseki.okcore.proxy;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.client.event.sound.SoundEvent;
 
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -165,4 +167,5 @@ public interface ICommonProxy {
      */
     public void sendSound(double x, double y, double z, String sound, float volume, float frequency);
 
+    public void sendSound(EntityPlayer player, SoundEvent.SoundSourceEvent event);
 }

@@ -3,6 +3,7 @@ package ruiseki.okcore;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.oredict.RecipeSorter;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Maps;
@@ -17,23 +18,29 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.command.CommandOKCore;
-import ruiseki.okcore.config.ModConfig;
+import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.guide.GuideGuiHandler;
+import ruiseki.okcore.guide.GuideHandler;
+import ruiseki.okcore.guide.IGuideBook;
+import ruiseki.okcore.guide.capability.CapabilityGuide;
+import ruiseki.okcore.guide.impl.Book;
+import ruiseki.okcore.helper.GuideHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
-import ruiseki.okcore.test.ItemTest;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -52,11 +59,14 @@ public class OKCore extends ModBase {
     public OKCore() {
         super(Reference.MOD_ID, Reference.MOD_NAME);
         putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
+
         addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());
         addInitListeners(new CapabilityEnergy());
         addInitListeners(new CapabilityLight());
         addInitListeners(new CapabilityRedstone());
+        addInitListeners(new CapabilityGuide());
+
         addInitListeners(new DataComponents());
     }
 
@@ -76,19 +86,20 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
-
-        if (ModConfig.useItemTest) {
-            ItemTest.register();
-        }
+        ModItems.preInit();
         if (LibMods.Waila.isLoaded()) {
             BlockProvider.init();
         }
+
+        GuideHandler.gatherBooks(event.getAsmData());
+        NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuideGuiHandler());
     }
 
     @Override
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         super.init(event);
+        GuideHandler.buildAllBooks();
 
         RecipeSorter.register(
             Reference.PREFIX_MOD + "nbtshaped",
@@ -106,6 +117,11 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+
+        for (Pair<Book, IGuideBook> guide : GuideHandler.BOOK_CLASSES) {
+            guide.getRight()
+                .handlePost(GuideHelpers.getStackFromBook(guide.getLeft()));
+        }
     }
 
     @Override

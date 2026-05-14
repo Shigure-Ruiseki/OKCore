@@ -29,7 +29,11 @@ public class GuideHandler {
 
                 IGuideBook guideBook = (IGuideBook) genericClass.getDeclaredConstructor()
                     .newInstance();
-                PENDING_BOOKS.add(guideBook);
+                if (guideBook.shouldRegister()) {
+                    PENDING_BOOKS.add(guideBook);
+                } else {
+                    OKCore.okLog(Level.INFO, "Skipping registration for book: " + data.getClassName() + " (Condition not met)");
+                }
 
             } catch (Exception e) {
                 OKCore.okLog(Level.ERROR, "Error finding book class " + data.getClassName(), e);

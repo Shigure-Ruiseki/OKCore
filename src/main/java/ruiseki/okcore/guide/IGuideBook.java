@@ -35,4 +35,8 @@ public interface IGuideBook {
     default void handlePost(@Nonnull ItemStack bookStack) {
         // No-op
     }
+
+    default boolean shouldRegister() {
+        return true;
+    }
 }

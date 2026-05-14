@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 
 import ruiseki.okcore.Reference;
+import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.guide.GuideBook;
 import ruiseki.okcore.guide.IGuideBook;
 import ruiseki.okcore.guide.IPage;
@@ -39,6 +40,11 @@ import ruiseki.okcore.helper.PageHelpers;
 public class BookTest implements IGuideBook {
 
     public static Book book;
+
+    @Override
+    public boolean shouldRegister() {
+        return ModConfig.useBookTest;
+    }
 
     @Override
     public @Nullable Book buildBook() {

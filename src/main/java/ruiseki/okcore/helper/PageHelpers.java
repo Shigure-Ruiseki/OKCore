@@ -3,6 +3,8 @@ package ruiseki.okcore.helper;
 import java.util.ArrayList;
 import java.util.List;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -18,6 +20,7 @@ import ruiseki.okcore.guide.pages.PageText;
 
 public class PageHelpers {
 
+    @SideOnly(Side.CLIENT)
     public static List<String> prepareForLongText(String text, int lineWidth, int firstHeight, int subsequentHeight) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
 
@@ -50,6 +53,7 @@ public class PageHelpers {
         return pages;
     }
 
+    @SideOnly(Side.CLIENT)
     private static String combineLines(List<String> lines) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < lines.size(); i++) {
@@ -61,6 +65,7 @@ public class PageHelpers {
         return sb.toString();
     }
 
+    @SideOnly(Side.CLIENT)
     public static List<IPage> pagesForLongText(String text, ItemStack stack) {
         List<String> pageStrings = prepareForLongText(text, 164, 79, 126);
         List<IPage> pageList = new ArrayList<IPage>();
@@ -75,6 +80,7 @@ public class PageHelpers {
         return pageList;
     }
 
+    @SideOnly(Side.CLIENT)
     public static List<IPage> pagesForLongText(String text) {
         List<IPage> pageList = new ArrayList<IPage>();
         List<String> pageStrings = prepareForLongText(text, 164, 126, 126);
@@ -84,14 +90,17 @@ public class PageHelpers {
         return pageList;
     }
 
+    @SideOnly(Side.CLIENT)
     public static List<IPage> pagesForLongText(String text, Item item) {
         return pagesForLongText(text, new ItemStack(item));
     }
 
+    @SideOnly(Side.CLIENT)
     public static List<IPage> pagesForLongText(String text, Block block) {
         return pagesForLongText(text, new ItemStack(block));
     }
 
+    @SideOnly(Side.CLIENT)
     public static void drawFormattedText(int x, int y, GuiBase guiBase, String toDraw, int color) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
         toDraw = StringEscapeUtils.unescapeJava(toDraw)

@@ -32,7 +32,9 @@ public class GuideHandler {
                 if (guideBook.shouldRegister()) {
                     PENDING_BOOKS.add(guideBook);
                 } else {
-                    OKCore.okLog(Level.INFO, "Skipping registration for book: " + data.getClassName() + " (Condition not met)");
+                    OKCore.okLog(
+                        Level.INFO,
+                        "Skipping registration for book: " + data.getClassName() + " (Condition not met)");
                 }
 
             } catch (Exception e) {

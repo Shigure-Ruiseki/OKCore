@@ -3,8 +3,6 @@ package ruiseki.okcore.helper;
 import java.util.ArrayList;
 import java.util.List;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -13,6 +11,8 @@ import net.minecraft.item.ItemStack;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.guide.IPage;
 import ruiseki.okcore.guide.gui.GuiBase;
 import ruiseki.okcore.guide.pages.PageItemStack;

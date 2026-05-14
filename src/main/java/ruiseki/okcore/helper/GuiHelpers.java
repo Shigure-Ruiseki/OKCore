@@ -34,7 +34,7 @@ import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.event.BookEvent;
+import ruiseki.okcore.event.guide.BookEvent;
 import ruiseki.okcore.guide.gui.GuiEntry;
 import ruiseki.okcore.guide.impl.Book;
 import ruiseki.okcore.guide.impl.abstraction.CategoryAbstract;

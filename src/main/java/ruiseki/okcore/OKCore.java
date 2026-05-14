@@ -28,6 +28,7 @@ import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.event.inventory.InventoryScanner;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideHandler;
@@ -68,6 +69,7 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityGuide());
 
         addInitListeners(new DataComponents());
+        addInitListeners(new InventoryScanner());
     }
 
     @Mod.EventHandler

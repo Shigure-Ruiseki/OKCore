@@ -8,83 +8,91 @@ public class SearchParser {
     private SearchParser() {}
 
     public static SearchNode parse(String input) {
-        if (input == null || input.trim()
-            .isEmpty()) {
-            return null;
-        }
+        if (input == null || input.isEmpty()) return null;
 
-        String[] orGroups = input.toLowerCase()
-            .split("\\|");
+        String trimmedInput = input.trim();
+        if (trimmedInput.isEmpty()) return null;
+
         List<SearchNode> orNodes = new ArrayList<>();
+
+        String lowInput = trimmedInput.toLowerCase();
+
+        String[] orGroups = lowInput.split("\\|");
 
         for (String group : orGroups) {
             group = group.trim();
             if (group.isEmpty()) continue;
 
-            List<String> terms = splitTerms(group);
             List<SearchNode> andNodes = new ArrayList<>();
+            List<String> terms = splitTerms(group);
 
             for (String raw : terms) {
                 if (raw.isEmpty()) continue;
 
-                boolean neg = raw.startsWith("-");
-                String term = neg ? raw.substring(1) : raw;
+                SearchNode node;
+                if (raw.length() > 1 && raw.charAt(0) == '-') {
+                    node = parseTerm(raw.substring(1));
+                    if (node != null) node = new NotNode(node);
+                } else {
+                    node = parseTerm(raw);
+                }
 
-                SearchNode node = parseTerm(term);
-                if (node == null) continue;
-
-                if (neg) node = new NotNode(node);
-                andNodes.add(node);
+                if (node != null) andNodes.add(node);
             }
 
             if (!andNodes.isEmpty()) {
-                orNodes.add(andNodes.size() == 1 ? andNodes.get(0) : new AndNode(andNodes));
+                orNodes.add(andNodes.size() == 1 ? andNodes.getFirst() : new AndNode(andNodes));
             }
         }
 
         if (orNodes.isEmpty()) return null;
-        return orNodes.size() == 1 ? orNodes.get(0) : new OrNode(orNodes);
+        return orNodes.size() == 1 ? orNodes.getFirst() : new OrNode(orNodes);
     }
 
     private static SearchNode parseTerm(String term) {
         if (term.isEmpty()) return null;
 
-        char c = term.charAt(0);
+        char prefix = term.charAt(0);
+        if (term.length() == 1) return new TextNode(term);
         String body = term.substring(1);
-
-        switch (c) {
-            case '@':
-                return new ModNode(body);
-            case '$':
-                return new OreNode(body);
-            case '%':
-                return new CreativeTabNode(body);
-            default:
-                return new TextNode(term);
-        }
+        return switch (prefix) {
+            case '@' -> new ModNode(body);
+            case '$' -> new OreNode(body);
+            case '%' -> new CreativeTabNode(body);
+            default -> new TextNode(term);
+        };
     }
 
     private static List<String> splitTerms(String s) {
         List<String> result = new ArrayList<>();
-        boolean quote = false;
-        StringBuilder cur = new StringBuilder();
+        int len = s.length();
+        boolean inQuote = false;
+        int start = 0;
 
-        for (char c : s.toCharArray()) {
-            if (c == '"') {
-                quote = !quote;
-                continue;
-            }
-            if (c == ' ' && !quote) {
-                if (cur.length() > 0) {
-                    result.add(cur.toString());
-                    cur.setLength(0);
+        for (int i = 0; i < len; i++) {
+            char c = s.charAt(i);
+            if (c == '\"') {
+                inQuote = !inQuote;
+            } else if (c == ' ' && !inQuote) {
+                if (i > start) {
+                    addTerm(result, s.substring(start, i));
                 }
-            } else {
-                cur.append(c);
+                start = i + 1;
             }
         }
 
-        if (cur.length() > 0) result.add(cur.toString());
+        if (start < len) {
+            addTerm(result, s.substring(start));
+        }
+
         return result;
+    }
+
+    private static void addTerm(List<String> list, String term) {
+        term = term.replace("\"", "")
+            .trim();
+        if (!term.isEmpty()) {
+            list.add(term);
+        }
     }
 }

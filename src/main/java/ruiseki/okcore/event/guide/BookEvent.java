@@ -1,4 +1,4 @@
-package ruiseki.okcore.event;
+package ruiseki.okcore.event.guide;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentTranslation;
@@ -52,6 +52,14 @@ public class BookEvent extends Event {
 
         public void setCanceledText(@NotNull IChatComponent canceledText) {
             this.canceledText = canceledText;
+        }
+    }
+
+    @Cancelable
+    public static class Discover extends BookEvent {
+
+        public Discover(Book book, EntityPlayer player) {
+            super(book, player);
         }
     }
 }

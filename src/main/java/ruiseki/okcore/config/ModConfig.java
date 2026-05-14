@@ -17,4 +17,7 @@ public class ModConfig {
     @Config.DefaultBoolean(false)
     public static boolean useItemTest;
 
+    @Config.DefaultBoolean(false)
+    public static boolean useBookTest;
+
 }

@@ -1,6 +1,6 @@
 package ruiseki.okcore.mixins;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
@@ -42,7 +42,7 @@ public enum Mixins implements IMixins {
         this.builder = builder;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public MixinBuilder getBuilder() {
         return this.builder;

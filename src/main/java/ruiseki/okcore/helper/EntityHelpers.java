@@ -1,7 +1,13 @@
 package ruiseki.okcore.helper;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.entity.cooldown.ICooldownHandler;
 import ruiseki.okcore.entity.cooldown.ItemCooldowns;
 
@@ -16,6 +22,30 @@ public class EntityHelpers {
 
         } catch (ClassCastException ignored) {
             return null;
+        }
+    }
+
+    public static <T> T getCapability(Entity stack, Capability<T> capability, @Nullable ForgeDirection facing) {
+        if (stack == null) return null;
+        try {
+            ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
+
+            return provider.getCapability(capability, facing);
+
+        } catch (ClassCastException ignored) {
+            return null;
+        }
+    }
+
+    public static boolean hasCapability(Entity stack, Capability<?> capability, @Nullable ForgeDirection facing) {
+        if (stack == null) return false;
+        try {
+            ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
+
+            return provider.hasCapability(capability, facing);
+
+        } catch (ClassCastException ignored) {
+            return false;
         }
     }
 }

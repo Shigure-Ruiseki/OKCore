@@ -1,7 +1,8 @@
 package ruiseki.okcore.network;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -35,7 +36,7 @@ public class PacketHandler {
 
     private static final int MAX_CHANNELNAME_LENGTH = 20;
 
-    private static Map<Pair<String, IDType>, Integer> ID_COUNTER = new HashMap<Pair<String, IDType>, Integer>();
+    private static final Map<Pair<String, IDType>, AtomicInteger> ID_COUNTERS = new ConcurrentHashMap<>();
 
     private SimpleNetworkWrapper networkWrapper = null;
 
@@ -214,11 +215,10 @@ public class PacketHandler {
         }
     }
 
-    public static int getNewId(String mod, IDType type) {
-        Integer ID = ID_COUNTER.get(Pair.of(mod, type));
-        if (ID == null) ID = 0;
-        ID_COUNTER.put(Pair.of(mod, type), ID + 1);
-        return ID;
+    public static int getNewId(String modId, IDType type) {
+        Pair<String, IDType> key = Pair.of(modId, type);
+        return ID_COUNTERS.computeIfAbsent(key, k -> new AtomicInteger(0))
+            .getAndIncrement();
     }
 
     public enum IDType {

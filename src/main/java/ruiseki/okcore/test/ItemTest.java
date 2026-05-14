@@ -24,11 +24,6 @@ public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
         setTextureName("stick");
     }
 
-    public static void register() {
-        ItemTest test = new ItemTest();
-        test.init();
-    }
-
     @Override
     public UseCooldown getUseCooldown(ItemStack stack) {
         return new UseCooldown(1);

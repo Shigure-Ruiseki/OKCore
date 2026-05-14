@@ -1,6 +1,6 @@
 package ruiseki.okcore.mixins;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhmixins.builders.ITargetMod;
 import com.gtnewhorizon.gtnhmixins.builders.TargetModBuilder;
@@ -19,7 +19,7 @@ public enum TargetMods implements ITargetMod {
             .setModId(modId);
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public TargetModBuilder getBuilder() {
         return builder;

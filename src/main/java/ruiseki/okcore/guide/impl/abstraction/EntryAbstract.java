@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 
 import com.google.common.collect.Lists;
 
@@ -20,6 +21,9 @@ public abstract class EntryAbstract {
     public final List<IPage> pageList;
     public final String name;
     public boolean unicode;
+    public ItemStack representativeStack;
+    private Book ownerBook;
+    private CategoryAbstract ownerCategory;
 
     public EntryAbstract(List<IPage> pageList, String name, boolean unicode) {
         this.pageList = pageList;
@@ -55,8 +59,32 @@ public abstract class EntryAbstract {
         this.pageList.removeAll(pages);
     }
 
+    public ItemStack getRepresentativeStack() {
+        return representativeStack;
+    }
+
+    public void setRepresentativeStack(ItemStack stack) {
+        this.representativeStack = stack;
+    }
+
+    public void setOwnerCategory(CategoryAbstract ownerCategory) {
+        this.ownerCategory = ownerCategory;
+    }
+
+    public void setOwnerBook(Book ownerBook) {
+        this.ownerBook = ownerBook;
+    }
+
     public String getLocalizedName() {
         return LangHelpers.localize(name);
+    }
+
+    public Book getOwnerBook() {
+        return ownerBook;
+    }
+
+    public CategoryAbstract getOwnerCategory() {
+        return ownerCategory;
     }
 
     @SideOnly(Side.CLIENT)

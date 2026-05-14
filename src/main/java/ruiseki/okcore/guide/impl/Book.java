@@ -50,6 +50,7 @@ public class Book {
      * @return the builder instance for chaining.
      */
     public Book addCategory(CategoryAbstract category) {
+        category.setBook(this);
         this.categories.add(category);
         return this;
     }

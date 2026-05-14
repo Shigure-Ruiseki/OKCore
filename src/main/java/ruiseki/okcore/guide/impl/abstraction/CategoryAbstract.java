@@ -23,6 +23,7 @@ public abstract class CategoryAbstract {
     public final Map<ResourceLocation, EntryAbstract> entries;
     public final String name;
     private String keyBase;
+    private Book ownerBook;
 
     public CategoryAbstract(Map<ResourceLocation, EntryAbstract> entries, String name) {
         this.entries = entries;
@@ -33,6 +34,13 @@ public abstract class CategoryAbstract {
         this(Maps.<ResourceLocation, EntryAbstract>newLinkedHashMap(), name);
     }
 
+    public void setBook(Book book) {
+        this.ownerBook = book;
+        for (EntryAbstract entry : entries.values()) {
+            entry.setOwnerBook(this.ownerBook);
+        }
+    }
+
     /**
      * Adds an entry to this category.
      *
@@ -40,6 +48,10 @@ public abstract class CategoryAbstract {
      * @param entry - The entry to add.
      */
     public void addEntry(ResourceLocation key, EntryAbstract entry) {
+        entry.setOwnerCategory(this);
+        if (this.ownerBook != null) {
+            entry.setOwnerBook(this.ownerBook);
+        }
         entries.put(key, entry);
     }
 

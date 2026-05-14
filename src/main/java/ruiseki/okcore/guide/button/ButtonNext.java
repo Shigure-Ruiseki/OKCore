@@ -2,6 +2,7 @@ package ruiseki.okcore.guide.button;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderHelper;
@@ -16,8 +17,8 @@ import ruiseki.okcore.helper.GuiHelpers;
 
 public class ButtonNext extends ButtonBase {
 
-    public ButtonNext(int id, int x, int y, GuiBase guiBase) {
-        super(id, x, y, guiBase);
+    public ButtonNext(int id, int x, int y, GuiBase guiBase, Consumer<ButtonBase> consumer) {
+        super(id, x, y, guiBase, consumer);
         width = 18;
         height = 10;
     }

@@ -45,10 +45,10 @@ public class BasicRecipeRenderer<T extends IRecipe> extends RecipeRendererBase<T
             .getTextureManager()
             .bindTexture(new ResourceLocation(Reference.PREFIX_GUI + "recipe_elements.png"));
         guiBase.drawTexturedModalRect(guiLeft + 42, guiTop + 53, 0, 0, 105, 65);
-        guiBase.drawCenteredString(fontRenderer, getRecipeName(), guiLeft + guiBase.xSize / 2, guiTop + 12, 0);
+        guiBase.drawCenteredString(fontRenderer, getRecipeName(), guiLeft + guiBase.screenWidth / 2, guiTop + 12, 0);
 
-        int outputX = (5 * 18) + (guiLeft + guiBase.xSize / 7);
-        int outputY = (2 * 18) + (guiTop + guiBase.xSize / 5);
+        int outputX = (5 * 18) + (guiLeft + guiBase.screenWidth / 7);
+        int outputY = (2 * 18) + (guiTop + guiBase.screenWidth / 5);
         GuiHelpers.drawItemStack(recipe.getRecipeOutput(), outputX, outputY);
         if (GuiHelpers.isMouseBetween(mouseX, mouseY, outputX, outputY, 15, 15)) {
             tooltips = GuiHelpers.getTooltip(recipe.getRecipeOutput());

@@ -19,9 +19,9 @@ public class CategoryResourceLocation extends Category {
 
     public ResourceLocation resourceLocation;
 
-    public CategoryResourceLocation(Map<ResourceLocation, EntryAbstract> entries, String unlocCategoryName,
+    public CategoryResourceLocation(Map<ResourceLocation, EntryAbstract> entries, String name,
         ResourceLocation resourceLocation) {
-        super(entries, unlocCategoryName);
+        super(entries, name);
         this.resourceLocation = resourceLocation;
     }
 
@@ -44,7 +44,7 @@ public class CategoryResourceLocation extends Category {
     @SideOnly(Side.CLIENT)
     public void drawExtras(Book book, int categoryX, int categoryY, int categoryWidth, int categoryHeight, int mouseX,
         int mouseY, GuiBase guiBase, boolean drawOnLeft, RenderItem renderItem) {
-        if (canSee(guiBase.player)
+        if (canSee(guiBase.player())
             && GuiHelpers.isMouseBetween(mouseX, mouseY, categoryX, categoryY, categoryWidth, categoryHeight))
             guiBase.drawHoveringText(this.getTooltip(), mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);
     }

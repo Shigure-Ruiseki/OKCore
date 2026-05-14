@@ -10,17 +10,25 @@ import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
-public class PacketSyncHome extends PacketCodec {
+public class PacketSyncGuidePos extends PacketCodec {
 
     @CodecField
-    public int page;
+    public String entryName;
+    @CodecField
+    public int categoryIndex;
+    @CodecField
+    public int pageIndex;
 
-    public PacketSyncHome() {
-        this.page = -1;
+    public PacketSyncGuidePos() {
+        this.entryName = "";
+        this.categoryIndex = -1;
+        this.pageIndex = 0;
     }
 
-    public PacketSyncHome(int page) {
-        this.page = page;
+    public PacketSyncGuidePos(String entryName, int categoryIndex, int pageIndex) {
+        this.entryName = entryName;
+        this.categoryIndex = categoryIndex;
+        this.pageIndex = pageIndex;
     }
 
     @Override
@@ -29,15 +37,14 @@ public class PacketSyncHome extends PacketCodec {
     }
 
     @Override
-    public void actionClient(World world, EntityPlayer player) {
-
-    }
+    public void actionClient(World world, EntityPlayer player) {}
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
         IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY, null);
-        if (cap != null && this.page != -1) {
-            cap.setLastPos("", -1, this.page);
+        if (cap != null) {
+            cap.setLastPos(this.entryName, this.categoryIndex, this.pageIndex);
         }
     }
+
 }

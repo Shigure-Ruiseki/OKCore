@@ -50,8 +50,8 @@ public class Entry extends EntryAbstract {
         int strWidth = fontRendererObj.getStringWidth(entryName);
         int ellipsisWidth = fontRendererObj.getStringWidth("...");
 
-        if (strWidth > guiBase.xSize - 80 && strWidth > ellipsisWidth)
-            entryName = fontRendererObj.trimStringToWidth(entryName, guiBase.xSize - 80 - ellipsisWidth)
+        if (strWidth > guiBase.screenWidth - 80 && strWidth > ellipsisWidth)
+            entryName = fontRendererObj.trimStringToWidth(entryName, guiBase.screenWidth - 80 - ellipsisWidth)
                 .trim() + "...";
 
         if (GuiHelpers.isMouseBetween(mouseX, mouseY, entryX, entryY, entryWidth, entryHeight)) {
@@ -75,7 +75,7 @@ public class Entry extends EntryAbstract {
         int strWidth = fontRendererObj.getStringWidth(getLocalizedName());
         boolean cutString = false;
 
-        if (strWidth > guiBase.xSize - 80 && strWidth > fontRendererObj.getStringWidth("...")) cutString = true;
+        if (strWidth > guiBase.screenWidth - 80 && strWidth > fontRendererObj.getStringWidth("...")) cutString = true;
 
         if (GuiHelpers.isMouseBetween(mouseX, mouseY, entryX, entryY, entryWidth, entryHeight) && cutString) {
 

@@ -47,9 +47,7 @@ public class GuideGuiHandler implements IGuiHandler {
                 if (lastEntry != null && !lastEntry.isEmpty()
                     && category.entries.containsKey(new ResourceLocation(lastEntry))) {
                     EntryAbstract entry = category.entries.get(new ResourceLocation(lastEntry));
-                    GuiEntry guiEntry = new GuiEntry(book, category, entry, player);
-                    guiEntry.pageNumber = lastPage;
-                    return guiEntry;
+                    return new GuiEntry(book, category, entry, player);
                 }
 
                 return new GuiCategory(book, category, player, null);

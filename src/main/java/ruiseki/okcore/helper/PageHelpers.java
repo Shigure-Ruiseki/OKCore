@@ -59,7 +59,7 @@ public class PageHelpers {
             .replaceAll("\\t", "     ");
         String[] lines = toDraw.split("\n");
         for (String line : lines) {
-            List<String> cutLines = fontRenderer.listFormattedStringToWidth(line, 3 * guiBase.xSize / 5);
+            List<String> cutLines = fontRenderer.listFormattedStringToWidth(line, 3 * guiBase.screenWidth / 5);
             for (String cut : cutLines) {
                 fontRenderer.drawString(cut, x, y, 0);
                 y += 10;

@@ -16,6 +16,8 @@ import org.jetbrains.annotations.Nullable;
 
 import lombok.experimental.Delegate;
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.CapabilityDispatcher;
+import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -34,10 +36,12 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
 
     private BlockPos cachedPos;
     private final int randomOffset = (int) (Math.random() * 20);
+    private CapabilityDispatcher capabilities;
 
     public TileEntityOK() {
         this.sendUpdateBackoff = (int) (Math.random() * UPDATE_BACKOFF_TICKS);
         this.ticking = this instanceof ITickingTile;
+        if (this instanceof ICapabilityInternal internal) this.capabilities = internal.getCapabilities();
     }
 
     /**
@@ -226,12 +230,12 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
 
     @Override
     public boolean hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        return ((ICapabilitySerializable) (Object) this).hasCapability(capability, facing);
+        return this.capabilities != null && this.capabilities.hasCapability(capability, facing);
     }
 
     @Override
     public <T> T getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
-        return ((ICapabilitySerializable) (Object) this).getCapability(capability, facing);
+        return this.capabilities == null ? null : this.capabilities.getCapability(capability, facing);
     }
 
     @Override

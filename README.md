@@ -6,7 +6,7 @@ Just a core mod extracted to use in other mod
 
 ## Required Dependencies:
 - [ModularUI2 (>= 2.3.62)](https://github.com/GTNewHorizons/ModularUI2)
-- [GTNHLib (>= 0.9.65)](https://github.com/GTNewHorizons/GTNHLib)
+- [GTNHLib (>= 0.9.66)](https://github.com/GTNewHorizons/GTNHLib)
 
 ## Features:
 - Json Loader,

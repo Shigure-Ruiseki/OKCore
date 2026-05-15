@@ -34,7 +34,7 @@
  * For more details, see https://docs.gradle.org/8.0.1/userguide/java_library_plugin.html#sec:java_library_configurations_graph
  */
 dependencies {
-    implementation("com.github.GTNewHorizons:GTNHLib:0.9.65:dev")
+    implementation("com.github.GTNewHorizons:GTNHLib:0.9.66:dev")
     implementation("com.github.GTNewHorizons:ModularUI2:2.3.62-1.7.10:dev")
 
     devOnlyNonPublishable('com.github.GTNewHorizons:NotEnoughItems:2.8.97-GTNH:dev')

@@ -37,7 +37,7 @@ public class BlockDirectionMetaComponent implements IBlockDirection {
         int mask;
 
         if (use6Directions) {
-            newDirMeta = direction.ordinal() & 7;
+            newDirMeta = DirectionHelpers.direction6ToMeta(direction) & 7;
             mask = 7;
         } else {
             newDirMeta = DirectionHelpers.direction4ToMeta(direction) & 3;

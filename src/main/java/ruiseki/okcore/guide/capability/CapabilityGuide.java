@@ -72,7 +72,6 @@ public class CapabilityGuide implements IInitListener {
     @Override
     public void onInit(Step initStep) {
         if (initStep != Step.PREINIT) return;
-
         CapabilityManager.INSTANCE.register(IGuideHandler.class, new Capability.IStorage<>() {
 
             @Override
@@ -88,7 +87,6 @@ public class CapabilityGuide implements IInitListener {
                     serializable.deserializeNBT((NBTTagCompound) nbt);
             }
         }, GuideHandler::new);
-
         MinecraftForge.EVENT_BUS.register(this);
     }
 }

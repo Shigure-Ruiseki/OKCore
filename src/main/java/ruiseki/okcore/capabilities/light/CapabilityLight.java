@@ -16,7 +16,9 @@ public class CapabilityLight implements IInitListener {
     @CapabilityInject(IDynamicLight.class)
     public static Capability<IDynamicLight> DYNAMIC_LIGHT_CAPABILITY = null;
 
-    public static void register() {
+    @Override
+    public void onInit(IInitListener.Step initStep) {
+        if (initStep != IInitListener.Step.PREINIT) return;
         CapabilityManager.INSTANCE.register(IDynamicLight.class, new Capability.IStorage<IDynamicLight>() {
 
             @Override
@@ -31,12 +33,5 @@ public class CapabilityLight implements IInitListener {
 
             }
         }, DynamicLightDefault::new);
-    }
-
-    @Override
-    public void onInit(IInitListener.Step initStep) {
-        if (initStep == IInitListener.Step.PREINIT) {
-            register();
-        }
     }
 }

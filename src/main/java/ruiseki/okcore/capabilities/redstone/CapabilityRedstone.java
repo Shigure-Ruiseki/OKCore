@@ -16,7 +16,9 @@ public class CapabilityRedstone implements IInitListener {
     @CapabilityInject(IDynamicRedstone.class)
     public static Capability<IDynamicRedstone> DYNAMIC_REDSTONE_CAPABILITY = null;
 
-    public static void register() {
+    @Override
+    public void onInit(IInitListener.Step initStep) {
+        if (initStep != IInitListener.Step.PREINIT) return;
         CapabilityManager.INSTANCE.register(IDynamicRedstone.class, new Capability.IStorage<IDynamicRedstone>() {
 
             @Override
@@ -31,12 +33,5 @@ public class CapabilityRedstone implements IInitListener {
 
             }
         }, DynamicRedstoneDefault::new);
-    }
-
-    @Override
-    public void onInit(IInitListener.Step initStep) {
-        if (initStep == IInitListener.Step.PREINIT) {
-            register();
-        }
     }
 }

@@ -8,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -274,7 +273,7 @@ public class MinecraftHelpers {
      * @param world world
      * @param x,    y, z The position.
      */
-    public static void postDestroyBlock(IBlockAccess world, int x, int y, int z) {
+    public static void postDestroyBlock(World world, int x, int y, int z) {
         // Does nothing for now.
     }
 

@@ -1,6 +1,7 @@
 package ruiseki.okcore.helper;
 
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -44,19 +45,21 @@ public class BlockStateHelpers {
         }
     }
 
-    public static <T> void set(IBlockAccess world, int x, int y, int z, BlockProperty<T> property, T value) {
+    public static <T> void set(World world, int x, int y, int z, BlockProperty<T> property, T value) {
         if (world == null) return;
 
         try (BlockState state = BlockPropertyRegistry.getBlockState(world, x, y, z)) {
             state.setPropertyValue(property, value);
+            state.place(world, x, y, z);
         }
     }
 
-    public static <T> void set(IBlockAccess world, int x, int y, int z, String name, T value) {
+    public static <T> void set(World world, int x, int y, int z, String name, T value) {
         if (world == null) return;
 
         try (BlockState state = BlockPropertyRegistry.getBlockState(world, x, y, z)) {
             state.setPropertyValue(name, value);
+            state.place(world, x, y, z);
         }
     }
 }

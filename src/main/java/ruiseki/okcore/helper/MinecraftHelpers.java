@@ -11,6 +11,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ChestGenHooks;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.lwjgl.input.Keyboard;
@@ -236,7 +237,8 @@ public class MinecraftHelpers {
         TileEntity tile = world.getTileEntity(x, y, z);
 
         if (block.shouldDropInventory(world, x, y, z) && !world.isRemote) {
-            IItemHandler handler = TileHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+            IItemHandler handler = TileHelpers
+                .getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, ForgeDirection.UNKNOWN);
             if (handler != null) {
                 InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
                 InventoryHelpers.clearInventory(handler);

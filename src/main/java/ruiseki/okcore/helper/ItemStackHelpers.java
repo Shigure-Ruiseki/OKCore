@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.intellij.lang.annotations.MagicConstant;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
@@ -22,6 +23,8 @@ import com.google.common.collect.Lists;
 import cpw.mods.fml.common.registry.GameData;
 import it.unimi.dsi.fastutil.Hash;
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.CapabilityDispatcher;
+import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.IImmutableItemMeta;
@@ -231,7 +234,8 @@ public final class ItemStackHelpers {
             && ((a == null && b == null) || (a != null && a.stackSize == b.stackSize));
     }
 
-    public static <T> T getCapability(ItemStack stack, Capability<T> capability, @Nullable ForgeDirection facing) {
+    public static <T> T getCapability(ItemStack stack, @NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
         if (stack == null) return null;
         try {
             ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
@@ -243,7 +247,8 @@ public final class ItemStackHelpers {
         }
     }
 
-    public static boolean hasCapability(ItemStack stack, Capability<?> capability, @Nullable ForgeDirection facing) {
+    public static boolean hasCapability(ItemStack stack, @NotNull Capability<?> capability,
+        @Nullable ForgeDirection facing) {
         if (stack == null) return false;
         try {
             ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
@@ -252,6 +257,18 @@ public final class ItemStackHelpers {
 
         } catch (ClassCastException ignored) {
             return false;
+        }
+    }
+
+    public static CapabilityDispatcher getCapabilities(ItemStack stack) {
+        if (stack == null) return null;
+        try {
+            ICapabilityInternal provider = (ICapabilityInternal) (Object) stack;
+
+            return provider.getCapabilities();
+
+        } catch (ClassCastException ignored) {
+            return null;
         }
     }
 

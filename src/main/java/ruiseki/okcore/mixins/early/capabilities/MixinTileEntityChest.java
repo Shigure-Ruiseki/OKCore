@@ -24,7 +24,7 @@ import ruiseki.okcore.item.capability.minecraft.InventoryItemSource;
 @Implements(@Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"))
 public abstract class MixinTileEntityChest extends MixinTileEntity {
 
-    public <T> T okcorecap$getCapability(Capability<T> capability, ForgeDirection facing) {
+    public <T> T okcorecap$getCapability(@NotNull Capability<T> capability, @NotNull ForgeDirection facing) {
         TileEntityChest self = (TileEntityChest) (Object) this;
         Block block = self.getBlockType();
         if (block instanceof BlockChest chest) {

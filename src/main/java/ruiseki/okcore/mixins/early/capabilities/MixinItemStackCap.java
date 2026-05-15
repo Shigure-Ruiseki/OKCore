@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -17,13 +18,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
+import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.capabilities.IItemCapability;
 import ruiseki.okcore.event.OKEventFactory;
 
 @Mixin(ItemStack.class)
-@Implements(@Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"))
+@Implements({ @Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"),
+    @Interface(iface = ICapabilityInternal.class, prefix = "okcoreinternal$") })
 public abstract class MixinItemStackCap {
 
     @Shadow
@@ -32,8 +35,10 @@ public abstract class MixinItemStackCap {
     @Shadow
     public abstract void readFromNBT(NBTTagCompound p_77963_1_);
 
-    private CapabilityDispatcher capabilities;
-    private NBTTagCompound capNBT;
+    @Unique
+    private CapabilityDispatcher okcore$capabilities;
+    @Unique
+    private NBTTagCompound okcore$capNBT;
 
     /*
      * INTERNAL CAP INIT
@@ -44,21 +49,22 @@ public abstract class MixinItemStackCap {
         if (item instanceof IItemCapability capItem) {
             ItemStack stack = (ItemStack) (Object) this;
 
-            ICapabilityProvider provider = capItem.initCapabilities(stack, this.capNBT);
-            this.capabilities = OKEventFactory.gatherCapabilities(stack, provider);
-            if (this.capNBT != null && this.capabilities != null) this.capabilities.deserializeNBT(this.capNBT);
+            ICapabilityProvider provider = capItem.initCapabilities(stack, this.okcore$capNBT);
+            this.okcore$capabilities = OKEventFactory.gatherCapabilities(stack, provider);
+            if (this.okcore$capNBT != null && this.okcore$capabilities != null)
+                this.okcore$capabilities.deserializeNBT(this.okcore$capNBT);
         }
     }
 
     @Inject(method = "readFromNBT", at = @At("HEAD"))
     private void okcore$readFromNBT(NBTTagCompound tag, CallbackInfo ci) {
-        this.capNBT = tag.hasKey("OKCaps") ? (NBTTagCompound) tag.getTag("OKCaps") : null;
+        this.okcore$capNBT = tag.hasKey("OKCaps") ? (NBTTagCompound) tag.getTag("OKCaps") : null;
     }
 
     @Inject(method = "writeToNBT", at = @At("RETURN"))
     private void okcore$writeToNBT(NBTTagCompound tag, CallbackInfoReturnable<NBTTagCompound> cir) {
-        if (this.capabilities != null) {
-            NBTTagCompound cnbt = this.capabilities.serializeNBT();
+        if (this.okcore$capabilities != null) {
+            NBTTagCompound cnbt = this.okcore$capabilities.serializeNBT();
             if (!cnbt.hasNoTags()) {
                 tag.setTag("OKCaps", cnbt);
             }
@@ -68,11 +74,11 @@ public abstract class MixinItemStackCap {
     @Inject(method = "copy", at = @At("RETURN"))
     private void okcore$copyCaps(CallbackInfoReturnable<ItemStack> cir) {
         ItemStack stack = cir.getReturnValue();
-        if (this.capabilities != null) {
-            NBTTagCompound caps = this.capabilities.serializeNBT();
+        if (this.okcore$capabilities != null) {
+            NBTTagCompound caps = this.okcore$capabilities.serializeNBT();
             if (!caps.hasNoTags()) {
                 stack.setTagInfo("OKCaps", caps);
-                ((MixinItemStackCap) (Object) stack).capNBT = caps;
+                ((MixinItemStackCap) (Object) stack).okcore$capNBT = caps;
                 stack.func_150996_a(stack.getItem());
             }
         }
@@ -83,11 +89,11 @@ public abstract class MixinItemStackCap {
      */
 
     public boolean okcorecap$hasCapability(@NotNull Capability<?> capability, ForgeDirection side) {
-        return this.capabilities != null && this.capabilities.hasCapability(capability, side);
+        return this.okcore$capabilities != null && this.okcore$capabilities.hasCapability(capability, side);
     }
 
     public <T> T okcorecap$getCapability(Capability<T> capability, ForgeDirection side) {
-        return this.capabilities == null ? null : this.capabilities.getCapability(capability, side);
+        return this.okcore$capabilities == null ? null : this.okcore$capabilities.getCapability(capability, side);
     }
 
     public NBTTagCompound okcorecap$serializeNBT() {
@@ -98,5 +104,9 @@ public abstract class MixinItemStackCap {
 
     public void okcorecap$deserializeNBT(NBTTagCompound tag) {
         this.readFromNBT(tag);
+    }
+
+    public CapabilityDispatcher okcoreinternal$getCapabilities() {
+        return okcore$capabilities;
     }
 }

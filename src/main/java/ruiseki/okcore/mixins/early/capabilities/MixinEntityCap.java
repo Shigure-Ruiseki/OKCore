@@ -18,11 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
+import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.event.OKEventFactory;
 
 @Mixin(Entity.class)
-@Implements(@Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"))
+@Implements({ @Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"),
+    @Interface(iface = ICapabilityInternal.class, prefix = "okcoreinternal$") })
 public abstract class MixinEntityCap {
 
     @Shadow
@@ -82,5 +84,9 @@ public abstract class MixinEntityCap {
 
     public void okcorecap$deserializeNBT(NBTTagCompound tag) {
         this.readFromNBT(tag);
+    }
+
+    public CapabilityDispatcher okcoreinternal$getCapabilities() {
+        return okcore$capabilities;
     }
 }

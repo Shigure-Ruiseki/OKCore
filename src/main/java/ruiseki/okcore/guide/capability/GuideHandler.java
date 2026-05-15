@@ -67,7 +67,7 @@ public class GuideHandler implements IGuideHandler, ICapabilitySerializable {
     }
 
     @Override
-    public @Nullable <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
+    public @Nullable <T> T getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
         return hasCapability(capability, facing) ? (T) this : null;
     }
 

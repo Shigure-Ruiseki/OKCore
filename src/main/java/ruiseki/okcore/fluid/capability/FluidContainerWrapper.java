@@ -8,6 +8,7 @@ import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidContainerItem;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
@@ -26,13 +27,13 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
     // ===== Capability bridge =====
 
     @Override
-    public boolean hasCapability(@NotNull Capability<?> cap, ForgeDirection side) {
+    public boolean hasCapability(@NotNull Capability<?> cap, @Nullable ForgeDirection side) {
         return cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getCapability(Capability<T> cap, ForgeDirection side) {
+    public <T> T getCapability(@NotNull Capability<T> cap, @Nullable ForgeDirection side) {
         return cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY ? (T) this : null;
     }
 

@@ -5,7 +5,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -54,11 +53,11 @@ public abstract class MixinTileEntity {
         }
     }
 
-    public boolean okcorecap$hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
+    public boolean okcorecap$hasCapability(@NotNull Capability<?> capability, @NotNull ForgeDirection facing) {
         return this.okcore$capabilities != null && this.okcore$capabilities.hasCapability(capability, facing);
     }
 
-    public <T> T okcorecap$getCapability(Capability<T> capability, ForgeDirection facing) {
+    public <T> T okcorecap$getCapability(@NotNull Capability<T> capability, @NotNull ForgeDirection facing) {
         return this.okcore$capabilities == null ? null : this.okcore$capabilities.getCapability(capability, facing);
     }
 

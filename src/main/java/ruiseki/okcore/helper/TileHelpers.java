@@ -7,9 +7,12 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.CapabilityDispatcher;
+import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -68,22 +71,34 @@ public final class TileHelpers {
         }
     }
 
-    public static <C> C getCapability(@Nullable TileEntity tile, Capability<C> capability,
-        @Nullable ForgeDirection side) {
+    public static <C> C getCapability(TileEntity tile, @NotNull Capability<C> capability,
+        @NotNull ForgeDirection side) {
         if (tile instanceof ICapabilityProvider provider) {
             return provider.getCapability(capability, side);
         }
         return null;
     }
 
-    public static <C> C getCapability(DimPos dimPos, Capability<C> capability, @Nullable ForgeDirection side) {
+    public static <C> C getCapability(DimPos dimPos, @NotNull Capability<C> capability, @NotNull ForgeDirection side) {
         World world = dimPos.getWorld();
         return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : null;
     }
 
     public static <C> C getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
-        @Nullable ForgeDirection side) {
+        @NotNull ForgeDirection side) {
         return getCapability(pos.getTileEntity(world), capability, side);
+    }
+
+    public static CapabilityDispatcher getCapabilities(TileEntity tile) {
+        if (tile == null) return null;
+        try {
+            ICapabilityInternal provider = (ICapabilityInternal) (Object) tile;
+
+            return provider.getCapabilities();
+
+        } catch (ClassCastException ignored) {
+            return null;
+        }
     }
 
     public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess level, int x, int y, int z) {

@@ -61,13 +61,14 @@ public class CapabilityItemHandler implements IInitListener {
             event.addCapability(INVENTORY_CAP, new ICapabilityProvider() {
 
                 @Override
-                public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
+                public boolean hasCapability(@NotNull Capability<?> capability, @NotNull ForgeDirection facing) {
                     return capability == ITEM_HANDLER_CAPABILITY || capability == ITEM_SINK_CAPABILITY
                         || capability == ITEM_SOURCE_CAPABILITY;
                 }
 
                 @Override
-                public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
+                public <T> T getCapability(@NotNull Capability<T> capability, @NotNull ForgeDirection facing) {
+                    if (!hasCapability(capability, facing)) return null;
                     if (finalInv != null) {
                         if (capability == ITEM_HANDLER_CAPABILITY) {
                             return (T) new InventoryHandlerWrapper(finalInv, facing);

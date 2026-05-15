@@ -47,7 +47,7 @@ public interface ICapabilityProvider {
      *         {@link #getCapability(Capability, ForgeDirection)}
      *         must not return null.
      */
-    boolean hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing);
+    boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing);
 
     /**
      * Retrieves the handler for the capability requested on the specific side.
@@ -66,5 +66,5 @@ public interface ICapabilityProvider {
      *         would return true.
      */
     @Nullable
-    <T> T getCapability(Capability<T> capability, ForgeDirection facing);
+    <T> T getCapability(@NotNull Capability<T> capability, ForgeDirection facing);
 }

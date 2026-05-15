@@ -52,13 +52,13 @@ public class CapabilityEnergy implements IInitListener {
             event.addCapability(ENERGY_CAP, new ICapabilityProvider() {
 
                 @Override
-                public boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing) {
+                public boolean hasCapability(@NotNull Capability<?> capability, @NotNull ForgeDirection facing) {
                     return capability == ENERGY || capability == ENERGY_SINK_CAPABILITY
                         || capability == ENERGY_SOURCE_CAPABILITY;
                 }
 
                 @Override
-                public <T> T getCapability(Capability<T> capability, ForgeDirection facing) {
+                public <T> T getCapability(@NotNull Capability<T> capability, @NotNull ForgeDirection facing) {
                     if (capability == ENERGY) {
                         if (tile instanceof IEnergyHandler handler) return (T) new CoFHHandlerWrapper(handler, facing);
                         if (tile instanceof IEnergyReceiver receiver)

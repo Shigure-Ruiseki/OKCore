@@ -40,12 +40,7 @@ public class CapabilityFluidHandler implements IInitListener {
 
     @Override
     public void onInit(Step initStep) {
-        if (initStep == Step.PREINIT) {
-            register();
-        }
-    }
-
-    public static void register() {
+        if (initStep != Step.PREINIT) return;
         CapabilityManager.INSTANCE.register(IFluidHandler.class, new Capability.IStorage<IFluidHandler>() {
 
             @Override
@@ -102,8 +97,7 @@ public class CapabilityFluidHandler implements IInitListener {
 
             }
         }, () -> new FluidSource(null, null));
-
-        MinecraftForge.EVENT_BUS.register(new CapabilityFluidHandler());
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent

@@ -44,23 +44,6 @@ public class CapabilityItemHandler implements IInitListener {
 
     public static final ResourceLocation INVENTORY_CAP = new ResourceLocation(Reference.MOD_ID, "inventory");
 
-    public static void register() {
-        CapabilityManager.INSTANCE.register(IItemHandler.class, new Capability.IStorage<IItemHandler>() {
-
-            @Override
-            public @Nullable NBTBase writeNBT(Capability<IItemHandler> capability, IItemHandler instance,
-                ForgeDirection side) {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IItemHandler> capability, IItemHandler instance, ForgeDirection side,
-                NBTBase nbt) {
-
-            }
-        }, ItemStackHandler::new);
-    }
-
     @SubscribeEvent
     public void attachMCCapability(AttachCapabilitiesEvent<TileEntity> event) {
         if (event.getType() != TileEntity.class) return;
@@ -122,9 +105,49 @@ public class CapabilityItemHandler implements IInitListener {
 
     @Override
     public void onInit(Step initStep) {
-        if (initStep == IInitListener.Step.PREINIT) {
-            register();
-            MinecraftForge.EVENT_BUS.register(this);
-        }
+        if (initStep != IInitListener.Step.PREINIT) return;
+        CapabilityManager.INSTANCE.register(IItemHandler.class, new Capability.IStorage<IItemHandler>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IItemHandler> capability, IItemHandler instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IItemHandler> capability, IItemHandler instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, ItemStackHandler::new);
+        CapabilityManager.INSTANCE.register(IItemSink.class, new Capability.IStorage<IItemSink>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IItemSink> capability, IItemSink instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IItemSink> capability, IItemSink instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new InventoryItemSink(null, null));
+        CapabilityManager.INSTANCE.register(IItemSource.class, new Capability.IStorage<IItemSource>() {
+
+            @Override
+            public @Nullable NBTBase writeNBT(Capability<IItemSource> capability, IItemSource instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IItemSource> capability, IItemSource instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new InventoryItemSource(null, null));
+        MinecraftForge.EVENT_BUS.register(this);
     }
 }

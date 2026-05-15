@@ -43,49 +43,6 @@ public class CapabilityEnergy implements IInitListener {
 
     public static final ResourceLocation ENERGY_CAP = new ResourceLocation(Reference.MOD_ID, "energy");
 
-    public static void register() {
-        CapabilityManager.INSTANCE.register(IEnergyStorage.class, new Capability.IStorage<IEnergyStorage>() {
-
-            @Override
-            public NBTBase writeNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance,
-                ForgeDirection side) {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance, ForgeDirection side,
-                NBTBase nbt) {
-
-            }
-        }, EnergyStorageDefault::new);
-        CapabilityManager.INSTANCE.register(IEnergySink.class, new Capability.IStorage<IEnergySink>() {
-
-            @Override
-            public NBTBase writeNBT(Capability<IEnergySink> capability, IEnergySink instance, ForgeDirection side) {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IEnergySink> capability, IEnergySink instance, ForgeDirection side,
-                NBTBase nbt) {
-
-            }
-        }, () -> new OKEnergySink(null, null));
-        CapabilityManager.INSTANCE.register(IEnergySource.class, new Capability.IStorage<IEnergySource>() {
-
-            @Override
-            public NBTBase writeNBT(Capability<IEnergySource> capability, IEnergySource instance, ForgeDirection side) {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IEnergySource> capability, IEnergySource instance, ForgeDirection side,
-                NBTBase nbt) {
-
-            }
-        }, () -> new OKEnergySource(null, null));
-    }
-
     @SubscribeEvent
     public void attachCoFHCapability(AttachCapabilitiesEvent<TileEntity> event) {
         if (event.getType() != TileEntity.class) return;
@@ -126,9 +83,47 @@ public class CapabilityEnergy implements IInitListener {
 
     @Override
     public void onInit(Step initStep) {
-        if (initStep == Step.PREINIT) {
-            register();
-            MinecraftForge.EVENT_BUS.register(this);
-        }
+        if (initStep != Step.PREINIT) return;
+        CapabilityManager.INSTANCE.register(IEnergyStorage.class, new Capability.IStorage<IEnergyStorage>() {
+
+            @Override
+            public NBTBase writeNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance,
+                ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IEnergyStorage> capability, IEnergyStorage instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, EnergyStorageDefault::new);
+        CapabilityManager.INSTANCE.register(IEnergySink.class, new Capability.IStorage<IEnergySink>() {
+
+            @Override
+            public NBTBase writeNBT(Capability<IEnergySink> capability, IEnergySink instance, ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IEnergySink> capability, IEnergySink instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new OKEnergySink(null, null));
+        CapabilityManager.INSTANCE.register(IEnergySource.class, new Capability.IStorage<IEnergySource>() {
+
+            @Override
+            public NBTBase writeNBT(Capability<IEnergySource> capability, IEnergySource instance, ForgeDirection side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IEnergySource> capability, IEnergySource instance, ForgeDirection side,
+                NBTBase nbt) {
+
+            }
+        }, () -> new OKEnergySource(null, null));
+        MinecraftForge.EVENT_BUS.register(this);
     }
 }

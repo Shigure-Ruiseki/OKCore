@@ -86,6 +86,11 @@ public final class TileHelpers {
         return getCapability(pos.getTileEntity(world), capability, side);
     }
 
+    public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess level, int x, int y, int z) {
+        if (level == null) return Optional.empty();
+        return Optional.ofNullable(level.getTileEntity(x, y, z));
+    }
+
     public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess level, BlockPos pos) {
         if (level == null || pos == null) return Optional.empty();
         return Optional.ofNullable(pos.getTileEntity(level));

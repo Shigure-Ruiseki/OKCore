@@ -92,6 +92,12 @@ public class BlockOK extends Block implements IBlock, IBlockPropertyProvider {
     }
 
     @Override
+    public void registerComponent() {
+        IBlock.super.registerComponent();
+        registerProperties();
+    }
+
+    @Override
     public TileEntity createTileEntity(World world, int metadata) {
         if (teClass != null) {
             try {

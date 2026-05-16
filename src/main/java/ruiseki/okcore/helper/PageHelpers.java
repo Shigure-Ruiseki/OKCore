@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.text.WordUtils;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -20,84 +21,30 @@ import ruiseki.okcore.guide.pages.PageText;
 
 public class PageHelpers {
 
-    @SideOnly(Side.CLIENT)
-    public static List<String> prepareForLongText(String text, int lineWidth, int firstHeight, int subsequentHeight) {
-        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
-
-        text = StringEscapeUtils.unescapeJava(text)
-            .replaceAll("\\t", "     ");
-
-        int firstCount = firstHeight / 9;
-        int subsequentCount = subsequentHeight / 9;
-
-        List<String> allLines = fontRenderer.listFormattedStringToWidth(text, lineWidth);
-        List<String> pages = new ArrayList<>();
-
-        if (allLines.isEmpty()) return pages;
-
-        int linesForFirstPage = Math.min(allLines.size(), firstCount);
-        List<String> firstPageList = allLines.subList(0, linesForFirstPage);
-        pages.add(combineLines(firstPageList));
-
-        int currentIndex = linesForFirstPage;
-        while (currentIndex < allLines.size()) {
-            int remaining = allLines.size() - currentIndex;
-            int linesForThisPage = Math.min(remaining, subsequentCount);
-
-            List<String> pageLines = allLines.subList(currentIndex, currentIndex + linesForThisPage);
-            pages.add(combineLines(pageLines));
-
-            currentIndex += linesForThisPage;
-        }
-
-        return pages;
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static String combineLines(List<String> lines) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < lines.size(); i++) {
-            sb.append(lines.get(i));
-            if (i < lines.size() - 1) {
-                sb.append("\n");
-            }
-        }
-        return sb.toString();
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static List<IPage> pagesForLongText(String text, ItemStack stack) {
-        List<String> pageStrings = prepareForLongText(text, 164, 79, 126);
+    public static List<IPage> pagesForLongText(String locText, int maxLength) {
         List<IPage> pageList = new ArrayList<IPage>();
-
-        for (int i = 0; i < pageStrings.size(); i++) {
-            if (i == 0) {
-                pageList.add(new PageItemStack(pageStrings.get(i), stack));
-            } else {
-                pageList.add(new PageText(pageStrings.get(i)));
-            }
-        }
+        for (String s : WordUtils.wrap(locText, maxLength, "/cut", false)
+            .split("/cut")) pageList.add(new PageText(s));
         return pageList;
     }
 
-    @SideOnly(Side.CLIENT)
-    public static List<IPage> pagesForLongText(String text) {
+    /**
+     * @param locText - Text
+     * @return a list of IPages with the text cut to fit on page
+     */
+    public static List<IPage> pagesForLongText(String locText) {
+        return pagesForLongText(locText, 430);
+    }
+
+    public static List<IPage> pagesForLongText(String locText, ItemStack stack) {
         List<IPage> pageList = new ArrayList<IPage>();
-        List<String> pageStrings = prepareForLongText(text, 164, 126, 126);
-        for (String s : pageStrings) {
-            pageList.add(new PageText(s));
+        String[] strings = WordUtils.wrap(locText, 240, "/cut", false)
+            .split("/cut");
+        for (int i = 0; i < strings.length; i++) {
+            if (i == 0) pageList.add(new PageItemStack(strings[i], stack));
+            else pageList.add(new PageText(strings[i]));
         }
         return pageList;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static List<IPage> pagesForLongText(String text, Item item) {
-        return pagesForLongText(text, new ItemStack(item));
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static List<IPage> pagesForLongText(String text, Block block) {
-        return pagesForLongText(text, new ItemStack(block));
     }
 
     @SideOnly(Side.CLIENT)
@@ -107,11 +54,29 @@ public class PageHelpers {
             .replaceAll("\\t", "     ");
         String[] lines = toDraw.split("\n");
         for (String line : lines) {
-            List<String> cutLines = fontRenderer.listFormattedStringToWidth(line, 170);
+            List<String> cutLines = fontRenderer.listFormattedStringToWidth(line, 164);
             for (String cut : cutLines) {
                 fontRenderer.drawString(cut, x, y, color, false);
                 y += 10;
             }
         }
+    }
+
+    /**
+     * @param locText - Text
+     * @param item    - The item to put on the first page
+     * @return a list of IPages with the text cut to fit on page
+     */
+    public static List<IPage> pagesForLongText(String locText, Item item) {
+        return pagesForLongText(locText, new ItemStack(item));
+    }
+
+    /**
+     * @param locText - Text
+     * @param block   - The block to put on the first page
+     * @return a list of IPages with the text cut to fit on page
+     */
+    public static List<IPage> pagesForLongText(String locText, Block block) {
+        return pagesForLongText(locText, new ItemStack(block));
     }
 }

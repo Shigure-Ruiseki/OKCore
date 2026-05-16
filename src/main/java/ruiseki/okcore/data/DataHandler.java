@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Level;
 import cpw.mods.fml.common.discovery.ASMDataTable;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.DataLoader;
+import ruiseki.okcore.data.loader.IDataLoader;
 
 public class DataHandler {
 

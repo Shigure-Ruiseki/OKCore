@@ -6,8 +6,8 @@ import java.util.List;
 
 import net.minecraft.item.crafting.IRecipe;
 
-import ruiseki.okcore.data.IDataLoader;
 import ruiseki.okcore.data.loader.DataLoader;
+import ruiseki.okcore.data.loader.IDataLoader;
 
 @DataLoader
 public class RecipeLoader implements IDataLoader {

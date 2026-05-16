@@ -3,8 +3,8 @@ package ruiseki.okcore.data.loader.baubles;
 import java.io.File;
 import java.io.IOException;
 
-import ruiseki.okcore.data.IDataLoader;
 import ruiseki.okcore.data.loader.DataLoader;
+import ruiseki.okcore.data.loader.IDataLoader;
 import ruiseki.okcore.lib.LibMods;
 
 @DataLoader

@@ -1,4 +1,4 @@
-package ruiseki.okcore.data;
+package ruiseki.okcore.data.loader;
 
 import java.io.File;
 

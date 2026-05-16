@@ -1,6 +1,5 @@
 package ruiseki.okcore;
 
-import cpw.mods.fml.common.discovery.ASMDataTable;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.oredict.RecipeSorter;
 
@@ -10,6 +9,7 @@ import com.google.common.collect.Maps;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
+import cpw.mods.fml.common.discovery.ASMDataTable;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;

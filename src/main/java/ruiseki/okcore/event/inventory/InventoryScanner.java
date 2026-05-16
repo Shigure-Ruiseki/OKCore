@@ -22,7 +22,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.inventory.ItemStackKey;
 

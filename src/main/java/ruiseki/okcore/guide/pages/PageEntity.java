@@ -1,6 +1,7 @@
 package ruiseki.okcore.guide.pages;
 
-import net.minecraft.client.Minecraft;
+import java.util.function.BiFunction;
+
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
@@ -18,8 +19,6 @@ import ruiseki.okcore.guide.impl.Book;
 import ruiseki.okcore.guide.impl.Page;
 import ruiseki.okcore.guide.impl.abstraction.CategoryAbstract;
 import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
-
-import java.util.function.BiFunction;
 
 public class PageEntity extends Page {
 
@@ -40,7 +39,8 @@ public class PageEntity extends Page {
         }, null);
     }
 
-    public PageEntity(String entityName, BiFunction<World, String, ? extends EntityLivingBase> supplier, String customTitle) {
+    public PageEntity(String entityName, BiFunction<World, String, ? extends EntityLivingBase> supplier,
+        String customTitle) {
         this.entityName = entityName;
         this.supplier = supplier;
         this.customTitle = customTitle;

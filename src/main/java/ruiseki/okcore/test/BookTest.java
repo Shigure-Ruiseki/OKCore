@@ -102,17 +102,12 @@ public class BookTest implements IGuideBook {
         pages.add(new PageImage(new ResourceLocation(Reference.MOD_ID, "textures/test/testimage.png"), 64, 64, true));
 
         pages.add(new PageEntity("Blaze"));
-        pages.add(new PageEntity("Zombie", "This is a zombie") {
-
-            @Override
-            protected void prepareEntity(World world) {
-                if (world != null && entity == null) {
-                    EntityZombie zombie = new EntityZombie(world);
-                    zombie.setCurrentItemOrArmor(0, new ItemStack(Items.iron_sword));
-                    this.entity = zombie;
-                }
-            }
-        });
+        pages.add(new PageEntity("Zombie", (world, name) -> {
+            net.minecraft.entity.monster.EntityZombie zombie = new net.minecraft.entity.monster.EntityZombie(world);
+            zombie.setCurrentItemOrArmor(0, new ItemStack(net.minecraft.init.Items.iron_sword));
+            zombie.setCurrentItemOrArmor(4, new ItemStack(net.minecraft.init.Blocks.pumpkin));
+            return zombie;
+        }));
 
         Entry entry = new EntryItemStack(pages, LangHelpers.localize("test.entry"), new ItemStack(Items.potato));
         entries.put(new ResourceLocation(Reference.MOD_ID, "entry"), entry);

@@ -19,26 +19,42 @@ import ruiseki.okcore.guide.impl.Page;
 import ruiseki.okcore.guide.impl.abstraction.CategoryAbstract;
 import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
 
+import java.util.function.BiFunction;
+
 public class PageEntity extends Page {
 
     protected String entityName;
-    protected EntityLivingBase entity;
     protected String customTitle;
 
+    protected BiFunction<World, String, ? extends EntityLivingBase> supplier;
+    protected EntityLivingBase entity;
+
     public PageEntity(String entityName) {
-        this(entityName, null);
+        this(entityName, (world, name) -> {
+            try {
+                return (EntityLivingBase) EntityList.createEntityByName(name, world);
+            } catch (Exception e) {
+                OKCore.okLog(Level.ERROR, e.getMessage());
+                return null;
+            }
+        }, null);
     }
 
-    public PageEntity(String entityName, String customTitle) {
+    public PageEntity(String entityName, BiFunction<World, String, ? extends EntityLivingBase> supplier, String customTitle) {
         this.entityName = entityName;
+        this.supplier = supplier;
         this.customTitle = customTitle;
+    }
+
+    public PageEntity(String entityName, BiFunction<World, String, ? extends EntityLivingBase> supplier) {
+        this(entityName, supplier, null);
     }
 
     @Override
     public void draw(Book book, CategoryAbstract category, EntryAbstract entry, int pageLeft, int pageTop, int mouseX,
         int mouseY, GuiBase guiBase, FontRenderer fontRendererObj) {
-        if (entity == null) {
-            prepareEntity(Minecraft.getMinecraft().theWorld);
+        if (entity == null && guiBase.player != null && guiBase.player.worldObj != null) {
+            entity = supplier.apply(guiBase.player.worldObj, entityName);
         }
 
         if (entity != null) {
@@ -48,16 +64,6 @@ public class PageEntity extends Page {
 
             // Render Entity
             drawEntity(x, y, scale, (float) x - mouseX, (float) y - 50 - mouseY, entity);
-        }
-    }
-
-    protected void prepareEntity(World world) {
-        if (world != null && entity == null) {
-            try {
-                entity = (EntityLivingBase) EntityList.createEntityByName(entityName, world);
-            } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, e.getMessage());
-            }
         }
     }
 

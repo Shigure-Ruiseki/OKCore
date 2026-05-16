@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.inventory.ItemStackKey;
 
@@ -161,7 +162,6 @@ public class InventoryScanner implements IInitListener {
         state.detachListener();
         container.addCraftingToCrafters(state.listener);
         state.attachedContainer = container;
-        // Container switches can coincide with inventory mutations; force one reconciliation scan.
         state.pendingScan = state.initialized;
     }
 
@@ -178,7 +178,6 @@ public class InventoryScanner implements IInitListener {
         if (player.inventory == null) return;
         if (player.inventory.inventoryChanged) {
             state.pendingScan = true;
-            // InventoryPlayer.inventoryChanged is sticky in 1.7.10 until manually cleared.
             player.inventory.inventoryChanged = false;
         }
     }
@@ -203,7 +202,6 @@ public class InventoryScanner implements IInitListener {
             addStack(counts, player.inventory.getItemStack());
         }
 
-        // Slot 0 is crafting result, 1..4 are player 2x2 crafting input.
         if (player.inventoryContainer instanceof ContainerPlayer container) {
             for (int i = 1; i <= 4; i++) {
                 Slot slot = container.getSlot(i);
@@ -296,7 +294,7 @@ public class InventoryScanner implements IInitListener {
 
         private void detachListener() {
             if (attachedContainer == null || listener == null) return;
-            attachedContainer.removeCraftingFromCrafters(listener);
+            attachedContainer.crafters.remove(listener);
             attachedContainer = null;
         }
 

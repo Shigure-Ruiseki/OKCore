@@ -1,9 +1,9 @@
 package ruiseki.okcore;
 
+import cpw.mods.fml.common.discovery.ASMDataTable;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.oredict.RecipeSorter;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Maps;
@@ -26,16 +26,17 @@ import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.core.ModItems;
+import ruiseki.okcore.data.DataHandler;
+import ruiseki.okcore.data.DataLoader;
+import ruiseki.okcore.data.loader.baubles.BaubleSlotHandler;
+import ruiseki.okcore.data.loader.recipes.RecipeHandler;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.event.inventory.InventoryScanner;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideHandler;
-import ruiseki.okcore.guide.IGuideBook;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
-import ruiseki.okcore.guide.impl.Book;
-import ruiseki.okcore.helper.GuideHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.lib.LibMods;
@@ -70,11 +71,20 @@ public class OKCore extends ModBase {
 
         addInitListeners(new DataComponents());
         addInitListeners(new InventoryScanner());
+        addInitListeners(new GuideHandler());
+        addInitListeners(new RecipeHandler());
+        addInitListeners(new BaubleSlotHandler());
     }
 
     @Mod.EventHandler
     public void onConstruction(FMLConstructionEvent event) {
-        CapabilityManager.INSTANCE.injectCapabilities(event.getASMHarvestedData());
+        ASMDataTable asmData = event.getASMHarvestedData();
+
+        CapabilityManager.INSTANCE.injectCapabilities(asmData);
+        GuideHandler.loadFromASM(asmData);
+        RecipeHandler.loadFromASM(asmData);
+        DataHandler.loadFromASM(asmData);
+        DataLoader.loadAllData();
     }
 
     @Override
@@ -93,7 +103,6 @@ public class OKCore extends ModBase {
             BlockProvider.init();
         }
 
-        GuideHandler.gatherBooks(event.getAsmData());
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuideGuiHandler());
     }
 
@@ -101,7 +110,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         super.init(event);
-        GuideHandler.buildAllBooks();
 
         RecipeSorter.register(
             Reference.PREFIX_MOD + "nbtshaped",
@@ -119,11 +127,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
-
-        for (Pair<Book, IGuideBook> guide : GuideHandler.BOOK_CLASSES) {
-            guide.getRight()
-                .handlePost(GuideHelpers.getStackFromBook(guide.getLeft()));
-        }
     }
 
     @Override

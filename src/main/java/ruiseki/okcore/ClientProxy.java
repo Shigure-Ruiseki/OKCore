@@ -18,7 +18,7 @@ public class ClientProxy extends ClientProxyComponent {
     }
 
     @Override
-    public void registerRenderers() {
-        super.registerRenderers();
+    public void registerEventHooks() {
+        super.registerEventHooks();
     }
 }

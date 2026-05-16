@@ -3,6 +3,10 @@ package ruiseki.okcore.json;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.jetbrains.annotations.ApiStatus;
+
+@Deprecated
+@ApiStatus.ScheduledForRemoval(inVersion = "1.5.1")
 public class FluidJson {
 
     public String name;

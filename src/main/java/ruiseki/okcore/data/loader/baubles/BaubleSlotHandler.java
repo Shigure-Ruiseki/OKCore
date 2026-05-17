@@ -21,7 +21,7 @@ public class BaubleSlotHandler implements IInitListener {
 
     @Override
     public void onInit(Step step) {
-        if (step != Step.INIT) return;
+        if (step != Step.PREINIT) return;
         if (!LibMods.BaublesExpanded.isLoaded()) {
             materialsQueue.clear();
             return;

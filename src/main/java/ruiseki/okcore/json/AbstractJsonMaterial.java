@@ -38,7 +38,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Reads a string from the json object with a default value.
      */
-    protected String getString(JsonObject json, String memberName, String def) {
+    public static String getString(JsonObject json, String memberName, String def) {
         return json.has(memberName) && !json.get(memberName)
             .isJsonNull() ? json.get(memberName)
                 .getAsString() : def;
@@ -47,7 +47,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Reads an int from the json object with a default value.
      */
-    protected int getInt(JsonObject json, String memberName, int def) {
+    public static int getInt(JsonObject json, String memberName, int def) {
         return json.has(memberName) && !json.get(memberName)
             .isJsonNull() ? json.get(memberName)
                 .getAsInt() : def;
@@ -56,7 +56,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Reads a boolean from the json object with a default value.
      */
-    protected boolean getBoolean(JsonObject json, String memberName, boolean def) {
+    public static boolean getBoolean(JsonObject json, String memberName, boolean def) {
         return json.has(memberName) && !json.get(memberName)
             .isJsonNull() ? json.get(memberName)
                 .getAsBoolean() : def;
@@ -65,7 +65,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Reads a float from the json object with a default value.
      */
-    protected float getFloat(JsonObject json, String memberName, float def) {
+    public static float getFloat(JsonObject json, String memberName, float def) {
         return json.has(memberName) && !json.get(memberName)
             .isJsonNull() ? json.get(memberName)
                 .getAsFloat() : def;
@@ -74,7 +74,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Reads a Map from the json object.
      */
-    protected Map<String, String> getMap(JsonObject json, String memberName) {
+    public static Map<String, String> getMap(JsonObject json, String memberName) {
         Map<String, String> map = new HashMap<>();
         if (json.has(memberName) && json.get(memberName)
             .isJsonObject()) {
@@ -95,7 +95,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Writes a Map to the json object.
      */
-    protected void writeMap(JsonObject json, String memberName, Map<String, String> map) {
+    public static void writeMap(JsonObject json, String memberName, Map<String, String> map) {
         if (map == null || map.isEmpty()) return;
         JsonObject obj = new JsonObject();
         for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -107,7 +107,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Reads a String array from the json object.
      */
-    protected String[] getStringArray(JsonObject json, String memberName) {
+    public static String[] getStringArray(JsonObject json, String memberName) {
         if (json.has(memberName) && json.get(memberName)
             .isJsonArray()) {
             JsonArray array = json.getAsJsonArray(memberName);
@@ -124,7 +124,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Reads a Map of String arrays from the json object.
      */
-    protected Map<String, String[]> getStringArrayMap(JsonObject json, String memberName) {
+    public static Map<String, String[]> getStringArrayMap(JsonObject json, String memberName) {
         Map<String, String[]> map = new HashMap<>();
         if (!json.has(memberName) || !json.get(memberName)
             .isJsonObject()) return map;
@@ -142,7 +142,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
         return map.isEmpty() ? null : map;
     }
 
-    private String[] getStringArray(JsonArray array) {
+    public static String[] getStringArray(JsonArray array) {
         String[] result = new String[array.size()];
         for (int i = 0; i < array.size(); i++) {
             result[i] = array.get(i)
@@ -154,7 +154,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Writes a Map of String arrays to the json object.
      */
-    protected void writeStringArrayMap(JsonObject json, String memberName, Map<String, String[]> map) {
+    public static void writeStringArrayMap(JsonObject json, String memberName, Map<String, String[]> map) {
         if (map == null || map.isEmpty()) return;
         JsonObject obj = new JsonObject();
         for (Map.Entry<String, String[]> entry : map.entrySet()) {
@@ -170,7 +170,7 @@ public abstract class AbstractJsonMaterial implements IJsonMaterial {
     /**
      * Writes a String array to the json object.
      */
-    protected void writeStringArray(JsonObject json, String memberName, String[] array) {
+    public static void writeStringArray(JsonObject json, String memberName, String[] array) {
         if (array == null || array.length == 0) return;
         JsonArray jsonArray = new JsonArray();
         for (String s : array) {

@@ -5,6 +5,8 @@ import static ruiseki.okcore.data.loader.conditional.LoadConditionHandler.CONDIT
 import java.io.IOException;
 import java.io.InputStream;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.apache.logging.log4j.Level;
 
 import com.google.gson.JsonArray;
@@ -18,8 +20,10 @@ import ruiseki.okcore.json.AbstractJsonStreamReader;
 public abstract class DataReader<T> extends AbstractJsonStreamReader<T> {
 
     private final String fileName;
+    private final ResourceLocation id;
 
-    public DataReader(String fileName) {
+    public DataReader(ResourceLocation id, String fileName) {
+        this.id = id;
         this.fileName = fileName;
     }
 
@@ -54,8 +58,12 @@ public abstract class DataReader<T> extends AbstractJsonStreamReader<T> {
             }
         }
 
-        return readData(root, fileName);
+        return readData(this.id, root, fileName);
     }
 
-    protected abstract T readData(JsonElement root, String resourceName);
+    protected abstract T readData(ResourceLocation id, JsonElement root, String resourceName);
+
+    public ResourceLocation getId() {
+        return this.id;
+    }
 }

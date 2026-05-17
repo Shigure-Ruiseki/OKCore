@@ -1,23 +1,20 @@
 package ruiseki.okcore.data.loader.recipes;
 
-import java.util.List;
-
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import ruiseki.okcore.json.AbstractJsonMaterial;
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.json.item.ItemMaterial;
 
-public abstract class AbstractRecipeMaterial extends AbstractJsonMaterial {
+public abstract class AbstractRecipeMaterial<T extends IRecipe> implements IRecipeSerializer<T> {
 
-    protected String type;
     protected ItemMaterial result;
 
     @Override
-    public void read(JsonObject json) {
-        this.type = getString(json, "type", "");
+    public void fromJson(ResourceLocation id, JsonObject json) {
         if (json.has("result")) {
             JsonElement resultElement = json.get("result");
             if (resultElement.isJsonObject()) {
@@ -26,44 +23,18 @@ public abstract class AbstractRecipeMaterial extends AbstractJsonMaterial {
                 this.result.read(resultObj);
             }
         }
-        readSpecific(json);
     }
-
-    protected abstract void readSpecific(JsonObject json);
-
-    protected abstract List<IRecipe> getRecipes();
 
     @Override
     public boolean validate() {
-        if (type.isEmpty()) {
-            logValidationError("Recipe type cannot be empty!");
-            return false;
-        }
         if (this.result == null) {
-            logValidationError("Recipe result is missing!");
+            OKCore.okLog("Recipe result cannot be empty!");
             return false;
         }
-        if (!this.result.validate()) {
-            return false;
-        }
-
-        return validateSpecific();
-    }
-
-    protected boolean validateSpecific() {
-        return true;
-    }
-
-    public String getType() {
-        return type;
+        return this.result.validate();
     }
 
     public ItemMaterial getResult() {
         return result;
-    }
-
-    @Override
-    public void write(JsonObject json) {
-        // Read only
     }
 }

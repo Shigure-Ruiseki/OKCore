@@ -9,6 +9,7 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
@@ -16,17 +17,25 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import ruiseki.okcore.OKCore;
+import ruiseki.okcore.json.AbstractJsonMaterial;
 import ruiseki.okcore.json.item.ItemMaterial;
 
-@RecipeType("minecraft:crafting_shaped")
-public class ShapedRecipeMaterial extends AbstractRecipeMaterial {
+@RecipeData
+public class ShapedRecipeMaterial extends AbstractRecipeMaterial<IRecipe> implements IRecipeType<IRecipe> {
 
     private String[] pattern;
     private Map<String, JsonElement> key;
 
     @Override
-    protected void readSpecific(JsonObject json) {
-        this.pattern = getStringArray(json, "pattern");
+    public String getTypeKey() {
+        return "minecraft:crafting_shaped";
+    }
+
+    @Override
+    public void fromJson(ResourceLocation id, JsonObject json) {
+        super.fromJson(id, json);
+        this.pattern = AbstractJsonMaterial.getStringArray(json, "pattern");
         this.key = new HashMap<>();
         if (json.has("key") && json.get("key")
             .isJsonObject()) {
@@ -39,11 +48,10 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial {
                 }
             }
         }
-        captureUnknownProperties(json, "type", "category", "group", "result", "pattern", "key");
     }
 
     @Override
-    protected List<IRecipe> getRecipes() {
+    public List<IRecipe> getRecipes() {
         List<IRecipe> recipeList = new ArrayList<>();
         ItemStack outputStack = this.result != null ? this.result.toStack() : null;
         if (outputStack == null) return recipeList;
@@ -91,7 +99,7 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial {
         }
 
         if (!charsInPattern.isEmpty()) {
-            logValidationError("Pattern contains characters that are not defined in 'key': " + charsInPattern);
+            OKCore.okLog("Pattern contains characters that are not defined in 'key': " + charsInPattern);
             return new ArrayList<>();
         }
 
@@ -164,13 +172,13 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial {
     }
 
     @Override
-    protected boolean validateSpecific() {
+    public boolean validate() {
         if (pattern == null || pattern.length == 0) {
-            logValidationError("Shaped recipe pattern is missing or invalid!");
+            OKCore.okLog("Shaped recipe pattern is missing or invalid!");
             return false;
         }
         if (key == null || key.isEmpty()) {
-            logValidationError("Shaped recipe key mappings are missing!");
+            OKCore.okLog("Shaped recipe key mappings are missing!");
             return false;
         }
 
@@ -180,27 +188,25 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial {
                 ItemMaterial mat = new ItemMaterial();
                 mat.read(element.getAsJsonObject());
                 if (!mat.validate()) {
-                    logValidationError("Invalid ItemMaterial structure inside key token: " + entry.getKey());
+                    OKCore.okLog("Invalid ItemMaterial structure inside key token: " + entry.getKey());
                     return false;
                 }
             } else if (element.isJsonArray()) {
                 for (JsonElement subElement : element.getAsJsonArray()) {
                     if (!subElement.isJsonObject()) {
-                        logValidationError(
-                            "Array elements inside key token must be JsonObjects! Token: " + entry.getKey());
+                        OKCore.okLog("Array elements inside key token must be JsonObjects! Token: " + entry.getKey());
                         return false;
                     }
                     ItemMaterial mat = new ItemMaterial();
                     mat.read(subElement.getAsJsonObject());
                     if (!mat.validate()) {
-                        logValidationError(
-                            "Invalid ItemMaterial structure inside Array of key token: " + entry.getKey());
+                        OKCore.okLog("Invalid ItemMaterial structure inside Array of key token: " + entry.getKey());
                         return false;
                     }
                 }
             }
         }
-        return super.validateSpecific();
+        return super.validate();
     }
 
     public String[] getPattern() {

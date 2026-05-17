@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.minecraft.item.crafting.IRecipe;
 
@@ -17,45 +16,92 @@ import ruiseki.okcore.init.IInitListener;
 
 public class RecipeHandler implements IInitListener {
 
-    private static final Map<String, Class<? extends AbstractRecipeMaterial>> MATERIAL_MAPPING = new HashMap<>();
+    private static final Map<String, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
+    private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
     private static final List<IRecipe> CACHED_RECIPES = new ArrayList<>();
 
-    public static void loadFromASM(ASMDataTable asmDataTable) {
-        Set<ASMDataTable.ASMData> asmDataSet = asmDataTable.getAll(RecipeType.class.getName());
-
-        for (ASMDataTable.ASMData asmData : asmDataSet) {
+    public static void loadFromASM(ASMDataTable dataTable) {
+        for (ASMDataTable.ASMData data : dataTable.getAll(RecipeData.class.getCanonicalName())) {
             try {
-                Class<?> clazz = Class.forName(asmData.getClassName());
+                Class<?> clazz = Class.forName(data.getClassName());
 
-                if (AbstractRecipeMaterial.class.isAssignableFrom(clazz)) {
-                    RecipeType annotation = clazz.getAnnotation(RecipeType.class);
-                    if (annotation != null) {
-                        @SuppressWarnings("unchecked")
-                        Class<? extends AbstractRecipeMaterial> materialClass = (Class<? extends AbstractRecipeMaterial>) clazz;
-                        MATERIAL_MAPPING.put(annotation.value(), materialClass);
+                boolean isType = IRecipeType.class.isAssignableFrom(clazz);
+                boolean isSerializer = IRecipeSerializer.class.isAssignableFrom(clazz);
+
+                if (!isType && !isSerializer) continue;
+
+                Object instance = clazz.getDeclaredConstructor()
+                    .newInstance();
+                boolean registeredAny = false;
+
+                if (isType) {
+                    IRecipeType<?> recipeType = (IRecipeType<?>) instance;
+                    if (recipeType.shouldRegisterType()) {
+                        registerType(recipeType);
+                        registeredAny = true;
+                    } else {
+                        OKCore
+                            .okLog(Level.INFO, "Skipping recipe type: {} (Condition not met)", recipeType.getTypeKey());
                     }
+                }
+
+                if (isSerializer) {
+                    IRecipeSerializer<?> recipeSerializer = (IRecipeSerializer<?>) instance;
+                    if (recipeSerializer.shouldRegisterSerializer()) {
+                        registerSerializer(recipeSerializer);
+                        registeredAny = true;
+                    } else {
+                        OKCore.okLog(
+                            Level.INFO,
+                            "Skipping recipe serializer: {} (Condition not met)",
+                            recipeSerializer.getTypeKey());
+                    }
+                }
+
+                if (registeredAny) {
+                    OKCore.okLog(
+                        Level.INFO,
+                        "Successfully registered @RecipeData components for class: [{}]",
+                        data.getClassName());
                 }
             } catch (Exception e) {
                 OKCore.okLog(
                     Level.ERROR,
-                    "Failed to initialize ASM RecipeMaterial [{}]: {}",
-                    asmData.getClassName(),
+                    "Failed to initialize ASM RecipeHandler [{}]: {}",
+                    data.getClassName(),
                     e.toString());
             }
         }
     }
 
-    public static AbstractRecipeMaterial createMaterial(String type) {
-        Class<? extends AbstractRecipeMaterial> clazz = MATERIAL_MAPPING.get(type);
-        if (clazz != null) {
-            try {
-                return clazz.getDeclaredConstructor()
-                    .newInstance();
-            } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Failed to instantiate Recipe Material for type {}: {}", type, e.toString());
-            }
-        }
-        return null;
+    public static IRecipeType<?> registerType(IRecipeType<?> recipeType) {
+        if (recipeType == null || recipeType.getTypeKey() == null) return null;
+        String key = recipeType.getTypeKey();
+        return TYPE_MAPPING.put(key, recipeType);
+    }
+
+    public static IRecipeSerializer<?> registerSerializer(IRecipeSerializer<?> recipeSerializer) {
+        if (recipeSerializer == null || recipeSerializer.getTypeKey() == null) return null;
+        String key = recipeSerializer.getTypeKey();
+        return SERIALIZER_MAPPING.put(key, recipeSerializer);
+    }
+
+    public static IRecipeType<?> getType(String key) {
+        if (key == null) return null;
+        return TYPE_MAPPING.get(key);
+    }
+
+    public static Map<String, IRecipeType<?>> getTypeMapping() {
+        return TYPE_MAPPING;
+    }
+
+    public static IRecipeSerializer<?> getSerializer(String type) {
+        if (type == null) return null;
+        return SERIALIZER_MAPPING.get(type);
+    }
+
+    public static Map<String, IRecipeSerializer<?>> getSerializerMapping() {
+        return SERIALIZER_MAPPING;
     }
 
     public static void addRecipe(IRecipe recipe) {

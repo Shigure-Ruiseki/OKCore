@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
@@ -12,17 +13,23 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.json.item.ItemMaterial;
 
-@RecipeType("minecraft:crafting_shapeless")
-public class ShapelessRecipeMaterial extends AbstractRecipeMaterial {
+@RecipeData
+public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<IRecipe> implements IRecipeType<IRecipe> {
 
     private List<JsonElement> ingredients;
 
     @Override
-    protected void readSpecific(JsonObject json) {
-        this.ingredients = new ArrayList<>();
+    public String getTypeKey() {
+        return "minecraft:crafting_shapeless";
+    }
 
+    @Override
+    public void fromJson(ResourceLocation id, JsonObject json) {
+        super.fromJson(id, json);
+        this.ingredients = new ArrayList<>();
         if (json.has("ingredients") && json.get("ingredients")
             .isJsonArray()) {
             JsonArray ingredientsArray = json.getAsJsonArray("ingredients");
@@ -32,12 +39,10 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial {
                 }
             }
         }
-
-        captureUnknownProperties(json, "type", "category", "group", "result", "ingredients");
     }
 
     @Override
-    protected List<IRecipe> getRecipes() {
+    public List<IRecipe> getRecipes() {
         List<IRecipe> recipeList = new ArrayList<>();
         ItemStack outputStack = this.result != null ? this.result.toStack() : null;
         if (outputStack == null) return recipeList;
@@ -115,14 +120,14 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial {
     }
 
     @Override
-    protected boolean validateSpecific() {
+    public boolean validate() {
         if (this.ingredients == null || this.ingredients.isEmpty()) {
-            logValidationError("Shapeless recipe ingredients list is missing or empty!");
+            OKCore.okLog("Shapeless recipe ingredients list is missing or empty!");
             return false;
         }
 
         if (this.ingredients.size() > 9) {
-            logValidationError("Shapeless recipe cannot have more than 9 ingredients!");
+            OKCore.okLog("Shapeless recipe cannot have more than 9 ingredients!");
             return false;
         }
 
@@ -131,28 +136,28 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial {
                 ItemMaterial mat = new ItemMaterial();
                 mat.read(element.getAsJsonObject());
                 if (!mat.validate()) {
-                    logValidationError("Invalid ItemMaterial structure inside ingredients");
+                    OKCore.okLog("Invalid ItemMaterial structure inside ingredients");
                     return false;
                 }
             } else if (element.isJsonArray()) {
                 for (JsonElement subElement : element.getAsJsonArray()) {
                     if (!subElement.isJsonObject()) {
-                        logValidationError("Array elements inside ingredients must be JsonObjects!");
+                        OKCore.okLog("Array elements inside ingredients must be JsonObjects!");
                         return false;
                     }
                     ItemMaterial mat = new ItemMaterial();
                     mat.read(subElement.getAsJsonObject());
                     if (!mat.validate()) {
-                        logValidationError("Invalid ItemMaterial structure inside Array of ingredients");
+                        OKCore.okLog("Invalid ItemMaterial structure inside Array of ingredients");
                         return false;
                     }
                 }
             } else {
-                logValidationError("Ingredients must be either a JsonObject or a JsonArray!");
+                OKCore.okLog("Ingredients must be either a JsonObject or a JsonArray!");
                 return false;
             }
         }
-        return super.validateSpecific();
+        return super.validate();
     }
 
     public List<JsonElement> getIngredients() {

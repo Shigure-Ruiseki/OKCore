@@ -7,31 +7,31 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import cpw.mods.fml.common.Loader;
 import ruiseki.okcore.json.AbstractJsonMaterial;
+import ruiseki.okcore.json.item.ItemMaterial;
 
-@LoadCondition("okcore:mod_loaded")
-public class ModLoadCondition extends AbstractJsonMaterial {
+@LoadCondition("okcore:item_exists")
+public class ItemExistsCondition extends AbstractJsonMaterial {
 
-    private final List<String> values = new ArrayList<>();
+    private final List<ItemMaterial> values = new ArrayList<>();
 
     @Override
     public void read(JsonObject json) {
         if (json.has("values") && json.get("values")
             .isJsonArray()) {
             JsonArray valuesArray = json.getAsJsonArray("values");
-
             for (JsonElement element : valuesArray) {
-                if (element.isJsonPrimitive() && element.getAsJsonPrimitive()
-                    .isString()) {
-                    String modId = element.getAsString()
-                        .trim();
-                    if (!modId.isEmpty()) {
-                        this.values.add(modId);
+                if (element.isJsonObject()) {
+                    ItemMaterial mat = new ItemMaterial();
+                    mat.read(element.getAsJsonObject());
+
+                    if (mat.validate()) {
+                        this.values.add(mat);
                     }
                 }
             }
         }
+        captureUnknownProperties(json, "values");
     }
 
     @Override
@@ -45,10 +45,8 @@ public class ModLoadCondition extends AbstractJsonMaterial {
             return true;
         }
 
-        for (String modId : this.values) {
-            if (!Loader.isModLoaded(modId)) {
-                return false;
-            }
+        for (ItemMaterial mat : this.values) {
+            if (!mat.validate()) return false;
         }
 
         return true;

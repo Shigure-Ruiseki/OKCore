@@ -29,6 +29,7 @@ public class EnchantmentExistsCondition extends AbstractJsonMaterial {
                 }
             }
         }
+        captureUnknownProperties(json, "values");
     }
 
     @Override

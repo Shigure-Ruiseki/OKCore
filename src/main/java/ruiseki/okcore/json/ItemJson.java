@@ -11,10 +11,14 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import com.google.gson.JsonObject;
 
 import cpw.mods.fml.common.registry.GameData;
 
+@Deprecated
+@ApiStatus.ScheduledForRemoval(inVersion = "1.5.1")
 public class ItemJson implements IJsonMaterial {
 
     public String name; // registry name
@@ -157,7 +161,7 @@ public class ItemJson implements IJsonMaterial {
                 List<ItemStack> list = OreDictionary.getOres(ore);
                 if (list == null || list.isEmpty()) continue;
 
-                ItemStack base = list.get(0);
+                ItemStack base = list.getFirst();
                 if (base == null) continue;
                 ItemStack result = base.copy();
                 result.stackSize = count;

@@ -14,14 +14,16 @@ import cpw.mods.fml.common.discovery.ASMDataTable;
 import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.guide.impl.Book;
+import ruiseki.okcore.helper.GuideHelpers;
+import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.item.ItemGuideBook;
 
-public class GuideHandler {
+public class GuideHandler implements IInitListener {
 
     public static final List<Pair<Book, IGuideBook>> BOOK_CLASSES = Lists.newArrayList();
     private static final List<IGuideBook> PENDING_BOOKS = Lists.newArrayList();
 
-    public static void gatherBooks(ASMDataTable dataTable) {
+    public static void loadFromASM(ASMDataTable dataTable) {
         for (ASMDataTable.ASMData data : dataTable.getAll(GuideBook.class.getCanonicalName())) {
             try {
                 Class<?> genericClass = Class.forName(data.getClassName());
@@ -77,5 +79,18 @@ public class GuideHandler {
                 .getResourcePath()
                 .replace(":", "_"));
         GuideRegistry.setBookForStack(book, new ItemStack(guideItem));
+    }
+
+    @Override
+    public void onInit(Step step) {
+        if (step == Step.INIT) {
+            buildAllBooks();
+        }
+        if (step == Step.POSTINIT) {
+            for (Pair<Book, IGuideBook> guide : GuideHandler.BOOK_CLASSES) {
+                guide.getRight()
+                    .handlePost(GuideHelpers.getStackFromBook(guide.getLeft()));
+            }
+        }
     }
 }

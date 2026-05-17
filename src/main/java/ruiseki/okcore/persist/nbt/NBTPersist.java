@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import ruiseki.okcore.tileentity.TileEntityOK;
+
 /**
  * If this field should be persisted in Tile Entities.
  * Fields that are a subtype of {@link INBTSerializable} must not be null, they should

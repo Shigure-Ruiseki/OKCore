@@ -1,6 +1,5 @@
 package ruiseki.okcore.helper;
 
-import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -32,11 +31,7 @@ public class LangHelpers {
      * @return The localized string.
      */
     public static String localize(String key, Object... params) {
-        if (MinecraftHelpers.isModdedEnvironment()) {
-            return StatCollector.translateToLocalFormatted(key, params);
-        } else {
-            return String.format("%s: %s", key, Arrays.toString(params));
-        }
+        return StatCollector.translateToLocalFormatted(key, params);
     }
 
     /**

@@ -69,8 +69,7 @@ public abstract class AbstractJsonWriter<T> {
         // Group by source file
         Map<File, JsonArray> filesMap = new HashMap<>();
         for (Object item : collection) {
-            if (item instanceof AbstractJsonMaterial) {
-                AbstractJsonMaterial material = (AbstractJsonMaterial) item;
+            if (item instanceof AbstractJsonMaterial material) {
                 File target = material.getSourceFile();
                 if (target == null) target = new File(path, "generated.json");
                 JsonObject json = new JsonObject();

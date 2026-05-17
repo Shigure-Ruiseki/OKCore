@@ -173,12 +173,9 @@ public class MinecraftHelpers {
      * @return If we are at client side.
      */
     public static boolean isClientSide() {
-        if (isModdedEnvironment()) {
-            return FMLCommonHandler.instance()
-                .getEffectiveSide()
-                .isClient();
-        }
-        return true;
+        return FMLCommonHandler.instance()
+            .getEffectiveSide()
+            .isClient();
     }
 
     /**
@@ -187,12 +184,9 @@ public class MinecraftHelpers {
      * @return true if the code is on the server.
      */
     public static boolean isServerSide() {
-        if (isModdedEnvironment()) {
-            return FMLCommonHandler.instance()
-                .getEffectiveSide()
-                .isServer();
-        }
-        return false;
+        return FMLCommonHandler.instance()
+            .getEffectiveSide()
+            .isServer();
     }
 
     /**

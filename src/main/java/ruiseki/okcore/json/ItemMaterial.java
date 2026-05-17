@@ -6,11 +6,16 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 
+import org.jetbrains.annotations.ApiStatus;
+
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
  * Material representation of an ItemStack in JSON.
  */
+@Deprecated
+@ApiStatus.ScheduledForRemoval(inVersion = "1.5.1")
 public class ItemMaterial extends AbstractJsonMaterial {
 
     public String name;
@@ -36,7 +41,7 @@ public class ItemMaterial extends AbstractJsonMaterial {
     }
 
     @Override
-    public void read(com.google.gson.JsonElement json) {
+    public void read(JsonElement json) {
         if (json.isJsonPrimitive() && json.getAsJsonPrimitive()
             .isString()) {
 

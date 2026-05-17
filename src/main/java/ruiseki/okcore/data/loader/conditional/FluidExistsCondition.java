@@ -3,18 +3,17 @@ package ruiseki.okcore.data.loader.conditional;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.tileentity.TileEntity;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import ruiseki.okcore.json.AbstractJsonMaterial;
+import ruiseki.okcore.json.fluid.FluidMaterial;
 
-@LoadCondition("okcore:tile_entity_exists")
-public class TileEntityExistsCondition extends AbstractJsonMaterial {
+@LoadCondition("okcore:fluid_exists")
+public class FluidExistsCondition extends AbstractJsonMaterial {
 
-    private final List<String> values = new ArrayList<>();
+    private final List<FluidMaterial> values = new ArrayList<>();
 
     @Override
     public void read(JsonObject json) {
@@ -22,10 +21,13 @@ public class TileEntityExistsCondition extends AbstractJsonMaterial {
             .isJsonArray()) {
             JsonArray valuesArray = json.getAsJsonArray("values");
             for (JsonElement element : valuesArray) {
-                if (element.isJsonPrimitive()) {
-                    this.values.add(
-                        element.getAsString()
-                            .trim());
+                if (element.isJsonObject()) {
+                    FluidMaterial mat = new FluidMaterial();
+                    mat.read(element.getAsJsonObject());
+
+                    if (mat.validate()) {
+                        this.values.add(mat);
+                    }
                 }
             }
         }
@@ -43,15 +45,10 @@ public class TileEntityExistsCondition extends AbstractJsonMaterial {
             return true;
         }
 
-        for (String tileName : this.values) {
-            try {
-                if (!TileEntity.nameToClassMap.containsKey(tileName)) {
-                    return false;
-                }
-            } catch (Exception e) {
-                return false;
-            }
+        for (FluidMaterial mat : this.values) {
+            if (!mat.validate()) return false;
         }
+
         return true;
     }
 }

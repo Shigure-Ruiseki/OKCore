@@ -29,6 +29,7 @@ public class PotionExistsCondition extends AbstractJsonMaterial {
                 }
             }
         }
+        captureUnknownProperties(json, "values");
     }
 
     @Override

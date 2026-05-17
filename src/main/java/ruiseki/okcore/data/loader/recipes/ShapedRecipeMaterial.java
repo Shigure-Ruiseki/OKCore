@@ -130,21 +130,17 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial {
 
         if (!mat.validate()) return;
 
-        if (mat.ore != null && !mat.ore.isEmpty()) {
-            String targetOre = mat.ore.trim();
+        if (mat.getOre() != null) {
+            String targetOre = mat.getOre()
+                .trim();
             if (!OreDictionary.getOres(targetOre)
                 .isEmpty()) {
                 targetList.add(targetOre);
             }
-        } else if (mat.item != null && !mat.item.isEmpty()) {
-            int originalAmount = mat.amount;
-            mat.amount = 1;
+        } else if (mat.getItem() != null) {
             ItemStack stack = mat.toStack();
-            mat.amount = originalAmount;
-
-            if (stack != null) {
-                targetList.add(stack);
-            }
+            stack.stackSize = 1;
+            targetList.add(stack);
         }
     }
 

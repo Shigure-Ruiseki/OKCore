@@ -21,6 +21,7 @@ public class NotLoadCondition extends AbstractJsonMaterial {
                 this.condition = cond;
             }
         }
+        captureUnknownProperties(json, "values");
     }
 
     @Override

@@ -16,16 +16,19 @@ import ruiseki.okcore.json.AbstractJsonMaterial;
 
 public class ItemMaterial extends AbstractJsonMaterial {
 
-    public String item;
-    public String ore;
-    public int amount = 1;
-    public int meta = 0;
-    public NBTTagCompound nbt;
+    private Item item;
+    private String ore;
+    private int amount = 1;
+    private int meta = 0;
+    private NBTTagCompound nbt;
 
     @Override
     public void read(JsonObject json) {
-        this.item = getString(json, "item", null);
-        this.ore = getString(json, "ore", null);
+        String itemName = getString(json, "item", null);
+        this.item = GameData.getItemRegistry()
+            .getObject(itemName);
+        String oreName = getString(json, "ore", null);
+        this.ore = (oreName != null && !oreName.isEmpty()) ? oreName : null;
         this.amount = getInt(json, "amount", 1);
         this.meta = getInt(json, "meta", 0);
         this.nbt = json.has("nbt") ? JsonNBTHelpers.jsonToNBT(json.getAsJsonObject("nbt")) : null;
@@ -34,7 +37,10 @@ public class ItemMaterial extends AbstractJsonMaterial {
 
     @Override
     public void write(JsonObject json) {
-        if (this.item != null) json.addProperty("item", this.item);
+        if (this.item != null) json.addProperty(
+            "item",
+            GameData.getBlockRegistry()
+                .getNameForObject(item));
         if (this.ore != null) json.addProperty("ore", this.ore);
         json.addProperty("amount", this.amount);
         json.addProperty("meta", this.meta);
@@ -50,7 +56,27 @@ public class ItemMaterial extends AbstractJsonMaterial {
             logValidationError("ItemMaterial item or ore cannot be empty!");
             return false;
         }
-        return true;
+        return toStack() != null;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public int getMeta() {
+        return meta;
+    }
+
+    public NBTTagCompound getNbt() {
+        return nbt;
+    }
+
+    public String getOre() {
+        return ore;
     }
 
     public void fromStack(ItemStack stack) {
@@ -63,17 +89,11 @@ public class ItemMaterial extends AbstractJsonMaterial {
             return;
         }
 
-        this.item = GameData.getItemRegistry()
-            .getNameForObject(stack.getItem());
+        this.item = stack.getItem();
         this.amount = stack.stackSize;
         this.meta = stack.getItemDamage();
-        if (stack.hasTagCompound()) {
-            this.nbt = (NBTTagCompound) stack.getTagCompound()
-                .copy();
-        } else {
-            this.nbt = null;
-        }
-
+        this.nbt = stack.hasTagCompound() ? (NBTTagCompound) stack.getTagCompound()
+            .copy() : null;
         this.ore = null;
         this.unknownProperties.clear();
     }
@@ -84,12 +104,9 @@ public class ItemMaterial extends AbstractJsonMaterial {
             return resolveFromOre(this.ore, count, this.nbt);
         }
 
-        if (this.item == null || this.item.isEmpty()) return null;
+        if (this.item == null) return null;
         try {
-            Item rawItem = GameData.getItemRegistry()
-                .getObject(this.item);
-            if (rawItem == null) return null;
-            ItemStack stack = new ItemStack(rawItem, count, this.meta);
+            ItemStack stack = new ItemStack(this.item, count, this.meta);
 
             if (this.nbt != null) {
                 stack.setTagCompound((NBTTagCompound) this.nbt.copy());
@@ -129,8 +146,7 @@ public class ItemMaterial extends AbstractJsonMaterial {
 
         ItemMaterial material = new ItemMaterial();
 
-        material.item = GameData.getItemRegistry()
-            .getNameForObject(stack.getItem());
+        material.item = stack.getItem();
         material.amount = stack.stackSize;
         material.meta = stack.getItemDamage();
         if (stack.hasTagCompound()) {

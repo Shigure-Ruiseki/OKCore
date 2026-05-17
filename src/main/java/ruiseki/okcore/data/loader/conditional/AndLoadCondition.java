@@ -30,6 +30,7 @@ public class AndLoadCondition extends AbstractJsonMaterial {
                 }
             }
         }
+        captureUnknownProperties(json, "values");
     }
 
     @Override

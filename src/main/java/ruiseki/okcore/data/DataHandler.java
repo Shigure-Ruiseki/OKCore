@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.apache.logging.log4j.Level;
 
 import cpw.mods.fml.common.discovery.ASMDataTable;
@@ -23,14 +25,14 @@ public class DataHandler {
             .add(component);
     }
 
-    public static void handle(String namespace, String folder, String[] subPaths, String fileName,
+    public static void handle(ResourceLocation id, String namespace, String folder, String[] subPaths, String fileName,
         InputStream inputStream) {
         List<IDataLoader> componentList = COMPONENTS.get(folder);
 
         if (componentList != null) {
             for (IDataLoader component : componentList) {
                 try {
-                    component.process(namespace, folder, subPaths, fileName, inputStream);
+                    component.process(id, namespace, folder, subPaths, fileName, inputStream);
                 } catch (Exception e) {
                     OKCore.okLog(
                         Level.ERROR,

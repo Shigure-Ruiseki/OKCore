@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.data.loader.DataLoader;
 import ruiseki.okcore.data.loader.IDataLoader;
@@ -18,10 +19,12 @@ public class RecipeLoader implements IDataLoader {
     }
 
     @Override
-    public void process(String namespace, String folder, String[] subPaths, String fileName, InputStream inputStream) {
-        RecipeReader reader = new RecipeReader(fileName);
+    @SuppressWarnings("unchecked, rawtypes")
+    public void process(ResourceLocation id, String namespace, String folder, String[] subPaths, String fileName,
+        InputStream inputStream) {
+        RecipeReader reader = new RecipeReader(id, fileName);
         try {
-            AbstractRecipeMaterial material = reader.read(inputStream);
+            IRecipeSerializer material = reader.read(inputStream);
             if (material == null) return;
 
             if (material.validate()) {

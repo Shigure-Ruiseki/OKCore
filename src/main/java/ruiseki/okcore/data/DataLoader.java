@@ -16,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.apache.logging.log4j.Level;
 
 import cpw.mods.fml.common.Loader;
@@ -96,8 +98,13 @@ public class DataLoader {
 
             String fixedFileName = fileName.endsWith(".json") ? fileName : fileName + ".json";
 
+            String cleanName = fixedFileName.substring(0, fixedFileName.lastIndexOf('.'));
+
+            String pathPrefix = matcher.group(3) != null ? matcher.group(3) + "/" : "";
+            ResourceLocation generatedId = new ResourceLocation(namespace, folder + "/" + pathPrefix + cleanName);
+
             try (InputStream is = Files.newInputStream(p)) {
-                DataHandler.handle(namespace, folder, subPaths, fixedFileName, is);
+                DataHandler.handle(generatedId, namespace, folder, subPaths, fixedFileName, is);
             } catch (IOException e) {
                 OKCore.okLog(Level.ERROR, "Failed to read data stream for: " + fullMatchPath, e);
             }

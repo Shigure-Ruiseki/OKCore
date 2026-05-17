@@ -1,25 +1,29 @@
 package ruiseki.okcore.data.loader.recipes;
 
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.ResourceLocation;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import ruiseki.okcore.data.loader.DataReader;
 
-public class RecipeReader extends DataReader<AbstractRecipeMaterial> {
+public class RecipeReader extends DataReader<IRecipeSerializer<IRecipe>> {
 
-    public RecipeReader(String fileName) {
-        super(fileName);
+    public RecipeReader(ResourceLocation id, String fileName) {
+        super(id, fileName);
     }
 
     @Override
-    protected AbstractRecipeMaterial readData(JsonElement root, String fileName) {
+    @SuppressWarnings("unchecked")
+    protected IRecipeSerializer<IRecipe> readData(ResourceLocation id, JsonElement root, String fileName) {
         if (root.isJsonObject()) {
             JsonObject json = root.getAsJsonObject();
             String type = json.has("type") ? json.get("type")
                 .getAsString() : "";
-            AbstractRecipeMaterial material = RecipeHandler.createMaterial(type);
+            IRecipeSerializer<IRecipe> material = (IRecipeSerializer<IRecipe>) RecipeHandler.getSerializer(type);
             if (material != null) {
-                material.read(json);
+                material.fromJson(id, json);
                 return material;
             }
         }

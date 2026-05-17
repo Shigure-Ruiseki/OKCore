@@ -14,6 +14,7 @@ import ruiseki.okcore.json.AbstractJsonMaterial;
 
 public class LoadConditionHandler {
 
+    public static final String CONDITION_KEY = "okcore:load_conditions";
     private static final Map<String, Class<? extends AbstractJsonMaterial>> CONDITION_MAPPING = new HashMap<>();
 
     public static void loadFromASM(ASMDataTable asmDataTable) {

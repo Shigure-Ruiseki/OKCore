@@ -1,7 +1,7 @@
 package ruiseki.okcore.data.loader.recipes;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import net.minecraft.item.crafting.IRecipe;
@@ -18,10 +18,10 @@ public class RecipeLoader implements IDataLoader {
     }
 
     @Override
-    public void process(String namespace, String folder, String[] subPath, String fileName, File json) {
-        RecipeReader reader = new RecipeReader(json);
+    public void process(String namespace, String folder, String[] subPaths, String fileName, InputStream inputStream) {
+        RecipeReader reader = new RecipeReader(fileName);
         try {
-            AbstractRecipeMaterial material = reader.read();
+            AbstractRecipeMaterial material = reader.read(inputStream);
             if (material == null) return;
 
             if (material.validate()) {

@@ -10,7 +10,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -31,9 +30,6 @@ public class DataLoader {
     private static final Map<String, ?> EMPTY_ENV = Collections.emptyMap();
 
     public static void loadAllData() {
-        String tempDirProperty = System.getProperty("java.io.tmpdir");
-        File tempDir = new File(tempDirProperty);
-
         for (ModContainer mod : Loader.instance()
             .getModList()) {
             String modId = mod.getModId()
@@ -51,7 +47,7 @@ public class DataLoader {
                 try (Stream<Path> stream = Files.walk(dataDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
                     final Path rootPath = dataDir.toPath();
                     stream.filter(p -> !Files.isDirectory(p))
-                        .forEach(p -> processSingleFile(p, rootPath, modId, false, tempDir));
+                        .forEach(p -> processSingleStream(p, rootPath, modId));
                 } catch (Exception e) {
                     OKCore.okLog(Level.ERROR, "Critical error while scanning directory data for mod: " + modId, e);
                 }
@@ -65,7 +61,7 @@ public class DataLoader {
 
                         try (Stream<Path> stream = Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)) {
                             stream.filter(p -> !Files.isDirectory(p))
-                                .forEach(p -> processSingleFile(p, rootPath, modId, true, tempDir));
+                                .forEach(p -> processSingleStream(p, rootPath, modId));
                         }
                     } catch (Exception e) {
                         OKCore.okLog(Level.ERROR, "Critical error while scanning JAR data for mod: " + modId, e);
@@ -82,7 +78,7 @@ public class DataLoader {
         }
     }
 
-    private static void processSingleFile(Path p, Path finalRootPath, String modId, boolean finalIsJar, File tempDir) {
+    private static void processSingleStream(Path p, Path finalRootPath, String modId) {
         try {
             String relativeStr = finalRootPath.relativize(p)
                 .toString()
@@ -100,26 +96,13 @@ public class DataLoader {
 
             String fixedFileName = fileName.endsWith(".json") ? fileName : fileName + ".json";
 
-            if (!finalIsJar) {
-                File jsonFile = p.toFile();
-                DataHandler.handle(namespace, folder, subPaths, fixedFileName, jsonFile);
-            } else {
-                File tempFile = new File(tempDir, fixedFileName);
-                try (InputStream is = Files.newInputStream(p)) {
-                    Files.copy(is, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    tempFile.deleteOnExit();
-
-                    DataHandler.handle(namespace, folder, subPaths, fixedFileName, tempFile);
-                } catch (IOException e) {
-                    OKCore.okLog(Level.ERROR, "Failed to extract temporary file for: " + fullMatchPath, e);
-                } finally {
-                    if (tempFile.exists()) {
-                        tempFile.delete();
-                    }
-                }
+            try (InputStream is = Files.newInputStream(p)) {
+                DataHandler.handle(namespace, folder, subPaths, fixedFileName, is);
+            } catch (IOException e) {
+                OKCore.okLog(Level.ERROR, "Failed to read data stream for: " + fullMatchPath, e);
             }
         } catch (Exception e) {
-            OKCore.okLog(Level.ERROR, "Error processing specific data file at: " + p, e);
+            OKCore.okLog(Level.ERROR, "Error processing specific data stream at: " + p, e);
         }
     }
 }

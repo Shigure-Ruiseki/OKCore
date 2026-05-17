@@ -1,6 +1,6 @@
 package ruiseki.okcore.data;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,13 +23,14 @@ public class DataHandler {
             .add(component);
     }
 
-    public static void handle(String namespace, String folder, String[] subPath, String fileName, File json) {
+    public static void handle(String namespace, String folder, String[] subPaths, String fileName,
+        InputStream inputStream) {
         List<IDataLoader> componentList = COMPONENTS.get(folder);
 
         if (componentList != null) {
             for (IDataLoader component : componentList) {
                 try {
-                    component.process(namespace, folder, subPath, fileName, json);
+                    component.process(namespace, folder, subPaths, fileName, inputStream);
                 } catch (Exception e) {
                     OKCore.okLog(
                         Level.ERROR,

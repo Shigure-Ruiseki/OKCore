@@ -1,7 +1,9 @@
 package ruiseki.okcore.data.loader;
 
-import java.io.File;
+import static ruiseki.okcore.data.loader.conditional.LoadConditionHandler.CONDITION_KEY;
+
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.logging.log4j.Level;
 
@@ -11,27 +13,28 @@ import com.google.gson.JsonObject;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.conditional.LoadConditionHandler;
-import ruiseki.okcore.json.AbstractJsonReader;
+import ruiseki.okcore.json.AbstractJsonStreamReader;
 
-public abstract class DataReader<T> extends AbstractJsonReader<T> {
+public abstract class DataReader<T> extends AbstractJsonStreamReader<T> {
 
-    public DataReader(File path) {
-        super(path);
+    private final String fileName;
+
+    public DataReader(String fileName) {
+        this.fileName = fileName;
     }
 
     @Override
-    public T read() throws IOException {
-        return readFile(path);
+    public T read(InputStream stream) throws IOException {
+        return readStream(stream);
     }
 
     @Override
-    protected T readFile(JsonElement root, File file) {
+    protected T readStream(JsonElement root) {
         if (root.isJsonObject()) {
             JsonObject rootObj = root.getAsJsonObject();
 
-            String conditionKey = "okcore:load_conditions";
-            if (rootObj.has(conditionKey)) {
-                JsonElement conditionsElement = rootObj.get(conditionKey);
+            if (rootObj.has(CONDITION_KEY)) {
+                JsonElement conditionsElement = rootObj.get(CONDITION_KEY);
 
                 if (conditionsElement.isJsonArray()) {
                     JsonArray conditionsArray = conditionsElement.getAsJsonArray();
@@ -42,7 +45,7 @@ public abstract class DataReader<T> extends AbstractJsonReader<T> {
                                 OKCore.okLog(
                                     Level.INFO,
                                     "Skipping data file [{}] due to unfulfilled load conditions.",
-                                    file.getName());
+                                    fileName);
                                 return null;
                             }
                         }
@@ -51,8 +54,8 @@ public abstract class DataReader<T> extends AbstractJsonReader<T> {
             }
         }
 
-        return readData(root, file);
+        return readData(root, fileName);
     }
 
-    protected abstract T readData(JsonElement root, File file);
+    protected abstract T readData(JsonElement root, String resourceName);
 }

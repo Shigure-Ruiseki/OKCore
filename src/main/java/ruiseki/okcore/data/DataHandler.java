@@ -53,8 +53,6 @@ public class DataHandler {
                 if (IDataLoader.class.isAssignableFrom(clazz)) {
                     IDataLoader loader = (IDataLoader) clazz.getDeclaredConstructor()
                         .newInstance();
-                    if (!loader.shouldRegister()) return;
-                    register(loader);
                     if (loader.shouldRegister()) {
                         register(loader);
                     } else {

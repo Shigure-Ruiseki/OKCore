@@ -29,6 +29,7 @@ import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DataHandler;
 import ruiseki.okcore.data.DataLoader;
 import ruiseki.okcore.data.loader.baubles.BaubleSlotHandler;
+import ruiseki.okcore.data.loader.conditional.LoadConditionHandler;
 import ruiseki.okcore.data.loader.recipes.RecipeHandler;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
@@ -82,6 +83,7 @@ public class OKCore extends ModBase {
 
         CapabilityManager.INSTANCE.injectCapabilities(asmData);
         GuideHandler.loadFromASM(asmData);
+        LoadConditionHandler.loadFromASM(asmData);
         RecipeHandler.loadFromASM(asmData);
         DataHandler.loadFromASM(asmData);
         DataLoader.loadAllData();

@@ -1,26 +1,20 @@
 package ruiseki.okcore.data.loader.baubles;
 
 import java.io.File;
-import java.io.IOException;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import ruiseki.okcore.json.AbstractJsonReader;
+import ruiseki.okcore.data.loader.DataReader;
 
-public class BaubleSlotReader extends AbstractJsonReader<BaubleSlotMaterial> {
+public class BaubleSlotReader extends DataReader<BaubleSlotMaterial> {
 
     public BaubleSlotReader(File path) {
         super(path);
     }
 
     @Override
-    public BaubleSlotMaterial read() throws IOException {
-        return readFile(path);
-    }
-
-    @Override
-    protected BaubleSlotMaterial readFile(JsonElement root, File file) {
+    protected BaubleSlotMaterial readData(JsonElement root, File file) {
         if (root.isJsonObject()) {
             JsonObject json = root.getAsJsonObject();
             String fileName = file.getName();

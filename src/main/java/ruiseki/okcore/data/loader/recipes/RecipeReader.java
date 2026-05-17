@@ -1,26 +1,20 @@
 package ruiseki.okcore.data.loader.recipes;
 
 import java.io.File;
-import java.io.IOException;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import ruiseki.okcore.json.AbstractJsonReader;
+import ruiseki.okcore.data.loader.DataReader;
 
-public class RecipeReader extends AbstractJsonReader<AbstractRecipeMaterial> {
+public class RecipeReader extends DataReader<AbstractRecipeMaterial> {
 
     public RecipeReader(File path) {
         super(path);
     }
 
     @Override
-    public AbstractRecipeMaterial read() throws IOException {
-        return readFile(path);
-    }
-
-    @Override
-    protected AbstractRecipeMaterial readFile(JsonElement root, File file) {
+    protected AbstractRecipeMaterial readData(JsonElement root, File file) {
         if (root.isJsonObject()) {
             JsonObject json = root.getAsJsonObject();
             String type = json.has("type") ? json.get("type")

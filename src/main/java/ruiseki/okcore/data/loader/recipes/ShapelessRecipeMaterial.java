@@ -30,6 +30,14 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<ShapelessOre
     @Override
     public void fromJson(ResourceLocation id, JsonObject json) {
         super.fromJson(id, json);
+        if (json.has("result")) {
+            JsonElement resultElement = json.get("result");
+            if (resultElement.isJsonObject()) {
+                JsonObject resultObj = resultElement.getAsJsonObject();
+                this.result = new ItemMaterial();
+                this.result.read(resultObj);
+            }
+        }
         this.ingredients = new ArrayList<>();
         if (json.has("ingredients") && json.get("ingredients")
             .isJsonArray()) {

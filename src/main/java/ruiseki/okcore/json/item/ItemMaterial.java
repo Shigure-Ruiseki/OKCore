@@ -17,6 +17,7 @@ import ruiseki.okcore.json.AbstractJsonMaterial;
 public class ItemMaterial extends AbstractJsonMaterial {
 
     private Item item;
+    private String name;
     private String ore;
     private int amount = 1;
     private int meta = 0;
@@ -24,11 +25,12 @@ public class ItemMaterial extends AbstractJsonMaterial {
 
     @Override
     public void read(JsonObject json) {
-        String itemName = getString(json, "item", null);
-        this.item = GameData.getItemRegistry()
-            .getObject(itemName);
+        this.name = getString(json, "item", null);
+        this.item = null;
+
         String oreName = getString(json, "ore", null);
         this.ore = (oreName != null && !oreName.isEmpty()) ? oreName : null;
+
         this.amount = getInt(json, "amount", 1);
         this.meta = getInt(json, "meta", 0);
         this.nbt = json.has("nbt") ? JsonNBTHelpers.jsonToNBT(json.getAsJsonObject("nbt")) : null;
@@ -37,10 +39,15 @@ public class ItemMaterial extends AbstractJsonMaterial {
 
     @Override
     public void write(JsonObject json) {
-        if (this.item != null) json.addProperty(
-            "item",
-            GameData.getBlockRegistry()
-                .getNameForObject(item));
+        Item currentItem = getItem();
+        if (currentItem != null) {
+            json.addProperty(
+                "item",
+                GameData.getBlockRegistry()
+                    .getNameForObject(currentItem));
+        } else if (this.name != null) {
+            json.addProperty("item", this.name);
+        }
         if (this.ore != null) json.addProperty("ore", this.ore);
         json.addProperty("amount", this.amount);
         json.addProperty("meta", this.meta);
@@ -52,7 +59,7 @@ public class ItemMaterial extends AbstractJsonMaterial {
 
     @Override
     public boolean validate() {
-        if (item == null && ore == null) {
+        if (this.name == null && ore == null) {
             logValidationError("ItemMaterial item or ore cannot be empty!");
             return false;
         }
@@ -60,6 +67,10 @@ public class ItemMaterial extends AbstractJsonMaterial {
     }
 
     public Item getItem() {
+        if (this.item == null && this.name != null) {
+            this.item = GameData.getItemRegistry()
+                .getObject(this.name);
+        }
         return item;
     }
 
@@ -82,6 +93,7 @@ public class ItemMaterial extends AbstractJsonMaterial {
     public void fromStack(ItemStack stack) {
         if (stack == null || stack.getItem() == null) {
             this.item = null;
+            this.name = null;
             this.ore = null;
             this.amount = 0;
             this.meta = 0;
@@ -90,6 +102,8 @@ public class ItemMaterial extends AbstractJsonMaterial {
         }
 
         this.item = stack.getItem();
+        this.name = GameData.getItemRegistry()
+            .getNameForObject(this.item);
         this.amount = stack.stackSize;
         this.meta = stack.getItemDamage();
         this.nbt = stack.hasTagCompound() ? (NBTTagCompound) stack.getTagCompound()
@@ -104,9 +118,10 @@ public class ItemMaterial extends AbstractJsonMaterial {
             return resolveFromOre(this.ore, count, this.nbt);
         }
 
-        if (this.item == null) return null;
+        Item item = getItem();
+        if (item == null) return null;
         try {
-            ItemStack stack = new ItemStack(this.item, count, this.meta);
+            ItemStack stack = new ItemStack(item, count, this.meta);
 
             if (this.nbt != null) {
                 stack.setTagCompound((NBTTagCompound) this.nbt.copy());
@@ -147,6 +162,8 @@ public class ItemMaterial extends AbstractJsonMaterial {
         ItemMaterial material = new ItemMaterial();
 
         material.item = stack.getItem();
+        material.name = GameData.getItemRegistry()
+            .getNameForObject(stack.getItem());
         material.amount = stack.stackSize;
         material.meta = stack.getItemDamage();
         if (stack.hasTagCompound()) {
@@ -176,7 +193,7 @@ public class ItemMaterial extends AbstractJsonMaterial {
 
     @Override
     public int hashCode() {
-        int result = item != null ? item.hashCode() : 0;
+        int result = getItem() != null ? getItem().hashCode() : 0;
         result = 31 * result + (ore != null ? ore.hashCode() : 0);
         result = 31 * result + amount;
         result = 31 * result + meta;

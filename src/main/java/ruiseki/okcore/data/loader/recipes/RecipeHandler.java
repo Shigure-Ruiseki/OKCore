@@ -19,6 +19,8 @@ public class RecipeHandler implements IInitListener {
 
     private static final Map<String, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
     private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
+
+    private static final List<IRecipeSerializer<?>> CACHED_SERIALIZERS = new ArrayList<>();
     private static final List<IRecipe> CACHED_RECIPES = new ArrayList<>();
 
     public static void loadFromASM(ASMDataTable dataTable) {
@@ -113,7 +115,14 @@ public class RecipeHandler implements IInitListener {
         CACHED_RECIPES.addAll(recipe);
     }
 
+    public static void addSerializer(IRecipeSerializer<?> serializer) {
+        if (serializer != null) {
+            CACHED_SERIALIZERS.add(serializer);
+        }
+    }
+
     @Override
+    @SuppressWarnings("unchecked")
     public void onInit(Step initStep) {
         if (initStep == Step.POSTINIT) {
             for (Map.Entry<String, IRecipeType<?>> entry : TYPE_MAPPING.entrySet()) {
@@ -143,6 +152,30 @@ public class RecipeHandler implements IInitListener {
                             e.toString());
                     }
                 }
+            }
+
+            if (!CACHED_SERIALIZERS.isEmpty()) {
+                OKCore
+                    .okLog(Level.INFO, "Processing {} deferred JSON recipe serializers...", CACHED_SERIALIZERS.size());
+
+                for (IRecipeSerializer<?> serializer : CACHED_SERIALIZERS) {
+                    try {
+                        if (serializer.validate()) {
+                            List<IRecipe> recipes = (List<IRecipe>) serializer.getRecipes();
+                            if (recipes != null) {
+                                CACHED_RECIPES.addAll(recipes);
+                            }
+                        }
+                    } catch (Exception e) {
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "Failed delayed processing for recipe serializer [{}]: {}",
+                            serializer.getClass()
+                                .getSimpleName(),
+                            e.getMessage());
+                    }
+                }
+                CACHED_SERIALIZERS.clear();
             }
 
             if (CACHED_RECIPES.isEmpty()) {

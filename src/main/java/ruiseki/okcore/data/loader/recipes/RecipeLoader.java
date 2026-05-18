@@ -2,9 +2,7 @@ package ruiseki.okcore.data.loader.recipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
-import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.data.loader.DataLoader;
@@ -28,8 +26,7 @@ public class RecipeLoader implements IDataLoader {
             if (material == null) return;
 
             if (material.validate()) {
-                List<IRecipe> recipes = material.getRecipes();
-                RecipeHandler.addRecipes(recipes);
+                RecipeHandler.addSerializer(material);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

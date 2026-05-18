@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
@@ -115,6 +116,35 @@ public class RecipeHandler implements IInitListener {
     @Override
     public void onInit(Step initStep) {
         if (initStep == Step.POSTINIT) {
+            for (Map.Entry<String, IRecipeType<?>> entry : TYPE_MAPPING.entrySet()) {
+                IRecipeType<?> recipeType = entry.getValue();
+
+                if (recipeType != null && recipeType.isForgeRecipe()) {
+                    Class<? extends IRecipe> recipeClass = recipeType.getRecipeClass();
+                    if (recipeClass == null) {
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "CRITICAL: RecipeType [{}] has 'isForgeRecipe() == true' but 'getRecipeClass()' is null! Skipping Forge registration.",
+                            recipeType.getTypeKey());
+                        continue;
+                    }
+
+                    try {
+                        RecipeSorter.register(
+                            recipeType.getTypeKey(),
+                            recipeClass,
+                            recipeType.getSorterCategory(),
+                            recipeType.getSorterDependencies());
+                    } catch (Exception e) {
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "Failed to register [{}] to Forge RecipeSorter: {}",
+                            recipeType.getTypeKey(),
+                            e.toString());
+                    }
+                }
+            }
+
             if (CACHED_RECIPES.isEmpty()) {
                 OKCore.okLog(Level.INFO, "No custom recipes found to register.");
                 return;

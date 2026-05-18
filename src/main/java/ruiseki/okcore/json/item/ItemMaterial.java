@@ -63,7 +63,7 @@ public class ItemMaterial extends AbstractJsonMaterial {
             logValidationError("ItemMaterial item or ore cannot be empty!");
             return false;
         }
-        return toStack() != null;
+        return true;
     }
 
     public Item getItem() {

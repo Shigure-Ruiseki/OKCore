@@ -38,8 +38,8 @@ public class FluidMaterial extends AbstractJsonMaterial {
 
     @Override
     public boolean validate() {
-        if (getFluid() == null) {
-            logValidationError("FluidMaterial: fluid '" + name + "' can not be found in FluidRegistry!");
+        if (this.name == null) {
+            logValidationError("FluidMaterial: fluid cannot be empty!");
             return false;
         }
         return true;

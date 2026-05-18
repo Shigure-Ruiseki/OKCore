@@ -158,15 +158,36 @@ public class RecipeHandler implements IInitListener {
                 OKCore
                     .okLog(Level.INFO, "Processing {} deferred JSON recipe serializers...", CACHED_SERIALIZERS.size());
 
+                int successCount = 0;
+                int skipCount = 0;
+                int failCount = 0;
+
                 for (IRecipeSerializer<?> serializer : CACHED_SERIALIZERS) {
                     try {
                         if (serializer.validate()) {
+
                             List<IRecipe> recipes = (List<IRecipe>) serializer.getRecipes();
-                            if (recipes != null) {
+                            if (recipes != null && !recipes.isEmpty()) {
                                 CACHED_RECIPES.addAll(recipes);
+                                successCount++;
+                                OKCore.okLog(Level.DEBUG, "Successfully processed recipe file: [{}]", serializer);
+                            } else {
+                                failCount++;
+                                OKCore.okLog(
+                                    Level.WARN,
+                                    "Recipe file [{}] validated but generated NO active recipes.",
+                                    serializer);
                             }
+
+                        } else {
+                            skipCount++;
+                            OKCore.okLog(
+                                Level.INFO,
+                                "Recipe file [{}] was skipped or failed validation constraints.",
+                                serializer);
                         }
                     } catch (Exception e) {
+                        failCount++;
                         OKCore.okLog(
                             Level.ERROR,
                             "Failed delayed processing for recipe serializer [{}]: {}",
@@ -175,6 +196,13 @@ public class RecipeHandler implements IInitListener {
                             e.getMessage());
                     }
                 }
+                OKCore.okLog(
+                    Level.INFO,
+                    "Recipe Processing Summary -> Success: {}, Skipped/Filtered: {}, Failed: {}",
+                    successCount,
+                    skipCount,
+                    failCount);
+
                 CACHED_SERIALIZERS.clear();
             }
 

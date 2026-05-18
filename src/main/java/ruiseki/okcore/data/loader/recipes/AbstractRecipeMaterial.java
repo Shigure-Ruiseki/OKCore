@@ -5,6 +5,8 @@ import static ruiseki.okcore.data.loader.conditional.LoadConditionHandler.CONDIT
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 
+import org.apache.logging.log4j.Level;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -32,13 +34,22 @@ public abstract class AbstractRecipeMaterial<T extends IRecipe> implements IReci
     @Override
     public boolean validate() {
         if (!DataHandler.checkConditional(id.toString(), conditionsArray)) {
+            OKCore.okLog(Level.ERROR, "Recipe [{}] result cannot be empty!", id);
             return false;
         }
         if (this.result == null) {
-            OKCore.okLog("Recipe result cannot be empty!");
+            OKCore.okLog(Level.ERROR, "Recipe [{}] result cannot be empty!", id);
             return false;
         }
-        return this.result.validate();
+
+        if (!this.result.validate()) {
+            OKCore.okLog(
+                Level.ERROR,
+                "Recipe [{}] validation failed: Output 'result' material is invalid in current game registry!",
+                id);
+            return false;
+        }
+        return true;
     }
 
     public ItemMaterial getResult() {

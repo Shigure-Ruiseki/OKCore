@@ -43,18 +43,27 @@ public class BaubleSlotMaterial extends AbstractJsonMaterial {
     public boolean validate() {
         if (slotType == null || slotType.trim()
             .isEmpty()) {
-            logValidationError("Slot type identification cannot be null or empty!");
+            logValidationError(
+                String
+                    .format("Bauble Slot %s validation failed: Slot type identification string is null or empty!", id));
             return false;
         }
 
         if (size < 0) {
             logValidationError(
-                String.format("Invalid slot size '%d' for type '%s'. Size cannot be negative!", size, slotType));
+                String.format(
+                    "Bauble Slot %s validation failed: Invalid slot size '%d' assigned for type '%s'. Size capacity cannot be negative!",
+                    id,
+                    size,
+                    slotType));
             return false;
         }
 
         if (operation == null) {
-            logValidationError("Unsupported or invalid operation type specified in config!");
+            logValidationError(
+                String.format(
+                    "Bauble Slot %s validation failed: Unsupported or unrecognizable operation action specified in JSON!",
+                    id));
             return false;
         }
 

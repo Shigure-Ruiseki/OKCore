@@ -9,6 +9,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
+import org.apache.logging.log4j.Level;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -131,12 +133,12 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<ShapelessOre
     @Override
     public boolean validate() {
         if (this.ingredients == null || this.ingredients.isEmpty()) {
-            OKCore.okLog("Shapeless recipe ingredients list is missing or empty!");
+            OKCore.okLog(Level.ERROR, "Recipe [{}] ingredients list is missing or empty!", id);
             return false;
         }
 
         if (this.ingredients.size() > 9) {
-            OKCore.okLog("Shapeless recipe cannot have more than 9 ingredients!");
+            OKCore.okLog(Level.ERROR, "Recipe [{}] cannot have more than 9 ingredients!", id);
             return false;
         }
 
@@ -145,24 +147,30 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<ShapelessOre
                 ItemMaterial mat = new ItemMaterial();
                 mat.read(element.getAsJsonObject());
                 if (!mat.validate()) {
-                    OKCore.okLog("Invalid ItemMaterial structure inside ingredients");
+                    OKCore.okLog(Level.ERROR, "Recipe [{}] invalid ItemMaterial structure inside ingredients", id);
                     return false;
                 }
             } else if (element.isJsonArray()) {
                 for (JsonElement subElement : element.getAsJsonArray()) {
                     if (!subElement.isJsonObject()) {
-                        OKCore.okLog("Array elements inside ingredients must be JsonObjects!");
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "Recipe [{}] array elements inside ingredients must be JsonObjects!",
+                            id);
                         return false;
                     }
                     ItemMaterial mat = new ItemMaterial();
                     mat.read(subElement.getAsJsonObject());
                     if (!mat.validate()) {
-                        OKCore.okLog("Invalid ItemMaterial structure inside Array of ingredients");
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "Recipe [{}] invalid ItemMaterial structure inside Array of ingredients",
+                            id);
                         return false;
                     }
                 }
             } else {
-                OKCore.okLog("Ingredients must be either a JsonObject or a JsonArray!");
+                OKCore.okLog(Level.ERROR, "Recipe [{}] ingredients must be either a JsonObject or a JsonArray!", id);
                 return false;
             }
         }

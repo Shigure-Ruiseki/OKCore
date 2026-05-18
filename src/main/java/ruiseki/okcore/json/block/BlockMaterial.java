@@ -86,7 +86,7 @@ public class BlockMaterial extends AbstractJsonMaterial {
     @Override
     public boolean validate() {
         if (this.name == null) {
-            logValidationError("BlockMaterial block cannot be empty! (Raw Block ID: " + name + ")");
+            logValidationError("BlockMaterial block cannot be empty!");
             return false;
         }
         return true;

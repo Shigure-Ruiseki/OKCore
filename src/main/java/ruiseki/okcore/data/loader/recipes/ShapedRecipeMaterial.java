@@ -13,6 +13,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
+import org.apache.logging.log4j.Level;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -182,11 +184,11 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial<ShapedOreRecipe
     @Override
     public boolean validate() {
         if (pattern == null || pattern.length == 0) {
-            OKCore.okLog("Shaped recipe pattern is missing or invalid!");
+            OKCore.okLog(Level.ERROR, "Recipe [{}] pattern is missing or invalid!", id);
             return false;
         }
         if (key == null || key.isEmpty()) {
-            OKCore.okLog("Shaped recipe key mappings are missing!");
+            OKCore.okLog(Level.ERROR, "Recipe [{}] key mappings are missing!", id);
             return false;
         }
 
@@ -196,19 +198,28 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial<ShapedOreRecipe
                 ItemMaterial mat = new ItemMaterial();
                 mat.read(element.getAsJsonObject());
                 if (!mat.validate()) {
-                    OKCore.okLog("Invalid ItemMaterial structure inside key token: " + entry.getKey());
+                    OKCore.okLog(
+                        Level.ERROR,
+                        "Recipe [{}] invalid ItemMaterial structure inside key token: " + entry.getKey(),
+                        id);
                     return false;
                 }
             } else if (element.isJsonArray()) {
                 for (JsonElement subElement : element.getAsJsonArray()) {
                     if (!subElement.isJsonObject()) {
-                        OKCore.okLog("Array elements inside key token must be JsonObjects! Token: " + entry.getKey());
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "Recipe [{}] array elements inside key token must be JsonObjects! Token: " + entry.getKey(),
+                            id);
                         return false;
                     }
                     ItemMaterial mat = new ItemMaterial();
                     mat.read(subElement.getAsJsonObject());
                     if (!mat.validate()) {
-                        OKCore.okLog("Invalid ItemMaterial structure inside Array of key token: " + entry.getKey());
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "Recipe [{}] invalid ItemMaterial structure inside Array of key token: " + entry.getKey(),
+                            id);
                         return false;
                     }
                 }

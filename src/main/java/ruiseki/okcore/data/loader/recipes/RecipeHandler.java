@@ -20,7 +20,7 @@ public class RecipeHandler implements IInitListener {
     private static final Map<String, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
     private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
 
-    private static final List<IRecipeSerializer<?>> CACHED_SERIALIZERS = new ArrayList<>();
+    private static final List<RecipeHolder> CACHED_SERIALIZERS = new ArrayList<>();
     private static final List<IRecipe> CACHED_RECIPES = new ArrayList<>();
 
     public static void loadFromASM(ASMDataTable dataTable) {
@@ -115,7 +115,7 @@ public class RecipeHandler implements IInitListener {
         CACHED_RECIPES.addAll(recipe);
     }
 
-    public static void addSerializer(IRecipeSerializer<?> serializer) {
+    public static void addSerializer(RecipeHolder serializer) {
         if (serializer != null) {
             CACHED_SERIALIZERS.add(serializer);
         }
@@ -162,47 +162,40 @@ public class RecipeHandler implements IInitListener {
                 int skipCount = 0;
                 int failCount = 0;
 
-                for (IRecipeSerializer<?> serializer : CACHED_SERIALIZERS) {
-                    try {
-                        if (serializer.validate()) {
+                for (RecipeHolder holder : CACHED_SERIALIZERS) {
+                    IRecipeSerializer<IRecipe> serializer = (IRecipeSerializer<IRecipe>) getSerializer(holder.type());
 
-                            List<IRecipe> recipes = (List<IRecipe>) serializer.getRecipes();
+                    if (serializer == null) {
+                        failCount++;
+                        OKCore.okLog(Level.ERROR, "No registered serializer found for type [{}] in file [{}]", holder.fileName(), holder.fileName());
+                        continue;
+                    }
+
+                    try {
+
+                        serializer.fromJson(holder.id(), holder.json());
+
+                        if (serializer.validate()) {
+                            List<IRecipe> recipes = serializer.getRecipes();
                             if (recipes != null && !recipes.isEmpty()) {
                                 CACHED_RECIPES.addAll(recipes);
                                 successCount++;
-                                OKCore.okLog(Level.DEBUG, "Successfully processed recipe file: [{}]", serializer);
+                                OKCore.okLog(Level.DEBUG, "Successfully processed recipe file: [{}]", holder.fileName());
                             } else {
                                 failCount++;
-                                OKCore.okLog(
-                                    Level.WARN,
-                                    "Recipe file [{}] validated but generated NO active recipes.",
-                                    serializer);
+                                OKCore.okLog(Level.WARN, "Recipe file [{}] validated but generated NO active recipes.", holder.fileName());
                             }
-
                         } else {
                             skipCount++;
-                            OKCore.okLog(
-                                Level.INFO,
-                                "Recipe file [{}] was skipped or failed validation constraints.",
-                                serializer);
+                            OKCore.okLog(Level.INFO, "Recipe file [{}], type [{}] was skipped or failed validation constraints.", holder.fileName(), holder.type());
                         }
-                    } catch (Exception e) {
+                    }catch (Exception e) {
                         failCount++;
-                        OKCore.okLog(
-                            Level.ERROR,
-                            "Failed delayed processing for recipe serializer [{}]: {}",
-                            serializer.getClass()
-                                .getSimpleName(),
-                            e.getMessage());
+                        OKCore.okLog(Level.ERROR, "Failed delayed serialization for file [{}]: {}", holder.fileName(), e.getMessage());
                     }
                 }
-                OKCore.okLog(
-                    Level.INFO,
-                    "Recipe Processing Summary -> Success: {}, Skipped/Filtered: {}, Failed: {}",
-                    successCount,
-                    skipCount,
-                    failCount);
 
+                OKCore.okLog(Level.INFO, "Recipe Processing Summary -> Success: {}, Skipped/Filtered: {}, Failed: {}", successCount, skipCount, failCount);
                 CACHED_SERIALIZERS.clear();
             }
 
@@ -218,7 +211,6 @@ public class RecipeHandler implements IInitListener {
                     count++;
                 }
             }
-
             OKCore.okLog(Level.INFO, "Successfully registered {} custom recipes to GameRegistry.", count);
             CACHED_RECIPES.clear();
         }

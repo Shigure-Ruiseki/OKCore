@@ -22,7 +22,7 @@ public class RecipeLoader implements IDataLoader {
         InputStream inputStream) {
         RecipeReader reader = new RecipeReader(id, fileName);
         try {
-            IRecipeSerializer material = reader.read(inputStream);
+            RecipeHolder material = reader.read(inputStream);
             if (material == null) return;
             RecipeHandler.addSerializer(material);
         } catch (IOException e) {

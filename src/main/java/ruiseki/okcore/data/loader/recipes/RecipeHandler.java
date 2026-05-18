@@ -167,7 +167,11 @@ public class RecipeHandler implements IInitListener {
 
                     if (serializer == null) {
                         failCount++;
-                        OKCore.okLog(Level.ERROR, "No registered serializer found for type [{}] in file [{}]", holder.fileName(), holder.fileName());
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "No registered serializer found for type [{}] in file [{}]",
+                            holder.fileName(),
+                            holder.fileName());
                         continue;
                     }
 
@@ -180,22 +184,39 @@ public class RecipeHandler implements IInitListener {
                             if (recipes != null && !recipes.isEmpty()) {
                                 CACHED_RECIPES.addAll(recipes);
                                 successCount++;
-                                OKCore.okLog(Level.DEBUG, "Successfully processed recipe file: [{}]", holder.fileName());
+                                OKCore
+                                    .okLog(Level.DEBUG, "Successfully processed recipe file: [{}]", holder.fileName());
                             } else {
                                 failCount++;
-                                OKCore.okLog(Level.WARN, "Recipe file [{}] validated but generated NO active recipes.", holder.fileName());
+                                OKCore.okLog(
+                                    Level.WARN,
+                                    "Recipe file [{}] validated but generated NO active recipes.",
+                                    holder.fileName());
                             }
                         } else {
                             skipCount++;
-                            OKCore.okLog(Level.INFO, "Recipe file [{}], type [{}] was skipped or failed validation constraints.", holder.fileName(), holder.type());
+                            OKCore.okLog(
+                                Level.INFO,
+                                "Recipe file [{}], type [{}] was skipped or failed validation constraints.",
+                                holder.fileName(),
+                                holder.type());
                         }
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         failCount++;
-                        OKCore.okLog(Level.ERROR, "Failed delayed serialization for file [{}]: {}", holder.fileName(), e.getMessage());
+                        OKCore.okLog(
+                            Level.ERROR,
+                            "Failed delayed serialization for file [{}]: {}",
+                            holder.fileName(),
+                            e.getMessage());
                     }
                 }
 
-                OKCore.okLog(Level.INFO, "Recipe Processing Summary -> Success: {}, Skipped/Filtered: {}, Failed: {}", successCount, skipCount, failCount);
+                OKCore.okLog(
+                    Level.INFO,
+                    "Recipe Processing Summary -> Success: {}, Skipped/Filtered: {}, Failed: {}",
+                    successCount,
+                    skipCount,
+                    failCount);
                 CACHED_SERIALIZERS.clear();
             }
 

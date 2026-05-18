@@ -1,9 +1,8 @@
 package ruiseki.okcore.helper;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
@@ -11,48 +10,61 @@ import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.data.loader.recipes.IRecipeType;
 import ruiseki.okcore.data.loader.recipes.RecipeHandler;
+import ruiseki.okcore.datastructure.ThreadsafeCache;
 import ruiseki.okcore.recipe.RecipeDataBase;
 
 public class RecipeHelpers {
 
-    @SuppressWarnings("unchecked")
-    public static <T extends RecipeDataBase> Map<ResourceLocation, T> getRecipes(IRecipeType<?> recipeType) {
-        if (recipeType == null || recipeType.getTypeKey() == null) {
-            return Collections.emptyMap();
-        }
+    private static final ThreadsafeCache<String, List<RecipeDataBase>> RECIPE_CACHE = new ThreadsafeCache<>(
+        1024,
+        key -> buildRecipeListForType((String) key),
+        false);
 
-        Map<ResourceLocation, T> recipeMap = new HashMap<>();
+    public static void invalidate() {
+        RECIPE_CACHE.clear();
+    }
+
+    private static List<RecipeDataBase> buildRecipeListForType(String typeKey) {
+        List<RecipeDataBase> localList = new ArrayList<>();
         List<IRecipe> allRecipes = CraftingManager.getInstance()
             .getRecipeList();
 
         for (IRecipe recipe : allRecipes) {
             if (recipe instanceof RecipeDataBase coreRecipe) {
-                if (coreRecipe.getRecipeType() != null) {
-                    String targetKey = recipeType.getTypeKey();
-                    String recipeKey = coreRecipe.getRecipeType()
-                        .getTypeKey();
-                    if (targetKey.equals(recipeKey)) {
-                        if (coreRecipe.getId() != null) {
-                            recipeMap.put(coreRecipe.getId(), (T) coreRecipe);
-                        }
-                    }
+                if (coreRecipe.getRecipeType() != null && typeKey.equals(
+                    coreRecipe.getRecipeType()
+                        .getTypeKey())) {
+                    localList.add(coreRecipe);
                 }
             }
         }
-        return recipeMap;
+        return localList.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(localList);
     }
 
-    public static <T extends RecipeDataBase> Map<ResourceLocation, T> getRecipes(String typeKey) {
+    @SuppressWarnings("unchecked")
+    public static <T extends RecipeDataBase> List<T> getRecipeList(IRecipeType<?> recipeType) {
+        if (recipeType == null || recipeType.getTypeKey() == null) {
+            return Collections.emptyList();
+        }
+        return (List<T>) RECIPE_CACHE.get(recipeType.getTypeKey());
+    }
+
+    public static <T extends RecipeDataBase> List<T> getRecipeList(String typeKey) {
         IRecipeType<?> recipeType = RecipeHandler.getType(typeKey);
         if (recipeType == null) {
-            return Collections.emptyMap();
+            return Collections.emptyList();
         }
-        return getRecipes(recipeType);
+        return getRecipeList(recipeType);
     }
 
     public static <T extends RecipeDataBase> T getRecipeById(ResourceLocation id, IRecipeType<?> recipeType) {
         if (id == null || recipeType == null) return null;
-        return RecipeHelpers.<T>getRecipes(recipeType)
-            .get(id);
+        List<T> recipes = getRecipeList(recipeType);
+        for (T recipe : recipes) {
+            if (id.equals(recipe.getId())) {
+                return recipe;
+            }
+        }
+        return null;
     }
 }

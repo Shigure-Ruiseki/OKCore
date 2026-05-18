@@ -9,16 +9,9 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.concurrent.ThreadsafeCache;
-
 import ruiseki.okcore.helper.ItemStackHelpers;
 
 public final class ItemStackKey {
-
-    private static final ThreadsafeCache<ItemStack, ItemStackKey> CACHE = new ThreadsafeCache<>(
-        2048,
-        key -> createInternal((ItemStack) key),
-        false);
 
     private final long packedItemMeta;
     private final int nbtSignature;
@@ -27,30 +20,27 @@ public final class ItemStackKey {
     private String cachedDisplayName;
     private int[] cachedOreIds;
     private String cachedModId;
+    private int cachedHashCode;;
 
-    private ItemStackKey(long packedItemMeta, int nbtSignature, @Nullable NBTTagCompound nbt) {
+    private ItemStackKey(long packedItemMeta, @Nullable NBTTagCompound nbt) {
         this.packedItemMeta = packedItemMeta;
-        this.nbtSignature = nbtSignature;
         this.nbt = nbt;
+        this.nbtSignature = nbt != null ? calculateNBTHash(nbt) : 0;
     }
 
     public static @Nullable ItemStackKey of(@Nullable ItemStack stack) {
         if (stack == null || stack.stackSize <= 0 || stack.getItem() == null) return null;
-        return CACHE.get(stack);
-    }
 
-    private static ItemStackKey createInternal(ItemStack stack) {
         int itemId = Item.getIdFromItem(stack.getItem());
         int meta = stack.isItemStackDamageable() ? 0 : ItemStackHelpers.getStackMeta(stack);
         long packedItemMeta = packItemMeta(itemId, meta);
 
         NBTTagCompound tag = stack.getTagCompound();
         if (tag == null) {
-            return new ItemStackKey(packedItemMeta, 0, null);
+            return new ItemStackKey(packedItemMeta, null);
         }
 
-        NBTTagCompound tagCopy = (NBTTagCompound) tag.copy();
-        return new ItemStackKey(packedItemMeta, tagCopy.hashCode(), tagCopy);
+        return new ItemStackKey(packedItemMeta, (NBTTagCompound) tag.copy());
     }
 
     public int getItemId() {
@@ -127,6 +117,11 @@ public final class ItemStackKey {
         return cachedModId;
     }
 
+    private static int calculateNBTHash(NBTTagCompound tag) {
+        return tag.toString()
+            .hashCode();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -138,13 +133,17 @@ public final class ItemStackKey {
 
     @Override
     public int hashCode() {
-        int result = Long.hashCode(packedItemMeta);
-        result = 31 * result + nbtSignature;
-        return result;
+        if (cachedHashCode == 0) {
+            int result = Long.hashCode(packedItemMeta);
+            result = 31 * result + nbtSignature;
+            cachedHashCode = result;
+        }
+        return cachedHashCode;
     }
 
     @Override
     public String toString() {
-        return "InventoryKey{itemId=" + getItemId() + ", meta=" + getMeta() + ", nbtSignature=" + nbtSignature + "}";
+        return "ItemStackKey{itemId=" + unpackItemId(
+            packedItemMeta) + ", meta=" + getMeta() + ", nbtSignature=" + nbtSignature + "}";
     }
 }

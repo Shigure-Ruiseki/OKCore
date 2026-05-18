@@ -17,7 +17,8 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.json.item.ItemMaterial;
 
 @RecipeData
-public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<IRecipe> implements IRecipeType<IRecipe> {
+public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<ShapelessOreRecipe>
+    implements IRecipeType<IRecipe> {
 
     private List<JsonElement> ingredients;
 
@@ -42,8 +43,8 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<IRecipe> imp
     }
 
     @Override
-    public List<IRecipe> getRecipes() {
-        List<IRecipe> recipeList = new ArrayList<>();
+    public List<ShapelessOreRecipe> getRecipes() {
+        List<ShapelessOreRecipe> recipeList = new ArrayList<>();
         ItemStack outputStack = this.result != null ? this.result.toStack() : null;
         if (outputStack == null) return recipeList;
 

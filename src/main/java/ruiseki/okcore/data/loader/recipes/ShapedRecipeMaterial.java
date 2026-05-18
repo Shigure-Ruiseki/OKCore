@@ -35,6 +35,14 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial<ShapedOreRecipe
     @Override
     public void fromJson(ResourceLocation id, JsonObject json) {
         super.fromJson(id, json);
+        if (json.has("result")) {
+            JsonElement resultElement = json.get("result");
+            if (resultElement.isJsonObject()) {
+                JsonObject resultObj = resultElement.getAsJsonObject();
+                this.result = new ItemMaterial();
+                this.result.read(resultObj);
+            }
+        }
         this.pattern = AbstractJsonMaterial.getStringArray(json, "pattern");
         this.key = new HashMap<>();
         if (json.has("key") && json.get("key")

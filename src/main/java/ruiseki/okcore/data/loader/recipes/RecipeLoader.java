@@ -24,10 +24,7 @@ public class RecipeLoader implements IDataLoader {
         try {
             IRecipeSerializer material = reader.read(inputStream);
             if (material == null) return;
-
-            if (material.validate()) {
-                RecipeHandler.addSerializer(material);
-            }
+            RecipeHandler.addSerializer(material);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -32,6 +32,7 @@ public class BaubleSlotHandler implements IInitListener {
             "[Baubles] Commencing batch registration for {} custom slot configs...",
             materialsQueue.size());
         for (BaubleSlotMaterial material : materialsQueue) {
+            if (!material.validate()) continue;
             material.execute();
         }
 

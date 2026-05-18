@@ -19,10 +19,8 @@ public class BaubleSlotReader extends DataReader<BaubleSlotMaterial> {
             JsonObject json = root.getAsJsonObject();
             String slotType = fileName.endsWith(".json") ? fileName.substring(0, fileName.length() - 5) : fileName;
 
-            BaubleSlotMaterial material = new BaubleSlotMaterial(slotType);
+            BaubleSlotMaterial material = new BaubleSlotMaterial(id, slotType);
             material.read(json);
-            if (!material.validate()) return null;
-
             return material;
         }
         return null;

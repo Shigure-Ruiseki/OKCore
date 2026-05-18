@@ -3,7 +3,6 @@ package ruiseki.okcore.json.block;
 import java.util.Objects;
 
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
 import com.google.gson.JsonObject;
@@ -15,18 +14,23 @@ import ruiseki.okcore.json.AbstractJsonMaterial;
 public class BlockMaterial extends AbstractJsonMaterial {
 
     private Block block;
+    private String name;
     private int meta = 0;
 
     @Override
     public void read(JsonObject json) {
-        String blockName = getString(json, "block", "minecraft:air");
-        this.block = GameData.getBlockRegistry()
-            .getObject(blockName);
+        this.name = getString(json, "block", null);
+        this.block = null;
+
         this.meta = getInt(json, "meta", 0);
         captureUnknownProperties(json, "block", "meta");
     }
 
     public Block getBlock() {
+        if (this.block == null && this.name != null) {
+            this.block = GameData.getBlockRegistry()
+                .getObject(this.name);
+        }
         return block;
     }
 
@@ -37,39 +41,52 @@ public class BlockMaterial extends AbstractJsonMaterial {
     public void fromWorld(World world, int x, int y, int z) {
         if (world == null) {
             this.block = null;
+            this.name = "minecraft:air";
             this.meta = 0;
             return;
         }
 
         this.block = world.getBlock(x, y, z);
+        this.name = GameData.getBlockRegistry()
+            .getNameForObject(this.block);
         this.meta = world.getBlockMetadata(x, y, z);
         this.unknownProperties.clear();
     }
 
     public BlockStack toStack() {
-        if (this.block == null || this.block == Blocks.air) return BlockStack.empty();
-        return new BlockStack(this.block, this.meta);
+        Block currentBlock = getBlock();
+        if (currentBlock == null) return BlockStack.empty();
+        return new BlockStack(currentBlock, this.meta);
     }
 
     public void fromStack(BlockStack stack) {
+        if (stack == null) return;
         this.block = stack.getBlock();
+        this.name = GameData.getBlockRegistry()
+            .getNameForObject(this.block);
         this.meta = stack.getMeta();
     }
 
     @Override
     public void write(JsonObject json) {
-        if (this.block != null) json.addProperty(
-            "block",
-            GameData.getBlockRegistry()
-                .getNameForObject(block));
+        Block currentBlock = getBlock();
+        if (currentBlock != null) {
+            json.addProperty(
+                "block",
+                GameData.getBlockRegistry()
+                    .getNameForObject(currentBlock));
+        } else if (this.name != null) {
+            json.addProperty("block", this.name);
+        }
+
         json.addProperty("meta", this.meta);
         writeUnknownProperties(json);
     }
 
     @Override
     public boolean validate() {
-        if (block == null) {
-            logValidationError("BlockMaterial block cannot be empty!");
+        if (this.name == null) {
+            logValidationError("BlockMaterial block cannot be empty! (Raw Block ID: " + name + ")");
             return false;
         }
         return true;
@@ -83,18 +100,18 @@ public class BlockMaterial extends AbstractJsonMaterial {
         BlockMaterial that = (BlockMaterial) o;
 
         if (meta != that.meta) return false;
-        return Objects.equals(block, that.block);
+        return Objects.equals(getBlock(), that.getBlock());
     }
 
     @Override
     public int hashCode() {
-        int result = block != null ? block.hashCode() : 0;
+        int result = getBlock() != null ? getBlock().hashCode() : 0;
         result = 31 * result + meta;
         return result;
     }
 
     @Override
     public String toString() {
-        return "BlockMaterial[Block=" + block + ":" + meta + "]";
+        return "BlockMaterial[Block=" + (getBlock() != null ? block : name) + ":" + meta + "]";
     }
 }

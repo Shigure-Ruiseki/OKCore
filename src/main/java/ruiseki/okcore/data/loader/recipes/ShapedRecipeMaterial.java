@@ -64,7 +64,13 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial<ShapedOreRecipe
     public List<ShapedOreRecipe> getRecipes() {
         List<ShapedOreRecipe> recipeList = new ArrayList<>();
         ItemStack outputStack = this.result != null ? this.result.toStack() : null;
-        if (outputStack == null) return recipeList;
+        if (outputStack == null) {
+            OKCore.okLog(
+                Level.ERROR,
+                "Shaped Recipe {}: Cannot generate recipes because the output result 'ItemStack' resolves to NULL!",
+                id);
+            return recipeList;
+        }
 
         Set<Character> charsInPattern = new HashSet<>();
         for (String row : this.pattern) {
@@ -101,6 +107,11 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial<ShapedOreRecipe
             }
 
             if (rawIngredients.isEmpty()) {
+                OKCore.okLog(
+                    Level.ERROR,
+                    "Shaped Recipe {}: Key token '{}' failed to resolve into any active ItemStacks or OreDictionary tags! Recipe generation aborted.",
+                    id,
+                    symbolChar);
                 return new ArrayList<>();
             }
 
@@ -109,7 +120,11 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial<ShapedOreRecipe
         }
 
         if (!charsInPattern.isEmpty()) {
-            OKCore.okLog("Pattern contains characters that are not defined in 'key': " + charsInPattern);
+            OKCore.okLog(
+                Level.ERROR,
+                "Shaped Recipe {}: Pattern matrix contains characters that are completely missing from 'key' definitions: {}",
+                id,
+                charsInPattern);
             return new ArrayList<>();
         }
 
@@ -135,8 +150,19 @@ public class ShapedRecipeMaterial extends AbstractRecipeMaterial<ShapedOreRecipe
                 ShapedOreRecipe recipe = new ShapedOreRecipe(outputStack, recipeArgs);
                 recipeList.add(recipe);
             } catch (Throwable t) {
-
+                OKCore.okLog(
+                    Level.ERROR,
+                    "Shaped Recipe {}: Forge layout constructor rejected this recipe matrix configuration! Internal Forge error: {}",
+                    id,
+                    t.toString());
             }
+        }
+
+        if (recipeList.isEmpty()) {
+            OKCore.okLog(
+                Level.WARN,
+                "Shaped Recipe {}: Processing finished but 0 valid combinations could be compiled into active recipes.",
+                id);
         }
 
         return recipeList;

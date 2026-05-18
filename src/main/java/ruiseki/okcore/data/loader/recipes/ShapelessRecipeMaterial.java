@@ -56,7 +56,13 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<ShapelessOre
     public List<ShapelessOreRecipe> getRecipes() {
         List<ShapelessOreRecipe> recipeList = new ArrayList<>();
         ItemStack outputStack = this.result != null ? this.result.toStack() : null;
-        if (outputStack == null) return recipeList;
+        if (outputStack == null) {
+            OKCore.okLog(
+                Level.ERROR,
+                "Shapeless Recipe {}: Cannot generate recipes because the output result 'ItemStack' resolves to NULL!",
+                id);
+            return recipeList;
+        }
 
         List<List<Object>> resolvedIngredientsList = new ArrayList<>();
 
@@ -75,6 +81,10 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<ShapelessOre
             }
 
             if (rawIngredients.isEmpty()) {
+                OKCore.okLog(
+                    Level.ERROR,
+                    "Shapeless Recipe {}: Ingredient at index failed to resolve into any active Item or OreDictionary tag! Recipe generation aborted.",
+                    id);
                 return new ArrayList<>();
             }
 
@@ -88,7 +98,20 @@ public class ShapelessRecipeMaterial extends AbstractRecipeMaterial<ShapelessOre
             try {
                 ShapelessOreRecipe recipe = new ShapelessOreRecipe(outputStack, combo.toArray());
                 recipeList.add(recipe);
-            } catch (Throwable ignore) {}
+            } catch (Throwable t) {
+                OKCore.okLog(
+                    Level.ERROR,
+                    "Shapeless Recipe {}: Forge layout constructor rejected this shapeless combination! Internal Forge error: {}",
+                    id,
+                    t.toString());
+            }
+        }
+
+        if (recipeList.isEmpty()) {
+            OKCore.okLog(
+                org.apache.logging.log4j.Level.WARN,
+                "Shapeless Recipe {}: Compiled successfully but 0 valid active recipes could be generated.",
+                id);
         }
 
         return recipeList;

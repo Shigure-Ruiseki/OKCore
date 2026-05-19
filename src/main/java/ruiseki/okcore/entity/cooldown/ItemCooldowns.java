@@ -8,6 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Maps;
 
 import ruiseki.okcore.datacomponent.component.UseCooldown;
@@ -27,6 +29,7 @@ public class ItemCooldowns {
 
     public float getCooldownPercent(ItemStack item, float a) {
         ResourceLocation group = this.getCooldownGroup(item);
+        if (group == null) return 0.0F;
         CooldownInstance cooldown = (CooldownInstance) this.cooldowns.get(group);
         if (cooldown != null) {
             float duration = (float) (cooldown.endTime - cooldown.startTime);
@@ -54,7 +57,9 @@ public class ItemCooldowns {
 
     }
 
+    @Nullable
     public ResourceLocation getCooldownGroup(ItemStack item) {
+        if (item == null || item.getItem() == null) return null;
         UseCooldown useCooldown = DataComponentHelpers.get(item, DataComponents.USE_COOLDOWN);
         if (useCooldown != null && useCooldown.cooldownGroup()
             .isPresent()) {
@@ -62,11 +67,14 @@ public class ItemCooldowns {
                 .get();
         }
         String itemName = Item.itemRegistry.getNameForObject(item.getItem());
+        if (itemName == null || itemName.isEmpty()) return null;
         return new ResourceLocation(itemName);
     }
 
     public void addCooldown(ItemStack item, int time) {
-        this.addCooldown(this.getCooldownGroup(item), time);
+        ResourceLocation group = this.getCooldownGroup(item);
+        if (group == null) return;
+        this.addCooldown(group, time);
     }
 
     public void addCooldown(ResourceLocation cooldownGroup, int time) {
@@ -75,7 +83,9 @@ public class ItemCooldowns {
     }
 
     public void removeCooldown(ItemStack item) {
-        this.removeCooldown(this.getCooldownGroup(item));
+        ResourceLocation group = this.getCooldownGroup(item);
+        if (group == null) return;
+        this.removeCooldown(group);
     }
 
     public void removeCooldown(ResourceLocation cooldownGroup) {

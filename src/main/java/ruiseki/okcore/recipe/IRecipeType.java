@@ -6,7 +6,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.RecipeSorter;
 
-public interface IRecipeType<T extends IRecipeOK> {
+public interface IRecipeType<T extends IRecipeOK<?>> {
 
     String getTypeKey();
 

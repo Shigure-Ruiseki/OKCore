@@ -3,6 +3,8 @@ package ruiseki.okcore;
 import java.io.File;
 
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
@@ -35,6 +37,7 @@ import ruiseki.okcore.data.loader.baubles.BaubleSlotHandler;
 import ruiseki.okcore.data.loader.conditional.LoadConditionHandler;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.event.data.OKDataEvent;
 import ruiseki.okcore.event.inventory.InventoryScanner;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
@@ -46,7 +49,6 @@ import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
-import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.RecipeRegistries;
 
 @Mod(
@@ -102,6 +104,8 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
+
+        MinecraftForge.EVENT_BUS.post(new OKDataEvent.Pre());
         DataLoader.loadAllData();
 
         ModItems.preInit();
@@ -133,19 +137,17 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
-        RecipeRegistries.processGlobalHolders();
-        RecipeManager.getManager()
-            .loadFromBase();
+        MinecraftForge.EVENT_BUS.post(new OKDataEvent.Post());
     }
 
     @Mod.EventHandler
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
-        RecipeManager.validateManager();
-        DataLoader.loadWorldData(
-            new File(
-                event.getServer()
-                    .getFolderName()));
-        RecipeRegistries.processWorldHolders();
+
+        MinecraftServer server = event.getServer();
+        File worldDir = new File(server.getFolderName());
+        MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldPre(server, worldDir));
+        DataLoader.loadWorldData(worldDir);
+        MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldPost(server, worldDir));
     }
 
     @Override
@@ -170,7 +172,7 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void onServerStopped(FMLServerStoppedEvent event) {
         super.onServerStopped(event);
-        RecipeManager.invalidateManager();
+        MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldUnload());
     }
 
     @Override

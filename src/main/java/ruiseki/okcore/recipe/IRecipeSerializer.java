@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 
 import ruiseki.okcore.network.ExtendedBuffer;
 
-public interface IRecipeSerializer<T extends IRecipeOK> {
+public interface IRecipeSerializer<T extends IRecipeOK<?>> {
 
     String getTypeKey();
 

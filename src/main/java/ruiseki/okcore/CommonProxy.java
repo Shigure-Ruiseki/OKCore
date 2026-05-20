@@ -41,6 +41,7 @@ public class CommonProxy extends CommonProxyComponent {
         FMLCommonHandler.instance()
             .bus()
             .register(RecipeLifecycleEvent.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(RecipeLifecycleEvent.INSTANCE);
         MinecraftForge.EVENT_BUS.register(CooldownEvent.INSTANCE);
         MinecraftForge.EVENT_BUS.register(GuiItemToggleEvent.INSTANCE);
     }

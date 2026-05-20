@@ -203,8 +203,12 @@ public class RecipeManager {
         }
 
         for (IRecipeOK<?> recipe : worldRecipes) {
+            ResourceLocation id = recipe.getId();
+            for (Map<ResourceLocation, IRecipeOK<?>> typeMap : mutableMap.values()) {
+                typeMap.remove(id);
+            }
             mutableMap.computeIfAbsent(recipe.getType(), k -> new HashMap<>())
-                .put(recipe.getId(), recipe);
+                .put(id, recipe);
         }
 
         this.recipes = copyToImmutable(mutableMap);

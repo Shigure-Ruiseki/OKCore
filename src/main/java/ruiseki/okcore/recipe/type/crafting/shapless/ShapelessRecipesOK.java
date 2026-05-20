@@ -2,12 +2,10 @@ package ruiseki.okcore.recipe.type.crafting.shapless;
 
 import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeSerializer.SHAPELESS_RECIPE;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.ShapelessOreRecipe;

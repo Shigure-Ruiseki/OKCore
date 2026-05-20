@@ -1,5 +1,8 @@
 package ruiseki.okcore.recipe;
 
+import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
+import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.SHAPELESS;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,9 +28,6 @@ import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipesOK;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipesOK;
-
-import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
-import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.SHAPELESS;
 
 public class RecipeManager {
 
@@ -55,7 +55,7 @@ public class RecipeManager {
         instance = null;
     }
 
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Collection<ShapedRecipesOK> getShapedRecipes() {
         IRecipeType<?> type = RecipeRegistries.getType(SHAPED);
         if (type == null) return Collections.emptyList();
@@ -64,7 +64,7 @@ public class RecipeManager {
         return (Collection) map.values();
     }
 
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Collection<ShapelessRecipesOK> getShapelessRecipes() {
         IRecipeType<?> type = RecipeRegistries.getType(SHAPELESS);
         if (type == null) return Collections.emptyList();

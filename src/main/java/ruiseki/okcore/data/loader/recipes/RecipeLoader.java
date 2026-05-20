@@ -7,6 +7,7 @@ import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.data.loader.DataLoader;
 import ruiseki.okcore.data.loader.IDataLoader;
+import ruiseki.okcore.recipe.RecipeRegistries;
 
 @DataLoader
 public class RecipeLoader implements IDataLoader {
@@ -17,16 +18,20 @@ public class RecipeLoader implements IDataLoader {
     }
 
     @Override
-    @SuppressWarnings("unchecked, rawtypes")
     public void process(ResourceLocation id, String namespace, String folder, String[] subPaths, String fileName,
         InputStream inputStream) {
         RecipeReader reader = new RecipeReader(id, fileName);
         try {
-            RecipeHolder material = reader.read(inputStream);
-            if (material == null) return;
-            RecipeHandler.addSerializer(material);
+            RecipeHolder holder = reader.read(inputStream);
+            if (holder == null) return;
+            RecipeRegistries.addHolder(holder);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean isWorldLoader() {
+        return true;
     }
 }

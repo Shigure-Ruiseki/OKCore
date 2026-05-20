@@ -104,12 +104,63 @@ public class DataLoader {
             ResourceLocation generatedId = new ResourceLocation(namespace, folder + "/" + pathPrefix + cleanName);
 
             try (InputStream is = Files.newInputStream(p)) {
-                DataHandler.handle(generatedId, namespace, folder, subPaths, fixedFileName, is);
+                DataHandler.handleMod(generatedId, namespace, folder, subPaths, fixedFileName, is);
             } catch (IOException e) {
                 OKCore.okLog(Level.ERROR, "Failed to read data stream for: " + fullMatchPath, e);
             }
         } catch (Exception e) {
             OKCore.okLog(Level.ERROR, "Error processing specific data stream at: " + p, e);
+        }
+    }
+
+    public static void loadWorldData(File worldDir) {
+        File dataDir = new File(worldDir, "okcore");
+        if (!dataDir.exists() || !dataDir.isDirectory()) return;
+
+        OKCore.okLog(Level.INFO, "Scanning world data in: {}", dataDir.getAbsolutePath());
+
+        try (Stream<Path> stream = Files.walk(dataDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
+            final Path rootPath = dataDir.toPath();
+            stream.filter(p -> !Files.isDirectory(p))
+                .filter(
+                    p -> p.toString()
+                        .endsWith(".json"))
+                .forEach(p -> processWorldStream(p, rootPath));
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "Critical error while scanning world data directory", e);
+        }
+    }
+
+    private static void processWorldStream(Path p, Path rootPath) {
+        try {
+            String relativeStr = rootPath.relativize(p)
+                .toString()
+                .replace('\\', '/');
+            String fullMatchPath = relativeStr.startsWith("data/") ? relativeStr : "data/" + relativeStr;
+
+            Matcher matcher = DYNAMIC_DATA_PATTERN.matcher(fullMatchPath);
+            if (!matcher.matches()) {
+                OKCore.okLog(Level.WARN, "World data path does not match pattern: {}", fullMatchPath);
+                return;
+            }
+
+            String namespace = matcher.group(1);
+            String folder = matcher.group(2);
+            String[] subPaths = matcher.group(3) != null ? matcher.group(3)
+                .split("/") : new String[0];
+            String fileName = matcher.group(4);
+
+            String cleanName = fileName.substring(0, fileName.lastIndexOf('.'));
+            String pathPrefix = matcher.group(3) != null ? matcher.group(3) + "/" : "";
+            ResourceLocation id = new ResourceLocation(namespace, folder + "/" + pathPrefix + cleanName);
+
+            try (InputStream is = Files.newInputStream(p)) {
+                DataHandler.handleWorld(id, namespace, folder, subPaths, fileName, is);
+            } catch (IOException e) {
+                OKCore.okLog(Level.ERROR, "Failed to read world data stream: " + fullMatchPath, e);
+            }
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "Error processing world data stream at: " + p, e);
         }
     }
 }

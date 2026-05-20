@@ -1,4 +1,4 @@
-package ruiseki.okcore.data.loader.recipes;
+package ruiseki.okcore.recipe;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

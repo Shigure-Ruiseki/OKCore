@@ -1,5 +1,7 @@
 package ruiseki.okcore;
 
+import java.io.File;
+
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.oredict.RecipeSorter;
 
@@ -14,6 +16,7 @@ import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
@@ -28,15 +31,14 @@ import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DataHandler;
 import ruiseki.okcore.data.DataLoader;
-import ruiseki.okcore.data.loader.baubles.BaubleSlotHandler;
-import ruiseki.okcore.data.loader.conditional.LoadConditionHandler;
-import ruiseki.okcore.data.loader.recipes.RecipeHandler;
+import ruiseki.okcore.data.loader.baubles.BaubleSlotRegistry;
+import ruiseki.okcore.data.loader.condition.LoadRegistry;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.event.inventory.InventoryScanner;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
-import ruiseki.okcore.guide.GuideHandler;
+import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
@@ -44,6 +46,8 @@ import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
+import ruiseki.okcore.recipe.RecipeManager;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -72,9 +76,8 @@ public class OKCore extends ModBase {
 
         addInitListeners(new DataComponents());
         addInitListeners(new InventoryScanner());
-        addInitListeners(new GuideHandler());
-        addInitListeners(new RecipeHandler());
-        addInitListeners(new BaubleSlotHandler());
+        addInitListeners(new GuideRegistry());
+        addInitListeners(new BaubleSlotRegistry());
     }
 
     @Mod.EventHandler
@@ -82,11 +85,10 @@ public class OKCore extends ModBase {
         ASMDataTable asmData = event.getASMHarvestedData();
 
         CapabilityManager.INSTANCE.injectCapabilities(asmData);
-        GuideHandler.loadFromASM(asmData);
-        LoadConditionHandler.loadFromASM(asmData);
-        RecipeHandler.loadFromASM(asmData);
+        GuideRegistry.loadFromASM(asmData);
+        LoadRegistry.loadFromASM(asmData);
+        RecipeRegistry.loadFromASM(asmData);
         DataHandler.loadFromASM(asmData);
-        DataLoader.loadAllData();
     }
 
     @Override
@@ -100,6 +102,9 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
+
+        DataLoader.loadAllData();
+
         ModItems.preInit();
         if (LibMods.Waila.isLoaded()) {
             BlockProvider.init();
@@ -129,6 +134,18 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+        RecipeRegistry.processGlobalHolders();
+    }
+
+    @Mod.EventHandler
+    public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
+
+        RecipeManager.validateManager();
+        DataLoader.loadWorldData(
+            new File(
+                event.getServer()
+                    .getFolderName()));
+        RecipeRegistry.processWorldHolders();
     }
 
     @Override
@@ -153,6 +170,7 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void onServerStopped(FMLServerStoppedEvent event) {
         super.onServerStopped(event);
+        RecipeManager.invalidateManager();
     }
 
     @Override

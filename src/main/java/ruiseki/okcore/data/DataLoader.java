@@ -38,56 +38,115 @@ public class DataLoader {
                 .toLowerCase();
             File modSource = mod.getSource();
 
-            if (modSource == null) continue;
+            if (modSource == null || !modSource.isFile()
+                || !modSource.getName()
+                    .endsWith(".jar")) {
+                continue;
+            }
 
-            String targetSubPath = "data/" + modId;
+            URI uri = URI.create("jar:" + modSource.toURI());
+            FileSystem fileSystem = null;
+            boolean shouldClose = false;
 
-            if (modSource.isDirectory()) {
-                File dataDir = new File(modSource, targetSubPath);
-                if (!dataDir.exists()) continue;
-
-                try (Stream<Path> stream = Files.walk(dataDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
-                    final Path rootPath = dataDir.toPath();
-                    stream.filter(p -> !Files.isDirectory(p))
-                        .forEach(p -> processSingleStream(p, rootPath, modId));
-                } catch (Exception e) {
-                    OKCore.okLog(Level.ERROR, "Critical error while scanning directory data for mod: " + modId, e);
+            try {
+                try {
+                    fileSystem = FileSystems.getFileSystem(uri);
+                } catch (FileSystemNotFoundException e) {
+                    fileSystem = FileSystems.newFileSystem(uri, EMPTY_ENV);
+                    shouldClose = true;
                 }
-            } else if (modSource.isFile() && modSource.getName()
-                .endsWith(".jar")) {
-                    URI uri = URI.create("jar:" + modSource.toURI());
 
-                    try (FileSystem fileSystem = getFileSystemInstance(uri)) {
-                        Path rootPath = fileSystem.getPath("/" + targetSubPath);
-                        if (!Files.exists(rootPath)) continue;
+                Path dataPath = fileSystem.getPath("/data");
+                if (!Files.exists(dataPath)) continue;
 
-                        try (Stream<Path> stream = Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)) {
-                            stream.filter(p -> !Files.isDirectory(p))
-                                .forEach(p -> processSingleStream(p, rootPath, modId));
-                        }
-                    } catch (Exception e) {
-                        OKCore.okLog(Level.ERROR, "Critical error while scanning JAR data for mod: " + modId, e);
+                Path packMcMeta = fileSystem.getPath("/pack.mcmeta");
+                if (!Files.exists(packMcMeta)) {
+                    OKCore.okLog(
+                        Level.WARN,
+                        "Mod '{}' contains a 'data' folder but is missing 'pack.mcmeta'. Skipping.",
+                        modId);
+                    continue;
+                }
+
+                Path rootPath = fileSystem.getPath("/");
+
+                try (Stream<Path> stream = Files.walk(dataPath, FileVisitOption.FOLLOW_LINKS)) {
+                    stream.filter(p -> !Files.isDirectory(p))
+                        .filter(
+                            p -> p.toString()
+                                .endsWith(".json"))
+                        .forEach(p -> processStream(p, rootPath, false));
+                }
+            } catch (Exception e) {
+                OKCore.okLog(Level.ERROR, "Critical error while scanning JAR data for mod: " + modId, e);
+            } finally {
+                if (shouldClose && fileSystem != null) {
+                    try {
+                        fileSystem.close();
+                    } catch (IOException e) {
+                        OKCore.okLog(Level.ERROR, "Failed to close FileSystem for mod: " + modId, e);
                     }
                 }
+            }
         }
     }
 
-    private static FileSystem getFileSystemInstance(URI uri) throws IOException {
-        try {
-            return FileSystems.getFileSystem(uri);
-        } catch (FileSystemNotFoundException e) {
-            return FileSystems.newFileSystem(uri, EMPTY_ENV);
+    public static void loadWorldData(File worldDir) {
+        File datapacksDir = new File(worldDir, "datapacks");
+        if (!datapacksDir.exists() || !datapacksDir.isDirectory()) return;
+
+        File[] packs = datapacksDir.listFiles();
+        if (packs == null) return;
+
+        OKCore.okLog(Level.INFO, "Scanning world data in: {}", datapacksDir.getAbsolutePath());
+
+        for (File packDir : packs) {
+            if (!packDir.isDirectory()) continue;
+
+            File dataDir = new File(packDir, "data");
+            if (!dataDir.exists() || !dataDir.isDirectory()) {
+                continue;
+            }
+
+            File packMcMeta = new File(packDir, "pack.mcmeta");
+            if (!packMcMeta.exists()) {
+                OKCore.okLog(
+                    Level.WARN,
+                    "Datapack '{}' contains a 'data' folder but is missing 'pack.mcmeta'. Skipping.",
+                    packDir.getName());
+                continue;
+            }
+
+            try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
+                final Path rootPath = datapacksDir.toPath();
+                stream.filter(p -> !Files.isDirectory(p))
+                    .filter(
+                        p -> p.toString()
+                            .endsWith(".json"))
+                    .forEach(p -> processStream(p, rootPath, true));
+            } catch (Exception e) {
+                OKCore.okLog(Level.ERROR, "Critical error while scanning datapack: " + packDir.getName(), e);
+            }
         }
     }
 
-    private static void processSingleStream(Path p, Path finalRootPath, String modId) {
+    private static void processStream(Path p, Path rootPath, boolean isWorldData) {
         try {
-            String relativeStr = finalRootPath.relativize(p)
+            String relativeStr = rootPath.relativize(p)
                 .toString()
                 .replace('\\', '/');
-            String fullMatchPath = "data/" + modId + "/" + relativeStr;
 
-            Matcher matcher = DYNAMIC_DATA_PATTERN.matcher(fullMatchPath);
+            if (relativeStr.startsWith("/")) {
+                relativeStr = relativeStr.substring(1);
+            }
+
+            if (isWorldData) {
+                int dataIdx = relativeStr.indexOf("data/");
+                if (dataIdx == -1) return;
+                relativeStr = relativeStr.substring(dataIdx);
+            }
+
+            Matcher matcher = DYNAMIC_DATA_PATTERN.matcher(relativeStr);
             if (!matcher.matches()) return;
 
             String namespace = matcher.group(1);
@@ -96,20 +155,22 @@ public class DataLoader {
                 .split("/") : new String[0];
             String fileName = matcher.group(4);
 
-            String fixedFileName = fileName.endsWith(".json") ? fileName : fileName + ".json";
-
-            String cleanName = fixedFileName.substring(0, fixedFileName.lastIndexOf('.'));
-
+            String cleanName = fileName.substring(0, fileName.lastIndexOf('.'));
             String pathPrefix = matcher.group(3) != null ? matcher.group(3) + "/" : "";
+
             ResourceLocation generatedId = new ResourceLocation(namespace, folder + "/" + pathPrefix + cleanName);
 
             try (InputStream is = Files.newInputStream(p)) {
-                DataHandler.handle(generatedId, namespace, folder, subPaths, fixedFileName, is);
+                if (isWorldData) {
+                    DataHandler.handleWorld(generatedId, namespace, folder, subPaths, fileName, is);
+                } else {
+                    DataHandler.handleMod(generatedId, namespace, folder, subPaths, fileName, is);
+                }
             } catch (IOException e) {
-                OKCore.okLog(Level.ERROR, "Failed to read data stream for: " + fullMatchPath, e);
+                OKCore.okLog(Level.ERROR, "Failed to read data stream for: " + relativeStr, e);
             }
         } catch (Exception e) {
-            OKCore.okLog(Level.ERROR, "Error processing specific data stream at: " + p, e);
+            OKCore.okLog(Level.ERROR, "Error processing data stream at: " + p, e);
         }
     }
 }

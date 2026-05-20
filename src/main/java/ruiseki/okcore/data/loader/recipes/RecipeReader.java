@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import ruiseki.okcore.data.loader.DataReader;
+import ruiseki.okcore.recipe.type.other.NoneRecipeType;
 
 public class RecipeReader extends DataReader<RecipeHolder> {
 
@@ -19,7 +20,7 @@ public class RecipeReader extends DataReader<RecipeHolder> {
         if (root.isJsonObject()) {
             JsonObject json = root.getAsJsonObject();
             String type = json.has("type") ? json.get("type")
-                .getAsString() : "";
+                .getAsString() : NoneRecipeType.NONE;
             return new RecipeHolder(id, type, json, fileName);
         }
         return null;

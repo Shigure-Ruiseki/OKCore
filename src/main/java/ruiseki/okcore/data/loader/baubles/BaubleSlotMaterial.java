@@ -1,6 +1,6 @@
 package ruiseki.okcore.data.loader.baubles;
 
-import static ruiseki.okcore.data.loader.conditional.LoadConditionHandler.CONDITION_KEY;
+import static ruiseki.okcore.data.loader.condition.LoadRegistry.CONDITION_KEY;
 
 import net.minecraft.util.ResourceLocation;
 

@@ -7,6 +7,9 @@ import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
 public enum Mixins implements IMixins {
 
+    JSON_RECIPE(new MixinBuilder("Hook Json Recipe to Vanilla").addCommonMixins("recipe.MixinCraftingManager")
+        .setPhase(Phase.EARLY)),
+
     ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("capabilities.MixinItemStackCap")
         .setPhase(Phase.EARLY)),
 

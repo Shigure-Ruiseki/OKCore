@@ -2,28 +2,32 @@ package ruiseki.okcore.recipe;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-import ruiseki.okcore.data.loader.recipes.IRecipeSerializer;
-import ruiseki.okcore.data.loader.recipes.IRecipeType;
-
-public abstract class RecipeDataBase implements IRecipe {
+public abstract class RecipeDataBase implements IRecipeOK<InventoryCrafting> {
 
     protected final ResourceLocation id;
 
     public RecipeDataBase(ResourceLocation id) {
         this.id = id;
+
+        if (this.getSerializer() == null) {
+            throw new IllegalStateException(
+                "No serializer found for " + this.getClass()
+                    .getName());
+        }
+
+        if (this.getType() == null) {
+            throw new IllegalStateException(
+                "No recipe type found for " + this.getClass()
+                    .getName());
+        }
     }
 
     public ResourceLocation getId() {
         return this.id;
     }
-
-    public abstract IRecipeType<?> getRecipeType();
-
-    public abstract IRecipeSerializer<?> getSerializer();
 
     @Override
     public boolean matches(InventoryCrafting crafting, World world) {

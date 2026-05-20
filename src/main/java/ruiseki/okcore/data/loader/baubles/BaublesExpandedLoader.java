@@ -25,7 +25,7 @@ public class BaublesExpandedLoader implements IDataLoader {
             try {
                 BaubleSlotMaterial material = reader.read(inputStream);
                 if (material == null) return;
-                BaubleSlotHandler.queueMaterial(material);
+                BaubleSlotRegistry.queueMaterial(material);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read and batch bauble slot config: " + fileName, e);
             }

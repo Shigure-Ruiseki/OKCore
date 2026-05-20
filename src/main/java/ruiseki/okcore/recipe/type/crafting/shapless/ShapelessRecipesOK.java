@@ -12,7 +12,7 @@ import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.recipe.IRecipeSerializer;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 public class ShapelessRecipesOK extends ShapelessOreRecipe implements IShapelessRecipe<InventoryCrafting> {
 
@@ -36,7 +36,7 @@ public class ShapelessRecipesOK extends ShapelessOreRecipe implements IShapeless
 
     @Override
     public IRecipeSerializer<?> getSerializer() {
-        return RecipeRegistries.getSerializer(SHAPELESS_RECIPE);
+        return RecipeRegistry.getSerializer(SHAPELESS_RECIPE);
     }
 
     @Override

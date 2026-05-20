@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import ruiseki.okcore.recipe.IRecipeType;
 import ruiseki.okcore.recipe.RecipeManager;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeRegistry;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipesOK;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipesOK;
 
@@ -43,13 +43,12 @@ public class MixinCraftingManager {
     @SuppressWarnings("unchecked")
     private void okcore$onFindMatchingRecipe(InventoryCrafting inv, World world,
         CallbackInfoReturnable<ItemStack> cir) {
-        IRecipeType<ShapedRecipesOK> shaped = (IRecipeType<ShapedRecipesOK>) RecipeRegistries.getType(SHAPED);
+        IRecipeType<ShapedRecipesOK> shaped = (IRecipeType<ShapedRecipesOK>) RecipeRegistry.getType(SHAPED);
         RecipeManager.getManager()
             .getRecipeFor(shaped, inv, world)
             .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResult(inv)));
 
-        IRecipeType<ShapelessRecipesOK> shapeless = (IRecipeType<ShapelessRecipesOK>) RecipeRegistries
-            .getType(SHAPELESS);
+        IRecipeType<ShapelessRecipesOK> shapeless = (IRecipeType<ShapelessRecipesOK>) RecipeRegistry.getType(SHAPELESS);
         RecipeManager.getManager()
             .getRecipeFor(shapeless, inv, world)
             .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResult(inv)));

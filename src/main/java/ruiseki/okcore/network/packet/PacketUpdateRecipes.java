@@ -20,7 +20,7 @@ import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.RecipeManager;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 public class PacketUpdateRecipes extends PacketCodec {
 
@@ -41,7 +41,7 @@ public class PacketUpdateRecipes extends PacketCodec {
         try {
             int count = input.readVarIntFromBuffer();
             for (int i = 0; i < count; i++) {
-                IRecipeSerializer serializer = RecipeRegistries.getSerializer(input.readString());
+                IRecipeSerializer serializer = RecipeRegistry.getSerializer(input.readString());
                 ResourceLocation id = new ResourceLocation(input.readString());
                 if (serializer != null) {
                     IRecipeOK<?> decoded = serializer.fromNetwork(id, input);

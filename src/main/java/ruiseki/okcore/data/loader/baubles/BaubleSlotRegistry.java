@@ -9,7 +9,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.lib.LibMods;
 
-public class BaubleSlotHandler implements IInitListener {
+public class BaubleSlotRegistry implements IInitListener {
 
     private static final List<BaubleSlotMaterial> materialsQueue = new ArrayList<>();
 

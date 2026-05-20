@@ -14,7 +14,7 @@ import cpw.mods.fml.common.discovery.ASMDataTable;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.recipes.RecipeHolder;
 
-public class RecipeRegistries {
+public class RecipeRegistry {
 
     private static final Map<String, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
     private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
@@ -111,7 +111,7 @@ public class RecipeRegistries {
 
     @SuppressWarnings("unchecked")
     public static List<IRecipeOK<?>> fromHolder(RecipeHolder holder) {
-        IRecipeSerializer<?> serializer = RecipeRegistries.getSerializer(holder.type());
+        IRecipeSerializer<?> serializer = RecipeRegistry.getSerializer(holder.type());
         if (serializer == null) {
             return Collections.emptyList();
         }

@@ -3,8 +3,6 @@ package ruiseki.okcore;
 import java.io.File;
 
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
@@ -33,15 +31,14 @@ import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DataHandler;
 import ruiseki.okcore.data.DataLoader;
-import ruiseki.okcore.data.loader.baubles.BaubleSlotHandler;
-import ruiseki.okcore.data.loader.conditional.LoadConditionHandler;
+import ruiseki.okcore.data.loader.baubles.BaubleSlotRegistry;
+import ruiseki.okcore.data.loader.condition.LoadRegistry;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
-import ruiseki.okcore.event.data.OKDataEvent;
 import ruiseki.okcore.event.inventory.InventoryScanner;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
-import ruiseki.okcore.guide.GuideHandler;
+import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
@@ -49,7 +46,8 @@ import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeManager;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -78,8 +76,8 @@ public class OKCore extends ModBase {
 
         addInitListeners(new DataComponents());
         addInitListeners(new InventoryScanner());
-        addInitListeners(new GuideHandler());
-        addInitListeners(new BaubleSlotHandler());
+        addInitListeners(new GuideRegistry());
+        addInitListeners(new BaubleSlotRegistry());
     }
 
     @Mod.EventHandler
@@ -87,9 +85,9 @@ public class OKCore extends ModBase {
         ASMDataTable asmData = event.getASMHarvestedData();
 
         CapabilityManager.INSTANCE.injectCapabilities(asmData);
-        GuideHandler.loadFromASM(asmData);
-        LoadConditionHandler.loadFromASM(asmData);
-        RecipeRegistries.loadFromASM(asmData);
+        GuideRegistry.loadFromASM(asmData);
+        LoadRegistry.loadFromASM(asmData);
+        RecipeRegistry.loadFromASM(asmData);
         DataHandler.loadFromASM(asmData);
     }
 
@@ -105,7 +103,6 @@ public class OKCore extends ModBase {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
 
-        MinecraftForge.EVENT_BUS.post(new OKDataEvent.Pre());
         DataLoader.loadAllData();
 
         ModItems.preInit();
@@ -137,17 +134,18 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
-        MinecraftForge.EVENT_BUS.post(new OKDataEvent.Post());
+        RecipeRegistry.processGlobalHolders();
     }
 
     @Mod.EventHandler
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
 
-        MinecraftServer server = event.getServer();
-        File worldDir = new File(server.getFolderName());
-        MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldPre(server, worldDir));
-        DataLoader.loadWorldData(worldDir);
-        MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldPost(server, worldDir));
+        RecipeManager.validateManager();
+        DataLoader.loadWorldData(
+            new File(
+                event.getServer()
+                    .getFolderName()));
+        RecipeRegistry.processWorldHolders();
     }
 
     @Override
@@ -172,7 +170,7 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void onServerStopped(FMLServerStoppedEvent event) {
         super.onServerStopped(event);
-        MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldUnload());
+        RecipeManager.invalidateManager();
     }
 
     @Override

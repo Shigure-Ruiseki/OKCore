@@ -7,7 +7,7 @@ import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.data.loader.DataLoader;
 import ruiseki.okcore.data.loader.IDataLoader;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 @DataLoader
 public class RecipeLoader implements IDataLoader {
@@ -24,7 +24,7 @@ public class RecipeLoader implements IDataLoader {
         try {
             RecipeHolder holder = reader.read(inputStream);
             if (holder == null) return;
-            RecipeRegistries.addHolder(holder);
+            RecipeRegistry.addHolder(holder);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -12,7 +12,6 @@ import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.Level;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.data.DataLoader;
 import ruiseki.okcore.event.data.OKDataEvent;
 import ruiseki.okcore.init.ModBase;
 
@@ -44,10 +43,6 @@ public class CommandReload extends CommandMod {
         try {
 
             File worldDir = new File(server.getFolderName());
-            MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldPre(server, worldDir));
-            DataLoader.loadWorldData(worldDir);
-            MinecraftForge.EVENT_BUS.post(new OKDataEvent.WorldPost(server, worldDir));
-
             MinecraftForge.EVENT_BUS.post(new OKDataEvent.Reload(server, worldDir));
 
             sender

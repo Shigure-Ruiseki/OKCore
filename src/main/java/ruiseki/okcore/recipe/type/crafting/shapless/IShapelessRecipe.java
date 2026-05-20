@@ -6,12 +6,12 @@ import net.minecraft.inventory.IInventory;
 
 import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.IRecipeType;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 public interface IShapelessRecipe<T extends IInventory> extends IRecipeOK<T> {
 
     @Override
     default IRecipeType<?> getType() {
-        return RecipeRegistries.getType(SHAPELESS);
+        return RecipeRegistry.getType(SHAPELESS);
     }
 }

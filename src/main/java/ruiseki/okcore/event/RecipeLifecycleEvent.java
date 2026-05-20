@@ -7,10 +7,11 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.data.DataLoader;
 import ruiseki.okcore.event.data.OKDataEvent;
 import ruiseki.okcore.network.packet.PacketUpdateRecipes;
 import ruiseki.okcore.recipe.RecipeManager;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 public class RecipeLifecycleEvent {
 
@@ -28,32 +29,10 @@ public class RecipeLifecycleEvent {
     }
 
     @SubscribeEvent
-    public void onGlobalPostLoad(OKDataEvent.Post event) {
-        RecipeRegistries.processGlobalHolders();
-        OKCore.okLog("Successfully built and frozen global base recipes.");
-    }
-
-    @SubscribeEvent
-    public void onWorldPreLoad(OKDataEvent.WorldPre event) {
-        RecipeManager.validateManager();
-        OKCore.okLog(
-            "Preparing recipe registry for world: " + event.getWorldDir()
-                .getName());
-    }
-
-    @SubscribeEvent
-    public void onWorldPostLoad(OKDataEvent.WorldPost event) {
-        RecipeRegistries.processWorldHolders();
-    }
-
-    @SubscribeEvent
-    public void onWorldUnload(OKDataEvent.WorldUnload event) {
-        RecipeManager.invalidateManager();
-        OKCore.okLog("Successfully invalidated and cleared all world-bound recipes cache.");
-    }
-
-    @SubscribeEvent
     public void onReload(OKDataEvent.Reload event) {
+        RecipeManager.validateManager();
+        DataLoader.loadWorldData(event.getWorldDir());
+        RecipeRegistry.processWorldHolders();
         PacketUpdateRecipes packet = new PacketUpdateRecipes(
             RecipeManager.getManager()
                 .getRecipes());

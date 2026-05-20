@@ -57,7 +57,7 @@ public class RecipeManager {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Collection<ShapedRecipesOK> getShapedRecipes() {
-        IRecipeType<?> type = RecipeRegistries.getType(SHAPED);
+        IRecipeType<?> type = RecipeRegistry.getType(SHAPED);
         if (type == null) return Collections.emptyList();
         Map<ResourceLocation, IRecipeOK<?>> map = this.recipes.get(type);
         if (map == null || map.isEmpty()) return Collections.emptyList();
@@ -66,7 +66,7 @@ public class RecipeManager {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Collection<ShapelessRecipesOK> getShapelessRecipes() {
-        IRecipeType<?> type = RecipeRegistries.getType(SHAPELESS);
+        IRecipeType<?> type = RecipeRegistry.getType(SHAPELESS);
         if (type == null) return Collections.emptyList();
         Map<ResourceLocation, IRecipeOK<?>> map = this.recipes.get(type);
         if (map == null || map.isEmpty()) return Collections.emptyList();

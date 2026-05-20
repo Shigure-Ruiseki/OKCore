@@ -15,7 +15,7 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.recipe.IRecipeSerializer;
-import ruiseki.okcore.recipe.RecipeRegistries;
+import ruiseki.okcore.recipe.RecipeRegistry;
 
 public class ShapedRecipesOK extends ShapedOreRecipe implements IShapedRecipe<InventoryCrafting> {
 
@@ -55,7 +55,7 @@ public class ShapedRecipesOK extends ShapedOreRecipe implements IShapedRecipe<In
 
     @Override
     public IRecipeSerializer<?> getSerializer() {
-        return RecipeRegistries.getSerializer(SHAPED_RECIPE);
+        return RecipeRegistry.getSerializer(SHAPED_RECIPE);
     }
 
     @Override

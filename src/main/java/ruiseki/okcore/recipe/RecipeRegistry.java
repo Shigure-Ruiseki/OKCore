@@ -18,37 +18,33 @@ public class RecipeRegistry {
 
     private static final Map<String, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
     private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
-
     private static final Map<ResourceLocation, RecipeHolder> RECIPE_HOLDERS = new HashMap<>();
 
-    public static IRecipeType<?> registerType(IRecipeType<?> recipeType) {
+    public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(IRecipeType<T> recipeType) {
         if (recipeType == null || recipeType.getTypeKey() == null) return null;
         String key = recipeType.getTypeKey();
-        return TYPE_MAPPING.put(key, recipeType);
+        TYPE_MAPPING.put(key, recipeType);
+        return recipeType;
     }
 
-    public static IRecipeSerializer<?> registerSerializer(IRecipeSerializer<?> recipeSerializer) {
+    public static <T extends IRecipeOK<?>> IRecipeSerializer<T> registerSerializer(
+        IRecipeSerializer<T> recipeSerializer) {
         if (recipeSerializer == null || recipeSerializer.getTypeKey() == null) return null;
         String key = recipeSerializer.getTypeKey();
-        return SERIALIZER_MAPPING.put(key, recipeSerializer);
+        SERIALIZER_MAPPING.put(key, recipeSerializer);
+        return recipeSerializer;
     }
 
-    public static IRecipeType<?> getType(String key) {
+    @SuppressWarnings("unchecked")
+    public static <T extends IRecipeOK<?>> IRecipeType<T> getType(String key) {
         if (key == null) return null;
-        return TYPE_MAPPING.get(key);
+        return (IRecipeType<T>) TYPE_MAPPING.get(key);
     }
 
-    public static Map<String, IRecipeType<?>> getTypeMapping() {
-        return TYPE_MAPPING;
-    }
-
-    public static IRecipeSerializer<?> getSerializer(String type) {
+    @SuppressWarnings("unchecked")
+    public static <T extends IRecipeOK<?>> IRecipeSerializer<T> getSerializer(String type) {
         if (type == null) return null;
-        return SERIALIZER_MAPPING.get(type);
-    }
-
-    public static Map<String, IRecipeSerializer<?>> getSerializerMapping() {
-        return SERIALIZER_MAPPING;
+        return (IRecipeSerializer<T>) SERIALIZER_MAPPING.get(type);
     }
 
     public static void loadFromASM(ASMDataTable dataTable) {

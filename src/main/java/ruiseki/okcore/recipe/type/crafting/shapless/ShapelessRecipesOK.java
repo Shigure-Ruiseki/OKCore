@@ -10,7 +10,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
-import ruiseki.okcore.OKCore;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.RecipeRegistry;
 
@@ -46,8 +45,6 @@ public class ShapelessRecipesOK extends ShapelessOreRecipe implements IShapeless
 
     @Override
     public ItemStack getCraftingResult(InventoryCrafting inventory) {
-        ItemStack stack = super.getCraftingResult(inventory);
-        OKCore.okLog(stack.toString());
-        return stack;
+        return super.getCraftingResult(inventory);
     }
 }

@@ -32,6 +32,6 @@ public class ShapedRecipeType implements IRecipeType<ShapedRecipe> {
 
     @Override
     public String getSorterDependencies() {
-        return "after:forge:shaped";
+        return "after:forge:shapedore";
     }
 }

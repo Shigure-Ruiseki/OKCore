@@ -9,6 +9,7 @@ import java.util.Map;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
@@ -29,6 +30,20 @@ public class RecipeRegistry {
         if (recipeType == null || recipeType.getTypeKey() == null) return null;
         String key = recipeType.getTypeKey();
         TYPE_MAPPING.put(key, recipeType);
+
+        if (recipeType.isForgeRecipe() && recipeType.getRecipeClass() != null) {
+            try {
+                RecipeSorter.register(
+                    recipeType.getTypeKey(),
+                    recipeType.getRecipeClass(),
+                    recipeType.getSorterCategory(),
+                    recipeType.getSorterDependencies());
+                OKCore.okLog(Level.INFO, "Registered RecipeSorter for Forge recipe type: [{}]", key);
+            } catch (Exception e) {
+                OKCore.okLog(Level.ERROR, "Failed to register RecipeSorter for type [{}]: {}", key, e.toString());
+            }
+        }
+
         return recipeType;
     }
 

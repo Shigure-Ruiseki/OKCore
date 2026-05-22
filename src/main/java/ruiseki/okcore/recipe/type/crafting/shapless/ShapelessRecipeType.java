@@ -32,6 +32,6 @@ public class ShapelessRecipeType implements IRecipeType<ShapelessRecipe> {
 
     @Override
     public String getSorterDependencies() {
-        return "after:forge:shapeless";
+        return "after:forge:shapelessore";
     }
 }

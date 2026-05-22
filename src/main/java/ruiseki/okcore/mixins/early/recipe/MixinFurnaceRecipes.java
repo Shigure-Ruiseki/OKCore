@@ -28,9 +28,6 @@ public class MixinFurnaceRecipes {
     @Shadow
     private Map<ItemStack, ItemStack> smeltingList;
 
-    @Shadow
-    private Map<ItemStack, Float> experienceList;
-
     @Inject(method = "getSmeltingList()Ljava/util/Map;", at = @At("HEAD"), cancellable = true)
     private void okcore$getDynamicSmeltingList(CallbackInfoReturnable<Map<ItemStack, ItemStack>> cir) {
         IRecipeType<?> type = RecipeRegistry.getType(SMELTING);

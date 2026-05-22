@@ -23,7 +23,7 @@ public interface IRecipeType<T extends IRecipeOK<?>> {
     }
 
     default String getSorterDependencies() {
-        return "after:minecraft:shapeless";
+        return "after:forge:shapelessore";
     }
 
     default Class<T> getRecipeClass() {

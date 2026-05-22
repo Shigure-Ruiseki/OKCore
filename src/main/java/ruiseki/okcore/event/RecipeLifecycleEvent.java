@@ -8,7 +8,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DataLoader;
-import ruiseki.okcore.event.data.OKDataEvent;
+import ruiseki.okcore.event.data.DataEvent;
 import ruiseki.okcore.network.packet.PacketUpdateRecipes;
 import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.RecipeRegistry;
@@ -29,8 +29,9 @@ public class RecipeLifecycleEvent {
     }
 
     @SubscribeEvent
-    public void onReload(OKDataEvent.Reload event) {
-        RecipeManager.validateManager();
+    public void onReload(DataEvent.Reload event) {
+        RecipeManager.getManager()
+            .loadFromBase();
         DataLoader.loadWorldData(event.getWorldDir());
         RecipeRegistry.processWorldHolders();
         PacketUpdateRecipes packet = new PacketUpdateRecipes(

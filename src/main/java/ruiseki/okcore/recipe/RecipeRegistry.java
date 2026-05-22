@@ -1,18 +1,23 @@
 package ruiseki.okcore.recipe;
 
+import static ruiseki.okcore.recipe.type.cooking.fuel.FuelType.FUEL;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
 
+import cpw.mods.fml.common.IFuelHandler;
 import cpw.mods.fml.common.discovery.ASMDataTable;
+import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.recipes.RecipeHolder;
+import ruiseki.okcore.recipe.type.cooking.fuel.FuelRecipe;
 
 public class RecipeRegistry {
 
@@ -106,17 +111,32 @@ public class RecipeRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    public static List<IRecipeOK<?>> fromHolder(RecipeHolder holder) {
+    public static IRecipeOK<?> fromHolder(RecipeHolder holder) {
+        if (holder == null) {
+            OKCore.okLog(Level.ERROR, "Cannot parse recipe from a null RecipeHolder!");
+            return null;
+        }
+
         IRecipeSerializer<?> serializer = RecipeRegistry.getSerializer(holder.type());
         if (serializer == null) {
-            return Collections.emptyList();
+            OKCore.okLog(
+                Level.WARN,
+                "Missing recipe serializer for type: '{}' (Recipe ID: '{}')",
+                holder.type(),
+                holder.id());
+            return null;
         }
 
         try {
-            List<IRecipeOK<?>> parsedRecipes = (List<IRecipeOK<?>>) serializer.fromJson(holder.id(), holder.json());
-            return parsedRecipes != null ? parsedRecipes : Collections.emptyList();
+            return serializer.fromJson(holder.id(), holder.json());
         } catch (Exception e) {
-            return Collections.emptyList();
+            OKCore.okLog(
+                Level.ERROR,
+                "Failed to parse recipe '{}' of type '{}' due to an unexpected error!",
+                holder.id(),
+                holder.type(),
+                e);
+            return null;
         }
     }
 
@@ -124,13 +144,35 @@ public class RecipeRegistry {
         List<IRecipeOK<?>> allBaseRecipes = new ArrayList<>();
 
         for (RecipeHolder holder : RECIPE_HOLDERS.values()) {
-            List<IRecipeOK<?>> recipes = fromHolder(holder);
-            if (!recipes.isEmpty()) {
-                allBaseRecipes.addAll(recipes);
+            IRecipeOK<?> recipe = fromHolder(holder);
+            if (recipe != null) {
+                allBaseRecipes.add(recipe);
             }
         }
 
         RecipeManager.setupGlobalRecipes(allBaseRecipes);
+
+        GameRegistry.registerFuelHandler(new IFuelHandler() {
+
+            @Override
+            public int getBurnTime(ItemStack fuel) {
+                if (fuel == null || fuel.getItem() == null) {
+                    return 0;
+                }
+
+                IRecipeType<?> type = RecipeRegistry.getType(FUEL);
+                for (IRecipeOK<?> recipe : RecipeManager.getManager()
+                    .getRecipesByType(type)) {
+                    if (recipe instanceof FuelRecipe fuelRecipe) {
+                        if (fuelRecipe.matchesFuel(fuel)) {
+                            return fuelRecipe.getBurnTime();
+                        }
+                    }
+                }
+
+                return 0;
+            }
+        });
 
         OKCore.okLog(Level.INFO, "Registered {} base recipes directly into Global storage.", allBaseRecipes.size());
         RECIPE_HOLDERS.clear();
@@ -140,9 +182,9 @@ public class RecipeRegistry {
         List<IRecipeOK<?>> allWorldRecipes = new ArrayList<>();
 
         for (RecipeHolder holder : RECIPE_HOLDERS.values()) {
-            List<IRecipeOK<?>> recipes = fromHolder(holder);
-            if (!recipes.isEmpty()) {
-                allWorldRecipes.addAll(recipes);
+            IRecipeOK<?> recipe = fromHolder(holder);
+            if (recipe != null) {
+                allWorldRecipes.add(recipe);
             }
         }
 
@@ -152,5 +194,4 @@ public class RecipeRegistry {
         OKCore.okLog(Level.INFO, "Injected {} custom world recipes into current session.", allWorldRecipes.size());
         RECIPE_HOLDERS.clear();
     }
-
 }

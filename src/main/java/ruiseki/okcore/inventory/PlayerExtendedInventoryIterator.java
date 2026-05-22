@@ -29,7 +29,7 @@ public class PlayerExtendedInventoryIterator implements Iterator<ItemStack> {
      */
     public PlayerExtendedInventoryIterator(EntityPlayer player) {
         innerIt = new PlayerInventoryIterator(player);
-        if (LibMods.Baubles.isLoaded()) {
+        if (LibMods.Baubles.isModLoaded()) {
             setBaublesData();
         }
     }

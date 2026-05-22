@@ -26,8 +26,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipesOK;
-import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipesOK;
+import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
+import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
 
 public class RecipeManager {
 
@@ -56,7 +56,7 @@ public class RecipeManager {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Collection<ShapedRecipesOK> getShapedRecipes() {
+    public Collection<ShapedRecipe> getShapedRecipes() {
         IRecipeType<?> type = RecipeRegistry.getType(SHAPED);
         if (type == null) return Collections.emptyList();
         Map<ResourceLocation, IRecipeOK<?>> map = this.recipes.get(type);
@@ -65,12 +65,20 @@ public class RecipeManager {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Collection<ShapelessRecipesOK> getShapelessRecipes() {
+    public Collection<ShapelessRecipe> getShapelessRecipes() {
         IRecipeType<?> type = RecipeRegistry.getType(SHAPELESS);
         if (type == null) return Collections.emptyList();
         Map<ResourceLocation, IRecipeOK<?>> map = this.recipes.get(type);
         if (map == null || map.isEmpty()) return Collections.emptyList();
         return (Collection) map.values();
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public Collection<IRecipeOK<?>> getRecipesByType(IRecipeType<?> type) {
+        if (type == null) return Collections.emptyList();
+        Map<ResourceLocation, IRecipeOK<?>> map = this.recipes.get(type);
+        if (map == null || map.isEmpty()) return Collections.emptyList();
+        return map.values();
     }
 
     public <C extends IInventory, T extends IRecipeOK<C>> Optional<T> getRecipeFor(IRecipeType<T> type, C inventory,
@@ -82,6 +90,7 @@ public class RecipeManager {
             .findFirst();
     }
 
+    @SuppressWarnings("unchecked")
     public <C extends IInventory, T extends IRecipeOK<C>> List<T> getAllRecipesFor(IRecipeType<T> type) {
         return this.byType(type)
             .values()
@@ -105,7 +114,8 @@ public class RecipeManager {
             .collect(Collectors.toList());
     }
 
-    private <C extends IInventory, T extends IRecipeOK<C>> Map<ResourceLocation, IRecipeOK<C>> byType(
+    @SuppressWarnings("unchecked")
+    public <C extends IInventory, T extends IRecipeOK<C>> Map<ResourceLocation, IRecipeOK<C>> byType(
         IRecipeType<T> type) {
         return (Map) this.recipes.getOrDefault(type, Collections.emptyMap());
     }

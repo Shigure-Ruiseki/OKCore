@@ -1,7 +1,6 @@
 package ruiseki.okcore.recipe;
 
 import java.io.IOException;
-import java.util.List;
 
 import net.minecraft.util.ResourceLocation;
 
@@ -19,7 +18,7 @@ public interface IRecipeSerializer<T extends IRecipeOK<?>> {
         return true;
     }
 
-    List<T> fromJson(ResourceLocation id, JsonObject json);
+    T fromJson(ResourceLocation id, JsonObject json);
 
     @Nullable
     T fromNetwork(ResourceLocation id, ExtendedBuffer buffer) throws IOException;

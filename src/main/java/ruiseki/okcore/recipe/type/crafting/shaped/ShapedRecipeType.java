@@ -4,10 +4,9 @@ import net.minecraftforge.oredict.RecipeSorter.Category;
 
 import ruiseki.okcore.recipe.IRecipeType;
 import ruiseki.okcore.recipe.RecipeData;
-import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipesOK;
 
 @RecipeData
-public class ShapedRecipeType implements IRecipeType<ShapelessRecipesOK> {
+public class ShapedRecipeType implements IRecipeType<ShapedRecipe> {
 
     public static final String SHAPED = "minecraft:crafting_shaped";
 
@@ -27,8 +26,8 @@ public class ShapedRecipeType implements IRecipeType<ShapelessRecipesOK> {
     }
 
     @Override
-    public Class<ShapelessRecipesOK> getRecipeClass() {
-        return ShapelessRecipesOK.class;
+    public Class<ShapedRecipe> getRecipeClass() {
+        return ShapedRecipe.class;
     }
 
     @Override

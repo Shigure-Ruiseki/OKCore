@@ -3,8 +3,6 @@ package ruiseki.okcore.recipe.type.other;
 import static ruiseki.okcore.recipe.type.other.NoneRecipeType.NONE;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 import net.minecraft.util.ResourceLocation;
 
@@ -28,8 +26,8 @@ public class NoneRecipeSerializer implements IRecipeSerializer<IRecipeOK<?>> {
     }
 
     @Override
-    public List<IRecipeOK<?>> fromJson(ResourceLocation id, JsonObject json) {
-        return Collections.singletonList(new NoneRecipe(id));
+    public IRecipeOK<?> fromJson(ResourceLocation id, JsonObject json) {
+        return new NoneRecipe(id);
     }
 
     @Override

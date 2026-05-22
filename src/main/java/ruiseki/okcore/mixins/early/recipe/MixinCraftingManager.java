@@ -22,8 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import ruiseki.okcore.recipe.IRecipeType;
 import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.RecipeRegistry;
-import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipesOK;
-import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipesOK;
+import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
+import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
 
 @Mixin(CraftingManager.class)
 public class MixinCraftingManager {
@@ -43,12 +43,12 @@ public class MixinCraftingManager {
     @SuppressWarnings("unchecked")
     private void okcore$onFindMatchingRecipe(InventoryCrafting inv, World world,
         CallbackInfoReturnable<ItemStack> cir) {
-        IRecipeType<ShapedRecipesOK> shaped = (IRecipeType<ShapedRecipesOK>) RecipeRegistry.getType(SHAPED);
+        IRecipeType<ShapedRecipe> shaped = RecipeRegistry.getType(SHAPED);
         RecipeManager.getManager()
             .getRecipeFor(shaped, inv, world)
             .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResult(inv)));
 
-        IRecipeType<ShapelessRecipesOK> shapeless = (IRecipeType<ShapelessRecipesOK>) RecipeRegistry.getType(SHAPELESS);
+        IRecipeType<ShapelessRecipe> shapeless = RecipeRegistry.getType(SHAPELESS);
         RecipeManager.getManager()
             .getRecipeFor(shapeless, inv, world)
             .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResult(inv)));
@@ -60,9 +60,9 @@ public class MixinCraftingManager {
         List<IRecipe> vanillaList = cir.getReturnValue();
         if (vanillaList == null) return;
 
-        Collection<ShapedRecipesOK> currentShaped = RecipeManager.getManager()
+        Collection<ShapedRecipe> currentShaped = RecipeManager.getManager()
             .getShapedRecipes();
-        Collection<ShapelessRecipesOK> currentShapeless = RecipeManager.getManager()
+        Collection<ShapelessRecipe> currentShapeless = RecipeManager.getManager()
             .getShapelessRecipes();
 
         boolean recipesChanged = (currentShaped != okcore$lastShapedCollection
@@ -77,7 +77,7 @@ public class MixinCraftingManager {
                     if (recipesChanged) {
                         okcore$cachedCustomRecipes = new ArrayList<>();
                         if (currentShaped != null) {
-                            for (ShapedRecipesOK recipe : currentShaped) {
+                            for (ShapedRecipe recipe : currentShaped) {
                                 if (recipe == null || recipe.getRecipeOutput() == null
                                     || recipe.getRecipeOutput()
                                         .getItem() == null)
@@ -87,7 +87,7 @@ public class MixinCraftingManager {
                         }
 
                         if (currentShapeless != null) {
-                            for (ShapelessRecipesOK recipe : currentShapeless) {
+                            for (ShapelessRecipe recipe : currentShapeless) {
                                 if (recipe == null || recipe.getRecipeOutput() == null
                                     || recipe.getRecipeOutput()
                                         .getItem() == null)

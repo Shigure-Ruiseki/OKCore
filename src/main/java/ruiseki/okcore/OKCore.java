@@ -106,7 +106,7 @@ public class OKCore extends ModBase {
         DataLoader.loadAllData();
 
         ModItems.preInit();
-        if (LibMods.Waila.isLoaded()) {
+        if (LibMods.Waila.isModLoaded()) {
             BlockProvider.init();
         }
 

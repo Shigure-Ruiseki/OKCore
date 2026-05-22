@@ -8,7 +8,7 @@ import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.IRecipeType;
 import ruiseki.okcore.recipe.RecipeRegistry;
 
-public interface IShapedRecipe<T extends IInventory> extends IRecipeOK<T> {
+public interface IShapedRecipe<C extends IInventory> extends IRecipeOK<C> {
 
     int getRecipeWidth();
 

@@ -1,6 +1,7 @@
 package ruiseki.okcore.recipe;
 
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
@@ -35,5 +36,23 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
         }
 
         return nonnulllist;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    default boolean matches(InventoryCrafting inv, World world) {
+        if (inv instanceof InventoryCrafting) {
+            return this.matches((C) inv, world);
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    default ItemStack getCraftingResult(InventoryCrafting inv) {
+        if (inv instanceof InventoryCrafting) {
+            return this.getCraftingResult((C) inv);
+        }
+        return null;
     }
 }

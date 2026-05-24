@@ -1,9 +1,5 @@
 package ruiseki.okcore.recipe;
 
-import static ruiseki.okcore.recipe.type.cooking.furnace.SmeltingType.SMELTING;
-import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
-import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.SHAPELESS;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,11 +21,10 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.recipes.RecipeHolder;
 import ruiseki.okcore.helper.CraftingHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.helper.NEIHelpers;
-import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.recipe.type.cooking.fuel.FuelRecipe;
 import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingRecipe;
+import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
+import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
 
 public class RecipeRegistry {
 
@@ -217,10 +212,6 @@ public class RecipeRegistry {
         syncMCCraftingManager();
         syncMCFurnaceRecipes();
 
-        if (LibMods.NotEnoughItems.isModLoaded() && MinecraftHelpers.isClientSide()) {
-            NEIHelpers.reloadNEIFuels();
-        }
-
         OKCore.okLog(Level.INFO, "Injected {} custom world recipes into current session.", allWorldRecipes.size());
         RECIPE_HOLDERS.clear();
     }
@@ -233,21 +224,12 @@ public class RecipeRegistry {
             .getRecipeList();
         if (mcRecipeList == null) return;
 
-        IRecipeType<?> shapedType = RecipeRegistry.getType(SHAPED);
-        IRecipeType<?> shapelessType = RecipeRegistry.getType(SHAPELESS);
-
         mcRecipeList.removeIf(obj -> obj instanceof IRecipeOK);
 
         if (targetRecipes == null || targetRecipes.isEmpty()) return;
         for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe != null) {
-                IRecipeType<?> type = recipe.getType();
-                if (type == shapedType || type == shapelessType) {
-                    OKCore.okLog(
-                        recipe.getRecipeOutput()
-                            .toString());
-                    mcRecipeList.add(recipe);
-                }
+            if (recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe) {
+                mcRecipeList.add(recipe);
             }
         }
     }
@@ -280,9 +262,8 @@ public class RecipeRegistry {
 
         if (targetRecipes == null || targetRecipes.isEmpty()) return;
 
-        IRecipeType<?> smeltingType = RecipeRegistry.getType(SMELTING);
         for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe instanceof SmeltingRecipe customRecipe && recipe.getType() == smeltingType) {
+            if (recipe instanceof SmeltingRecipe customRecipe) {
                 ItemStack customOutput = customRecipe.getRecipeOutput();
                 float customExp = customRecipe.getExperience();
 

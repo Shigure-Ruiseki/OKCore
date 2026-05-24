@@ -30,12 +30,12 @@ public abstract class RecipeDataBase implements IRecipeOK<IInventory> {
     }
 
     @Override
-    public boolean matches(IInventory crafting, World world) {
+    public boolean matchesOK(IInventory crafting, World world) {
         return false;
     }
 
     @Override
-    public ItemStack getCraftingResult(IInventory crafting) {
+    public ItemStack getCraftingResultOK(IInventory crafting) {
         return null;
     }
 

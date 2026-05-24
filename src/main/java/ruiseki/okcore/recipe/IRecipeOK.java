@@ -17,9 +17,9 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
 
     IRecipeType<?> getType();
 
-    boolean matches(C inventory, World world);
+    boolean matchesOK(C inventory, World world);
 
-    ItemStack getCraftingResult(C inventory);
+    ItemStack getCraftingResultOK(C inventory);
 
     default NonNullList<ItemStack> getRemainingItems(C inventory) {
         NonNullList<ItemStack> nonnulllist = NonNullList.withSize(inventory.getSizeInventory(), null);
@@ -41,18 +41,20 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
     @SuppressWarnings("unchecked")
     @Override
     default boolean matches(InventoryCrafting inv, World world) {
-        if (inv instanceof InventoryCrafting) {
-            return this.matches((C) inv, world);
+        try {
+            return this.matchesOK((C) inv, world);
+        } catch (ClassCastException e) {
+            return false;
         }
-        return false;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     default ItemStack getCraftingResult(InventoryCrafting inv) {
-        if (inv instanceof InventoryCrafting) {
-            return this.getCraftingResult((C) inv);
+        try {
+            return this.getCraftingResultOK((C) inv);
+        } catch (ClassCastException e) {
+            return null;
         }
-        return null;
     }
 }

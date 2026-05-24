@@ -49,12 +49,12 @@ public class ShapelessRecipe implements IShapelessRecipe<InventoryCrafting> {
     }
 
     @Override
-    public ItemStack getCraftingResult(InventoryCrafting inv) {
+    public ItemStack getCraftingResultOK(InventoryCrafting inv) {
         return this.output.copy();
     }
 
     @Override
-    public boolean matches(InventoryCrafting inv, World world) {
+    public boolean matchesOK(InventoryCrafting inv, World world) {
         List<IngredientMaterial> requiredIngredients = new ArrayList<>(this.ingredients);
 
         for (int slotIndex = 0; slotIndex < inv.getSizeInventory(); slotIndex++) {

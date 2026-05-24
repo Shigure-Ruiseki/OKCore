@@ -31,7 +31,7 @@ public abstract class AbstractCookingRecipe implements IRecipeOK<IInventory> {
     }
 
     @Override
-    public boolean matches(IInventory inventory, World world) {
+    public boolean matchesOK(IInventory inventory, World world) {
         if (inventory == null || inventory.getSizeInventory() == 0) {
             return false;
         }
@@ -49,7 +49,7 @@ public abstract class AbstractCookingRecipe implements IRecipeOK<IInventory> {
     }
 
     @Override
-    public ItemStack getCraftingResult(IInventory inventory) {
+    public ItemStack getCraftingResultOK(IInventory inventory) {
         return this.result.copy();
     }
 

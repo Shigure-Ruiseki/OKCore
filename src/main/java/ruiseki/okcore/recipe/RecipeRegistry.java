@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe;
 
-import static ruiseki.okcore.recipe.type.cooking.fuel.FuelType.FUEL;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +16,7 @@ import cpw.mods.fml.common.discovery.ASMDataTable;
 import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.recipes.RecipeHolder;
+import ruiseki.okcore.helper.CraftingHelpers;
 import ruiseki.okcore.recipe.type.cooking.fuel.FuelRecipe;
 
 public class RecipeRegistry {
@@ -175,9 +174,7 @@ public class RecipeRegistry {
                     return 0;
                 }
 
-                IRecipeType<?> type = RecipeRegistry.getType(FUEL);
-                for (IRecipeOK<?> recipe : RecipeManager.getManager()
-                    .getRecipesByType(type)) {
+                for (IRecipeOK<?> recipe : CraftingHelpers.getFuelRecipes()) {
                     if (recipe instanceof FuelRecipe fuelRecipe) {
                         if (fuelRecipe.matchesFuel(fuel)) {
                             return fuelRecipe.getBurnTime();

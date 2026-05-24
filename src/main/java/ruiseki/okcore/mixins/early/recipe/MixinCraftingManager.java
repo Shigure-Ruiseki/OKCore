@@ -4,8 +4,11 @@ import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED
 import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.SHAPELESS;
 
 import java.util.AbstractList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -18,11 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import ruiseki.okcore.recipe.IRecipeType;
-import ruiseki.okcore.recipe.RecipeManager;
-import ruiseki.okcore.recipe.RecipeRegistry;
-import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
-import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
+import ruiseki.okcore.helper.CraftingHelpers;
 
 @Mixin(CraftingManager.class)
 public class MixinCraftingManager {
@@ -33,17 +32,13 @@ public class MixinCraftingManager {
         CallbackInfoReturnable<ItemStack> cir) {
         if (cir.getReturnValue() != null) return;
 
-        IRecipeType<ShapedRecipe> shaped = RecipeRegistry.getType(SHAPED);
-        RecipeManager.getManager()
-            .getRecipeFor(shaped, inv, world)
-            .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResult(inv)));
+        CraftingHelpers.getRecipeFor(SHAPED, inv, world)
+            .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResultOK(inv)));
 
         if (cir.getReturnValue() != null) return;
 
-        IRecipeType<ShapelessRecipe> shapeless = RecipeRegistry.getType(SHAPELESS);
-        RecipeManager.getManager()
-            .getRecipeFor(shapeless, inv, world)
-            .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResult(inv)));
+        CraftingHelpers.getRecipeFor(SHAPELESS, inv, world)
+            .ifPresent(recipe -> cir.setReturnValue(recipe.getCraftingResultOK(inv)));
     }
 
     @Inject(method = "getRecipeList", at = @At("RETURN"), cancellable = true)
@@ -53,43 +48,23 @@ public class MixinCraftingManager {
 
         cir.setReturnValue(new AbstractList<IRecipe>() {
 
-            private Object[] getCustomRecipes() {
-                Collection<ShapedRecipe> currentShaped = RecipeManager.getManager()
-                    .getShapedRecipes();
-                Collection<ShapelessRecipe> currentShapeless = RecipeManager.getManager()
-                    .getShapelessRecipes();
+            private List<IRecipe> getCustomRecipes() {
+                var shaped = CraftingHelpers.getShapedRecipes();
+                var shapeless = CraftingHelpers.getShapelessRecipes();
 
-                int size = (currentShaped != null ? currentShaped.size() : 0)
-                    + (currentShapeless != null ? currentShapeless.size() : 0);
-                if (size == 0) return new Object[0];
-
-                Object[] result = new Object[size];
-                int idx = 0;
-                if (currentShaped != null) {
-                    for (ShapedRecipe r : currentShaped) {
-                        if (r != null && r.getRecipeOutput() != null
-                            && r.getRecipeOutput()
-                                .getItem() != null) {
-                            result[idx++] = r;
-                        }
-                    }
-                }
-                if (currentShapeless != null) {
-                    for (ShapelessRecipe r : currentShapeless) {
-                        if (r != null && r.getRecipeOutput() != null
-                            && r.getRecipeOutput()
-                                .getItem() != null) {
-                            result[idx++] = r;
-                        }
-                    }
+                if ((shaped == null || shaped.isEmpty()) && (shapeless == null || shapeless.isEmpty())) {
+                    return Collections.emptyList();
                 }
 
-                if (idx < size) {
-                    Object[] trimmed = new Object[idx];
-                    System.arraycopy(result, 0, trimmed, 0, idx);
-                    return trimmed;
-                }
-                return result;
+                return Stream
+                    .concat(
+                        shaped != null ? shaped.stream() : Stream.empty(),
+                        shapeless != null ? shapeless.stream() : Stream.empty())
+                    .filter(Objects::nonNull)
+                    .filter(
+                        recipe -> recipe.getRecipeOutput() != null && recipe.getRecipeOutput()
+                            .getItem() != null)
+                    .collect(Collectors.toList());
             }
 
             @Override
@@ -98,18 +73,17 @@ public class MixinCraftingManager {
                 if (index < vanillaSize) {
                     return vanillaList.get(index);
                 }
-
-                Object[] custom = getCustomRecipes();
+                List<IRecipe> custom = getCustomRecipes();
                 int customIndex = index - vanillaSize;
-                if (customIndex < custom.length) {
-                    return (IRecipe) custom[customIndex];
+                if (customIndex < custom.size()) {
+                    return custom.get(customIndex);
                 }
                 throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
             }
 
             @Override
             public int size() {
-                return vanillaList.size() + getCustomRecipes().length;
+                return vanillaList.size() + getCustomRecipes().size();
             }
 
             @Override

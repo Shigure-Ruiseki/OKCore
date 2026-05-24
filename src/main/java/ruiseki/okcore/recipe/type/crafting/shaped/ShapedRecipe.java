@@ -79,7 +79,7 @@ public class ShapedRecipe implements IShapedRecipe<InventoryCrafting> {
     }
 
     @Override
-    public ItemStack getCraftingResult(InventoryCrafting inventory) {
+    public ItemStack getCraftingResultOK(InventoryCrafting inventory) {
         return this.output.copy();
     }
 
@@ -92,7 +92,7 @@ public class ShapedRecipe implements IShapedRecipe<InventoryCrafting> {
     }
 
     @Override
-    public boolean matches(InventoryCrafting inventory, World world) {
+    public boolean matchesOK(InventoryCrafting inventory, World world) {
         for (int x = 0; x <= MAX_CRAFT_GRID_WIDTH - width; x++) {
             for (int y = 0; y <= MAX_CRAFT_GRID_HEIGHT - height; ++y) {
                 if (checkMatch(inventory, x, y, false)) {

@@ -25,6 +25,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.recipes.RecipeHolder;
 import ruiseki.okcore.helper.CraftingHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.NEIHelpers;
 import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.recipe.type.cooking.fuel.FuelRecipe;
@@ -216,7 +217,7 @@ public class RecipeRegistry {
         syncMCCraftingManager(allWorldRecipes);
         syncMCFurnaceRecipes(allWorldRecipes);
 
-        if (LibMods.NotEnoughItems.isModLoaded()) {
+        if (LibMods.NotEnoughItems.isModLoaded() && MinecraftHelpers.isClientSide()) {
             NEIHelpers.reloadNEIFuels();
         }
 

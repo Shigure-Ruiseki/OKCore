@@ -16,6 +16,8 @@ import net.minecraftforge.fluids.IFluidContainerItem;
 
 import org.apache.logging.log4j.Level;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 
 public class NEIHelpers {
@@ -69,6 +71,7 @@ public class NEIHelpers {
         return fluidStack1.getFluid() == fluidStack2.getFluid();
     }
 
+    @SideOnly(Side.CLIENT)
     public static void reloadNEIFuels() {
         try {
             Class.forName("codechicken.nei.recipe.FurnaceRecipeHandler");

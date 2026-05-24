@@ -37,7 +37,6 @@ public class RecipeRegistry {
     private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
     private static final Map<ResourceLocation, RecipeHolder> RECIPE_HOLDERS = new HashMap<>();
 
-    // Bản đồ bắc cầu lưu trữ: ItemStack đầu ra -> Đối tượng công thức Smelting tùy chỉnh của bạn
     private static final Map<ItemStack, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
 
     public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(IRecipeType<T> recipeType) {

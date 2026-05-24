@@ -37,6 +37,7 @@ public class RecipeRegistry {
     private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
     private static final Map<ResourceLocation, RecipeHolder> RECIPE_HOLDERS = new HashMap<>();
 
+    // Bản đồ bắc cầu lưu trữ: ItemStack đầu ra -> Đối tượng công thức Smelting tùy chỉnh của bạn
     private static final Map<ItemStack, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
 
     public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(IRecipeType<T> recipeType) {
@@ -176,8 +177,8 @@ public class RecipeRegistry {
 
         RecipeManager.setupGlobalRecipes(allBaseRecipes);
 
-        syncMCCraftingManager(allBaseRecipes);
-        syncMCFurnaceRecipes(allBaseRecipes);
+        syncMCCraftingManager();
+        syncMCFurnaceRecipes();
 
         GameRegistry.registerFuelHandler(new IFuelHandler() {
 
@@ -214,8 +215,8 @@ public class RecipeRegistry {
         RecipeManager.getManager()
             .addWorldRecipes(allWorldRecipes);
 
-        syncMCCraftingManager(allWorldRecipes);
-        syncMCFurnaceRecipes(allWorldRecipes);
+        syncMCCraftingManager();
+        syncMCFurnaceRecipes();
 
         if (LibMods.NotEnoughItems.isModLoaded() && MinecraftHelpers.isClientSide()) {
             NEIHelpers.reloadNEIFuels();
@@ -226,95 +227,63 @@ public class RecipeRegistry {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static void syncMCCraftingManager(List<IRecipeOK<?>> targetRecipes) {
-        if (targetRecipes == null || targetRecipes.isEmpty()) return;
-
+    public static void syncMCCraftingManager() {
+        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
+            .getRecipes();
         List mcRecipeList = CraftingManager.getInstance()
             .getRecipeList();
-        if (mcRecipeList == null || mcRecipeList.isEmpty()) return;
+        if (mcRecipeList == null) return;
 
         IRecipeType<?> shapedType = RecipeRegistry.getType(SHAPED);
         IRecipeType<?> shapelessType = RecipeRegistry.getType(SHAPELESS);
 
-        Map<ResourceLocation, IRecipeOK<?>> incomingMap = new HashMap<>(targetRecipes.size());
+        mcRecipeList.removeIf(obj -> obj instanceof IRecipeOK);
+
+        if (targetRecipes == null || targetRecipes.isEmpty()) return;
         for (IRecipeOK<?> recipe : targetRecipes) {
             if (recipe != null) {
                 IRecipeType<?> type = recipe.getType();
                 if (type == shapedType || type == shapelessType) {
-                    incomingMap.put(recipe.getId(), recipe);
+                    OKCore.okLog(
+                        recipe.getRecipeOutput()
+                            .toString());
+                    mcRecipeList.add(recipe);
                 }
             }
         }
-
-        if (incomingMap.isEmpty()) return;
-
-        List toRemove = new ArrayList<>(Math.min(32, incomingMap.size()));
-        for (Object obj : mcRecipeList) {
-            if (obj instanceof IRecipeOK<?>mcRecipe) {
-                ResourceLocation mcId = mcRecipe.getId();
-                if (mcId != null && incomingMap.containsKey(mcId)) {
-                    IRecipeOK<?> incomingRecipe = incomingMap.get(mcId);
-                    if (mcRecipe.equals(incomingRecipe)) {
-                        incomingMap.remove(mcId);
-                    } else {
-                        toRemove.add(obj);
-                    }
-                }
-            }
-        }
-
-        if (!toRemove.isEmpty()) mcRecipeList.removeAll(toRemove);
-        if (!incomingMap.isEmpty()) mcRecipeList.addAll(incomingMap.values());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static void syncMCFurnaceRecipes(List<IRecipeOK<?>> targetRecipes) {
-        if (targetRecipes == null || targetRecipes.isEmpty()) return;
-
+    public static void syncMCFurnaceRecipes() {
+        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
+            .getRecipes();
         FurnaceRecipes furnaceInstance = FurnaceRecipes.smelting();
         Map mcSmeltingList = furnaceInstance.getSmeltingList();
-
         Map mcExperienceList = furnaceInstance.experienceList;
 
         if (mcSmeltingList == null) return;
-
-        IRecipeType<?> smeltingType = RecipeRegistry.getType(SMELTING);
-
-        Map<ResourceLocation, SmeltingRecipe> incomingMap = new HashMap<>();
-        for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe instanceof SmeltingRecipe smeltingRecipe && recipe.getType() == smeltingType) {
-                incomingMap.put(recipe.getId(), smeltingRecipe);
-            }
-        }
-
-        if (incomingMap.isEmpty()) return;
-
-        Iterator<Map.Entry> iterator = mcSmeltingList.entrySet()
-            .iterator();
-        while (iterator.hasNext()) {
-            Map.Entry entry = iterator.next();
-            ItemStack mcOutputVal = (ItemStack) entry.getValue();
-            SmeltingRecipe mcRecipe = FURNACE_BRIDGE_MAP.get(mcOutputVal);
-
-            if (mcRecipe != null) {
-                ResourceLocation mcId = mcRecipe.getId();
-                if (mcId != null && incomingMap.containsKey(mcId)) {
-                    SmeltingRecipe incomingRecipe = incomingMap.get(mcId);
-                    if (mcRecipe.equals(incomingRecipe)) {
-                        incomingMap.remove(mcId);
-                    } else {
-                        iterator.remove();
-                        if (mcExperienceList != null) {
-                            mcExperienceList.remove(mcOutputVal);
-                        }
-                        FURNACE_BRIDGE_MAP.remove(mcOutputVal);
-                    }
+        for (ItemStack registeredOutput : FURNACE_BRIDGE_MAP.keySet()) {
+            Iterator<Map.Entry> smeltingIterator = mcSmeltingList.entrySet()
+                .iterator();
+            while (smeltingIterator.hasNext()) {
+                Map.Entry entry = smeltingIterator.next();
+                if (entry.getValue() == registeredOutput) {
+                    smeltingIterator.remove();
                 }
             }
+
+            if (mcExperienceList != null) {
+                mcExperienceList.remove(registeredOutput);
+            }
         }
 
-        if (!incomingMap.isEmpty()) {
-            for (SmeltingRecipe customRecipe : incomingMap.values()) {
+        FURNACE_BRIDGE_MAP.clear();
+
+        if (targetRecipes == null || targetRecipes.isEmpty()) return;
+
+        IRecipeType<?> smeltingType = RecipeRegistry.getType(SMELTING);
+        for (IRecipeOK<?> recipe : targetRecipes) {
+            if (recipe instanceof SmeltingRecipe customRecipe && recipe.getType() == smeltingType) {
                 ItemStack customOutput = customRecipe.getRecipeOutput();
                 float customExp = customRecipe.getExperience();
 

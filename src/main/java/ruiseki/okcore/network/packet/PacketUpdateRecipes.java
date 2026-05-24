@@ -15,6 +15,8 @@ import org.apache.logging.log4j.Level;
 import com.google.common.collect.Lists;
 
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.helper.NEIHelpers;
+import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.recipe.IRecipeOK;
@@ -80,6 +82,11 @@ public class PacketUpdateRecipes extends PacketCodec {
     public void actionClient(World world, EntityPlayer player) {
         RecipeManager.getManager()
             .replaceRecipes(this.recipes);
+        RecipeRegistry.syncMCCraftingManager();
+        RecipeRegistry.syncMCFurnaceRecipes();
+        if (LibMods.NotEnoughItems.isModLoaded()) {
+            NEIHelpers.reloadNEIFuels();
+        }
     }
 
     @Override

@@ -1,7 +1,5 @@
 package ruiseki.okcore;
 
-import java.io.File;
-
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.oredict.RecipeSorter;
 
@@ -141,17 +139,14 @@ public class OKCore extends ModBase {
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
 
         RecipeManager.validateManager();
-        DataLoader.loadWorldData(
-            new File(
-                event.getServer()
-                    .getFolderName()));
-        RecipeRegistry.processWorldHolders();
     }
 
     @Override
     @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent event) {
         super.onServerStarting(event);
+        DataLoader.loadWorldData(event.getServer());
+        RecipeRegistry.processWorldHolders();
     }
 
     @Override

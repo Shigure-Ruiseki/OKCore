@@ -32,7 +32,7 @@ public class RecipeLifecycleEvent {
     public void onReload(DataEvent.Reload event) {
         RecipeManager.getManager()
             .loadFromBase();
-        DataLoader.loadWorldData(event.getWorldDir());
+        DataLoader.loadWorldData(event.getServer());
         RecipeRegistry.processWorldHolders();
         PacketUpdateRecipes packet = new PacketUpdateRecipes(
             RecipeManager.getManager()

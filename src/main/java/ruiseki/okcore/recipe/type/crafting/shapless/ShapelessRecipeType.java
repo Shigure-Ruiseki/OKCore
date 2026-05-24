@@ -6,7 +6,7 @@ import ruiseki.okcore.recipe.IRecipeType;
 import ruiseki.okcore.recipe.RecipeData;
 
 @RecipeData
-public class ShapelessRecipeType implements IRecipeType<ShapelessRecipesOK> {
+public class ShapelessRecipeType implements IRecipeType<ShapelessRecipe> {
 
     public static final String SHAPELESS = "minecraft:crafting_shapeless";
 
@@ -26,12 +26,12 @@ public class ShapelessRecipeType implements IRecipeType<ShapelessRecipesOK> {
     }
 
     @Override
-    public Class<ShapelessRecipesOK> getRecipeClass() {
-        return ShapelessRecipesOK.class;
+    public Class<ShapelessRecipe> getRecipeClass() {
+        return ShapelessRecipe.class;
     }
 
     @Override
     public String getSorterDependencies() {
-        return "after:forge:shapeless";
+        return "after:forge:shapelessore";
     }
 }

@@ -8,7 +8,7 @@ import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.IRecipeType;
 import ruiseki.okcore.recipe.RecipeRegistry;
 
-public interface IShapelessRecipe<T extends IInventory> extends IRecipeOK<T> {
+public interface IShapelessRecipe<C extends IInventory> extends IRecipeOK<C> {
 
     @Override
     default IRecipeType<?> getType() {

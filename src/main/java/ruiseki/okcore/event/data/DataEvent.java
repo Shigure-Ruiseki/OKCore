@@ -6,9 +6,9 @@ import net.minecraft.server.MinecraftServer;
 
 import cpw.mods.fml.common.eventhandler.Event;
 
-public class OKDataEvent extends Event {
+public class DataEvent extends Event {
 
-    public static class Reload extends OKDataEvent {
+    public static class Reload extends DataEvent {
 
         private final MinecraftServer server;
         private final File worldDir;

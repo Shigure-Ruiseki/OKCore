@@ -23,7 +23,7 @@ public interface IRecipeType<T extends IRecipeOK<?>> {
     }
 
     default String getSorterDependencies() {
-        return "after:minecraft:shapeless";
+        return "after:forge:shapelessore";
     }
 
     default Class<T> getRecipeClass() {
@@ -31,6 +31,6 @@ public interface IRecipeType<T extends IRecipeOK<?>> {
     }
 
     default <C extends IInventory> Optional<T> tryMatch(IRecipeOK<C> recipeOK, World world, C inventory) {
-        return recipeOK.matches(inventory, world) ? Optional.of((T) recipeOK) : Optional.empty();
+        return recipeOK.matchesOK(inventory, world) ? Optional.of((T) recipeOK) : Optional.empty();
     }
 }

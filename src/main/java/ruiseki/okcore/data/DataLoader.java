@@ -16,10 +16,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import ruiseki.okcore.OKCore;
@@ -91,41 +93,92 @@ public class DataLoader {
         }
     }
 
-    public static void loadWorldData(File worldDir) {
-        File datapacksDir = new File(worldDir, "datapacks");
-        if (!datapacksDir.exists() || !datapacksDir.isDirectory()) return;
+    public static void loadWorldData(MinecraftServer server) {
+        if (server == null) {
+            OKCore.okLog(Level.WARN, "DataLoader: loadWorldData called with null server instance!");
+            return;
+        }
+
+        String folderName = server.getFolderName();
+        File realWorldDir;
+
+        if (server.isDedicatedServer()) {
+            realWorldDir = new File(folderName);
+            OKCore.okLog(
+                Level.INFO,
+                "DataLoader: Dedicated Server detected. Base path: {}",
+                realWorldDir.getAbsolutePath());
+        } else {
+            File savesDir = FMLCommonHandler.instance()
+                .getSavesDirectory();
+            realWorldDir = new File(savesDir, folderName);
+            OKCore.okLog(
+                Level.INFO,
+                "DataLoader: Integrated Server detected. Saves path: {}, Target: {}",
+                savesDir.getAbsolutePath(),
+                realWorldDir.getAbsolutePath());
+        }
+
+        File datapacksDir = new File(realWorldDir, "datapacks");
+        OKCore.okLog(Level.INFO, "DataLoader: Searching for datapacks at: {}", datapacksDir.getAbsolutePath());
+
+        if (!datapacksDir.exists()) {
+            boolean created = datapacksDir.mkdirs();
+            if (created) {
+                OKCore.okLog(Level.INFO, "DataLoader: Created missing datapacks directory.");
+            } else {
+                OKCore.okLog(Level.ERROR, "DataLoader: Failed to create missing datapacks directory!");
+                return;
+            }
+        }
 
         File[] packs = datapacksDir.listFiles();
-        if (packs == null) return;
+        if (packs == null) {
+            OKCore.okLog(Level.WARN, "DataLoader: Datapacks directory is empty or inaccessible.");
+            return;
+        }
 
-        OKCore.okLog(Level.INFO, "Scanning world data in: {}", datapacksDir.getAbsolutePath());
+        OKCore.okLog(Level.INFO, "DataLoader: Found {} potential datapack folders.", packs.length);
 
         for (File packDir : packs) {
-            if (!packDir.isDirectory()) continue;
-
-            File dataDir = new File(packDir, "data");
-            if (!dataDir.exists() || !dataDir.isDirectory()) {
+            if (!packDir.isDirectory()) {
+                OKCore.okLog(Level.DEBUG, "DataLoader: Skipping file (not a directory): {}", packDir.getName());
                 continue;
             }
 
+            File dataDir = new File(packDir, "data");
             File packMcMeta = new File(packDir, "pack.mcmeta");
-            if (!packMcMeta.exists()) {
+
+            if (!dataDir.exists() || !dataDir.isDirectory()) {
                 OKCore.okLog(
-                    Level.WARN,
-                    "Datapack '{}' contains a 'data' folder but is missing 'pack.mcmeta'. Skipping.",
+                    Level.DEBUG,
+                    "DataLoader: Skipping folder '{}' (missing 'data' directory).",
                     packDir.getName());
                 continue;
             }
 
+            if (!packMcMeta.exists()) {
+                OKCore
+                    .okLog(Level.WARN, "DataLoader: Skipping folder '{}' (missing 'pack.mcmeta').", packDir.getName());
+                continue;
+            }
+
+            OKCore
+                .okLog(Level.INFO, "DataLoader: Successfully validated and scanning datapack: '{}'", packDir.getName());
+
             try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
-                final Path rootPath = datapacksDir.toPath();
+                final Path rootPath = packDir.toPath(); // Đã sửa rootPath thành packDir để Regex chạy đúng
                 stream.filter(p -> !Files.isDirectory(p))
                     .filter(
                         p -> p.toString()
                             .endsWith(".json"))
-                    .forEach(p -> processStream(p, rootPath, true));
+                    .forEach(p -> {
+                        OKCore.okLog(Level.DEBUG, "DataLoader: Processing file: {}", p.getFileName());
+                        processStream(p, rootPath, true);
+                    });
             } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Critical error while scanning datapack: " + packDir.getName(), e);
+                OKCore
+                    .okLog(Level.ERROR, "DataLoader: Critical error while scanning datapack: " + packDir.getName(), e);
             }
         }
     }

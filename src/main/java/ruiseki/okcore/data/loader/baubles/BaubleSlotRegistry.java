@@ -22,7 +22,7 @@ public class BaubleSlotRegistry implements IInitListener {
     @Override
     public void onInit(Step step) {
         if (step != Step.PREINIT) return;
-        if (!LibMods.BaublesExpanded.isLoaded()) {
+        if (!LibMods.BaublesExpanded.isModLoaded()) {
             materialsQueue.clear();
             return;
         }

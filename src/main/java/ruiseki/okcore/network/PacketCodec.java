@@ -26,6 +26,7 @@ import com.google.common.collect.Maps;
 
 import io.netty.handler.codec.EncoderException;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.BlockStack;
 import ruiseki.okcore.datastructure.SingleCache;
 
 /**
@@ -41,13 +42,17 @@ public abstract class PacketCodec extends PacketBase {
         codecActions.put(ResourceLocation.class, new ICodecAction() {
 
             @Override
-            public void encode(Object object, ExtendedBuffer output) {
-                output.writeString(object.toString());
+            public void encode(Object object, ExtendedBuffer output) throws IOException {
+                output.writeResourceLocation((ResourceLocation) object);
             }
 
             @Override
             public Object decode(ExtendedBuffer input) {
-                return new ResourceLocation(input.readString());
+                try {
+                    return input.readResourceLocation();
+                } catch (IOException ioexception) {
+                    throw new EncoderException(ioexception);
+                }
             }
         });
 
@@ -248,17 +253,34 @@ public abstract class PacketCodec extends PacketBase {
             }
         });
 
-        codecActions.put(FluidStack.class, new ICodecAction() {
+        codecActions.put(BlockStack.class, new ICodecAction() {
 
             @Override
             public void encode(Object object, ExtendedBuffer output) throws IOException {
-                output.writeNBTTagCompoundToBuffer(((FluidStack) object).writeToNBT(new NBTTagCompound()));
+                output.writeBlockStack((BlockStack) object);
             }
 
             @Override
             public Object decode(ExtendedBuffer input) {
                 try {
-                    return FluidStack.loadFluidStackFromNBT(input.readNBTTagCompoundFromBuffer());
+                    return input.readBlockStack();
+                } catch (IOException ioexception) {
+                    throw new EncoderException(ioexception);
+                }
+            }
+        });
+
+        codecActions.put(FluidStack.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) throws IOException {
+                output.writeFluidStack((FluidStack) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                try {
+                    return input.readFluidStack();
                 } catch (IOException ioexception) {
                     throw new EncoderException(ioexception);
                 }

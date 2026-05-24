@@ -1,13 +1,9 @@
 package ruiseki.okcore.recipe;
 
-import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
-import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.SHAPELESS;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,8 +22,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipesOK;
-import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipesOK;
 
 public class RecipeManager {
 
@@ -55,48 +49,39 @@ public class RecipeManager {
         instance = null;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Collection<ShapedRecipesOK> getShapedRecipes() {
-        IRecipeType<?> type = RecipeRegistry.getType(SHAPED);
+    @SuppressWarnings("unchecked")
+    public <R extends IRecipeOK<?>> Collection<R> getRecipesByType(IRecipeType<R> type) {
         if (type == null) return Collections.emptyList();
-        Map<ResourceLocation, IRecipeOK<?>> map = this.recipes.get(type);
-        if (map == null || map.isEmpty()) return Collections.emptyList();
-        return (Collection) map.values();
+        Map<ResourceLocation, ?> rawMap = this.recipes.get(type);
+        if (rawMap == null || rawMap.isEmpty()) return Collections.emptyList();
+        return ((Map<ResourceLocation, R>) rawMap).values();
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Collection<ShapelessRecipesOK> getShapelessRecipes() {
-        IRecipeType<?> type = RecipeRegistry.getType(SHAPELESS);
-        if (type == null) return Collections.emptyList();
-        Map<ResourceLocation, IRecipeOK<?>> map = this.recipes.get(type);
-        if (map == null || map.isEmpty()) return Collections.emptyList();
-        return (Collection) map.values();
+    public Optional<? extends IRecipeOK<?>> getRecipesByKey(ResourceLocation location) {
+        if (location == null) return Optional.empty();
+        return this.recipes.values()
+            .stream()
+            .map(typeMap -> typeMap.get(location))
+            .filter(Objects::nonNull)
+            .findFirst();
     }
 
     public <C extends IInventory, T extends IRecipeOK<C>> Optional<T> getRecipeFor(IRecipeType<T> type, C inventory,
         World world) {
-        return this.byType(type)
-            .values()
+        return this.getRecipesByType(type)
             .stream()
-            .flatMap((recipeOK) -> { return Helpers.toStream(type.tryMatch(recipeOK, world, inventory)); })
+            .map(recipe -> (T) recipe)
+            .flatMap(recipeOK -> Helpers.toStream(type.tryMatch(recipeOK, world, inventory)))
             .findFirst();
     }
 
-    public <C extends IInventory, T extends IRecipeOK<C>> List<T> getAllRecipesFor(IRecipeType<T> type) {
-        return this.byType(type)
-            .values()
-            .stream()
-            .map((recipeOK) -> { return (T) recipeOK; })
-            .collect(Collectors.toList());
-    }
-
-    public <C extends IInventory, T extends IRecipeOK<C>> List<T> getRecipesFor(IRecipeType<T> type, C inventory,
+    public <C extends IInventory, T extends IRecipeOK<C>> Collection<T> getRecipesFor(IRecipeType<T> type, C inventory,
         World world) {
-        return this.byType(type)
-            .values()
+        return this.getRecipesByType(type)
             .stream()
-            .flatMap((p_215380_3_) -> { return Helpers.toStream(type.tryMatch(p_215380_3_, world, inventory)); })
-            .sorted(Comparator.comparing((recipe) -> {
+            .map(recipe -> (T) recipe)
+            .flatMap(recipeOK -> Helpers.toStream(type.tryMatch(recipeOK, world, inventory)))
+            .sorted(Comparator.comparing(recipe -> {
                 ItemStack output = recipe.getRecipeOutput();
                 if (output == null || output.getItem() == null) return "";
                 return output.getItem()
@@ -105,44 +90,26 @@ public class RecipeManager {
             .collect(Collectors.toList());
     }
 
-    private <C extends IInventory, T extends IRecipeOK<C>> Map<ResourceLocation, IRecipeOK<C>> byType(
-        IRecipeType<T> type) {
-        return (Map) this.recipes.getOrDefault(type, Collections.emptyMap());
-    }
-
     public <C extends IInventory, T extends IRecipeOK<C>> NonNullList<ItemStack> getRemainingItemsFor(
         IRecipeType<T> type, C inventory, World world) {
-        Optional<T> optional = this.getRecipeFor(type, inventory, world);
-        if (optional.isPresent()) {
-            return optional.get()
-                .getRemainingItems(inventory);
-        } else {
-            NonNullList<ItemStack> nonnulllist = NonNullList.withSize(inventory.getSizeInventory(), null);
 
-            for (int i = 0; i < nonnulllist.size(); ++i) {
-                nonnulllist.set(i, inventory.getStackInSlot(i));
-            }
-
-            return nonnulllist;
-        }
-    }
-
-    public Optional<? extends IRecipeOK<?>> byKey(ResourceLocation location) {
-        return this.recipes.values()
-            .stream()
-            .map((p_215368_1_) -> { return p_215368_1_.get(location); })
-            .filter(Objects::nonNull)
-            .findFirst();
+        return this.getRecipeFor(type, inventory, world)
+            .map(recipe -> recipe.getRemainingItems(inventory))
+            .orElseGet(() -> {
+                NonNullList<ItemStack> nonnulllist = NonNullList.withSize(inventory.getSizeInventory(), null);
+                for (int i = 0; i < nonnulllist.size(); ++i) {
+                    nonnulllist.set(i, inventory.getStackInSlot(i));
+                }
+                return nonnulllist;
+            });
     }
 
     public Collection<IRecipeOK<?>> getRecipes() {
         return this.recipes.values()
             .stream()
             .flatMap(
-                (p_215376_0_) -> {
-                    return p_215376_0_.values()
-                        .stream();
-                })
+                typeMap -> typeMap.values()
+                    .stream())
             .collect(Collectors.toSet());
     }
 
@@ -150,10 +117,8 @@ public class RecipeManager {
         return this.recipes.values()
             .stream()
             .flatMap(
-                (p_215375_0_) -> {
-                    return p_215375_0_.keySet()
-                        .stream();
-                });
+                typeMap -> typeMap.keySet()
+                    .stream());
     }
 
     @SideOnly(Side.CLIENT)

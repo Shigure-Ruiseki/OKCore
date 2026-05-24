@@ -1,11 +1,11 @@
 package ruiseki.okcore.recipe;
 
-import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-public abstract class RecipeDataBase implements IRecipeOK<InventoryCrafting> {
+public abstract class RecipeDataBase implements IRecipeOK<IInventory> {
 
     protected final ResourceLocation id;
 
@@ -30,12 +30,12 @@ public abstract class RecipeDataBase implements IRecipeOK<InventoryCrafting> {
     }
 
     @Override
-    public boolean matches(InventoryCrafting crafting, World world) {
+    public boolean matchesOK(IInventory crafting, World world) {
         return false;
     }
 
     @Override
-    public ItemStack getCraftingResult(InventoryCrafting crafting) {
+    public ItemStack getCraftingResultOK(IInventory crafting) {
         return null;
     }
 

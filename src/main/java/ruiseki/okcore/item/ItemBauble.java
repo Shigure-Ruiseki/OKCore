@@ -139,7 +139,7 @@ public class ItemBauble extends ItemOK implements IBaubleExpanded {
     @Override
     public void addInformation(ItemStack itemstack, EntityPlayer entityplayer, List<String> list, boolean flag) {
         super.addInformation(itemstack, entityplayer, list, flag);
-        if (GuiScreen.isShiftKeyDown() && LibMods.BaublesExpanded.isLoaded()) {
+        if (GuiScreen.isShiftKeyDown() && LibMods.BaublesExpanded.isModLoaded()) {
             String[] types = getBaubleTypes(itemstack);
             BaubleItemHelper.addSlotInformation(list, types);
         }

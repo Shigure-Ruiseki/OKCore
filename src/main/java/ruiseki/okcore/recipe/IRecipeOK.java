@@ -1,6 +1,7 @@
 package ruiseki.okcore.recipe;
 
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
@@ -16,9 +17,9 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
 
     IRecipeType<?> getType();
 
-    boolean matches(C inventory, World world);
+    boolean matchesOK(C inventory, World world);
 
-    ItemStack getCraftingResult(C inventory);
+    ItemStack getCraftingResultOK(C inventory);
 
     default NonNullList<ItemStack> getRemainingItems(C inventory) {
         NonNullList<ItemStack> nonnulllist = NonNullList.withSize(inventory.getSizeInventory(), null);
@@ -35,5 +36,25 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
         }
 
         return nonnulllist;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    default boolean matches(InventoryCrafting inv, World world) {
+        try {
+            return this.matchesOK((C) inv, world);
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    default ItemStack getCraftingResult(InventoryCrafting inv) {
+        try {
+            return this.getCraftingResultOK((C) inv);
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 }

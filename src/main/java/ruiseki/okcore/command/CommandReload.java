@@ -12,7 +12,7 @@ import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.Level;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.event.data.OKDataEvent;
+import ruiseki.okcore.event.data.DataEvent;
 import ruiseki.okcore.init.ModBase;
 
 /**
@@ -32,6 +32,11 @@ public class CommandReload extends CommandMod {
     }
 
     @Override
+    public int getRequiredPermissionLevel() {
+        return 3;
+    }
+
+    @Override
     public void processCommand(ICommandSender sender, String[] args) {
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null) {
@@ -43,7 +48,7 @@ public class CommandReload extends CommandMod {
         try {
 
             File worldDir = new File(server.getFolderName());
-            MinecraftForge.EVENT_BUS.post(new OKDataEvent.Reload(server, worldDir));
+            MinecraftForge.EVENT_BUS.post(new DataEvent.Reload(server, worldDir));
 
             sender
                 .addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "OKCore data reloaded successfully!"));

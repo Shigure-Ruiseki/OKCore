@@ -176,8 +176,6 @@ public class CommandMod implements ICommand {
         return false;
     }
 
-    // == Helper functions ==//
-
     protected String joinStrings(Iterator<String> it, String delim) {
         return joinStrings("", it, delim, "");
     }

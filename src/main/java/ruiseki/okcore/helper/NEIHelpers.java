@@ -14,6 +14,12 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fluids.IFluidContainerItem;
 
+import org.apache.logging.log4j.Level;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.OKCore;
+
 public class NEIHelpers {
 
     public static String translate(String unlocalized) {
@@ -63,5 +69,21 @@ public class NEIHelpers {
             return false;
         }
         return fluidStack1.getFluid() == fluidStack2.getFluid();
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void reloadNEIFuels() {
+        try {
+            Class.forName("codechicken.nei.recipe.FurnaceRecipeHandler");
+            codechicken.nei.recipe.FurnaceRecipeHandler.afuels = null;
+            codechicken.nei.recipe.TemplateRecipeHandler.findFuelsOnce();
+
+            OKCore.okLog(Level.INFO, "Successfully refreshed and synchronized fuel list into NEI.");
+        } catch (ClassNotFoundException e) {
+            OKCore.okLog(Level.INFO, "NEI is not installed. Skipping NEI fuel cache update.");
+        } catch (Exception e) {
+            OKCore
+                .okLog(Level.ERROR, "An unexpected error occurred while resetting NEI fuel registry: {}", e.toString());
+        }
     }
 }

@@ -34,6 +34,6 @@ public class BaublesExpandedLoader implements IDataLoader {
 
     @Override
     public boolean shouldRegister() {
-        return LibMods.BaublesExpanded.isLoaded();
+        return LibMods.BaublesExpanded.isModLoaded();
     }
 }

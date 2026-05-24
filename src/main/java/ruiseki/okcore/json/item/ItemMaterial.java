@@ -1,5 +1,6 @@
 package ruiseki.okcore.json.item;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,9 +13,9 @@ import com.google.gson.JsonObject;
 
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.helper.JsonNBTHelpers;
-import ruiseki.okcore.json.AbstractJsonMaterial;
+import ruiseki.okcore.network.ExtendedBuffer;
 
-public class ItemMaterial extends AbstractJsonMaterial {
+public class ItemMaterial extends IngredientMaterial {
 
     private Item item;
     private String name;
@@ -207,5 +208,87 @@ public class ItemMaterial extends AbstractJsonMaterial {
             return "ItemMaterial[Ore=" + ore + " x" + amount + "]";
         }
         return "ItemMaterial[Item=" + item + ":" + meta + " x" + amount + (nbt != null ? " (Has NBT)" : "") + "]";
+    }
+
+    @Override
+    public boolean test(ItemStack stack) {
+        if (stack == null || stack.getItem() == null) {
+            return false;
+        }
+
+        if (this.ore != null && !this.ore.isEmpty()) {
+            List<ItemStack> ores = OreDictionary.getOres(this.ore);
+            if (ores != null) {
+                for (ItemStack oreStack : ores) {
+                    if (OreDictionary.itemMatches(oreStack, stack, false)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        Item targetItem = getItem();
+        if (targetItem == null || stack.getItem() != targetItem) {
+            return false;
+        }
+
+        if (this.meta != OreDictionary.WILDCARD_VALUE && this.meta != stack.getItemDamage()) {
+            return false;
+        }
+
+        return this.nbt == null || this.nbt.equals(stack.getTagCompound());
+    }
+
+    @Override
+    public void toNetwork(ExtendedBuffer buffer) throws IOException {
+        boolean isOre = (this.ore != null && !this.ore.isEmpty());
+        buffer.writeBoolean(isOre);
+
+        if (isOre) {
+            buffer.writeString(this.ore);
+        } else {
+            String registryName = this.name;
+            if (registryName == null && getItem() != null) {
+                registryName = GameData.getItemRegistry()
+                    .getNameForObject(this.item);
+            }
+            buffer.writeString(registryName != null ? registryName : "");
+            buffer.writeInt(this.meta);
+        }
+
+        buffer.writeInt(this.amount);
+
+        boolean hasNbt = (this.nbt != null && !this.nbt.hasNoTags());
+        buffer.writeBoolean(hasNbt);
+        if (hasNbt) {
+            buffer.writeNBTTagCompoundToBuffer(this.nbt);
+        }
+    }
+
+    @Override
+    public void fromNetwork(ExtendedBuffer buffer) throws IOException {
+        this.item = null;
+        this.unknownProperties.clear();
+
+        boolean isOre = buffer.readBoolean();
+        if (isOre) {
+            this.ore = buffer.readString();
+            this.name = null;
+        } else {
+            this.name = buffer.readString();
+            if (this.name.isEmpty()) this.name = null;
+            this.meta = buffer.readInt();
+            this.ore = null;
+        }
+
+        this.amount = buffer.readInt();
+
+        boolean hasNbt = buffer.readBoolean();
+        if (hasNbt) {
+            this.nbt = buffer.readNBTTagCompoundFromBuffer();
+        } else {
+            this.nbt = null;
+        }
     }
 }

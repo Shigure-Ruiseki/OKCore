@@ -2,6 +2,8 @@ package ruiseki.okcore.recipe.type.cooking.fuel;
 
 import static ruiseki.okcore.recipe.type.cooking.fuel.FuelType.FUEL;
 
+import java.util.Objects;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
@@ -45,5 +47,28 @@ public class FuelRecipe extends RecipeDataBase {
         }
         return this.input.getItem() == currentInput.getItem()
             && (this.input.getItemDamage() == 32767 || this.input.getItemDamage() == currentInput.getItemDamage());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FuelRecipe that)) return false;
+        if (!Objects.equals(this.getId(), that.getId())) return false;
+        if (this.burnTime != that.burnTime) return false;
+        return ItemStack.areItemStacksEqual(this.input, that.input);
+    }
+
+    @Override
+    public int hashCode() {
+        int resultHash = Objects.hash(this.getId(), burnTime);
+        if (this.input != null && this.input.getItem() != null) {
+            resultHash = 31 * resultHash
+                + Objects.hash(this.input.getItem(), this.input.getItemDamage(), this.input.stackSize);
+            if (this.input.hasTagCompound()) {
+                resultHash = 31 * resultHash + this.input.getTagCompound()
+                    .hashCode();
+            }
+        }
+        return resultHash;
     }
 }

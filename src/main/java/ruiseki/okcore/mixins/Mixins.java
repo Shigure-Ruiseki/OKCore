@@ -9,9 +9,6 @@ import ruiseki.okcore.lib.LibMods;
 
 public enum Mixins implements IMixins {
 
-    JSON_RECIPE(new MixinBuilder("Hook Json Recipe to Vanilla")
-        .addCommonMixins("recipe.MixinCraftingManager", "recipe.MixinFurnaceRecipes")
-        .setPhase(Phase.EARLY)),
     NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")
         .addCommonMixins("recipe.MixinShapedRecipeHandler", "recipe.MixinShapelessRecipeHandler")
         .addRequiredMod(LibMods.NotEnoughItems)

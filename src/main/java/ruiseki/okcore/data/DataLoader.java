@@ -92,8 +92,29 @@ public class DataLoader {
     }
 
     public static void loadWorldData(File worldDir) {
-        File datapacksDir = new File(worldDir, "datapacks");
-        if (!datapacksDir.exists() || !datapacksDir.isDirectory()) return;
+        if (worldDir == null) {
+            OKCore.okLog(Level.ERROR, "Cannot load world data because 'worldDir' is NULL!");
+            return;
+        }
+
+        File datapacksDir;
+        if (worldDir.getAbsolutePath()
+            .contains(File.separator + "saves" + File.separator)) {
+            datapacksDir = new File(worldDir, "datapacks");
+        } else {
+            File runClientDir = worldDir.getParentFile();
+            File savesDir = new File(runClientDir, "saves");
+            File realWorldDir = new File(savesDir, worldDir.getName());
+            datapacksDir = new File(realWorldDir, "datapacks");
+        }
+
+        if (!datapacksDir.exists()) {
+            OKCore.okLog(
+                Level.WARN,
+                "Datapacks loading ABORTED: The directory does not exist at path: '{}'",
+                datapacksDir.getAbsolutePath());
+            return;
+        }
 
         File[] packs = datapacksDir.listFiles();
         if (packs == null) return;

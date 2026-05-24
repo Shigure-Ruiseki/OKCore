@@ -2,7 +2,9 @@ package ruiseki.okcore.recipe.type.crafting.shaped;
 
 import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -137,5 +139,26 @@ public class ShapedRecipe implements IShapedRecipe<InventoryCrafting> {
     public ShapedRecipe setMirrored(boolean mirror) {
         this.mirrored = mirror;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ShapedRecipe that)) return false;
+        if (!Objects.equals(this.id, that.id)) return false;
+        if (this.mirrored != that.mirrored) return false;
+        if (!ItemStack.areItemStacksEqual(this.output, that.output)) return false;
+        if (!Arrays.equals(this.pattern, that.pattern)) return false;
+        return Objects.equals(this.keyMap, that.keyMap);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(id, mirrored, keyMap);
+        result = 31 * result + java.util.Arrays.hashCode(pattern);
+        if (output != null && output.getItem() != null) {
+            result = 31 * result + Objects.hash(output.getItem(), output.getItemDamage(), output.stackSize);
+        }
+        return result;
     }
 }

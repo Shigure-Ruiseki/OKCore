@@ -5,6 +5,7 @@ import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.S
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -84,5 +85,46 @@ public class ShapelessRecipe implements IShapelessRecipe<InventoryCrafting> {
 
     public List<CompoundItemMaterial> getIngredients() {
         return this.ingredients;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ShapelessRecipe that)) return false;
+        if (!Objects.equals(this.id, that.id)) return false;
+        if (!ItemStack.areItemStacksEqual(this.output, that.output)) return false;
+        if (this.ingredients == null && that.ingredients == null) return true;
+        if (this.ingredients == null || that.ingredients == null) return false;
+        if (this.ingredients.size() != that.ingredients.size()) return false;
+        List<CompoundItemMaterial> copyIngredients = new ArrayList<>(that.ingredients);
+        for (CompoundItemMaterial ingredient : this.ingredients) {
+            if (!copyIngredients.remove(ingredient)) {
+                return false;
+            }
+        }
+
+        return copyIngredients.isEmpty();
+    }
+
+    @Override
+    public int hashCode() {
+        int ingredientsHash = 0;
+        if (this.ingredients != null) {
+            for (CompoundItemMaterial ingredient : this.ingredients) {
+                ingredientsHash += (ingredient != null ? ingredient.hashCode() : 0);
+            }
+        }
+
+        int result = Objects.hash(id, ingredientsHash);
+
+        if (output != null && output.getItem() != null) {
+            result = 31 * result + Objects.hash(output.getItem(), output.getItemDamage(), output.stackSize);
+            if (output.hasTagCompound()) {
+                result = 31 * result + output.getTagCompound()
+                    .hashCode();
+            }
+        }
+
+        return result;
     }
 }

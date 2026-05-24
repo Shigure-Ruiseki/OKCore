@@ -1,5 +1,7 @@
 package ruiseki.okcore.recipe.type.cooking;
 
+import java.util.Objects;
+
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -81,5 +83,30 @@ public abstract class AbstractCookingRecipe implements IRecipeOK<IInventory> {
         }
         return this.result.getItem() == currentInput.getItem()
             && (this.result.getItemDamage() == 32767 || this.result.getItemDamage() == currentInput.getItemDamage());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        AbstractCookingRecipe that = (AbstractCookingRecipe) o;
+        if (!Objects.equals(this.id, that.id)) return false;
+        if (this.cookingTime != that.cookingTime) return false;
+        if (Float.compare(that.experience, this.experience) != 0) return false;
+        if (!Objects.equals(this.ingredient, that.ingredient)) return false;
+        return ItemStack.areItemStacksEqual(this.result, that.result);
+    }
+
+    @Override
+    public int hashCode() {
+        int resultHash = Objects.hash(id, ingredient, experience, cookingTime);
+        if (result != null && result.getItem() != null) {
+            resultHash = 31 * resultHash + Objects.hash(result.getItem(), result.getItemDamage(), result.stackSize);
+            if (result.hasTagCompound()) {
+                resultHash = 31 * resultHash + result.getTagCompound()
+                    .hashCode();
+            }
+        }
+        return resultHash;
     }
 }

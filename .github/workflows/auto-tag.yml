@@ -24,6 +24,8 @@ jobs:
         with:
           ref: master
           fetch-depth: 0
+          # Bắt buộc tắt chức năng lưu token mặc định của checkout để dùng PAT bên dưới
+          persist-credentials: false
 
       - name: Set up Git configuration
         run: |
@@ -68,6 +70,4 @@ jobs:
       - name: Create and push tag
         run: |
           git tag ${{ steps.new_tag.outputs.tag }}
-          git push origin ${{ steps.new_tag.outputs.tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git ${{ steps.new_tag.outputs.tag }}

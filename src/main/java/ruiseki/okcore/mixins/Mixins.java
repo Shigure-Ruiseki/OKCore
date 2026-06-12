@@ -5,13 +5,11 @@ import org.jetbrains.annotations.NotNull;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
-import ruiseki.okcore.lib.LibMods;
-
 public enum Mixins implements IMixins {
 
     NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")
         .addCommonMixins("recipe.MixinShapedRecipeHandler", "recipe.MixinShapelessRecipeHandler")
-        .addRequiredMod(LibMods.NotEnoughItems)
+        .addRequiredMod(TargetMods.NotEnoughItems)
         .setPhase(Phase.LATE)),
 
     ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("capabilities.MixinItemStackCap")

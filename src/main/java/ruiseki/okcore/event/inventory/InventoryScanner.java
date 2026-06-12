@@ -159,7 +159,12 @@ public class InventoryScanner implements IInitListener {
         if (state.attachedContainer == container) return;
 
         state.detachListener();
-        container.addCraftingToCrafters(state.listener);
+        try {
+            container.addCraftingToCrafters(state.listener);
+        } catch (ClassCastException ignored) {
+            // Some mods (e.g. Railcraft) illegally cast ICrafting listeners to EntityPlayerMP;
+            // still mark attachedContainer so we don't retry every tick.
+        }
         state.attachedContainer = container;
         state.pendingScan = state.initialized;
     }

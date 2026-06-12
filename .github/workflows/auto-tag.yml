@@ -1,78 +1,78 @@
-name: Build, Test and Smart Auto Tag
+name: Auto Tag on Build and Test
 
 on:
-  pull_request:
-    branches: [ master, main ]
-    types: [ closed ]
+  workflow_run:
+    workflows: ["Build and test"]
+    types:
+      - completed
+  workflow_dispatch:
 
 jobs:
-  build-and-test:
-    if: github.event.pull_request.merged == true
-    uses: GTNewHorizons/GTNH-Actions-Workflows/.github/workflows/build-and-test.yml@master
-    secrets: inherit
-
   create-tag:
-    needs: build-and-test
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.pull_requests[0] != null &&
+        github.event.workflow_run.pull_requests[0].head.repo.full_name == github.repository
+      )
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
-      - name: Checkout code
+      - name: Checkout master branch
         uses: actions/checkout@v4
         with:
+          ref: master
           fetch-depth: 0
 
-      - name: Calculate Smart Tag via Bash
+      - name: Set up Git configuration
         run: |
-          # 1. Get the latest tag. If no tags exist, default to 1.0.0
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
-          echo "Current latest tag: $LATEST_TAG"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 2. Parse the latest tag into MAJOR.MINOR.PATCH variables
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
+      - name: Fetch all tags
+        run: git fetch --tags
 
-          # 3. Get current date and tag date using native UTC time (-u)
-          TODAY=$(date -u +%Y-%m-%d)
+      - name: Generate new tag
+        id: new_tag
+        run: |
+          current_date=$(date +"%Y-%m-%d")
+          last_tag=$(git tag --list "[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
 
-          if [ "$LATEST_TAG" = "1.0.0" ]; then
-            # If it's a fresh repo, look back 1 day in UTC to trigger new day logic
-            TAG_DATE=$(date -u -d "yesterday" +%Y-%m-%d)
+          if [ -z "$last_tag" ]; then
+            NEW_TAG="1.0.0"
           else
-            # Get strict ISO 8601 commit time from Git
-            TAG_COMMIT_TIME=$(git log -1 --format=%ai "$LATEST_TAG")
-            # Parse the Git time into native UTC date
-            TAG_DATE=$(date -u -d "$TAG_COMMIT_TIME" +%Y-%m-%d)
+            X=$(echo "$last_tag" | cut -d. -f1)
+            Y=$(echo "$last_tag" | cut -d. -f2)
+            Z=$(echo "$last_tag" | cut -d. -f3)
+
+            tag_date=$(git log -1 --format=%ai "$last_tag" | cut -d' ' -f1)
+
+            if [ "$current_date" = "$tag_date" ]; then
+              Z=$((Z + 1))
+              if [ $Z -gt 6 ]; then
+                Z=0
+                Y=$((Y + 1))
+              fi
+            else
+              Y=$((Y + 1))
+              Z=0
+              if [ $Y -gt 6 ]; then
+                Y=0
+                Z=0
+                X=$((X + 1))
+              fi
+            fi
+
+            NEW_TAG="${X}.${Y}.${Z}"
           fi
 
-          echo "Today's date (UTC): $TODAY"
-          echo "Latest tag date (UTC): $TAG_DATE"
+          echo "Tag created: $NEW_TAG"
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
-          # 4. Calculate new version numbers based on date matching
-          if [ "$TODAY" = "$TAG_DATE" ]; then
-            echo "-> Subsequent merge today: Incrementing PATCH version"
-            NEW_MAJOR=$MAJOR
-            NEW_MINOR=$MINOR
-            NEW_PATCH=$((PATCH + 1))
-          else
-            echo "-> First merge of a new day: Incrementing MINOR version, resetting PATCH"
-            NEW_MAJOR=$MAJOR
-            NEW_MINOR=$((MINOR + 1))
-            NEW_PATCH=0
-          fi
-
-          # 5. Guard condition: If MINOR version >= 6, upgrade to next MAJOR version
-          if [ "$NEW_MINOR" -ge 7 ]; then
-            echo "-> MINOR version ($NEW_MINOR) >= 7! Upgrading to MAJOR version, resetting MINOR and PATCH."
-            NEW_MAJOR=$((NEW_MAJOR + 1))
-            NEW_MINOR=0
-            NEW_PATCH=0
-          fi
-
-          NEW_TAG="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
-          echo "=> New tag to be created: $NEW_TAG"
-
-          # 6. Push the generated tag to Remote Git
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git tag $NEW_TAG
-          git push origin $NEW_TAG
+      - name: Create and push tag
+        run: |
+          git tag ${{ steps.new_tag.outputs.tag }}
+          git push origin ${{ steps.new_tag.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

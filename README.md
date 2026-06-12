@@ -5,12 +5,13 @@
 Just a core mod extracted to use in other mod
 
 ## Required Dependencies:
-- [ModularUI2 (>= 2.3.62)](https://github.com/GTNewHorizons/ModularUI2)
-- [GTNHLib (>= 0.9.66)](https://github.com/GTNewHorizons/GTNHLib)
+*   [ModularUI2 (>= 2.3.73)](https://github.com/GTNewHorizons/ModularUI2)
+*   [GTNHLib (>= 0.11.9)](https://github.com/GTNewHorizons/GTNHLib)
 
 ## Features:
-- Json Loader,
-- Capabilites system,
+- JSON Loader,
+- JSON Recipes Loader,
+- Capabilities system,
 - Item Cooldown can add cooldown time for an item after each use,
 - Data Component for Item to handle get/set more easy,
 - Fast NBT write/read in TileEntity and WorldSavedData with NBTPersist system,

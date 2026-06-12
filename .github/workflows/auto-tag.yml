@@ -31,20 +31,21 @@ jobs:
           # 2. Parse the latest tag into MAJOR.MINOR.PATCH variables
           IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
 
-          # 3. Get current date and the creation date of the latest tag (Format: YYYY-MM-DD)
-          TODAY=$(TZ="Asia/Ho_Chi_Minh" date +%Y-%m-%d)
+          # 3. Get current date and tag date using native UTC time (-u)
+          TODAY=$(date -u +%Y-%m-%d)
 
           if [ "$LATEST_TAG" = "1.0.0" ]; then
-            # If it's a fresh repository, assume the old tag was created yesterday to trigger the new day logic
-            TAG_DATE=$(TZ="Asia/Ho_Chi_Minh" date -d "yesterday" +%Y-%m-%d 2>/dev/null || echo "1970-01-01")
+            # If it's a fresh repo, look back 1 day in UTC to trigger new day logic
+            TAG_DATE=$(date -u -d "yesterday" +%Y-%m-%d)
           else
-            # Get the creation date of the latest tag based on its commit timestamp
+            # Get strict ISO 8601 commit time from Git
             TAG_COMMIT_TIME=$(git log -1 --format=%ai "$LATEST_TAG")
-            TAG_DATE=$(TZ="Asia/Ho_Chi_Minh" date -d "$TAG_COMMIT_TIME" +%Y-%m-%d 2>/dev/null || date -u -d "$TAG_COMMIT_TIME" +%Y-%m-%d)
+            # Parse the Git time into native UTC date
+            TAG_DATE=$(date -u -d "$TAG_COMMIT_TIME" +%Y-%m-%d)
           fi
 
-          echo "Today's date: $TODAY"
-          echo "Latest tag date: $TAG_DATE"
+          echo "Today's date (UTC): $TODAY"
+          echo "Latest tag date (UTC): $TAG_DATE"
 
           # 4. Calculate new version numbers based on date matching
           if [ "$TODAY" = "$TAG_DATE" ]; then

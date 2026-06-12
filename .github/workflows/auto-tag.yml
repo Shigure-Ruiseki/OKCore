@@ -61,8 +61,8 @@ jobs:
           fi
 
           # 5. Guard condition: If MINOR version >= 6, upgrade to next MAJOR version
-          if [ "$NEW_MINOR" -ge 6 ]; then
-            echo "-> MINOR version ($NEW_MINOR) >= 6! Upgrading to MAJOR version, resetting MINOR and PATCH."
+          if [ "$NEW_MINOR" -ge 7 ]; then
+            echo "-> MINOR version ($NEW_MINOR) >= 7! Upgrading to MAJOR version, resetting MINOR and PATCH."
             NEW_MAJOR=$((NEW_MAJOR + 1))
             NEW_MINOR=0
             NEW_PATCH=0

@@ -27,7 +27,6 @@ public class RecipeManager {
 
     private static RecipeManager instance;
 
-    private static Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> globalBaseRecipes = ImmutableMap.of();
     private Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> recipes = ImmutableMap.of();
 
     public RecipeManager() {}
@@ -35,18 +34,32 @@ public class RecipeManager {
     public static RecipeManager getManager() {
         if (instance == null) {
             instance = new RecipeManager();
-            instance.loadFromBase();
         }
         return instance;
     }
 
-    public static void validateManager() {
-        instance = new RecipeManager();
-        instance.loadFromBase();
+    public void clearRecipes() {
+        this.recipes = ImmutableMap.of();
     }
 
-    public static void invalidateManager() {
-        instance = null;
+    public void addRecipes(Iterable<IRecipeOK<?>> incomingRecipes) {
+        if (incomingRecipes == null) return;
+
+        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> mutableMap = new HashMap<>();
+        for (Map.Entry<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> entry : this.recipes.entrySet()) {
+            mutableMap.put(entry.getKey(), new HashMap<>(entry.getValue()));
+        }
+
+        for (IRecipeOK<?> recipe : incomingRecipes) {
+            ResourceLocation id = recipe.getId();
+            for (Map<ResourceLocation, IRecipeOK<?>> typeMap : mutableMap.values()) {
+                typeMap.remove(id);
+            }
+            mutableMap.computeIfAbsent(recipe.getType(), k -> new HashMap<>())
+                .put(id, recipe);
+        }
+
+        this.recipes = copyToImmutable(mutableMap);
     }
 
     @SuppressWarnings("unchecked")
@@ -66,6 +79,7 @@ public class RecipeManager {
             .findFirst();
     }
 
+    @SuppressWarnings("unchecked")
     public <C extends IInventory, T extends IRecipeOK<C>> Optional<T> getRecipeFor(IRecipeType<T> type, C inventory,
         World world) {
         return this.getRecipesByType(type)
@@ -75,6 +89,7 @@ public class RecipeManager {
             .findFirst();
     }
 
+    @SuppressWarnings("unchecked")
     public <C extends IInventory, T extends IRecipeOK<C>> Collection<T> getRecipesFor(IRecipeType<T> type, C inventory,
         World world) {
         return this.getRecipesByType(type)
@@ -92,7 +107,6 @@ public class RecipeManager {
 
     public <C extends IInventory, T extends IRecipeOK<C>> NonNullList<ItemStack> getRemainingItemsFor(
         IRecipeType<T> type, C inventory, World world) {
-
         return this.getRecipeFor(type, inventory, world)
             .map(recipe -> recipe.getRemainingItems(inventory))
             .orElseGet(() -> {
@@ -138,63 +152,10 @@ public class RecipeManager {
 
     private static Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> copyToImmutable(
         Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> map) {
-
         Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> copy = new HashMap<>();
         for (Map.Entry<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> entry : map.entrySet()) {
             copy.put(entry.getKey(), ImmutableMap.copyOf(entry.getValue()));
         }
         return ImmutableMap.copyOf(copy);
-    }
-
-    public static void setupGlobalRecipes(Iterable<IRecipeOK<?>> baseRecipes) {
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> mutableMap = new HashMap<>();
-
-        if (baseRecipes != null) {
-            for (IRecipeOK<?> recipe : baseRecipes) {
-                mutableMap.computeIfAbsent(recipe.getType(), k -> new HashMap<>())
-                    .put(recipe.getId(), recipe);
-            }
-        }
-
-        globalBaseRecipes = copyToImmutable(mutableMap);
-    }
-
-    public void addWorldRecipes(Iterable<IRecipeOK<?>> worldRecipes) {
-        if (worldRecipes == null) return;
-
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> mutableMap = new HashMap<>();
-        for (Map.Entry<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> entry : this.recipes.entrySet()) {
-            mutableMap.put(entry.getKey(), new HashMap<>(entry.getValue()));
-        }
-
-        for (IRecipeOK<?> recipe : worldRecipes) {
-            ResourceLocation id = recipe.getId();
-            for (Map<ResourceLocation, IRecipeOK<?>> typeMap : mutableMap.values()) {
-                typeMap.remove(id);
-            }
-            mutableMap.computeIfAbsent(recipe.getType(), k -> new HashMap<>())
-                .put(id, recipe);
-        }
-
-        this.recipes = copyToImmutable(mutableMap);
-    }
-
-    public void loadFromBase() {
-        this.recipes = cloneMap(globalBaseRecipes);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> cloneMap(
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> original) {
-        if (original == null) return Maps.newHashMap();
-
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> copy = Maps.newHashMap();
-
-        for (Map.Entry<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> entry : original.entrySet()) {
-            Map<ResourceLocation, IRecipeOK<?>> typeMapCopy = Maps.newHashMap(entry.getValue());
-            copy.put(entry.getKey(), typeMapCopy);
-        }
-
-        return copy;
     }
 }

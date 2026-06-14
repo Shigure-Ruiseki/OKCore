@@ -33,6 +33,7 @@ public class RecipeRegistry {
     private static final Map<ResourceLocation, RecipeHolder> RECIPE_HOLDERS = new HashMap<>();
 
     private static final Map<ItemStack, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
+    private static boolean isFuelHandlerRegistered = false;
 
     public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(IRecipeType<T> recipeType) {
         if (recipeType == null || recipeType.getTypeKey() == null) return null;
@@ -159,60 +160,48 @@ public class RecipeRegistry {
         }
     }
 
-    public static void processGlobalHolders() {
-        List<IRecipeOK<?>> allBaseRecipes = new ArrayList<>();
+    public static void processHolders() {
+        RecipeManager manager = RecipeManager.getManager();
 
+        List<IRecipeOK<?>> parsedRecipes = new ArrayList<>();
         for (RecipeHolder holder : RECIPE_HOLDERS.values()) {
             IRecipeOK<?> recipe = fromHolder(holder);
             if (recipe != null) {
-                allBaseRecipes.add(recipe);
+                parsedRecipes.add(recipe);
             }
         }
 
-        RecipeManager.setupGlobalRecipes(allBaseRecipes);
+        manager.clearRecipes();
+        manager.addRecipes(parsedRecipes);
 
         syncMCCraftingManager();
         syncMCFurnaceRecipes();
 
-        GameRegistry.registerFuelHandler(new IFuelHandler() {
+        if (!isFuelHandlerRegistered) {
+            GameRegistry.registerFuelHandler(new IFuelHandler() {
 
-            @Override
-            public int getBurnTime(ItemStack fuel) {
-                if (fuel == null || fuel.getItem() == null) return 0;
+                @Override
+                public int getBurnTime(ItemStack fuel) {
+                    if (fuel == null || fuel.getItem() == null) return 0;
 
-                Collection<FuelRecipe> fuelRecipes = CraftingHelpers.getFuelRecipes();
-                if (fuelRecipes == null || fuelRecipes.isEmpty()) return 0;
+                    Collection<FuelRecipe> fuelRecipes = CraftingHelpers.getFuelRecipes();
+                    if (fuelRecipes == null || fuelRecipes.isEmpty()) return 0;
 
-                for (FuelRecipe fuelRecipe : fuelRecipes) {
-                    if (fuelRecipe != null && fuelRecipe.matchesFuel(fuel)) {
-                        return fuelRecipe.getBurnTime();
+                    for (FuelRecipe fuelRecipe : fuelRecipes) {
+                        if (fuelRecipe != null && fuelRecipe.matchesFuel(fuel)) {
+                            return fuelRecipe.getBurnTime();
+                        }
                     }
+                    return 0;
                 }
-                return 0;
-            }
-        });
-
-        OKCore.okLog(Level.INFO, "Registered {} base recipes directly into Global storage.", allBaseRecipes.size());
-        RECIPE_HOLDERS.clear();
-    }
-
-    public static void processWorldHolders() {
-        List<IRecipeOK<?>> allWorldRecipes = new ArrayList<>();
-
-        for (RecipeHolder holder : RECIPE_HOLDERS.values()) {
-            IRecipeOK<?> recipe = fromHolder(holder);
-            if (recipe != null) {
-                allWorldRecipes.add(recipe);
-            }
+            });
+            isFuelHandlerRegistered = true;
         }
 
-        RecipeManager.getManager()
-            .addWorldRecipes(allWorldRecipes);
-
-        syncMCCraftingManager();
-        syncMCFurnaceRecipes();
-
-        OKCore.okLog(Level.INFO, "Injected {} custom world recipes into current session.", allWorldRecipes.size());
+        OKCore.okLog(
+            Level.INFO,
+            "Successfully processed and registered {} recipes into unified storage.",
+            parsedRecipes.size());
         RECIPE_HOLDERS.clear();
     }
 

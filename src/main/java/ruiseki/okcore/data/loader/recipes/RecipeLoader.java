@@ -31,6 +31,11 @@ public class RecipeLoader implements IDataLoader {
     }
 
     @Override
+    public boolean isModLoader() {
+        return false;
+    }
+
+    @Override
     public boolean isWorldLoader() {
         return true;
     }

@@ -30,10 +30,8 @@ public class RecipeLifecycleEvent {
 
     @SubscribeEvent
     public void onReload(DataEvent.Reload event) {
-        RecipeManager.getManager()
-            .loadFromBase();
-        DataLoader.loadWorldData(event.getServer());
-        RecipeRegistry.processWorldHolders();
+        DataLoader.loadAllDataAtServerStart(event.getServer());
+        RecipeRegistry.processHolders();
         PacketUpdateRecipes packet = new PacketUpdateRecipes(
             RecipeManager.getManager()
                 .getRecipes());

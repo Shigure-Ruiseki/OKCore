@@ -33,7 +33,25 @@ public class DataLoader {
 
     private static final Map<String, ?> EMPTY_ENV = Collections.emptyMap();
 
-    public static void loadAllData() {
+    public static void loadModDataAtPreInit() {
+        OKCore.okLog(Level.INFO, "DataLoader: Starting global Mod data scan at PreInit...");
+        scanModJars(false);
+    }
+
+    public static void loadAllDataAtServerStart(MinecraftServer server) {
+        if (server == null) {
+            OKCore.okLog(Level.WARN, "DataLoader: loadAllDataAtServerStart called with null server instance!");
+            return;
+        }
+
+        OKCore.okLog(Level.INFO, "DataLoader: Server started. Initializing full data reload (Mods + Datapacks)...");
+
+        scanModJars(true);
+
+        scanWorldDatapacks(server);
+    }
+
+    private static void scanModJars(boolean isServerContext) {
         for (ModContainer mod : Loader.instance()
             .getModList()) {
             String modId = mod.getModId()
@@ -77,7 +95,7 @@ public class DataLoader {
                         .filter(
                             p -> p.toString()
                                 .endsWith(".json"))
-                        .forEach(p -> processStream(p, rootPath, false));
+                        .forEach(p -> processStream(p, rootPath, isServerContext));
                 }
             } catch (Exception e) {
                 OKCore.okLog(Level.ERROR, "Critical error while scanning JAR data for mod: " + modId, e);
@@ -93,38 +111,23 @@ public class DataLoader {
         }
     }
 
-    public static void loadWorldData(MinecraftServer server) {
-        if (server == null) {
-            OKCore.okLog(Level.WARN, "DataLoader: loadWorldData called with null server instance!");
-            return;
-        }
-
+    private static void scanWorldDatapacks(MinecraftServer server) {
         String folderName = server.getFolderName();
         File realWorldDir;
 
         if (server.isDedicatedServer()) {
             realWorldDir = new File(folderName);
-            OKCore.okLog(
-                Level.INFO,
-                "DataLoader: Dedicated Server detected. Base path: {}",
-                realWorldDir.getAbsolutePath());
         } else {
             File savesDir = FMLCommonHandler.instance()
                 .getSavesDirectory();
             realWorldDir = new File(savesDir, folderName);
-            OKCore.okLog(
-                Level.INFO,
-                "DataLoader: Integrated Server detected. Saves path: {}, Target: {}",
-                savesDir.getAbsolutePath(),
-                realWorldDir.getAbsolutePath());
         }
 
         File datapacksDir = new File(realWorldDir, "datapacks");
         OKCore.okLog(Level.INFO, "DataLoader: Searching for datapacks at: {}", datapacksDir.getAbsolutePath());
 
         if (!datapacksDir.exists()) {
-            boolean created = datapacksDir.mkdirs();
-            if (created) {
+            if (datapacksDir.mkdirs()) {
                 OKCore.okLog(Level.INFO, "DataLoader: Created missing datapacks directory.");
             } else {
                 OKCore.okLog(Level.ERROR, "DataLoader: Failed to create missing datapacks directory!");
@@ -133,49 +136,27 @@ public class DataLoader {
         }
 
         File[] packs = datapacksDir.listFiles();
-        if (packs == null) {
-            OKCore.okLog(Level.WARN, "DataLoader: Datapacks directory is empty or inaccessible.");
-            return;
-        }
-
-        OKCore.okLog(Level.INFO, "DataLoader: Found {} potential datapack folders.", packs.length);
+        if (packs == null) return;
 
         for (File packDir : packs) {
-            if (!packDir.isDirectory()) {
-                OKCore.okLog(Level.DEBUG, "DataLoader: Skipping file (not a directory): {}", packDir.getName());
-                continue;
-            }
+            if (!packDir.isDirectory()) continue;
 
             File dataDir = new File(packDir, "data");
             File packMcMeta = new File(packDir, "pack.mcmeta");
 
-            if (!dataDir.exists() || !dataDir.isDirectory()) {
-                OKCore.okLog(
-                    Level.DEBUG,
-                    "DataLoader: Skipping folder '{}' (missing 'data' directory).",
-                    packDir.getName());
+            if (!dataDir.exists() || !dataDir.isDirectory() || !packMcMeta.exists()) {
                 continue;
             }
 
-            if (!packMcMeta.exists()) {
-                OKCore
-                    .okLog(Level.WARN, "DataLoader: Skipping folder '{}' (missing 'pack.mcmeta').", packDir.getName());
-                continue;
-            }
-
-            OKCore
-                .okLog(Level.INFO, "DataLoader: Successfully validated and scanning datapack: '{}'", packDir.getName());
+            OKCore.okLog(Level.INFO, "DataLoader: Validated and scanning datapack: '{}'", packDir.getName());
 
             try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
-                final Path rootPath = packDir.toPath(); // Đã sửa rootPath thành packDir để Regex chạy đúng
+                final Path rootPath = packDir.toPath();
                 stream.filter(p -> !Files.isDirectory(p))
                     .filter(
                         p -> p.toString()
                             .endsWith(".json"))
-                    .forEach(p -> {
-                        OKCore.okLog(Level.DEBUG, "DataLoader: Processing file: {}", p.getFileName());
-                        processStream(p, rootPath, true);
-                    });
+                    .forEach(p -> processStream(p, rootPath, true));
             } catch (Exception e) {
                 OKCore
                     .okLog(Level.ERROR, "DataLoader: Critical error while scanning datapack: " + packDir.getName(), e);
@@ -183,7 +164,7 @@ public class DataLoader {
         }
     }
 
-    private static void processStream(Path p, Path rootPath, boolean isWorldData) {
+    private static void processStream(Path p, Path rootPath, boolean isWorldContext) {
         try {
             String relativeStr = rootPath.relativize(p)
                 .toString()
@@ -193,10 +174,11 @@ public class DataLoader {
                 relativeStr = relativeStr.substring(1);
             }
 
-            if (isWorldData) {
+            if (isWorldContext && relativeStr.contains("data/")) {
                 int dataIdx = relativeStr.indexOf("data/");
-                if (dataIdx == -1) return;
-                relativeStr = relativeStr.substring(dataIdx);
+                if (dataIdx != -1) {
+                    relativeStr = relativeStr.substring(dataIdx);
+                }
             }
 
             Matcher matcher = DYNAMIC_DATA_PATTERN.matcher(relativeStr);
@@ -214,7 +196,7 @@ public class DataLoader {
             ResourceLocation generatedId = new ResourceLocation(namespace, folder + "/" + pathPrefix + cleanName);
 
             try (InputStream is = Files.newInputStream(p)) {
-                if (isWorldData) {
+                if (isWorldContext) {
                     DataHandler.handleWorld(generatedId, namespace, folder, subPaths, fileName, is);
                 } else {
                     DataHandler.handleMod(generatedId, namespace, folder, subPaths, fileName, is);

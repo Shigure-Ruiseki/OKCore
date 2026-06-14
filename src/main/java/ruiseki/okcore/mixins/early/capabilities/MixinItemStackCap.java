@@ -43,16 +43,20 @@ public abstract class MixinItemStackCap {
     /*
      * INTERNAL CAP INIT
      */
-
     @Inject(method = "func_150996_a", at = @At("RETURN"))
     private void okcore$forgeInit(Item item, CallbackInfo ci) {
-        if (item instanceof IItemCapability capItem) {
-            ItemStack stack = (ItemStack) (Object) this;
+        if (item == null) return;
 
-            ICapabilityProvider provider = capItem.initCapabilities(stack, this.okcore$capNBT);
-            this.okcore$capabilities = OKEventFactory.gatherCapabilities(stack, provider);
-            if (this.okcore$capNBT != null && this.okcore$capabilities != null)
-                this.okcore$capabilities.deserializeNBT(this.okcore$capNBT);
+        ItemStack stack = (ItemStack) (Object) this;
+        ICapabilityProvider provider = null;
+
+        if (item instanceof IItemCapability capItem) {
+            provider = capItem.initCapabilities(stack, this.okcore$capNBT);
+        }
+
+        this.okcore$capabilities = OKEventFactory.gatherCapabilities(stack, provider);
+        if (this.okcore$capNBT != null && this.okcore$capabilities != null) {
+            this.okcore$capabilities.deserializeNBT(this.okcore$capNBT);
         }
     }
 
@@ -65,7 +69,7 @@ public abstract class MixinItemStackCap {
     private void okcore$writeToNBT(NBTTagCompound tag, CallbackInfoReturnable<NBTTagCompound> cir) {
         if (this.okcore$capabilities != null) {
             NBTTagCompound cnbt = this.okcore$capabilities.serializeNBT();
-            if (!cnbt.hasNoTags()) {
+            if (cnbt != null && !cnbt.hasNoTags()) {
                 tag.setTag("OKCaps", cnbt);
             }
         }

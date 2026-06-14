@@ -31,7 +31,7 @@ public class RecipeLifecycleEvent {
     @SubscribeEvent
     public void onReload(DataEvent.Reload event) {
         DataLoader.loadAllDataAtServerStart(event.getServer());
-        RecipeRegistry.processHolders(true);
+        RecipeRegistry.processHolders();
         PacketUpdateRecipes packet = new PacketUpdateRecipes(
             RecipeManager.getManager()
                 .getRecipes());

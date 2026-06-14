@@ -143,7 +143,7 @@ public class OKCore extends ModBase {
     public void onServerStarting(FMLServerStartingEvent event) {
         super.onServerStarting(event);
         DataLoader.loadAllDataAtServerStart(event.getServer());
-        RecipeRegistry.processHolders(true);
+        RecipeRegistry.processHolders();
     }
 
     @Override

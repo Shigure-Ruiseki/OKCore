@@ -33,18 +33,13 @@ jobs:
       - name: Generate new tag
         id: new_tag
         run: |
-          # 1. Get current date in YYYY.MM.DD format
-          CURRENT_DATE=$(date +"%Y.%m.%d")
+          CURRENT_DATE=$(date +"%y.%m.%d")
 
-          # 2. Find the last tag created today with the YYYY.MM.DD.patch format
           LAST_TAG=$(git tag --list "$CURRENT_DATE.*" | sort -V | tail -n 1)
 
-          # 3. Calculate the patch number
           if [ -z "$LAST_TAG" ]; then
-            # If no tag exists for today, start with patch 0
             PATCH=0
           else
-            # If a tag exists, extract the last patch number and increment it by 1
             LAST_PATCH=$(echo "$LAST_TAG" | cut -d. -f4)
             PATCH=$((LAST_PATCH + 1))
           fi

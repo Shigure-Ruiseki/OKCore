@@ -5,10 +5,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.WorldServer;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -98,6 +101,30 @@ public class PacketHandler {
      */
     public void sendToPlayer(PacketBase packet, EntityPlayerMP player) {
         networkWrapper.sendTo(packet, player);
+    }
+
+    /**
+     * Send a packet to all players tracking this entity, and to the entity itself if it is a player.
+     * Useful for updating visual or inventory data that surrounding players need to see.
+     *
+     * @param packet The packet.
+     * @param entity The entity being tracked.
+     */
+    public void sendToTrackingAndSelf(PacketBase packet, Entity entity) {
+        if (entity == null) return;
+
+        if (entity instanceof EntityPlayerMP) {
+            this.sendToPlayer(packet, (EntityPlayerMP) entity);
+        }
+
+        if (entity.worldObj instanceof WorldServer worldServer) {
+            EntityTracker tracker = worldServer.getEntityTracker();
+
+            Packet mcPacket = this.toMcPacket(packet);
+            if (mcPacket != null) {
+                tracker.func_151248_b(entity, mcPacket);
+            }
+        }
     }
 
     /**

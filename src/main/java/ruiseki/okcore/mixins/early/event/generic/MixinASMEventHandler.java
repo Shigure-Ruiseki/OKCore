@@ -27,9 +27,8 @@ public class MixinASMEventHandler {
         Class<?> eventClass = method.getParameterTypes()[0];
         if (!IGenericEvent.class.isAssignableFrom(eventClass)) return;
         Type type = method.getGenericParameterTypes()[0];
-        if (type instanceof ParameterizedType)
-        {
-            this.okcore$filter = ((ParameterizedType)type).getActualTypeArguments()[0];
+        if (type instanceof ParameterizedType) {
+            this.okcore$filter = ((ParameterizedType) type).getActualTypeArguments()[0];
         }
     }
 

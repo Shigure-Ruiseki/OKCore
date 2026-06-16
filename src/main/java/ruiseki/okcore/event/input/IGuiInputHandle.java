@@ -1,4 +1,4 @@
-package ruiseki.okcore.client.event;
+package ruiseki.okcore.event.input;
 
 public interface IGuiInputHandle {
 

@@ -60,13 +60,21 @@ public interface ICommonProxy {
     public void registerPacketHandlers(PacketHandler packetHandler);
 
     /**
-     * Register tick handlers.
+     * Register tick handlers
+     * * @deprecated This method is deprecated and scheduled for removal.
+     * Please use the automated annotation-based registration system
+     * (e.g., {@code @Mod.EventBusSubscriber}) instead of manual registration.
      */
+    @Deprecated
     public void registerTickHandlers();
 
     /**
      * Register the event hooks
+     * * @deprecated This method is deprecated and scheduled for removal.
+     * Please use the automated annotation-based registration system
+     * (e.g., {@code @Mod.EventBusSubscriber}) instead of manual registration.
      */
+    @Deprecated
     public void registerEventHooks();
 
     /**

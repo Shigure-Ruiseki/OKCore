@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import ruiseki.okcore.client.event.IGuiInputHandle;
-import ruiseki.okcore.client.event.KeyboardInputEvent;
-import ruiseki.okcore.client.event.MouseInputEvent;
+import ruiseki.okcore.event.input.IGuiInputHandle;
+import ruiseki.okcore.event.input.KeyboardInputEvent;
+import ruiseki.okcore.event.input.MouseInputEvent;
 
 @Mixin(GuiScreen.class)
 @Implements(@Interface(iface = IGuiInputHandle.class, prefix = "okcoregui$"))

@@ -14,7 +14,6 @@ import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
@@ -33,7 +32,6 @@ import ruiseki.okcore.data.loader.baubles.BaubleSlotRegistry;
 import ruiseki.okcore.data.loader.condition.LoadRegistry;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
-import ruiseki.okcore.event.inventory.InventoryScanner;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideRegistry;
@@ -72,7 +70,6 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityGuide());
 
         addInitListeners(new DataComponents());
-        addInitListeners(new InventoryScanner());
         addInitListeners(new GuideRegistry());
         addInitListeners(new BaubleSlotRegistry());
     }
@@ -131,11 +128,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
-    }
-
-    @Mod.EventHandler
-    public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
-
     }
 
     @Override

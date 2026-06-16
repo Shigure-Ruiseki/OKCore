@@ -1,4 +1,4 @@
-package ruiseki.okcore.client.event;
+package ruiseki.okcore.event.input;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.event.GuiScreenEvent;

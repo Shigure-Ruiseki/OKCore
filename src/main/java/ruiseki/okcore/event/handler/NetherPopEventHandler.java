@@ -1,4 +1,4 @@
-package ruiseki.okcore.event;
+package ruiseki.okcore.event.handler;
 
 import static net.minecraft.util.AxisAlignedBB.getBoundingBox;
 
@@ -14,12 +14,12 @@ import org.jetbrains.annotations.Nullable;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.okcore.datastructure.BlockPos;
 
-public class NetherPopulateEvent {
+public class NetherPopEventHandler {
 
     private final float chanceMultiplier;
     private final Class<? extends EntityLiving> entityClass;
 
-    public NetherPopulateEvent(float chanceMultiplier, Class<? extends EntityLiving> entityClass) {
+    public NetherPopEventHandler(float chanceMultiplier, Class<? extends EntityLiving> entityClass) {
         this.chanceMultiplier = chanceMultiplier;
         this.entityClass = entityClass;
     }

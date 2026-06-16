@@ -1,13 +1,15 @@
-package ruiseki.okcore.event;
+package ruiseki.okcore.event.handler;
 
 import net.minecraftforge.event.world.ChunkEvent;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class TickHandler {
+public class TileEventHandler {
 
-    public static final TickHandler INSTANCE = new TickHandler();
+    public static final TileEventHandler INSTANCE = new TileEventHandler();
+
+    public TileEventHandler() {}
 
     public void shutdown() {}
 

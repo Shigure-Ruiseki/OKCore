@@ -18,7 +18,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
-import ruiseki.okcore.event.AttachCapabilitiesEvent;
+import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.ItemStackHandler;
@@ -46,7 +46,6 @@ public class CapabilityItemHandler implements IInitListener {
 
     @SubscribeEvent
     public void attachMCCapability(AttachCapabilitiesEvent<TileEntity> event) {
-        if (event.getType() != TileEntity.class) return;
         TileEntity tile = event.getObject();
 
         boolean isInv = tile instanceof IInventory;

@@ -1,4 +1,4 @@
-package ruiseki.okcore.event;
+package ruiseki.okcore.event.handler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -13,13 +13,15 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.client.event.MouseInputEvent;
+import ruiseki.okcore.event.input.MouseInputEvent;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.network.packet.PacketItemToggle;
 
-public class GuiItemToggleEvent {
+public class InputEventHandler {
 
-    public static final GuiItemToggleEvent INSTANCE = new GuiItemToggleEvent();
+    public static final InputEventHandler INSTANCE = new InputEventHandler();
+
+    public InputEventHandler() {}
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.HIGH)

@@ -26,7 +26,7 @@ import ruiseki.okcore.energy.capability.cofh.CoFHProviderWrapper;
 import ruiseki.okcore.energy.capability.cofh.CoFHReceiverWrapper;
 import ruiseki.okcore.energy.capability.ok.OKEnergySink;
 import ruiseki.okcore.energy.capability.ok.OKEnergySource;
-import ruiseki.okcore.event.AttachCapabilitiesEvent;
+import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.init.IInitListener;
 
 @SuppressWarnings("unchecked")
@@ -45,7 +45,6 @@ public class CapabilityEnergy implements IInitListener {
 
     @SubscribeEvent
     public void attachCoFHCapability(AttachCapabilitiesEvent<TileEntity> event) {
-        if (event.getType() != TileEntity.class) return;
         TileEntity tile = event.getObject();
 
         if (tile instanceof IEnergyConnection) {

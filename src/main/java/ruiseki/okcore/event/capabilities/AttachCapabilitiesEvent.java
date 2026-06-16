@@ -1,4 +1,4 @@
-package ruiseki.okcore.event;
+package ruiseki.okcore.event.capabilities;
 
 import java.util.Collections;
 import java.util.Map;
@@ -7,23 +7,25 @@ import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Maps;
 
-import cpw.mods.fml.common.eventhandler.Event;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.event.generic.GenericEvent;
 
-public class AttachCapabilitiesEvent<T> extends Event {
+/**
+ * Fired whenever an object with Capabilities support {currently TileEntity/Item/Entity)
+ * is created. Allowing for the attachment of arbitrary capability providers.
+ * <p>
+ * Please note that as this is fired for ALL object creations efficient code is recommended.
+ * And if possible use one of the subclasses to filter your intended objects.
+ */
+public class AttachCapabilitiesEvent<T> extends GenericEvent<T> {
 
-    private final Class<T> type;
     private final T obj;
     private final Map<ResourceLocation, ICapabilityProvider> caps = Maps.newLinkedHashMap();
     private final Map<ResourceLocation, ICapabilityProvider> view = Collections.unmodifiableMap(caps);
 
     public AttachCapabilitiesEvent(Class<T> type, T obj) {
-        this.type = type;
+        super(type);
         this.obj = obj;
-    }
-
-    public Class<T> getType() {
-        return type;
     }
 
     public T getObject() {

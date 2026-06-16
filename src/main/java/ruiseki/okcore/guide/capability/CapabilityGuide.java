@@ -14,7 +14,7 @@ import ruiseki.okcore.Reference;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
-import ruiseki.okcore.event.AttachCapabilitiesEvent;
+import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.event.guide.BookEvent;
 import ruiseki.okcore.event.inventory.InventoryChangedEvent;
 import ruiseki.okcore.guide.IGuideItem;
@@ -33,7 +33,6 @@ public class CapabilityGuide implements IInitListener {
 
     @SubscribeEvent
     public void attachGuideCapability(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getType() != Entity.class) return;
         Entity entity = event.getObject();
         if (!(entity instanceof EntityPlayer)) return;
 

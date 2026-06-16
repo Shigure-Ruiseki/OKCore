@@ -3,10 +3,11 @@ package ruiseki.okcore;
 import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import ruiseki.okcore.event.CooldownEvent;
-import ruiseki.okcore.event.GuiItemToggleEvent;
-import ruiseki.okcore.event.RecipeLifecycleEvent;
-import ruiseki.okcore.event.TickHandler;
+import ruiseki.okcore.event.handler.CooldownEventHandler;
+import ruiseki.okcore.event.handler.InputEventHandler;
+import ruiseki.okcore.event.handler.InventoryEventHandler;
+import ruiseki.okcore.event.handler.RecipeEventHandler;
+import ruiseki.okcore.event.handler.TileEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.network.packet.PacketCooldown;
@@ -40,10 +41,17 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerEventHooks();
         FMLCommonHandler.instance()
             .bus()
-            .register(RecipeLifecycleEvent.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(RecipeLifecycleEvent.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(CooldownEvent.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(GuiItemToggleEvent.INSTANCE);
+            .register(RecipeEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(RecipeEventHandler.INSTANCE);
+
+        MinecraftForge.EVENT_BUS.register(CooldownEventHandler.INSTANCE);
+
+        MinecraftForge.EVENT_BUS.register(InputEventHandler.INSTANCE);
+
+        FMLCommonHandler.instance()
+            .bus()
+            .register(InventoryEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(InventoryEventHandler.INSTANCE);
     }
 
     @Override
@@ -51,7 +59,7 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerTickHandlers();
         FMLCommonHandler.instance()
             .bus()
-            .register(TickHandler.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(TickHandler.INSTANCE);
+            .register(TileEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(TileEventHandler.INSTANCE);
     }
 }

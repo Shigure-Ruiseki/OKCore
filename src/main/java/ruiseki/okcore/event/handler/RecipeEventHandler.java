@@ -1,4 +1,4 @@
-package ruiseki.okcore.event;
+package ruiseki.okcore.event.handler;
 
 import java.util.List;
 
@@ -13,9 +13,11 @@ import ruiseki.okcore.network.packet.PacketUpdateRecipes;
 import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.RecipeRegistry;
 
-public class RecipeLifecycleEvent {
+public class RecipeEventHandler {
 
-    public static final RecipeLifecycleEvent INSTANCE = new RecipeLifecycleEvent();
+    public static final RecipeEventHandler INSTANCE = new RecipeEventHandler();
+
+    public RecipeEventHandler() {}
 
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {

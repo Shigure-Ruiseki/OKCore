@@ -1,4 +1,4 @@
-package ruiseki.okcore.event.inventory;
+package ruiseki.okcore.event.handler;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +13,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -22,24 +21,17 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import ruiseki.okcore.init.IInitListener;
+import ruiseki.okcore.event.inventory.InventoryChangedEvent;
 import ruiseki.okcore.inventory.ItemStackKey;
 
-public class InventoryScanner implements IInitListener {
+public class InventoryEventHandler {
+
+    public static final InventoryEventHandler INSTANCE = new InventoryEventHandler();
 
     private static final Object2ObjectMap<UUID, PlayerScanState> SERVER_STATES = new Object2ObjectOpenHashMap<>();
     private static final Object2ObjectMap<UUID, PlayerScanState> CLIENT_STATES = new Object2ObjectOpenHashMap<>();
 
-    public InventoryScanner() {}
-
-    @Override
-    public void onInit(Step initStep) {
-        if (initStep != Step.PREINIT) return;
-        MinecraftForge.EVENT_BUS.register(this);
-        FMLCommonHandler.instance()
-            .bus()
-            .register(this);
-    }
+    public InventoryEventHandler() {}
 
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {

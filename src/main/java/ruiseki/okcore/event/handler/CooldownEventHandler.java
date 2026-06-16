@@ -1,4 +1,4 @@
-package ruiseki.okcore.event;
+package ruiseki.okcore.event.handler;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -13,9 +13,11 @@ import ruiseki.okcore.helper.DataComponentHelpers;
 import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 
-public class CooldownEvent {
+public class CooldownEventHandler {
 
-    public static final CooldownEvent INSTANCE = new CooldownEvent();
+    public static final CooldownEventHandler INSTANCE = new CooldownEventHandler();
+
+    public CooldownEventHandler() {}
 
     @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent event) {

@@ -18,7 +18,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.IItemCapability;
-import ruiseki.okcore.event.AttachCapabilitiesEvent;
+import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.fluid.FluidHandlerItem;
 import ruiseki.okcore.fluid.IFluidHandlerItem;
 import ruiseki.okcore.fluid.SmartTank;
@@ -102,7 +102,6 @@ public class CapabilityFluidHandler implements IInitListener {
 
     @SubscribeEvent
     public void attachCapability(AttachCapabilitiesEvent<ItemStack> event) {
-        if (event.getType() != ItemStack.class) return;
         ItemStack stack = event.getObject();
         if (stack == null) return;
         if (stack.getItem() instanceof IItemCapability) return;

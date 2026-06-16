@@ -12,6 +12,9 @@ public enum Mixins implements IMixins {
         .addRequiredMod(TargetMods.NotEnoughItems)
         .setPhase(Phase.LATE)),
 
+    GENERIC_EVENT(new MixinBuilder("Hook Generic Event").addCommonMixins("event.generic.MixinASMEventHandler")
+        .setPhase(Phase.EARLY)),
+
     ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("capabilities.MixinItemStackCap")
         .setPhase(Phase.EARLY)),
 

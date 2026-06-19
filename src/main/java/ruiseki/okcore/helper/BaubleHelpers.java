@@ -1,10 +1,12 @@
 package ruiseki.okcore.helper;
 
+import baubles.common.container.InventoryBaubles;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 
 import baubles.api.BaublesApi;
 import baubles.api.expanded.BaubleExpandedSlots;
+import net.minecraft.inventory.Slot;
 import ruiseki.okcore.lib.LibMods;
 
 public class BaubleHelpers {
@@ -29,9 +31,19 @@ public class BaubleHelpers {
         BaubleExpandedSlots.tryUnassignSlotsDownToMaximum(slotType, size);
     }
 
-    public static IInventory getBaubleInventory(EntityPlayer player) {
+    public static IInventory getBaubles(EntityPlayer player) {
         if (player == null) return null;
         if (!LibMods.Baubles.isModLoaded()) return null;
         return BaublesApi.getBaubles(player);
+    }
+
+    public static boolean isBaubles(Slot slot) {
+        return isBaubles(slot.inventory);
+    }
+
+    public static boolean isBaubles(IInventory inventory) {
+        if (inventory == null) return false;
+        if (!LibMods.Baubles.isModLoaded()) return false;
+        return inventory instanceof InventoryBaubles;
     }
 }

@@ -42,7 +42,7 @@ import ruiseki.okcore.item.weighted.WeightedStackBase;
  *
  * @author rubensworks
  */
-public final class ItemStackHelpers {
+public class ItemStackHelpers {
 
     private static final Random RANDOM = new Random();
 

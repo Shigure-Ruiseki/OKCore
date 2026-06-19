@@ -18,7 +18,7 @@ import ruiseki.okcore.datastructure.BlockPos;
  *
  * @author rubensworks
  */
-public final class BlockHelpers {
+public class BlockHelpers {
 
     private BlockHelpers() {}
 

@@ -8,7 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
  *
  * @author rubensworks
  */
-public final class MatrixHelpers {
+public class MatrixHelpers {
 
     /**
      * Mirror the given box bounds around the Y axis

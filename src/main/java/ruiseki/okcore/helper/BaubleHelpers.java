@@ -1,9 +1,10 @@
 package ruiseki.okcore.helper;
 
-import baubles.api.BaublesApi;
-import baubles.api.expanded.BaubleExpandedSlots;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+
+import baubles.api.BaublesApi;
+import baubles.api.expanded.BaubleExpandedSlots;
 import ruiseki.okcore.lib.LibMods;
 
 public class BaubleHelpers {

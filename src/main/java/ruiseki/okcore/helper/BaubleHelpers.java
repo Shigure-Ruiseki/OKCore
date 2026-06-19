@@ -6,9 +6,13 @@ import net.minecraft.inventory.Slot;
 
 import baubles.api.BaublesApi;
 import baubles.api.expanded.BaubleExpandedSlots;
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.lib.LibMods;
 
 public class BaubleHelpers {
+
+    private static Class<?> cachedBaublesClass = null;
+    private static boolean hasCheckedClass = false;
 
     public static boolean checkAndRegisterType(String slotType) {
         if (slotType == null || slotType.isEmpty() || !LibMods.BaublesExpanded.isModLoaded()) return false;
@@ -41,8 +45,16 @@ public class BaubleHelpers {
 
     public static boolean isBaubles(IInventory inventory) {
         if (inventory == null || !LibMods.Baubles.isModLoaded()) return false;
-        String className = inventory.getClass()
-            .getName();
-        return "baubles.common.container.InventoryBaubles".equals(className);
+
+        if (!hasCheckedClass) {
+            try {
+                cachedBaublesClass = Class.forName("baubles.common.container.InventoryBaubles");
+            } catch (ClassNotFoundException ignored) {
+                OKCore.okLog(LibMods.Baubles.modid + "not loaded");
+            }
+            hasCheckedClass = true;
+        }
+
+        return cachedBaublesClass != null && cachedBaublesClass.isInstance(inventory);
     }
 }

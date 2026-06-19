@@ -22,7 +22,7 @@ import ruiseki.okcore.datastructure.DimPos;
  *
  * @author rubensworks
  */
-public final class TileHelpers {
+public class TileHelpers {
 
     /**
      * Safely cast a tile entity.

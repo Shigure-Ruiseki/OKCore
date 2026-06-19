@@ -14,7 +14,7 @@ import com.google.common.collect.Sets;
  *
  * @author rubensworks
  */
-public final class CollectionHelpers {
+public class CollectionHelpers {
 
     /**
      * Add the given key value pair in a map structure where multiple values for a key can exist.

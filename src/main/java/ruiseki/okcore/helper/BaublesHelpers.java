@@ -9,7 +9,7 @@ import baubles.api.expanded.BaubleExpandedSlots;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.lib.LibMods;
 
-public class BaubleHelpers {
+public class BaublesHelpers {
 
     private static Class<?> cachedBaublesClass = null;
     private static boolean hasCheckedClass = false;

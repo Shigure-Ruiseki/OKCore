@@ -4,7 +4,6 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 import net.minecraft.init.Items;
@@ -156,30 +155,48 @@ public class DataComponentRegistry {
         return cache;
     }
 
-    private static final ItemMeta POOLED_IM = new ItemMeta(Items.feather);
+    private static final ThreadLocal<ItemMeta> THREAD_LOCAL_IM = new ThreadLocal<>();
+
+    private static ItemMeta getPooledItemMeta() {
+        ItemMeta meta = THREAD_LOCAL_IM.get();
+        if (meta == null) {
+            meta = new ItemMeta(Items.feather);
+            THREAD_LOCAL_IM.set(meta);
+        }
+        return meta;
+    }
 
     public static void getComponents(ItemStack stack, Map<String, DataComponentType<?>> properties) {
+        if (properties == null) return;
         properties.clear();
 
-        Item item = Objects.requireNonNull(stack.getItem(), "Item cannot be null: " + stack);
+        if (stack == null || stack.getItem() == null) return;
+
+        Item item = stack.getItem();
         int meta = stack.getItemDamage();
 
         ITEM_PROPERTIES.copyAll(item, properties);
+
+        ItemMeta pooledIm = getPooledItemMeta();
         ITEM_META_PROPERTIES.copyAll(
-            POOLED_IM.setItem(item)
+            pooledIm.setItem(item)
                 .setItemMeta(meta),
             properties);
+
         IFACE_CACHE.copyAll(item.getClass(), properties);
 
         CUSTOM_PROPERTIES.forEach(factory -> {
-            DataComponentType<?> property = factory.getComponent(stack, item, meta);
+            if (factory != null) {
+                DataComponentType<?> property = factory.getComponent(stack, item, meta);
 
-            if (property != null) {
-                properties.put(property.getName(), property);
+                if (property != null && property.getName() != null) {
+                    properties.put(property.getName(), property);
+                }
             }
         });
+
         properties.values()
-            .removeIf(comp -> !comp.appliesTo(stack, item, meta));
+            .removeIf(comp -> comp == null || !comp.appliesTo(stack, item, meta));
     }
 
     public static DataComponentMap getComponentMap(ItemStack stack) {

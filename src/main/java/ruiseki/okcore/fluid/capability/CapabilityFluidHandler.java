@@ -103,7 +103,7 @@ public class CapabilityFluidHandler implements IInitListener {
     @SubscribeEvent
     public void attachCapability(AttachCapabilitiesEvent<ItemStack> event) {
         ItemStack stack = event.getObject();
-        if (stack == null) return;
+        if (stack == null || stack.getItem() == null) return;
         if (stack.getItem() instanceof IItemCapability) return;
         if (stack.getItem() instanceof IFluidContainerItem legacy) {
             event.addCapability(

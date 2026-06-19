@@ -3,7 +3,7 @@ package ruiseki.okcore.data.loader.baubles;
 import java.util.HashMap;
 import java.util.Map;
 
-import ruiseki.okcore.helper.BaubleHelpers;
+import ruiseki.okcore.helper.BaublesHelpers;
 
 public enum BaubleOperation {
 
@@ -14,7 +14,7 @@ public enum BaubleOperation {
             if (!super.execute(slotType, size)) return false;
 
             for (int i = 0; i < size; i++) {
-                BaubleHelpers.assignSlot(slotType);
+                BaublesHelpers.assignSlot(slotType);
             }
             return true;
         }
@@ -26,7 +26,7 @@ public enum BaubleOperation {
         public boolean execute(String slotType, int size) {
             if (!super.execute(slotType, size)) return false;
 
-            BaubleHelpers.assignSlotsUpToMinimum(slotType, size);
+            BaublesHelpers.assignSlotsUpToMinimum(slotType, size);
             return true;
         }
     },
@@ -37,7 +37,7 @@ public enum BaubleOperation {
         public boolean execute(String slotType, int size) {
             if (!super.execute(slotType, size)) return false;
 
-            BaubleHelpers.unassignSlotsDownToMaximum(slotType, size);
+            BaublesHelpers.unassignSlotsDownToMaximum(slotType, size);
             return true;
         }
     }
@@ -47,7 +47,7 @@ public enum BaubleOperation {
     BaubleOperation() {}
 
     public boolean execute(String slotType, int size) {
-        return BaubleHelpers.checkAndRegisterType(slotType);
+        return BaublesHelpers.checkAndRegisterType(slotType);
     }
 
     private static final Map<String, BaubleOperation> NAME_MAP = new HashMap<>();

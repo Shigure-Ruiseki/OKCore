@@ -4,7 +4,6 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 import net.minecraft.init.Items;

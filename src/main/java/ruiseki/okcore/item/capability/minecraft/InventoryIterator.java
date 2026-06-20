@@ -87,9 +87,15 @@ public class InventoryIterator extends AbstractInventoryIterator {
 
         int toExtract = Math.min(inSlot.stackSize, amount);
 
-        ItemStack extracted = inSlot.splitStack(toExtract);
-
-        setInventorySlotContents(slotIndex, inSlot.stackSize == 0 ? null : inSlot);
+        final ItemStack extracted;
+        if (inSlot.stackSize <= toExtract) {
+            // We can avoid NBT copy by just directly passing the stack here
+            extracted = inSlot;
+            setInventorySlotContents(slotIndex, null);
+        } else {
+            extracted = inSlot.splitStack(toExtract);
+            setInventorySlotContents(slotIndex, inSlot);
+        }
 
         markDirty();
 
@@ -104,10 +110,6 @@ public class InventoryIterator extends AbstractInventoryIterator {
 
         ItemStack inSlot = getStackInSlot(slotIndex);
 
-        if (!ItemStackHelpers.isStackEmpty(inSlot) && !stack.matches(inSlot)) {
-            return stack.getStackSize();
-        }
-
         ItemStack partialCopy = stack.toStackFast();
 
         if (!forced && !canInsert(partialCopy, slotIndex)) {
@@ -117,6 +119,15 @@ public class InventoryIterator extends AbstractInventoryIterator {
         int maxStack = getSlotStackLimit(slotIndex, partialCopy);
 
         if (!ItemStackHelpers.isStackEmpty(inSlot)) {
+            if (!forced) {
+                // Skip expensive NBT check if the stack is full.
+                if (inSlot.stackSize >= maxStack || !inSlot.isStackable()) {
+                    return stack.getStackSize();
+                }
+            }
+            if (!stack.matches(inSlot)) {
+                return stack.getStackSize();
+            }
             int toInsert = forced ? stack.getStackSize() : Math.min(maxStack - inSlot.stackSize, stack.getStackSize());
 
             ItemStack toInsertStack = inSlot.copy();

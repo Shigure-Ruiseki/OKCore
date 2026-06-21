@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
-public class SlotItemHandler extends Slot {
+public class SlotItemHandler extends SlotBackground {
 
     private static final IInventory emptyInventory = new InventoryBasic("[Null]", true, 0);
     private final IItemHandler itemHandler;

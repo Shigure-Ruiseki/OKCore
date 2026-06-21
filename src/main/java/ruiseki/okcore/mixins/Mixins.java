@@ -7,15 +7,13 @@ import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
 public enum Mixins implements IMixins {
 
-    NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")
-        .addCommonMixins("recipe.MixinShapedRecipeHandler", "recipe.MixinShapelessRecipeHandler")
-        .addRequiredMod(TargetMods.NotEnoughItems)
-        .setPhase(Phase.LATE)),
-
     GENERIC_EVENT(new MixinBuilder("Hook Generic Event").addCommonMixins("event.generic.MixinASMEventHandler")
         .setPhase(Phase.EARLY)),
 
-    ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("capabilities.MixinItemStackCap")
+    GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addClientMixins("event.gui.MixinGuiScreen")
+        .setPhase(Phase.EARLY)),
+
+    SLOT_BACKGROUND(new MixinBuilder("Add Slot BackGround").addClientMixins("client.gui.MixinGuiContainer")
         .setPhase(Phase.EARLY)),
 
     ITEM_SHARED_NBT(
@@ -30,6 +28,9 @@ public enum Mixins implements IMixins {
         .addClientMixins("cooldown.MixinRenderItem")
         .setPhase(Phase.EARLY)),
 
+    ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("capabilities.MixinItemStackCap")
+        .setPhase(Phase.EARLY)),
+
     ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Entity").addCommonMixins("capabilities.MixinEntityCap")
         .setPhase(Phase.EARLY)),
 
@@ -37,12 +38,14 @@ public enum Mixins implements IMixins {
         .addCommonMixins("capabilities.MixinTileEntity", "capabilities.MixinTileEntityChest")
         .setPhase(Phase.EARLY)),
 
-    GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addClientMixins("event.gui.MixinGuiScreen")
-        .setPhase(Phase.EARLY)),
-
     CHUNK_CAPABILITIES(new MixinBuilder("Add capabilities to Chunk")
         .addCommonMixins("capabilities.MixinChunk", "capabilities.MixinAnvilChunkLoader")
-        .setPhase(Phase.EARLY)),;
+        .setPhase(Phase.EARLY)),
+
+    NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")
+        .addCommonMixins("recipe.MixinShapedRecipeHandler", "recipe.MixinShapelessRecipeHandler")
+        .addRequiredMod(TargetMods.NotEnoughItems)
+        .setPhase(Phase.LATE)),;
 
     private final MixinBuilder builder;
 

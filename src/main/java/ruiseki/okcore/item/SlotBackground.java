@@ -1,10 +1,11 @@
 package ruiseki.okcore.item;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.ISlotBackground;
 
 public class SlotBackground extends Slot implements ISlotBackground {

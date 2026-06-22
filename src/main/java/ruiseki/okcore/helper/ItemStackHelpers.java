@@ -495,8 +495,7 @@ public class ItemStackHelpers {
 
         if (obj instanceof ICapabilityProvider provider) {
             IItemSource source = provider.getCapability(CapabilityItemHandler.ITEM_SOURCE_CAPABILITY, side)
-                .map(s -> s)
-                .orElse(null);
+                .resolveOrNull();
 
             if (source != null) return source;
         }
@@ -518,8 +517,7 @@ public class ItemStackHelpers {
 
         if (obj instanceof ICapabilityProvider provider) {
             IItemSink sink = provider.getCapability(CapabilityItemHandler.ITEM_SINK_CAPABILITY, side)
-                .map(s -> s)
-                .orElse(null);
+                .resolveOrNull();
 
             if (sink != null) return sink;
         }

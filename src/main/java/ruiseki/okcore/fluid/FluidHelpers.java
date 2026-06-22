@@ -39,8 +39,7 @@ public class FluidHelpers {
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
             IFluidSource source = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SOURCE_CAPABILITY, side)
-                .map(s -> s)
-                .orElse(null);
+                .resolveOrNull();
             if (source != null) {
                 return source;
             }
@@ -72,8 +71,7 @@ public class FluidHelpers {
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
             IFluidSink sink = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SINK_CAPABILITY, side)
-                .map(s -> s)
-                .orElse(null);
+                .resolveOrNull();
             if (sink != null) {
                 return sink;
             }

@@ -31,8 +31,7 @@ public class EnergyHelpers {
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
             IEnergySource source = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SOURCE_CAPABILITY, side)
-                .map(s -> s)
-                .orElse(null);
+                .resolveOrNull();
 
             if (source != null) return source;
         }
@@ -56,8 +55,7 @@ public class EnergyHelpers {
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
             IEnergySink sink = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SINK_CAPABILITY, side)
-                .map(s -> s)
-                .orElse(null);
+                .resolveOrNull();
 
             if (sink != null) {
                 return sink;

@@ -31,8 +31,7 @@ public class GuideGuiHandler implements IGuiHandler {
     @SideOnly(Side.CLIENT)
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
-            .map(s -> s)
-            .orElse(null);
+            .resolveOrNull();
         if (cap == null) return null;
 
         Book book = GuideHelpers.getIndexedBooks()

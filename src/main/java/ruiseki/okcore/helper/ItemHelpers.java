@@ -40,8 +40,7 @@ public class ItemHelpers {
 
         if (obj instanceof ICapabilityProvider provider) {
             IItemSource source = provider.getCapability(CapabilityItemHandler.ITEM_SOURCE_CAPABILITY, side)
-                .map(s -> s)
-                .orElse(null);
+                .resolveOrNull();
 
             if (source != null) return source;
         }
@@ -63,8 +62,7 @@ public class ItemHelpers {
 
         if (obj instanceof ICapabilityProvider provider) {
             IItemSink sink = provider.getCapability(CapabilityItemHandler.ITEM_SINK_CAPABILITY)
-                .map(s -> s)
-                .orElse(null);;
+                .resolveOrNull();
 
             if (sink != null) return sink;
         }

@@ -10,9 +10,10 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
+
+import ruiseki.okcore.capabilities.Capability;
 
 /**
  * This object encapsulates a lazy value, with typical transformation operations
@@ -42,7 +43,7 @@ public class LazyOptional<T> {
     private final Set<NotNullConsumer<LazyOptional<T>>> listeners = new HashSet<>();
     private boolean isValid = true;
 
-    private static final @NotNull LazyOptional<Void> EMPTY = new LazyOptional<>(null);
+    private static final LazyOptional<Void> EMPTY = new LazyOptional<>(null);
     private static final Logger LOGGER = LogManager.getLogger();
 
     /**
@@ -101,6 +102,10 @@ public class LazyOptional<T> {
         if (ret == null) throw new IllegalStateException(
             "LazyOptional is empty or otherwise returned null from getValue() unexpectedly");
         return ret;
+    }
+
+    public @Nullable T resolveOrNull() {
+        return getValue();
     }
 
     /**
@@ -194,7 +199,7 @@ public class LazyOptional<T> {
 
     /**
      * Resolves the value of this LazyOptional, turning it into a standard non-lazy {@link Optional<T>}
-     * 
+     *
      * @return The resolved optional.
      */
     public Optional<T> resolve() {

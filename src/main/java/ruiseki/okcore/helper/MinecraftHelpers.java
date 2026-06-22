@@ -228,7 +228,7 @@ public class MinecraftHelpers {
     public static void preDestroyBlock(BlockOK block, World world, int x, int y, int z, boolean saveNBT) {
         TileEntity tile = world.getTileEntity(x, y, z);
 
-        if (block.shouldDropInventory(world, x, y, z) && !world.isRemote) {
+        if (tile != null && block.shouldDropInventory(world, x, y, z) && !world.isRemote) {
             TileHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, ForgeDirection.UNKNOWN)
                 .ifPresent(handler -> {
                     InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));

@@ -36,7 +36,6 @@ import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.lib.LibMods;

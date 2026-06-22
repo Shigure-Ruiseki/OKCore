@@ -1,12 +1,12 @@
 package ruiseki.okcore.guide;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.common.network.IGuiHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.guide.gui.GuiCategory;
 import ruiseki.okcore.guide.gui.GuiEntry;

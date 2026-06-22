@@ -16,35 +16,40 @@
 
 package ruiseki.okcore.capabilities;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.collect.Lists;
-
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
+@NotNullByDefault
 public class CapabilityDispatcher implements INBTSerializable, ICapabilityProvider {
 
-    private ICapabilityProvider[] caps;
-    private INBTSerializable[] writers;
-    private String[] names;
+    private final ICapabilityProvider[] caps;
+    private final INBTSerializable[] writers;
+    private final String[] names;
+    private final List<Runnable> listeners;
 
-    public CapabilityDispatcher(Map<ResourceLocation, ICapabilityProvider> list) {
-        this(list, null);
+    public CapabilityDispatcher(Map<ResourceLocation, ICapabilityProvider> list, List<Runnable> listeners) {
+        this(list, listeners, null);
     }
 
     @SuppressWarnings("unchecked")
-    public CapabilityDispatcher(Map<ResourceLocation, ICapabilityProvider> list, @Nullable ICapabilityProvider parent) {
-        List<ICapabilityProvider> lstCaps = Lists.newArrayList();
-        List<INBTSerializable> lstWriters = Lists.newArrayList();
-        List<String> lstNames = Lists.newArrayList();
+    public CapabilityDispatcher(Map<ResourceLocation, ICapabilityProvider> list, List<Runnable> listeners,
+        @Nullable ICapabilityProvider parent) {
+        List<ICapabilityProvider> lstCaps = new ArrayList<>();
+        List<INBTSerializable> lstWriters = new ArrayList<>();
+        List<String> lstNames = new ArrayList<>();
+        this.listeners = listeners;
 
         if (parent != null) // Parents go first!
         {
@@ -72,25 +77,23 @@ public class CapabilityDispatcher implements INBTSerializable, ICapabilityProvid
     }
 
     @Override
-    public boolean hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        for (ICapabilityProvider cap : caps) {
-            if (cap.hasCapability(capability, facing)) {
-                return true;
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable ForgeDirection side) {
+        for (ICapabilityProvider c : caps) {
+            LazyOptional<T> ret = c.getCapability(cap, side);
+            // noinspection ConstantConditions
+            if (ret == null) {
+                throw new RuntimeException(
+                    String.format(
+                        Locale.ENGLISH,
+                        "Provider %s.getCapability() returned null; return LazyOptional.empty() instead!",
+                        c.getClass()
+                            .getTypeName()));
             }
-        }
-        return false;
-    }
-
-    @Override
-    @Nullable
-    public <T> T getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
-        for (ICapabilityProvider cap : caps) {
-            T ret = cap.getCapability(capability, facing);
-            if (ret != null) {
+            if (ret.isPresent()) {
                 return ret;
             }
         }
-        return null;
+        return LazyOptional.empty();
     }
 
     @Override
@@ -106,17 +109,21 @@ public class CapabilityDispatcher implements INBTSerializable, ICapabilityProvid
     public void deserializeNBT(NBTTagCompound nbt) {
         for (int x = 0; x < writers.length; x++) {
             if (nbt.hasKey(names[x])) {
-                writers[x].deserializeNBT((NBTTagCompound) nbt.getTag(names[x]));
+                writers[x].deserializeNBT(nbt.getCompoundTag(names[x]));
             }
         }
     }
 
-    public boolean areCompatible(CapabilityDispatcher other) // Called from ItemStack to compare equality.
+    public boolean areCompatible(@Nullable CapabilityDispatcher other) // Called from ItemStack to compare equality.
     { // Only compares serializeable caps.
         if (other == null) return this.writers.length == 0; // Done this way so we can do some pre-checks before doing
                                                             // the costly NBT serialization and compare
         if (this.writers.length == 0) return other.writers.length == 0;
         return this.serializeNBT()
             .equals(other.serializeNBT());
+    }
+
+    public void invalidate() {
+        this.listeners.forEach(Runnable::run);
     }
 }

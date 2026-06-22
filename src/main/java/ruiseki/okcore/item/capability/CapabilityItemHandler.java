@@ -1,7 +1,6 @@
 package ruiseki.okcore.item.capability;
 
 import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -18,10 +17,10 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.item.IItemHandler;
-import ruiseki.okcore.item.ItemStackHandler;
 import ruiseki.okcore.item.capability.cofh.ItemDuctSink;
 import ruiseki.okcore.item.capability.mfr.DSUItemSink;
 import ruiseki.okcore.item.capability.mfr.DSUItemSource;
@@ -59,45 +58,78 @@ public class CapabilityItemHandler implements IInitListener {
 
             event.addCapability(INVENTORY_CAP, new ICapabilityProvider() {
 
-                @Override
-                public boolean hasCapability(@NotNull Capability<?> capability, @NotNull ForgeDirection facing) {
-                    return capability == ITEM_HANDLER_CAPABILITY || capability == ITEM_SINK_CAPABILITY
-                        || capability == ITEM_SOURCE_CAPABILITY;
+                private final LazyOptional<IItemHandler>[] invHandlerCache = new LazyOptional[7];
+                private final LazyOptional<IItemSink>[] invSinkCache = new LazyOptional[7];
+                private final LazyOptional<IItemSource>[] invSourceCache = new LazyOptional[7];
+
+                private final LazyOptional<IItemHandler>[] dsuHandlerCache = new LazyOptional[7];
+                private final LazyOptional<IItemSink>[] dsuSinkCache = new LazyOptional[7];
+                private final LazyOptional<IItemSource>[] dsuSourceCache = new LazyOptional[7];
+
+                private final LazyOptional<IItemSink>[] ductSinkCache = new LazyOptional[7];
+
+                private int getIndex(@Nullable ForgeDirection facing) {
+                    return facing == null ? 6 : facing.ordinal();
                 }
 
                 @Override
-                public <T> T getCapability(@NotNull Capability<T> capability, @NotNull ForgeDirection facing) {
-                    if (!hasCapability(capability, facing)) return null;
+                public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                    @Nullable ForgeDirection facing) {
+                    int idx = getIndex(facing);
+
                     if (finalInv != null) {
                         if (capability == ITEM_HANDLER_CAPABILITY) {
-                            return (T) new InventoryHandlerWrapper(finalInv, facing);
+                            if (invHandlerCache[idx] == null) {
+                                invHandlerCache[idx] = LazyOptional
+                                    .of(() -> new InventoryHandlerWrapper(finalInv, facing));
+                            }
+                            return invHandlerCache[idx].cast();
                         }
                         if (capability == ITEM_SINK_CAPABILITY) {
-                            return (T) new InventoryItemSink(finalInv, facing);
+                            if (invSinkCache[idx] == null) {
+                                invSinkCache[idx] = LazyOptional.of(() -> new InventoryItemSink(finalInv, facing));
+                            }
+                            return invSinkCache[idx].cast();
                         }
                         if (capability == ITEM_SOURCE_CAPABILITY) {
-                            return (T) new InventoryItemSource(finalInv, facing);
+                            if (invSourceCache[idx] == null) {
+                                invSourceCache[idx] = LazyOptional.of(() -> new InventoryItemSource(finalInv, facing));
+                            }
+                            return invSourceCache[idx].cast();
                         }
                     }
 
                     if (finalDSU != null) {
                         if (capability == ITEM_HANDLER_CAPABILITY) {
-                            return (T) new DeepStorageHandlerWrapper(finalDSU);
+                            if (dsuHandlerCache[idx] == null) {
+                                dsuHandlerCache[idx] = LazyOptional.of(() -> new DeepStorageHandlerWrapper(finalDSU));
+                            }
+                            return dsuHandlerCache[idx].cast();
                         }
                         if (capability == ITEM_SINK_CAPABILITY) {
-                            return (T) new DSUItemSink(finalDSU);
+                            if (dsuSinkCache[idx] == null) {
+                                dsuSinkCache[idx] = LazyOptional.of(() -> new DSUItemSink(finalDSU));
+                            }
+                            return dsuSinkCache[idx].cast();
                         }
                         if (capability == ITEM_SOURCE_CAPABILITY) {
-                            return (T) new DSUItemSource(finalDSU);
+                            if (dsuSourceCache[idx] == null) {
+                                dsuSourceCache[idx] = LazyOptional.of(() -> new DSUItemSource(finalDSU));
+                            }
+                            return dsuSourceCache[idx].cast();
                         }
                     }
 
                     if (finalDuct != null) {
                         if (capability == ITEM_SINK_CAPABILITY) {
-                            return (T) new ItemDuctSink(finalDuct, facing);
+                            if (ductSinkCache[idx] == null) {
+                                ductSinkCache[idx] = LazyOptional.of(() -> new ItemDuctSink(finalDuct, facing));
+                            }
+                            return ductSinkCache[idx].cast();
                         }
                     }
-                    return null;
+
+                    return LazyOptional.empty();
                 }
             });
         }
@@ -106,48 +138,9 @@ public class CapabilityItemHandler implements IInitListener {
     @Override
     public void onInit(Step initStep) {
         if (initStep != IInitListener.Step.PREINIT) return;
-        CapabilityManager.INSTANCE.register(IItemHandler.class, new Capability.IStorage<IItemHandler>() {
-
-            @Override
-            public @Nullable NBTBase writeNBT(Capability<IItemHandler> capability, IItemHandler instance,
-                ForgeDirection side) {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IItemHandler> capability, IItemHandler instance, ForgeDirection side,
-                NBTBase nbt) {
-
-            }
-        }, ItemStackHandler::new);
-        CapabilityManager.INSTANCE.register(IItemSink.class, new Capability.IStorage<IItemSink>() {
-
-            @Override
-            public @Nullable NBTBase writeNBT(Capability<IItemSink> capability, IItemSink instance,
-                ForgeDirection side) {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IItemSink> capability, IItemSink instance, ForgeDirection side,
-                NBTBase nbt) {
-
-            }
-        }, () -> new InventoryItemSink(null, null));
-        CapabilityManager.INSTANCE.register(IItemSource.class, new Capability.IStorage<IItemSource>() {
-
-            @Override
-            public @Nullable NBTBase writeNBT(Capability<IItemSource> capability, IItemSource instance,
-                ForgeDirection side) {
-                return null;
-            }
-
-            @Override
-            public void readNBT(Capability<IItemSource> capability, IItemSource instance, ForgeDirection side,
-                NBTBase nbt) {
-
-            }
-        }, () -> new InventoryItemSource(null, null));
+        CapabilityManager.INSTANCE.register(IItemHandler.class);
+        CapabilityManager.INSTANCE.register(IItemSink.class);
+        CapabilityManager.INSTANCE.register(IItemSource.class);
         MinecraftForge.EVENT_BUS.register(this);
     }
 }

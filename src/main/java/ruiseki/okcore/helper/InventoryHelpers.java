@@ -191,13 +191,8 @@ public class InventoryHelpers {
 
     public static ItemStack insertIntoTile(TileEntity tile, ForgeDirection side, ItemStack stack, boolean simulate) {
         if (tile == null || stack == null) return stack;
-
-        IItemHandler handler = TileHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side);
-
-        if (handler != null) {
-            return insertStack(handler, stack, simulate);
-        }
-
-        return stack;
+        return TileHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)
+            .map(handler -> insertStack(handler, stack, simulate))
+            .orElse(stack);
     }
 }

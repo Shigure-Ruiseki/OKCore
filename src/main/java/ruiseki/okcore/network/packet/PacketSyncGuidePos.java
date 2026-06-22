@@ -5,7 +5,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.guide.capability.CapabilityGuide;
-import ruiseki.okcore.guide.capability.IGuideHandler;
 import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -13,17 +12,13 @@ import ruiseki.okcore.network.PacketCodec;
 public class PacketSyncGuidePos extends PacketCodec {
 
     @CodecField
-    public String entryName;
+    public String entryName = "";
     @CodecField
-    public int categoryIndex;
+    public int categoryIndex = -1;
     @CodecField
-    public int pageIndex;
+    public int pageIndex = 0;
 
-    public PacketSyncGuidePos() {
-        this.entryName = "";
-        this.categoryIndex = -1;
-        this.pageIndex = 0;
-    }
+    public PacketSyncGuidePos() {}
 
     public PacketSyncGuidePos(String entryName, int categoryIndex, int pageIndex) {
         this.entryName = entryName;
@@ -41,10 +36,8 @@ public class PacketSyncGuidePos extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY, null);
-        if (cap != null) {
-            cap.setLastPos(this.entryName, this.categoryIndex, this.pageIndex);
-        }
+        EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
+            .ifPresent(cap -> cap.setLastPos(this.entryName, this.categoryIndex, this.pageIndex));
     }
 
 }

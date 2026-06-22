@@ -16,55 +16,35 @@
 
 package ruiseki.okcore.capabilities;
 
-import java.util.Map;
-
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.okcore.datastructure.LazyOptional;
+
 public interface ICapabilityProvider {
 
     /**
-     * Determines if this object has support for the capability in question on the specific side.
-     * The return value of this MIGHT change during runtime if this object gains or loses support
-     * for a capability. It is not required to call this function before calling
-     * {@link #getCapability(Capability, ForgeDirection)}.
-     * <p>
-     * Basically, this method functions analogously to {@link Map#containsKey(Object)}.
-     * <p>
-     * <em>Example:</em>
-     * A Pipe getting a cover placed on one side causing it lose the Inventory attachment function for that side.
-     * </p>
-     * <p>
-     * This is a light weight version of getCapability, intended for metadata uses.
-     * </p>
+     * Retrieves the Optional handler for the capability requested on the specific side.
+     * The return value <strong>CAN</strong> be the same for multiple faces.
+     * Modders are encouraged to cache this value, using the listener capabilities of the Optional to
+     * be notified if the requested capability get lost.
      *
-     * @param capability The capability to check
-     * @param facing     The Side to check from:
-     *                   CAN BE NULL. Null is defined to represent 'internal' or 'self'
-     * @return True if this object supports the capability. If true, then
-     *         {@link #getCapability(Capability, ForgeDirection)}
-     *         must not return null.
+     * @param cap  The capability to check
+     * @param side The Side to check from,
+     *             <strong>CAN BE NULL</strong>. Null is defined to represent 'internal' or 'self'
+     * @return The requested an optional holding the requested capability.
      */
-    boolean hasCapability(@NotNull Capability<?> capability, ForgeDirection facing);
+    @NotNull
+    <T> LazyOptional<T> getCapability(@NotNull final Capability<T> cap, final @Nullable ForgeDirection side);
 
-    /**
-     * Retrieves the handler for the capability requested on the specific side.
-     * <ul>
-     * <li>The return value <strong>CAN</strong> be null if the object does not support the capability.</il>
-     * <li>The return value <strong>CAN</strong> be the same for multiple faces.</li>
-     * </ul>
-     * <p>
-     * Basically, this method functions analogously to {@link Map#get(Object)}.
-     *
-     * @param capability The capability to check
-     * @param facing     The Side to check from,
-     *                   <strong>CAN BE NULL</strong>. Null is defined to represent 'internal' or 'self'
-     * @return The requested capability. Must <strong>NOT</strong> be null when
-     *         {@link #hasCapability(Capability, ForgeDirection)}
-     *         would return true.
+    /*
+     * Purely added as a bouncer to sided version, to make modders stop complaining about calling with a null value.
+     * This should never be OVERRIDDEN, modders should only ever implement the sided version.
      */
-    @Nullable
-    <T> T getCapability(@NotNull Capability<T> capability, ForgeDirection facing);
+    @NotNull
+    default <T> LazyOptional<T> getCapability(@NotNull final Capability<T> cap) {
+        return getCapability(cap, null);
+    }
 }

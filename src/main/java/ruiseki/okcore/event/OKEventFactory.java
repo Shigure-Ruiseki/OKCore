@@ -1,11 +1,5 @@
 package ruiseki.okcore.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.village.Village;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.jetbrains.annotations.Nullable;
@@ -16,34 +10,18 @@ import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 
 public class OKEventFactory {
 
+    @SuppressWarnings("unchecked")
     @Nullable
-    public static CapabilityDispatcher gatherCapabilities(TileEntity tileEntity) {
-        return gatherCapabilities(new AttachCapabilitiesEvent<TileEntity>(TileEntity.class, tileEntity), null);
+    public static <T extends ICapabilityProvider> CapabilityDispatcher gatherCapabilities(Class<? extends T> type,
+        T provider) {
+        return gatherCapabilities(type, provider, null);
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
-    public static CapabilityDispatcher gatherCapabilities(Entity entity) {
-        return gatherCapabilities(new AttachCapabilitiesEvent<Entity>(Entity.class, entity), null);
-    }
-
-    @Nullable
-    public static CapabilityDispatcher gatherCapabilities(Village village) {
-        return gatherCapabilities(new AttachCapabilitiesEvent<Village>(Village.class, village), null);
-    }
-
-    @Nullable
-    public static CapabilityDispatcher gatherCapabilities(ItemStack stack, ICapabilityProvider parent) {
-        return gatherCapabilities(new AttachCapabilitiesEvent<ItemStack>(ItemStack.class, stack), parent);
-    }
-
-    @Nullable
-    public static CapabilityDispatcher gatherCapabilities(World world, ICapabilityProvider parent) {
-        return gatherCapabilities(new AttachCapabilitiesEvent<World>(World.class, world), parent);
-    }
-
-    @Nullable
-    public static CapabilityDispatcher gatherCapabilities(Chunk chunk) {
-        return gatherCapabilities(new AttachCapabilitiesEvent<Chunk>(Chunk.class, chunk), null);
+    public static <T extends ICapabilityProvider> CapabilityDispatcher gatherCapabilities(Class<? extends T> type,
+        T provider, @Nullable ICapabilityProvider parent) {
+        return gatherCapabilities(new AttachCapabilitiesEvent<T>((Class<T>) type, provider), parent);
     }
 
     @Nullable
@@ -51,6 +29,8 @@ public class OKEventFactory {
         @Nullable ICapabilityProvider parent) {
         MinecraftForge.EVENT_BUS.post(event);
         return !event.getCapabilities()
-            .isEmpty() || parent != null ? new CapabilityDispatcher(event.getCapabilities(), parent) : null;
+            .isEmpty() || parent != null
+                ? new CapabilityDispatcher(event.getCapabilities(), event.getListeners(), parent)
+                : null;
     }
 }

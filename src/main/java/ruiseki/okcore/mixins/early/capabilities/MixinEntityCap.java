@@ -19,7 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilityInternal;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.event.OKEventFactory;
 
 @Mixin(Entity.class)
@@ -38,7 +40,7 @@ public abstract class MixinEntityCap {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void okcore$initCaps(CallbackInfo ci) {
-        this.okcore$capabilities = OKEventFactory.gatherCapabilities((Entity) (Object) this);
+        this.okcore$capabilities = OKEventFactory.gatherCapabilities((Class) Entity.class, (ICapabilityProvider) this);
     }
 
     @Inject(
@@ -68,12 +70,10 @@ public abstract class MixinEntityCap {
         }
     }
 
-    public boolean okcorecap$hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        return this.okcore$capabilities != null && this.okcore$capabilities.hasCapability(capability, facing);
-    }
-
-    public <T> T okcorecap$getCapability(Capability<T> capability, ForgeDirection facing) {
-        return this.okcore$capabilities == null ? null : this.okcore$capabilities.getCapability(capability, facing);
+    public <T> @NotNull LazyOptional<T> okcorecap$getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        return this.okcore$capabilities == null ? LazyOptional.empty()
+            : this.okcore$capabilities.getCapability(capability, facing);
     }
 
     public NBTTagCompound okcorecap$serializeNBT() {

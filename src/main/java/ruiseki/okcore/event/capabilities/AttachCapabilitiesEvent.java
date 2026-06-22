@@ -1,10 +1,12 @@
 package ruiseki.okcore.event.capabilities;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.util.ResourceLocation;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import ruiseki.okcore.capabilities.ICapabilityProvider;
@@ -13,23 +15,28 @@ import ruiseki.okcore.event.generic.GenericEvent;
 /**
  * Fired whenever an object with Capabilities support {currently TileEntity/Item/Entity)
  * is created. Allowing for the attachment of arbitrary capability providers.
- * <p>
+ *
  * Please note that as this is fired for ALL object creations efficient code is recommended.
- * And if possible use one of the subclasses to filter your intended objects.
+ * And if possible use one of the sub-classes to filter your intended objects.
  */
 public class AttachCapabilitiesEvent<T> extends GenericEvent<T> {
 
     private final T obj;
     private final Map<ResourceLocation, ICapabilityProvider> caps = Maps.newLinkedHashMap();
     private final Map<ResourceLocation, ICapabilityProvider> view = Collections.unmodifiableMap(caps);
+    private final List<Runnable> listeners = Lists.newArrayList();
+    private final List<Runnable> listenersView = Collections.unmodifiableList(listeners);
 
     public AttachCapabilitiesEvent(Class<T> type, T obj) {
         super(type);
         this.obj = obj;
     }
 
+    /**
+     * Retrieves the object that is being created, Not much state is set.
+     */
     public T getObject() {
-        return obj;
+        return this.obj;
     }
 
     /**
@@ -50,5 +57,18 @@ public class AttachCapabilitiesEvent<T> extends GenericEvent<T> {
      */
     public Map<ResourceLocation, ICapabilityProvider> getCapabilities() {
         return view;
+    }
+
+    /**
+     * Adds a callback that is fired when the attached object is invalidated.
+     * Such as a Entity/TileEntity being removed from world.
+     * All attached providers should invalidate all of their held capability instances.
+     */
+    public void addListener(Runnable listener) {
+        this.listeners.add(listener);
+    }
+
+    public List<Runnable> getListeners() {
+        return this.listenersView;
     }
 }

@@ -1,40 +1,26 @@
 package ruiseki.okcore.helper;
 
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 public class ChunkHelpers {
 
-    public static <T> T getCapability(Chunk chunk, @NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
+    public static <T> LazyOptional<T> getCapability(Chunk chunk, @NotNull Capability<T> capability) {
         if (chunk == null) return null;
         try {
             ICapabilityProvider provider = (ICapabilityProvider) (Object) chunk;
 
-            return provider.getCapability(capability, facing);
+            return provider.getCapability(capability);
 
         } catch (ClassCastException ignored) {
             return null;
-        }
-    }
-
-    public static boolean hasCapability(Chunk chunk, @NotNull Capability<?> capability,
-        @Nullable ForgeDirection facing) {
-        if (chunk == null) return false;
-        try {
-            ICapabilityProvider provider = (ICapabilityProvider) (Object) chunk;
-
-            return provider.hasCapability(capability, facing);
-
-        } catch (ClassCastException ignored) {
-            return false;
         }
     }
 

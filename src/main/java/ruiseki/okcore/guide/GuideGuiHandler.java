@@ -6,7 +6,6 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.common.network.IGuiHandler;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
-import ruiseki.okcore.guide.capability.IGuideHandler;
 import ruiseki.okcore.guide.gui.GuiCategory;
 import ruiseki.okcore.guide.gui.GuiEntry;
 import ruiseki.okcore.guide.gui.GuiHome;
@@ -27,33 +26,31 @@ public class GuideGuiHandler implements IGuiHandler {
 
     @Override
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY, null);
-        if (cap == null) return null;
+        return EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
+            .map(cap -> {
+                Book book = GuideHelpers.getIndexedBooks()
+                    .get(ID);
+                try {
+                    String lastEntry = cap.getLastEntry();
+                    int lastCategoryIdx = cap.getLastCategory();
 
-        Book book = GuideHelpers.getIndexedBooks()
-            .get(ID);
-        if (book == null) return null;
+                    if (lastCategoryIdx >= 0 && lastCategoryIdx < book.getCategories()
+                        .size()) {
+                        CategoryAbstract category = book.getCategories()
+                            .get(lastCategoryIdx);
 
-        try {
-            String lastEntry = cap.getLastEntry();
-            int lastCategoryIdx = cap.getLastCategory();
-            int lastPage = cap.getLastPage();
+                        if (lastEntry != null && !lastEntry.isEmpty()
+                            && category.entries.containsKey(new ResourceLocation(lastEntry))) {
+                            EntryAbstract entry = category.entries.get(new ResourceLocation(lastEntry));
+                            return new GuiEntry(book, category, entry, player);
+                        }
 
-            if (lastCategoryIdx >= 0 && lastCategoryIdx < book.getCategories()
-                .size()) {
-                CategoryAbstract category = book.getCategories()
-                    .get(lastCategoryIdx);
+                        return new GuiCategory(book, category, player, null);
+                    }
+                } catch (Exception ignore) {}
 
-                if (lastEntry != null && !lastEntry.isEmpty()
-                    && category.entries.containsKey(new ResourceLocation(lastEntry))) {
-                    EntryAbstract entry = category.entries.get(new ResourceLocation(lastEntry));
-                    return new GuiEntry(book, category, entry, player);
-                }
-
-                return new GuiCategory(book, category, player, null);
-            }
-        } catch (Exception ignore) {}
-
-        return new GuiHome(book, player);
+                return new GuiHome(book, player);
+            })
+            .orElse(null);
     }
 }

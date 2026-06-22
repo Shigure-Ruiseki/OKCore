@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.guide.NBTBookTags;
 
 public class GuideHandler implements IGuideHandler, ICapabilitySerializable {
@@ -21,6 +23,7 @@ public class GuideHandler implements IGuideHandler, ICapabilitySerializable {
     private String lastEntry = "";
     private int lastCategory = -1;
     private int lastPage = 0;
+    private final LazyOptional<IGuideHandler> holder = LazyOptional.of(() -> this);
 
     public GuideHandler() {}
 
@@ -62,13 +65,12 @@ public class GuideHandler implements IGuideHandler, ICapabilitySerializable {
     }
 
     @Override
-    public boolean hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        return capability == CapabilityGuide.GUIDE_CAPABILITY;
-    }
-
-    @Override
-    public @Nullable <T> T getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
-        return hasCapability(capability, facing) ? (T) this : null;
+    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        if (capability == CapabilityGuide.GUIDE_CAPABILITY) {
+            return holder.cast();
+        }
+        return LazyOptional.empty();
     }
 
     @Override
@@ -93,7 +95,7 @@ public class GuideHandler implements IGuideHandler, ICapabilitySerializable {
         this.lastPage = tag.getInteger(NBTBookTags.PAGE_TAG);
 
         this.discoveredBooks.clear();
-        NBTTagList list = tag.getTagList(NBTBookTags.BOOK_TAG, 8);
+        NBTTagList list = tag.getTagList(NBTBookTags.BOOK_TAG, Constants.NBT.TAG_STRING);
         for (int i = 0; i < list.tagCount(); i++) {
             this.discoveredBooks.add(list.getStringTagAt(i));
         }

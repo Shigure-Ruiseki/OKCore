@@ -21,7 +21,7 @@ public class MixinASMEventHandler {
     @Unique
     public Type okcore$filter;
 
-    @Inject(method = "<init>", at = @At("RETURN"))
+    @Inject(method = "<init>", at = @At("RETURN"), remap = false)
     private void okcore$onInit(Object target, Method method, ModContainer owner, CallbackInfo ci) {
         if (method.getParameterTypes().length == 0) return;
         Class<?> eventClass = method.getParameterTypes()[0];

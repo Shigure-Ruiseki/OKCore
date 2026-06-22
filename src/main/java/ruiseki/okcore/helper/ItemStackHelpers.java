@@ -16,7 +16,6 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
@@ -28,6 +27,7 @@ import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.IImmutableItemMeta;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.hash.Fnv1a32;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 import ruiseki.okcore.item.IImmutableItemStack;
@@ -234,29 +234,15 @@ public class ItemStackHelpers {
             && ((a == null && b == null) || (a != null && a.stackSize == b.stackSize));
     }
 
-    public static <T> T getCapability(ItemStack stack, @NotNull Capability<T> capability,
-        @Nullable ForgeDirection facing) {
+    public static <T> LazyOptional<T> getCapability(ItemStack stack, @NotNull Capability<T> capability) {
         if (stack == null) return null;
         try {
             ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
 
-            return provider.getCapability(capability, facing);
+            return provider.getCapability(capability);
 
         } catch (ClassCastException ignored) {
             return null;
-        }
-    }
-
-    public static boolean hasCapability(ItemStack stack, @NotNull Capability<?> capability,
-        @Nullable ForgeDirection facing) {
-        if (stack == null) return false;
-        try {
-            ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
-
-            return provider.hasCapability(capability, facing);
-
-        } catch (ClassCastException ignored) {
-            return false;
         }
     }
 
@@ -508,7 +494,9 @@ public class ItemStackHelpers {
         }
 
         if (obj instanceof ICapabilityProvider provider) {
-            IItemSource source = provider.getCapability(CapabilityItemHandler.ITEM_SOURCE_CAPABILITY, side);
+            IItemSource source = provider.getCapability(CapabilityItemHandler.ITEM_SOURCE_CAPABILITY, side)
+                .map(s -> s)
+                .orElse(null);
 
             if (source != null) return source;
         }
@@ -529,7 +517,9 @@ public class ItemStackHelpers {
         }
 
         if (obj instanceof ICapabilityProvider provider) {
-            IItemSink sink = provider.getCapability(CapabilityItemHandler.ITEM_SINK_CAPABILITY, side);
+            IItemSink sink = provider.getCapability(CapabilityItemHandler.ITEM_SINK_CAPABILITY, side)
+                .map(s -> s)
+                .orElse(null);
 
             if (sink != null) return sink;
         }

@@ -1,5 +1,7 @@
 package ruiseki.okcore.guide;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -17,6 +19,8 @@ import ruiseki.okcore.helper.GuideHelpers;
 
 public class GuideGuiHandler implements IGuiHandler {
 
+    public static final GuideGuiHandler INSTANCE = new GuideGuiHandler();
+
     public GuideGuiHandler() {}
 
     @Override
@@ -25,6 +29,7 @@ public class GuideGuiHandler implements IGuiHandler {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
             .map(cap -> {

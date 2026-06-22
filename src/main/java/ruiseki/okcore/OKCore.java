@@ -104,7 +104,7 @@ public class OKCore extends ModBase {
             BlockProvider.init();
         }
 
-        NetworkRegistry.INSTANCE.registerGuiHandler(this, GuideGuiHandler.INSTANCE);
+        NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuideGuiHandler());
     }
 
     @Override

@@ -17,11 +17,8 @@ import ruiseki.okcore.guide.impl.abstraction.CategoryAbstract;
 import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
 import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.helper.GuideHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 public class GuideGuiHandler implements IGuiHandler {
-
-    public static final GuideGuiHandler INSTANCE = new GuideGuiHandler();
 
     public GuideGuiHandler() {}
 
@@ -33,7 +30,6 @@ public class GuideGuiHandler implements IGuiHandler {
     @Override
     @SideOnly(Side.CLIENT)
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        if (!MinecraftHelpers.isClientSide()) return null;
         IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
             .map(s -> s)
             .orElse(null);

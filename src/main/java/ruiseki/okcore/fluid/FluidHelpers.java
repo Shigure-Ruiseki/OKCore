@@ -38,9 +38,8 @@ public class FluidHelpers {
         }
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IFluidSource source = capabilityProvider
-                .getCapability(CapabilityFluidHandler.FLUID_SOURCE_CAPABILITY, side);
-
+            IFluidSource source = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SOURCE_CAPABILITY, side)
+                .resolveOrNull();
             if (source != null) {
                 return source;
             }
@@ -71,8 +70,8 @@ public class FluidHelpers {
         }
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IFluidSink sink = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SINK_CAPABILITY, side);
-
+            IFluidSink sink = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SINK_CAPABILITY, side)
+                .resolveOrNull();
             if (sink != null) {
                 return sink;
             }
@@ -89,11 +88,8 @@ public class FluidHelpers {
     }
 
     public static int fill(ItemStack stack, FluidStack resource, boolean doFill) {
-        IFluidHandlerItem handler = ItemStackHelpers
-            .getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
-        if (handler != null) {
-            return handler.fill(null, resource, doFill);
-        }
-        return 0;
+        return ItemStackHelpers.getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY)
+            .map(handler -> handler.fill(null, resource, doFill))
+            .orElse(0);
     }
 }

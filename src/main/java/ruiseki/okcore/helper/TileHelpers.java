@@ -16,6 +16,7 @@ import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * Contains helper methods for various tile entity specific things.
@@ -71,7 +72,7 @@ public class TileHelpers {
         }
     }
 
-    public static <C> C getCapability(TileEntity tile, @NotNull Capability<C> capability,
+    public static <C> LazyOptional<C> getCapability(TileEntity tile, @NotNull Capability<C> capability,
         @NotNull ForgeDirection side) {
         if (tile instanceof ICapabilityProvider provider) {
             return provider.getCapability(capability, side);
@@ -79,12 +80,13 @@ public class TileHelpers {
         return null;
     }
 
-    public static <C> C getCapability(DimPos dimPos, @NotNull Capability<C> capability, @NotNull ForgeDirection side) {
+    public static <C> LazyOptional<C> getCapability(DimPos dimPos, @NotNull Capability<C> capability,
+        @NotNull ForgeDirection side) {
         World world = dimPos.getWorld();
         return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : null;
     }
 
-    public static <C> C getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
+    public static <C> LazyOptional<C> getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
         @NotNull ForgeDirection side) {
         return getCapability(pos.getTileEntity(world), capability, side);
     }

@@ -30,7 +30,8 @@ public class EnergyHelpers {
         }
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IEnergySource source = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SOURCE_CAPABILITY, side);
+            IEnergySource source = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SOURCE_CAPABILITY, side)
+                .resolveOrNull();
 
             if (source != null) return source;
         }
@@ -53,7 +54,8 @@ public class EnergyHelpers {
         }
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IEnergySink sink = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SINK_CAPABILITY, side);
+            IEnergySink sink = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SINK_CAPABILITY, side)
+                .resolveOrNull();
 
             if (sink != null) {
                 return sink;

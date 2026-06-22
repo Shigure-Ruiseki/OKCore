@@ -39,7 +39,8 @@ public class ItemHelpers {
         }
 
         if (obj instanceof ICapabilityProvider provider) {
-            IItemSource source = provider.getCapability(CapabilityItemHandler.ITEM_SOURCE_CAPABILITY, side);
+            IItemSource source = provider.getCapability(CapabilityItemHandler.ITEM_SOURCE_CAPABILITY, side)
+                .resolveOrNull();
 
             if (source != null) return source;
         }
@@ -60,7 +61,8 @@ public class ItemHelpers {
         }
 
         if (obj instanceof ICapabilityProvider provider) {
-            IItemSink sink = provider.getCapability(CapabilityItemHandler.ITEM_SINK_CAPABILITY, side);
+            IItemSink sink = provider.getCapability(CapabilityItemHandler.ITEM_SINK_CAPABILITY)
+                .resolveOrNull();
 
             if (sink != null) return sink;
         }

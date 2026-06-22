@@ -5,6 +5,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.common.network.IGuiHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.guide.capability.IGuideHandler;
 import ruiseki.okcore.guide.gui.GuiCategory;
@@ -26,8 +28,10 @@ public class GuideGuiHandler implements IGuiHandler {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY, null);
+        IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
+            .resolveOrNull();
         if (cap == null) return null;
 
         Book book = GuideHelpers.getIndexedBooks()
@@ -37,7 +41,6 @@ public class GuideGuiHandler implements IGuiHandler {
         try {
             String lastEntry = cap.getLastEntry();
             int lastCategoryIdx = cap.getLastCategory();
-            int lastPage = cap.getLastPage();
 
             if (lastCategoryIdx >= 0 && lastCategoryIdx < book.getCategories()
                 .size()) {

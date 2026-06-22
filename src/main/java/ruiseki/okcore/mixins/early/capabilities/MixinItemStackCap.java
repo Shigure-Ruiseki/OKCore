@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,6 +23,7 @@ import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.capabilities.IItemCapability;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.event.OKEventFactory;
 
 @Mixin(ItemStack.class)
@@ -54,7 +56,7 @@ public abstract class MixinItemStackCap {
             provider = capItem.initCapabilities(stack, this.okcore$capNBT);
         }
 
-        this.okcore$capabilities = OKEventFactory.gatherCapabilities(stack, provider);
+        this.okcore$capabilities = OKEventFactory.gatherCapabilities((Class) ItemStack.class, provider);
         if (this.okcore$capNBT != null && this.okcore$capabilities != null) {
             this.okcore$capabilities.deserializeNBT(this.okcore$capNBT);
         }
@@ -92,12 +94,10 @@ public abstract class MixinItemStackCap {
      * CAPABILITY API
      */
 
-    public boolean okcorecap$hasCapability(@NotNull Capability<?> capability, ForgeDirection side) {
-        return this.okcore$capabilities != null && this.okcore$capabilities.hasCapability(capability, side);
-    }
-
-    public <T> T okcorecap$getCapability(Capability<T> capability, ForgeDirection side) {
-        return this.okcore$capabilities == null ? null : this.okcore$capabilities.getCapability(capability, side);
+    public <T> @NotNull LazyOptional<T> okcorecap$getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        return this.okcore$capabilities == null ? LazyOptional.empty()
+            : this.okcore$capabilities.getCapability(capability, facing);
     }
 
     public NBTTagCompound okcorecap$serializeNBT() {

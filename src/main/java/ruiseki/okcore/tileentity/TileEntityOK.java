@@ -21,6 +21,7 @@ import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 
@@ -229,13 +230,9 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
     }
 
     @Override
-    public boolean hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        return this.capabilities != null && this.capabilities.hasCapability(capability, facing);
-    }
-
-    @Override
-    public <T> T getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
-        return this.capabilities == null ? null : this.capabilities.getCapability(capability, facing);
+    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        return this.capabilities == null ? LazyOptional.empty() : this.capabilities.getCapability(capability, facing);
     }
 
     @Override

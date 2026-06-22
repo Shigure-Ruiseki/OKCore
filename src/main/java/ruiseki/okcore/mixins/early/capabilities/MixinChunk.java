@@ -1,5 +1,6 @@
 package ruiseki.okcore.mixins.early.capabilities;
 
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -17,6 +18,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.event.OKEventFactory;
 
 @Mixin(Chunk.class)
@@ -25,23 +27,23 @@ import ruiseki.okcore.event.OKEventFactory;
 public abstract class MixinChunk {
 
     @Unique
+    @Nullable
     private CapabilityDispatcher okcore$capabilities;
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Inject(method = "<init>(Lnet/minecraft/world/World;II)V", at = @At("RETURN"))
-    private void okcore$initCaps(CallbackInfo ci) {
-        this.okcore$capabilities = OKEventFactory.gatherCapabilities((Chunk) (Object) this);
+    private void okcore$initCaps(World world, int x, int z, CallbackInfo ci) {
+        this.okcore$capabilities = OKEventFactory.gatherCapabilities((Class) Chunk.class, (ICapabilityProvider) this);
     }
 
-    public boolean okcorecap$hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        return this.okcore$capabilities != null && this.okcore$capabilities.hasCapability(capability, facing);
+    public <T> @NotNull LazyOptional<T> okcorecap$getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        return this.okcore$capabilities == null ? LazyOptional.empty()
+            : this.okcore$capabilities.getCapability(capability, facing);
     }
 
     @Nullable
-    public <T> T okcorecap$getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
-        return this.okcore$capabilities == null ? null : this.okcore$capabilities.getCapability(capability, facing);
-    }
-
     public CapabilityDispatcher okcoreinternal$getCapabilities() {
-        return okcore$capabilities;
+        return this.okcore$capabilities;
     }
 }

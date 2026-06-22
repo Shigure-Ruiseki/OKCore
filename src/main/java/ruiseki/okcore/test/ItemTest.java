@@ -12,7 +12,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.okcore.datacomponent.component.UseCooldown;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.IItemCooldown;
-import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
@@ -52,27 +51,27 @@ public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
         if (te != null) {
             ForgeDirection direction = ForgeDirection.getOrientation(side);
 
-            IItemHandler handler = TileHelpers
-                .getCapability(te, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction);
+            return TileHelpers.getCapability(te, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction)
+                .map(handler -> {
+                    ItemStack toInsert = new ItemStack(Items.stick);
+                    ItemStack remainder = toInsert;
 
-            if (handler != null) {
-                ItemStack toInsert = new ItemStack(Items.stick);
-                ItemStack remainder = toInsert;
-
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    remainder = handler.insertItem(i, remainder, false);
-                    if (remainder == null || remainder.stackSize <= 0) {
-                        break;
+                    for (int i = 0; i < handler.getSlots(); i++) {
+                        remainder = handler.insertItem(i, remainder, false);
+                        if (remainder == null || remainder.stackSize <= 0) {
+                            break;
+                        }
                     }
-                }
 
-                if (remainder == null || remainder.stackSize < toInsert.stackSize) {
-                    world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "random.pop", 0.5F, 1.0F);
-                    return true;
-                } else {
-                    player.addChatComponentMessage(new ChatComponentText("§cTile Entity full!"));
-                }
-            }
+                    if (remainder == null || remainder.stackSize < toInsert.stackSize) {
+                        world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "random.pop", 0.5F, 1.0F);
+                        return true;
+                    } else {
+                        player.addChatComponentMessage(new ChatComponentText("§cTile Entity full!"));
+                    }
+                    return false;
+                })
+                .orElse(false);
         }
         return false;
     }

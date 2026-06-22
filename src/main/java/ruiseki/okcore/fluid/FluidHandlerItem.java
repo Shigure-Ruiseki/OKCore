@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 
 /**
@@ -28,6 +29,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     @NotNull
     protected ItemStack container;
     protected int capacity;
+    private final LazyOptional<IFluidHandlerItem> holder = LazyOptional.of(() -> this);
 
     /**
      * @param container The container itemStack, data is stored on it directly as NBT.
@@ -46,6 +48,10 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
 
     @Nullable
     public FluidStack getFluid() {
+        if (container == null || !container.hasTagCompound()) {
+            return null;
+        }
+
         NBTTagCompound tagCompound = container.getTagCompound();
         if (tagCompound == null || !tagCompound.hasKey(FLUID_NBT_KEY)) {
             return null;
@@ -174,15 +180,12 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     }
 
     @Override
-    public boolean hasCapability(@NotNull Capability<?> capability, @Nullable ForgeDirection facing) {
-        return capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    @Nullable
-    public <T> T getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
-        return capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY ? (T) this : null;
+    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) {
+            return holder.cast();
+        }
+        return LazyOptional.empty();
     }
 
     /**

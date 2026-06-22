@@ -12,12 +12,14 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.IFluidHandlerItem;
 
 public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProvider {
 
     private final ItemStack stack;
     private final IFluidContainerItem legacy;
+    private final LazyOptional<IFluidHandlerItem> holder = LazyOptional.of(() -> this);
 
     public FluidContainerWrapper(ItemStack stack, IFluidContainerItem legacy) {
         this.stack = stack;
@@ -27,14 +29,12 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
     // ===== Capability bridge =====
 
     @Override
-    public boolean hasCapability(@NotNull Capability<?> cap, @Nullable ForgeDirection side) {
-        return cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getCapability(@NotNull Capability<T> cap, @Nullable ForgeDirection side) {
-        return cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY ? (T) this : null;
+    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) {
+            return holder.cast();
+        }
+        return LazyOptional.empty();
     }
 
     @Override

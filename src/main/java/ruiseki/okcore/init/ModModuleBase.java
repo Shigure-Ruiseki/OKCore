@@ -13,6 +13,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import lombok.Getter;
+import net.minecraft.command.ICommandSender;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ICommonProxy;
 
@@ -40,6 +41,12 @@ public abstract class ModModuleBase {
     }
 
     protected void registerSubCommand(Map<String, ICommand> subcommand) {}
+
+    /**
+     * Reloads module's runtime data.
+     * Called by /ok reload and module-specific reload commands.
+     */
+    public void reload(ICommandSender sender) throws Exception {}
 
     public ICommonProxy getModuleProxy() {
         return moduleProxy;

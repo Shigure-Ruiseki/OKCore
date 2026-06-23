@@ -14,6 +14,9 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 import ruiseki.okcore.proxy.ICommonProxy;
 
 public class ModuleManager {
@@ -121,6 +124,28 @@ public class ModuleManager {
         for (ModModuleBase module : modules) {
             if (!module.isEnable()) continue;
             module.registerSubCommand(subcommand);
+        }
+    }
+
+    /**
+     * Reloads all enabled modules.
+     * Disabled modules are silently skipped, matching the pattern used in all other methods.
+     * Errors in one module do not prevent reloading of subsequent modules.
+     */
+    public void reloadAll(ICommandSender sender) {
+        for (ModModuleBase module : modules) {
+            if (!module.isEnable()) continue;
+            try {
+                module.reload(sender);
+            } catch (Exception e) {
+                sender.addChatMessage(
+                    new ChatComponentText(
+                        EnumChatFormatting.RED + "  ["
+                            + module.getClass()
+                            .getSimpleName()
+                            + "] failed: "
+                            + e.getMessage()));
+            }
         }
     }
 }

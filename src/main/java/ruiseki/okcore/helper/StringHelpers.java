@@ -2,9 +2,10 @@ package ruiseki.okcore.helper;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * A collection of String helper methods.

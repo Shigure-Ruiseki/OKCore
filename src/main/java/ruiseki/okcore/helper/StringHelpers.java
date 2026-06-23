@@ -34,7 +34,7 @@ public class StringHelpers {
         for (String partialInput : input.split(NEWLINE_PATTERN)) {
             StringBuilder buffer = new StringBuilder();
             for (String word : partialInput.split(SPACE)) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append(SPACE);
                 }
                 buffer.append(word);
@@ -43,7 +43,7 @@ public class StringHelpers {
                     buffer = new StringBuilder();
                 }
             }
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 list.add(prefix + buffer.toString());
             }
         }

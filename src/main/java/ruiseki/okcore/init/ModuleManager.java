@@ -30,6 +30,14 @@ public class ModuleManager {
         modules.add(module);
     }
 
+    @SuppressWarnings("unchecked")
+    public <T extends ModModuleBase> T getModuleByType(Class<T> type) {
+        for (ModModuleBase module : modules) {
+            if (type.isInstance(module)) return (T) module;
+        }
+        return null;
+    }
+
     public void preInit(FMLPreInitializationEvent event) {
         for (ModModuleBase module : modules) {
             if (!module.isEnable()) continue;

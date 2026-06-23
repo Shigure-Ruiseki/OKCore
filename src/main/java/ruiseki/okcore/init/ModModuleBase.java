@@ -3,6 +3,7 @@ package ruiseki.okcore.init;
 import java.util.Map;
 
 import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -13,7 +14,6 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import lombok.Getter;
-import net.minecraft.command.ICommandSender;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ICommonProxy;
 

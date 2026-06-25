@@ -1,5 +1,7 @@
 package ruiseki.okcore.proxy;
 
+import java.io.File;
+
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.Entity;
@@ -123,5 +125,15 @@ public abstract class CommonProxyComponent implements ICommonProxy {
         float vol = event.sound.getVolume();
         float pitch = event.sound.getPitch();
         sendSound(player.posX, player.posY, player.posZ, event.name, vol, pitch);
+    }
+
+    @Override
+    public String getEntityTexturePath(Class<? extends Entity> clazz, Entity entity) {
+        return null;
+    }
+
+    @Override
+    public void dumpTexture(File baseDir, String texturePath) {
+        // No-op server side
     }
 }

@@ -6,7 +6,6 @@ import ruiseki.okcore.tileentity.ITile;
 
 /**
  * Base interface for tile entities that store and manage energy.
- * IC2 integration is handled separately by IC2EnergyAdapter.
  */
 public interface IOKEnergyTile extends ITile {
 

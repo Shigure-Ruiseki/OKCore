@@ -2,38 +2,39 @@ package ruiseki.okcore.energy.capability.cofh;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-import cofh.api.energy.IEnergyReceiver;
+import cofh.api.energy.IEnergyHandler;
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.okcore.energy.capability.IEnergySink;
+import ruiseki.okcore.energy.capability.IEnergySource;
 
-public class CoFHEnergyReceiver implements IEnergyStorage, IEnergySink {
+public class CoFHEnergyHandler implements IEnergyStorage, IEnergySink, IEnergySource {
 
-    protected final IEnergyReceiver receiver;
+    protected final IEnergyHandler handler;
     protected final ForgeDirection side;
 
-    public CoFHEnergyReceiver(IEnergyReceiver receiver, ForgeDirection side) {
-        this.receiver = receiver;
+    public CoFHEnergyHandler(IEnergyHandler handler, ForgeDirection side) {
+        this.handler = handler;
         this.side = side;
     }
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
-        return receiver.receiveEnergy(side, maxReceive, simulate);
+        return handler.receiveEnergy(side, maxReceive, simulate);
     }
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
-        return 0;
+        return handler.extractEnergy(side, maxExtract, simulate);
     }
 
     @Override
     public int getEnergyStored() {
-        return receiver.getEnergyStored(side);
+        return handler.getEnergyStored(side);
     }
 
     @Override
     public int getMaxEnergyStored() {
-        return receiver.getMaxEnergyStored(side);
+        return handler.getMaxEnergyStored(side);
     }
 
     @Override
@@ -42,7 +43,12 @@ public class CoFHEnergyReceiver implements IEnergyStorage, IEnergySink {
     }
 
     @Override
+    public int extract(int amount, boolean simulate) {
+        return extractEnergy(amount, simulate);
+    }
+
+    @Override
     public boolean canConnect() {
-        return receiver.canConnectEnergy(side);
+        return handler.canConnectEnergy(side);
     }
 }

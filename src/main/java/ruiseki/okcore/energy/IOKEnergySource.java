@@ -6,7 +6,6 @@ import cofh.api.energy.IEnergyProvider;
 
 /**
  * Interface for tile entities that can provide/extract energy.
- * IC2 integration is handled separately by IC2EnergyAdapter.
  */
 public interface IOKEnergySource extends IEnergyProvider, IOKEnergyTile {
 

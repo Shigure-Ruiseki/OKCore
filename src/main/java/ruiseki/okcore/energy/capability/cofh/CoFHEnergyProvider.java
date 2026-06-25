@@ -3,26 +3,46 @@ package ruiseki.okcore.energy.capability.cofh;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import cofh.api.energy.IEnergyProvider;
+import cofh.api.energy.IEnergyStorage;
 import ruiseki.okcore.energy.capability.IEnergySource;
 
-public class CoFHEnergyProvider implements IEnergySource {
+public class CoFHEnergyProvider implements IEnergyStorage, IEnergySource {
 
-    private final IEnergyProvider handler;
-    private final ForgeDirection side;
+    protected final IEnergyProvider provider;
+    protected final ForgeDirection side;
 
-    public CoFHEnergyProvider(IEnergyProvider handler, ForgeDirection side) {
-        this.handler = handler;
+    public CoFHEnergyProvider(IEnergyProvider provider, ForgeDirection side) {
+        this.provider = provider;
         this.side = side;
     }
 
     @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        return 0;
+    }
+
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        return provider.extractEnergy(side, maxExtract, simulate);
+    }
+
+    @Override
+    public int getEnergyStored() {
+        return provider.getEnergyStored(side);
+    }
+
+    @Override
+    public int getMaxEnergyStored() {
+        return provider.getMaxEnergyStored(side);
+    }
+
+    @Override
     public int extract(int amount, boolean simulate) {
-        if (!canConnect()) return 0;
-        return handler.extractEnergy(side, amount, simulate);
+        return extractEnergy(amount, simulate);
     }
 
     @Override
     public boolean canConnect() {
-        return handler.canConnectEnergy(side);
+        return provider.canConnectEnergy(side);
     }
 }

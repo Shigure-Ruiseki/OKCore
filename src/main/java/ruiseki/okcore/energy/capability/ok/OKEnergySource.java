@@ -17,9 +17,6 @@ public class OKEnergySource implements IEnergySource {
 
     @Override
     public int extract(int amount, boolean simulate) {
-        if (!canConnect()) {
-            return 0;
-        }
         return provider.extractEnergy(side, amount, simulate);
     }
 

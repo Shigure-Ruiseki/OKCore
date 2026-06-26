@@ -20,6 +20,7 @@ public class Reference {
         + "after:BigReactors;"
         + "after:ActuallyAdditions;"
         + "after:DraconicEvolution;";
+    public static final String UPDATE_URL = "https://raw.githubusercontent.com/Shigure-Ruiseki/OKCore/master/version/version.json";
     public static final String PROXY_COMMON = Tags.MOD_GROUP + ".CommonProxy";
     public static final String PROXY_CLIENT = Tags.MOD_GROUP + ".ClientProxy";
     public static final String GUI_FACTORY = Tags.MOD_GROUP + ".config.GuiConfigFactory";

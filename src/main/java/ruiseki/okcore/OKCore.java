@@ -61,6 +61,7 @@ public class OKCore extends ModBase {
     public OKCore() {
         super(Reference.MOD_ID, Reference.MOD_NAME);
         putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
+        putGenericReference(REFKEY_VERSION_CHECKER_URL, Reference.UPDATE_URL);
 
         addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());

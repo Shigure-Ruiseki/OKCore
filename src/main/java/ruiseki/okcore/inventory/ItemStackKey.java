@@ -1,10 +1,12 @@
 package ruiseki.okcore.inventory;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.Nullable;
@@ -20,12 +22,16 @@ public final class ItemStackKey {
     private String cachedDisplayName;
     private int[] cachedOreIds;
     private String cachedModId;
-    private int cachedHashCode;;
+    private int cachedHashCode = -1;
 
     private ItemStackKey(long packedItemMeta, @Nullable NBTTagCompound nbt) {
         this.packedItemMeta = packedItemMeta;
         this.nbt = nbt;
         this.nbtSignature = nbt != null ? calculateNBTHash(nbt) : 0;
+    }
+
+    private ItemStackKey(int itemId, int meta, @Nullable NBTTagCompound nbt) {
+        this(packItemMeta(itemId, meta), nbt);
     }
 
     public static @Nullable ItemStackKey of(@Nullable ItemStack stack) {
@@ -122,6 +128,30 @@ public final class ItemStackKey {
             .hashCode();
     }
 
+    public void write(PacketBuffer buf) throws IOException {
+        buf.writeVarIntToBuffer(getItemId());
+        buf.writeVarIntToBuffer(getMeta());
+
+        if (nbt != null) {
+            buf.writeBoolean(true);
+            buf.writeNBTTagCompoundToBuffer(nbt);
+        } else {
+            buf.writeBoolean(false);
+        }
+    }
+
+    public static ItemStackKey read(PacketBuffer buf) throws IOException {
+        int itemId = buf.readVarIntFromBuffer();
+        int meta = buf.readVarIntFromBuffer();
+
+        NBTTagCompound tag = null;
+        if (buf.readBoolean()) {
+            tag = buf.readNBTTagCompoundFromBuffer();
+        }
+
+        return new ItemStackKey(packItemMeta(itemId, meta), tag);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -133,7 +163,7 @@ public final class ItemStackKey {
 
     @Override
     public int hashCode() {
-        if (cachedHashCode == 0) {
+        if (cachedHashCode == -1) {
             int result = Long.hashCode(packedItemMeta);
             result = 31 * result + nbtSignature;
             cachedHashCode = result;

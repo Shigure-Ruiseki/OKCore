@@ -66,8 +66,6 @@ public class EnergyStorage extends EnergyStorageDefault implements INBTSerializa
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
-        if (!canReceive()) return 0;
-
         int energyReceived = Math.min(capacity - energy, Math.min(this.maxReceive, maxReceive));
         if (!simulate) setEnergyInternal(energy + energyReceived);
         return energyReceived;
@@ -75,8 +73,6 @@ public class EnergyStorage extends EnergyStorageDefault implements INBTSerializa
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
-        if (!canExtract()) return 0;
-
         int energyExtracted = Math.min(energy, Math.min(this.maxExtract, maxExtract));
         if (!simulate) setEnergyInternal(energy - energyExtracted);
         return energyExtracted;

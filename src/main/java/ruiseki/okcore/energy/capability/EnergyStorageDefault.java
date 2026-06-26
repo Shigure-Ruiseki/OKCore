@@ -39,8 +39,6 @@ public class EnergyStorageDefault implements IEnergyStorage {
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
-        if (!canReceive()) return 0;
-
         int energyReceived = Math.min(capacity - energy, Math.min(this.maxReceive, maxReceive));
         if (!simulate) energy += energyReceived;
         return energyReceived;
@@ -48,8 +46,6 @@ public class EnergyStorageDefault implements IEnergyStorage {
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
-        if (!canExtract()) return 0;
-
         int energyExtracted = Math.min(energy, Math.min(this.maxExtract, maxExtract));
         if (!simulate) energy -= energyExtracted;
         return energyExtracted;
@@ -63,15 +59,5 @@ public class EnergyStorageDefault implements IEnergyStorage {
     @Override
     public int getMaxEnergyStored() {
         return capacity;
-    }
-
-    @Override
-    public boolean canExtract() {
-        return this.maxExtract > 0;
-    }
-
-    @Override
-    public boolean canReceive() {
-        return this.maxReceive > 0;
     }
 }

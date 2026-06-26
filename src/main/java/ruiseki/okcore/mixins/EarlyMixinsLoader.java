@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.launchwrapper.Launch;
+
+import com.falsepattern.deploader.DeploaderStub;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
@@ -15,6 +18,13 @@ import ruiseki.okcore.config.ModConfig;
 public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     static {
+        try {
+            Class.forName("com.gtnewhorizons.gtnhextlib.core.GTNHExtLibCore", true, Launch.classLoader);
+        } catch (ClassNotFoundException notExtLib) {
+            DeploaderStub.bootstrap(false);
+            DeploaderStub.runDepLoader();
+        }
+
         try {
             ModConfig.registerConfig();
         } catch (ConfigException e) {

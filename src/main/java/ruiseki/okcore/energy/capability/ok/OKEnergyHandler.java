@@ -2,15 +2,16 @@ package ruiseki.okcore.energy.capability.ok;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.okcore.energy.IOKEnergySink;
+import ruiseki.okcore.energy.IOKEnergyHandler;
 import ruiseki.okcore.energy.capability.IEnergySink;
+import ruiseki.okcore.energy.capability.IEnergySource;
 
-public class OKEnergySink implements IEnergySink {
+public class OKEnergyHandler implements IEnergySink, IEnergySource {
 
-    private final IOKEnergySink receiver;
+    private final IOKEnergyHandler receiver;
     private final ForgeDirection side;
 
-    public OKEnergySink(IOKEnergySink receiver, ForgeDirection side) {
+    public OKEnergyHandler(IOKEnergyHandler receiver, ForgeDirection side) {
         this.receiver = receiver;
         this.side = side;
     }
@@ -18,6 +19,11 @@ public class OKEnergySink implements IEnergySink {
     @Override
     public int insert(int amount, boolean simulate) {
         return receiver.receiveEnergy(side, amount, simulate);
+    }
+
+    @Override
+    public int extract(int amount, boolean simulate) {
+        return receiver.extractEnergy(side, amount, simulate);
     }
 
     @Override

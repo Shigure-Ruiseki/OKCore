@@ -203,4 +203,8 @@ public class CommandMod implements ICommand {
     protected void printErrorToChat(ICommandSender sender, String line) {
         sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + line));
     }
+
+    protected void sendLocalizedMessage(ICommandSender sender, String key, Object... params) {
+        printLineToChat(sender, LangHelpers.localize(key, params));
+    }
 }

@@ -16,7 +16,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
 
-    uses: Shigure-Ruiseki/OK-Actions-Workflows/.github/workflows/reusable-update-version.yml@master
+    uses: Shigure-Ruiseki/OK-Actions-Workflows/.github/workflows/update-version.yml@master
     with:
       head_branch: ${{ github.event.workflow_run.head_branch || github.ref_name }}
       target_folder: 'version'

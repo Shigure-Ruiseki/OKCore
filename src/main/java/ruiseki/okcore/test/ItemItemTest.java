@@ -16,9 +16,9 @@ import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
-public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
+public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
-    public ItemTest() {
+    public ItemItemTest() {
         super("item_test");
         setTextureName("stick");
     }

@@ -8,13 +8,15 @@ import org.apache.logging.log4j.Level;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.item.IItem;
-import ruiseki.okcore.test.ItemTest;
+import ruiseki.okcore.test.ItemEnergyTest;
+import ruiseki.okcore.test.ItemItemTest;
 
 public enum ModItems {
 
     // spotless: off
 
-    ITEM_TEST(ModConfig.useItemTest, new ItemTest()),
+    ITEM_TEST(ModConfig.useItemTest, new ItemItemTest()),
+    ENERGY_TEST(ModConfig.useItemTest, new ItemEnergyTest()),
 
     ;
 

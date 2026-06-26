@@ -19,7 +19,9 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.cofh.CoFHEnergyWrapper;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
+import ruiseki.okcore.helper.EnderIOHelpers;
 import ruiseki.okcore.init.IInitListener;
+import ruiseki.okcore.lib.LibMods;
 
 @SuppressWarnings("unchecked")
 public class CapabilityEnergy implements IInitListener {
@@ -38,36 +40,41 @@ public class CapabilityEnergy implements IInitListener {
     @SubscribeEvent
     public void attachCoFHCapability(AttachCapabilitiesEvent<TileEntity> event) {
         final TileEntity tile = event.getObject();
+        if (!(tile instanceof IEnergyConnection)) return;
 
-        if (tile instanceof IEnergyConnection) {
-            event.addCapability(ENERGY_CAP, new ICapabilityProvider() {
+        event.addCapability(ENERGY_CAP, new ICapabilityProvider() {
 
-                private final LazyOptional<CoFHEnergyWrapper>[] energyCache = new LazyOptional[7];
+            private final LazyOptional<IEnergyStorage>[] energyCache = new LazyOptional[7];
 
-                private int getIndex(@Nullable ForgeDirection facing) {
-                    return facing == null ? 6 : facing.ordinal();
-                }
+            private int getIndex(@Nullable ForgeDirection facing) {
+                return facing == null ? 6 : facing.ordinal();
+            }
 
-                @Override
-                public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
-                    @Nullable ForgeDirection facing) {
+            @Override
+            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                @Nullable ForgeDirection facing) {
 
-                    if (capability == ENERGY || capability == ENERGY_SINK_CAPABILITY
-                        || capability == ENERGY_SOURCE_CAPABILITY) {
+                if (capability == ENERGY || capability == ENERGY_SINK_CAPABILITY
+                    || capability == ENERGY_SOURCE_CAPABILITY) {
 
-                        int idx = getIndex(facing);
+                    int idx = getIndex(facing);
 
-                        if (energyCache[idx] == null) {
-                            energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyWrapper(tile, facing));
+                    if (energyCache[idx] == null) {
+                        if (LibMods.EnderIO.isModLoaded()) {
+                            energyCache[idx] = EnderIOHelpers.getPowerCapability(tile, facing);
                         }
 
-                        return energyCache[idx].cast();
+                        if (energyCache[idx] == null || !energyCache[idx].isPresent()) {
+                            energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyWrapper(tile, facing));
+                        }
                     }
 
-                    return LazyOptional.empty();
+                    return energyCache[idx].cast();
                 }
-            });
-        }
+
+                return LazyOptional.empty();
+            }
+        });
     }
 
     @Override

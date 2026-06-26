@@ -42,6 +42,13 @@ public abstract class MixinChunk {
             : this.okcore$capabilities.getCapability(capability, facing);
     }
 
+    @Inject(method = "onChunkUnload()V", at = @At("HEAD"), remap = false)
+    private void okcore$invalidateCaps(CallbackInfo ci) {
+        if (this.okcore$capabilities != null) {
+            this.okcore$capabilities.invalidate();
+        }
+    }
+
     @Nullable
     public CapabilityDispatcher okcoreinternal$getCapabilities() {
         return this.okcore$capabilities;

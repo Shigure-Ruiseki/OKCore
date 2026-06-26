@@ -25,6 +25,7 @@ public class UpdateNotificationHandler {
 
     /**
      * Constructs a notification handler tied to a specific mod instance.
+     * 
      * @param mod The specific mod instance to monitor for updates.
      */
     public UpdateNotificationHandler(ModBase mod) {
@@ -56,7 +57,11 @@ public class UpdateNotificationHandler {
             .setBold(true);
 
         // 3. Build the primary notification message (Sửa để truyền đủ 3 tham số: Tên Mod, Phiên bản cũ, Phiên bản mới)
-        IChatComponent mainMessage = new ChatComponentTranslation("okcore.update.available", mod.getModName(), currentVersion, latestVersion);
+        IChatComponent mainMessage = new ChatComponentTranslation(
+            "okcore.update.available",
+            mod.getModName(),
+            currentVersion,
+            latestVersion);
         mainMessage.getChatStyle()
             .setColor(EnumChatFormatting.WHITE)
             .setBold(false);
@@ -76,16 +81,20 @@ public class UpdateNotificationHandler {
                 String platformKey = entry.getKey(); // e.g., "github", "curseforge"
                 String downloadUrl = entry.getValue(); // e.g., "https://..."
 
-                if (downloadUrl == null || downloadUrl.trim().isEmpty()) {
+                if (downloadUrl == null || downloadUrl.trim()
+                    .isEmpty()) {
                     continue;
                 }
 
                 // Append a separator space between buttons
                 fullMessage.appendSibling(new ChatComponentText(" "));
 
-                String platformName = platformKey.substring(0, 1).toUpperCase() + platformKey.substring(1).toLowerCase();
+                String platformName = platformKey.substring(0, 1)
+                    .toUpperCase()
+                    + platformKey.substring(1)
+                        .toLowerCase();
 
-                 IChatComponent linkButton = new ChatComponentTranslation("okcore.update.link", platformName);
+                IChatComponent linkButton = new ChatComponentTranslation("okcore.update.link", platformName);
 
                 // Apply visual formatting to the actionable link button
                 linkButton.getChatStyle()

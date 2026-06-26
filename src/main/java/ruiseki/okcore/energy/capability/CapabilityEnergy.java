@@ -24,9 +24,7 @@ import ruiseki.okcore.energy.capability.cofh.CoFHEnergyHandler;
 import ruiseki.okcore.energy.capability.cofh.CoFHEnergyProvider;
 import ruiseki.okcore.energy.capability.cofh.CoFHEnergyReceiver;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
-import ruiseki.okcore.helper.EnderIOHelpers;
 import ruiseki.okcore.init.IInitListener;
-import ruiseki.okcore.lib.LibMods;
 
 @SuppressWarnings("unchecked")
 public class CapabilityEnergy implements IInitListener {
@@ -41,8 +39,6 @@ public class CapabilityEnergy implements IInitListener {
     public static Capability<IEnergySource> ENERGY_SOURCE_CAPABILITY = null;
 
     public static final ResourceLocation ENERGY_CAP = new ResourceLocation(Reference.MOD_ID, "energy");
-
-    private static final boolean isEnderIOLoaded = LibMods.EnderIO.isModLoaded();
 
     @SubscribeEvent
     public void attachCoFHCapability(AttachCapabilitiesEvent<TileEntity> event) {
@@ -66,18 +62,12 @@ public class CapabilityEnergy implements IInitListener {
 
                     if (capability == ENERGY) {
                         if (energyCache[idx] == null) {
-                            if (isEnderIOLoaded) {
-                                energyCache[idx] = EnderIOHelpers.getEnergyCap(tile, facing);
-                            }
-
-                            if (energyCache[idx] == null) {
-                                if (tile instanceof IEnergyHandler handler) {
-                                    energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyHandler(handler, facing));
-                                } else if (tile instanceof IEnergyReceiver receiver) {
-                                    energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyReceiver(receiver, facing));
-                                } else if (tile instanceof IEnergyProvider provider) {
-                                    energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyProvider(provider, facing));
-                                }
+                            if (tile instanceof IEnergyHandler handler) {
+                                energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyHandler(handler, facing));
+                            } else if (tile instanceof IEnergyReceiver receiver) {
+                                energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyReceiver(receiver, facing));
+                            } else if (tile instanceof IEnergyProvider provider) {
+                                energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyProvider(provider, facing));
                             }
                         }
                         if (energyCache[idx] != null) {
@@ -87,13 +77,8 @@ public class CapabilityEnergy implements IInitListener {
 
                     if (capability == ENERGY_SINK_CAPABILITY) {
                         if (sinkCache[idx] == null) {
-                            if (isEnderIOLoaded) {
-                                sinkCache[idx] = EnderIOHelpers.getSinkCap(tile, facing);
-                            }
-                            if (sinkCache[idx] == null) {
-                                if (tile instanceof IEnergyReceiver receiver) {
-                                    sinkCache[idx] = LazyOptional.of(() -> new CoFHEnergyReceiver(receiver, facing));
-                                }
+                            if (tile instanceof IEnergyReceiver receiver) {
+                                sinkCache[idx] = LazyOptional.of(() -> new CoFHEnergyReceiver(receiver, facing));
                             }
                         }
                         if (sinkCache[idx] != null) {
@@ -103,13 +88,8 @@ public class CapabilityEnergy implements IInitListener {
 
                     if (capability == ENERGY_SOURCE_CAPABILITY) {
                         if (sourceCache[idx] == null) {
-                            if (isEnderIOLoaded) {
-                                sourceCache[idx] = EnderIOHelpers.getSourceCap(tile, facing);
-                            }
-                            if (sourceCache[idx] == null) {
-                                if (tile instanceof IEnergyProvider provider) {
-                                    sourceCache[idx] = LazyOptional.of(() -> new CoFHEnergyProvider(provider, facing));
-                                }
+                            if (tile instanceof IEnergyProvider provider) {
+                                sourceCache[idx] = LazyOptional.of(() -> new CoFHEnergyProvider(provider, facing));
                             }
                         }
                         if (sourceCache[idx] != null) {

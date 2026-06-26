@@ -15,6 +15,7 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 import ruiseki.okcore.config.ModConfig;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
+@IFMLLoadingPlugin.TransformerExclusions({ "it.unimi.dsi.fastutil" })
 public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     static {

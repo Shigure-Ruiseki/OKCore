@@ -22,12 +22,6 @@ public class UpdateChecker {
         if (mod == null) return;
 
         String urlStr = mod.getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_URL);
-        if (urlStr == null || urlStr.trim()
-            .isEmpty()) {
-            mod.log(Level.INFO, "Update check skipped: No URL provided.");
-            return;
-        }
-
         Thread thread = new Thread(() -> {
             try {
                 String currentVersion = mod.getReferenceValue(ModBase.REFKEY_MOD_VERSION);

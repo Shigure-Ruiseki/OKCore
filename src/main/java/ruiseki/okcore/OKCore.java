@@ -25,6 +25,7 @@ import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.command.CommandOKCore;
+import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DataHandler;
 import ruiseki.okcore.data.DataLoader;
@@ -61,6 +62,7 @@ public class OKCore extends ModBase {
     public OKCore() {
         super(Reference.MOD_ID, Reference.MOD_NAME);
         putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
+        putGenericReference(REFKEY_VERSION_CHECKER, ModConfig.useVersionChecker);
         putGenericReference(REFKEY_VERSION_CHECKER_URL, Reference.UPDATE_URL);
 
         addInitListeners(new CapabilityItemHandler());

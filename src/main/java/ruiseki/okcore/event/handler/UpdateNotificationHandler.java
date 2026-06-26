@@ -25,7 +25,7 @@ public class UpdateNotificationHandler {
 
     /**
      * Constructs a notification handler tied to a specific mod instance.
-     * 
+     *
      * @param mod The specific mod instance to monitor for updates.
      */
     public UpdateNotificationHandler(ModBase mod) {
@@ -34,15 +34,11 @@ public class UpdateNotificationHandler {
 
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (mod == null || notified) {
-            return;
-        }
+        if (mod == null || notified) return;
 
         // 1. Verify the update status from the centralized ModBase references
         String status = mod.getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_STATUS);
-        if (!VersionHelpers.STATUS_OUTDATED.equals(status)) {
-            return;
-        }
+        if (!VersionHelpers.STATUS_OUTDATED.equals(status)) return;
 
         String currentVersion = mod.getReferenceValue(ModBase.REFKEY_MOD_VERSION);
         String latestVersion = mod.getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_LATEST);

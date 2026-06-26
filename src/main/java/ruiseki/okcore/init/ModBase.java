@@ -28,6 +28,7 @@ import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyRegistry;
 import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.helper.LoggerHelpers;
+import ruiseki.okcore.helper.VersionHelpers;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ICommonProxy;
@@ -45,6 +46,8 @@ public abstract class ModBase {
         .create("mod_version", String.class);
     public static final EnumReferenceKey<Boolean> REFKEY_RETROGEN = EnumReferenceKey.create("retrogen", Boolean.class);
 
+    public static final EnumReferenceKey<Boolean> REFKEY_VERSION_CHECKER = EnumReferenceKey
+        .create("version_check_enable", Boolean.class);
     public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_URL = EnumReferenceKey
         .create("version_check_url", String.class);
     public static final EnumReferenceKey<Map> REFKEY_VERSION_CHECKER_DOWNLOADS = EnumReferenceKey
@@ -115,9 +118,11 @@ public abstract class ModBase {
 
     private void populateDefaultGenericReferences() {
         putGenericReference(REFKEY_RETROGEN, false);
+
+        putGenericReference(REFKEY_VERSION_CHECKER, false);
         putGenericReference(REFKEY_VERSION_CHECKER_URL, "");
         putGenericReference(REFKEY_VERSION_CHECKER_LATEST, "0.0.0.0");
-        putGenericReference(REFKEY_VERSION_CHECKER_STATUS, "UNKNOWN");
+        putGenericReference(REFKEY_VERSION_CHECKER_STATUS, VersionHelpers.STATUS_UNKNOWN);
         putGenericReference(REFKEY_VERSION_CHECKER_DOWNLOADS, Maps.<String, String>newHashMap());
     }
 
@@ -278,7 +283,10 @@ public abstract class ModBase {
 
         // Call init listeners
         callInitStepListeners(IInitListener.Step.POSTINIT);
-        UpdateChecker.checkUpdates(this);
+        if (this.getReferenceValue(REFKEY_VERSION_CHECKER) && !this.getReferenceValue(REFKEY_VERSION_CHECKER_URL)
+            .isEmpty()) {
+            UpdateChecker.checkUpdates(this);
+        }
     }
 
     /**

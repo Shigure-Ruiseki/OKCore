@@ -21,3 +21,5 @@ jobs:
       head_branch: ${{ github.event.workflow_run.head_branch || github.ref_name }}
       target_folder: 'version'
       extra_downloads: '{}'
+    secrets:
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}

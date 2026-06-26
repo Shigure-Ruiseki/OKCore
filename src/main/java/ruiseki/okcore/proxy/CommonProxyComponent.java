@@ -10,10 +10,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.client.event.sound.SoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.event.handler.UpdateNotificationHandler;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.network.packet.PacketSound;
 import ruiseki.okcore.world.gen.IRetroGenRegistry;
@@ -71,6 +74,13 @@ public abstract class CommonProxyComponent implements ICommonProxy {
         // if (bucketRegistry != null) {
         // MinecraftForge.EVENT_BUS.register(bucketRegistry);
         // }
+        if (!getMod().getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_URL)
+            .isEmpty()) {
+            UpdateNotificationHandler handler = new UpdateNotificationHandler(getMod());
+            FMLCommonHandler.instance()
+                .bus()
+                .register(handler);
+        }
     }
 
     @Override

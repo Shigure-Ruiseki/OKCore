@@ -43,19 +43,16 @@ public abstract class ModBase {
 
     public static final EnumReferenceKey<String> REFKEY_MOD_VERSION = EnumReferenceKey
         .create("mod_version", String.class);
-    public static final EnumReferenceKey<String> REFKEY_TEXTURE_PATH_GUI = EnumReferenceKey
-        .create("texture_path_gui", String.class);
-    public static final EnumReferenceKey<String> REFKEY_TEXTURE_PATH_MODELS = EnumReferenceKey
-        .create("texture_path_models", String.class);
-    public static final EnumReferenceKey<String> REFKEY_TEXTURE_PATH_SKINS = EnumReferenceKey
-        .create("texture_path_skins", String.class);
     public static final EnumReferenceKey<Boolean> REFKEY_RETROGEN = EnumReferenceKey.create("retrogen", Boolean.class);
-    public static final EnumReferenceKey<Boolean> REFKEY_DEBUGCONFIG = EnumReferenceKey
-        .create("debug_config", Boolean.class);
-    public static final EnumReferenceKey<Boolean> REFKEY_CRASH_ON_INVALID_RECIPE = EnumReferenceKey
-        .create("crash_on_invalid_recipe", Boolean.class);
-    public static final EnumReferenceKey<Boolean> REFKEY_CRASH_ON_MODCOMPAT_CRASH = EnumReferenceKey
-        .create("crash_on_modcompat_crash", Boolean.class);
+
+    public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_URL = EnumReferenceKey
+        .create("version_check_url", String.class);
+    public static final EnumReferenceKey<Map> REFKEY_VERSION_CHECKER_DOWNLOADS = EnumReferenceKey
+        .create("version_check_downloads", Map.class);
+    public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_LATEST = EnumReferenceKey
+        .create("version_check_latest", String.class);
+    public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_STATUS = EnumReferenceKey
+        .create("version_check_status", String.class);
 
     private final String modId, modName;
     private final LoggerHelpers loggerHelper;
@@ -65,7 +62,6 @@ public abstract class ModBase {
     private CommandMod baseCommand;
 
     private final RegistryManager registryManager;
-    // private final RecipeHandler recipeHandler;
     private final IKeyRegistry keyRegistry;
     private final PacketHandler packetHandler;
     private final ModuleManager moduleManager;
@@ -79,7 +75,6 @@ public abstract class ModBase {
         this.loggerHelper = constructLoggerHelper();
         this.initListeners = Sets.newHashSet();
         this.registryManager = constructRegistryManager();
-        // this.recipeHandler = constructRecipeHandler();
         this.keyRegistry = new KeyRegistry();
         this.packetHandler = constructPacketHandler();
         this.moduleManager = constructModuleManager();
@@ -94,8 +89,6 @@ public abstract class ModBase {
     protected RegistryManager constructRegistryManager() {
         return new RegistryManager();
     }
-
-    // protected abstract RecipeHandler constructRecipeHandler();
 
     protected PacketHandler constructPacketHandler() {
         return new PacketHandler(this);
@@ -121,13 +114,11 @@ public abstract class ModBase {
     }
 
     private void populateDefaultGenericReferences() {
-        putGenericReference(REFKEY_TEXTURE_PATH_GUI, "textures/gui/");
-        putGenericReference(REFKEY_TEXTURE_PATH_MODELS, "textures/models/");
-        putGenericReference(REFKEY_TEXTURE_PATH_SKINS, "textures/skins/");
         putGenericReference(REFKEY_RETROGEN, false);
-        putGenericReference(REFKEY_DEBUGCONFIG, false);
-        putGenericReference(REFKEY_CRASH_ON_INVALID_RECIPE, false);
-        putGenericReference(REFKEY_CRASH_ON_MODCOMPAT_CRASH, false);
+        putGenericReference(REFKEY_VERSION_CHECKER_URL, "");
+        putGenericReference(REFKEY_VERSION_CHECKER_LATEST, "0.0.0.0");
+        putGenericReference(REFKEY_VERSION_CHECKER_STATUS, "UNKNOWN");
+        putGenericReference(REFKEY_VERSION_CHECKER_DOWNLOADS, Maps.<String, String>newHashMap());
     }
 
     /**
@@ -287,6 +278,7 @@ public abstract class ModBase {
 
         // Call init listeners
         callInitStepListeners(IInitListener.Step.POSTINIT);
+        UpdateChecker.checkUpdates(this);
     }
 
     /**

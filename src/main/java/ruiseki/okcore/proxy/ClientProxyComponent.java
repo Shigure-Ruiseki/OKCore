@@ -27,6 +27,8 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.okcore.client.key.IKeyRegistry;
+import ruiseki.okcore.event.handler.UpdateNotificationHandler;
+import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
 
 /**
@@ -104,6 +106,13 @@ public abstract class ClientProxyComponent extends CommonProxyComponent implemen
         FMLCommonHandler.instance()
             .bus()
             .register(getMod().getKeyRegistry());
+        if (!getMod().getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_URL)
+            .isEmpty() && getMod().getReferenceValue(ModBase.REFKEY_VERSION_CHECKER)) {
+            UpdateNotificationHandler handler = new UpdateNotificationHandler(getMod());
+            FMLCommonHandler.instance()
+                .bus()
+                .register(handler);
+        }
     }
 
     @Override

@@ -9,13 +9,14 @@ Just a core mod extracted to use in other mod
 *   [GTNHLib (>= 0.11.9)](https://github.com/GTNewHorizons/GTNHLib)
 
 ## Features:
-- JSON Loader,
-- JSON Recipes Loader,
-- Capabilities system,
-- Item Cooldown can add cooldown time for an item after each use,
-- Data Component for Item to handle get/set more easy,
-- Fast NBT write/read in TileEntity and WorldSavedData with NBTPersist system,
-- Fast Packet register with PacketCodec,
-- Mouse and Key Input event,
-- Many Helpers class help reducing code duplication,
-- BaseMod class help handle recipe, packet, command, keybind, event,...
+*   JSON Loader,
+*   JSON Recipes Loader,
+*   Capabilities system,
+*   Item Cooldown can add cooldown time for an item after each use,
+*   Data Component for Item to handle get/set more easy,
+*   Fast NBT write/read in TileEntity and WorldSavedData with NBTPersist,
+*   Fast Packet Message with PacketCodec,
+*   Mouse and Key Input event,
+*   Update Checker,
+*   Many Helpers class help reducing code duplication,*
+*   BaseMod class help handle command, keybind, event,...

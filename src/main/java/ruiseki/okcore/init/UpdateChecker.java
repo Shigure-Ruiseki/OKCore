@@ -14,9 +14,6 @@ import com.google.gson.JsonParser;
 
 import ruiseki.okcore.helper.VersionHelpers;
 
-/**
- * Generic update checker that fetches version info from a hosted JSON file.
- */
 public class UpdateChecker {
 
     private static final int TIMEOUT_MS = 5000;
@@ -25,7 +22,6 @@ public class UpdateChecker {
         if (mod == null) return;
 
         String urlStr = mod.getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_URL);
-
         if (urlStr == null || urlStr.trim()
             .isEmpty()) {
             mod.log(Level.INFO, "Update check skipped: No URL provided.");
@@ -46,7 +42,6 @@ public class UpdateChecker {
 
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     try (InputStreamReader reader = new InputStreamReader(connection.getInputStream())) {
-
                         JsonElement element = new JsonParser().parse(reader);
                         if (element != null && element.isJsonObject()) {
                             JsonObject json = element.getAsJsonObject();
@@ -84,16 +79,12 @@ public class UpdateChecker {
                                                 .getAsString());
                                     }
                                 }
-
                                 mod.putGenericReference(ModBase.REFKEY_VERSION_CHECKER_DOWNLOADS, downloadMap);
                             }
                         }
                     }
                 } else {
                     mod.putGenericReference(ModBase.REFKEY_VERSION_CHECKER_STATUS, VersionHelpers.STATUS_UNKNOWN);
-                    mod.log(
-                        Level.WARN,
-                        "Failed to check updates. Server responded with code: " + connection.getResponseCode());
                 }
             } catch (Exception e) {
                 mod.putGenericReference(ModBase.REFKEY_VERSION_CHECKER_STATUS, VersionHelpers.STATUS_UNKNOWN);

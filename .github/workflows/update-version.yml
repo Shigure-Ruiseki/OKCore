@@ -25,7 +25,6 @@ jobs:
     uses: Shigure-Ruiseki/OK-Actions-Workflows/.github/workflows/update-version.yml@master
     with:
       head_branch: ${{ inputs.head_branch || github.event.workflow_run.head_branch }}
-      target_folder: 'version'
       extra_downloads: '{}'
     secrets:
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}

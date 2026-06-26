@@ -1,4 +1,4 @@
-name: Auto Tag on Merge
+name: Auto tag on merge
 
 on:
   pull_request:

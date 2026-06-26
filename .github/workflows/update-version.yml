@@ -1,0 +1,17 @@
+name: Update version JSON
+
+on:
+  workflow_run:
+    workflows: [ "Release tagged build" ]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  call-update-version:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: Shigure-Ruiseki/OKBase/.github/workflows/reusable-update-version.yml@master
+    with:
+      head_branch: ${{ github.event.workflow_run.head_branch }}

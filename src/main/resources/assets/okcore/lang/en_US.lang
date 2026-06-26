@@ -1,3 +1,6 @@
+okcore.update.available=A new version of %s is available! (Current: %s, Latest: %s)
+okcore.update.link=[Check on %s]
+okcore.update.hover=Click to open the %s page in your browser
 
 item.guide_book.name=Guide Book
 

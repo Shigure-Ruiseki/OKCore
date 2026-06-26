@@ -25,7 +25,7 @@ public class UpdateNotificationHandler {
 
     /**
      * Constructs a notification handler tied to a specific mod instance.
-     * * @param mod The specific mod instance to monitor for updates.
+     * @param mod The specific mod instance to monitor for updates.
      */
     public UpdateNotificationHandler(ModBase mod) {
         this.mod = mod;
@@ -43,6 +43,7 @@ public class UpdateNotificationHandler {
             return;
         }
 
+        String currentVersion = mod.getReferenceValue(ModBase.REFKEY_MOD_VERSION);
         String latestVersion = mod.getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_LATEST);
 
         // Mark as notified to prevent spamming on dimension changes or re-logging
@@ -54,8 +55,8 @@ public class UpdateNotificationHandler {
             .setColor(EnumChatFormatting.AQUA)
             .setBold(true);
 
-        // 3. Build the primary notification message (e.g., "New version (X) is available!")
-        IChatComponent mainMessage = new ChatComponentTranslation("okcore.update.available", latestVersion);
+        // 3. Build the primary notification message (Sửa để truyền đủ 3 tham số: Tên Mod, Phiên bản cũ, Phiên bản mới)
+        IChatComponent mainMessage = new ChatComponentTranslation("okcore.update.available", mod.getModName(), currentVersion, latestVersion);
         mainMessage.getChatStyle()
             .setColor(EnumChatFormatting.WHITE)
             .setBold(false);
@@ -72,20 +73,19 @@ public class UpdateNotificationHandler {
         if (downloads != null && !downloads.isEmpty()) {
             // Iterate through each entry to append platform-specific clickable buttons
             for (Map.Entry<String, String> entry : downloads.entrySet()) {
-                String platformName = entry.getKey(); // e.g., "github", "curseforge"
+                String platformKey = entry.getKey(); // e.g., "github", "curseforge"
                 String downloadUrl = entry.getValue(); // e.g., "https://..."
 
-                if (downloadUrl == null || downloadUrl.trim()
-                    .isEmpty()) {
+                if (downloadUrl == null || downloadUrl.trim().isEmpty()) {
                     continue;
                 }
 
                 // Append a separator space between buttons
                 fullMessage.appendSibling(new ChatComponentText(" "));
 
-                // Resolve the dynamic translation key for the platform (fallback handled by translation system)
-                String localizationKey = "okcore.update.link." + platformName.toLowerCase();
-                IChatComponent linkButton = new ChatComponentTranslation(localizationKey);
+                String platformName = platformKey.substring(0, 1).toUpperCase() + platformKey.substring(1).toLowerCase();
+
+                 IChatComponent linkButton = new ChatComponentTranslation("okcore.update.link", platformName);
 
                 // Apply visual formatting to the actionable link button
                 linkButton.getChatStyle()

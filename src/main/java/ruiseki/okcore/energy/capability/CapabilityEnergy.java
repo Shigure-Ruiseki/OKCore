@@ -9,9 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import cofh.api.energy.IEnergyConnection;
-import cofh.api.energy.IEnergyHandler;
-import cofh.api.energy.IEnergyProvider;
-import cofh.api.energy.IEnergyReceiver;
 import cofh.api.energy.IEnergyStorage;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.okcore.Reference;
@@ -20,9 +17,7 @@ import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.energy.capability.cofh.CoFHEnergyHandler;
-import ruiseki.okcore.energy.capability.cofh.CoFHEnergyProvider;
-import ruiseki.okcore.energy.capability.cofh.CoFHEnergyReceiver;
+import ruiseki.okcore.energy.capability.cofh.CoFHEnergyWrapper;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.init.IInitListener;
 
@@ -47,9 +42,7 @@ public class CapabilityEnergy implements IInitListener {
         if (tile instanceof IEnergyConnection) {
             event.addCapability(ENERGY_CAP, new ICapabilityProvider() {
 
-                private final LazyOptional<IEnergyStorage>[] energyCache = new LazyOptional[7];
-                private final LazyOptional<IEnergySink>[] sinkCache = new LazyOptional[7];
-                private final LazyOptional<IEnergySource>[] sourceCache = new LazyOptional[7];
+                private final LazyOptional<CoFHEnergyWrapper>[] energyCache = new LazyOptional[7];
 
                 private int getIndex(@Nullable ForgeDirection facing) {
                     return facing == null ? 6 : facing.ordinal();
@@ -58,43 +51,17 @@ public class CapabilityEnergy implements IInitListener {
                 @Override
                 public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
                     @Nullable ForgeDirection facing) {
-                    int idx = getIndex(facing);
 
-                    if (capability == ENERGY) {
+                    if (capability == ENERGY || capability == ENERGY_SINK_CAPABILITY
+                        || capability == ENERGY_SOURCE_CAPABILITY) {
+
+                        int idx = getIndex(facing);
+
                         if (energyCache[idx] == null) {
-                            if (tile instanceof IEnergyHandler handler) {
-                                energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyHandler(handler, facing));
-                            } else if (tile instanceof IEnergyReceiver receiver) {
-                                energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyReceiver(receiver, facing));
-                            } else if (tile instanceof IEnergyProvider provider) {
-                                energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyProvider(provider, facing));
-                            }
+                            energyCache[idx] = LazyOptional.of(() -> new CoFHEnergyWrapper(tile, facing));
                         }
-                        if (energyCache[idx] != null) {
-                            return energyCache[idx].cast();
-                        }
-                    }
 
-                    if (capability == ENERGY_SINK_CAPABILITY) {
-                        if (sinkCache[idx] == null) {
-                            if (tile instanceof IEnergyReceiver receiver) {
-                                sinkCache[idx] = LazyOptional.of(() -> new CoFHEnergyReceiver(receiver, facing));
-                            }
-                        }
-                        if (sinkCache[idx] != null) {
-                            return sinkCache[idx].cast();
-                        }
-                    }
-
-                    if (capability == ENERGY_SOURCE_CAPABILITY) {
-                        if (sourceCache[idx] == null) {
-                            if (tile instanceof IEnergyProvider provider) {
-                                sourceCache[idx] = LazyOptional.of(() -> new CoFHEnergyProvider(provider, facing));
-                            }
-                        }
-                        if (sourceCache[idx] != null) {
-                            return sourceCache[idx].cast();
-                        }
+                        return energyCache[idx].cast();
                     }
 
                     return LazyOptional.empty();

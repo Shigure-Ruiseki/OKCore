@@ -13,14 +13,15 @@ import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.capability.minecraft.InventoryHandlerWrapper;
-import ruiseki.okcore.item.capability.minecraft.InventoryItemSink;
-import ruiseki.okcore.item.capability.minecraft.InventoryItemSource;
 
 @NotNullByDefault
 @Mixin(TileEntityChest.class)
@@ -28,7 +29,7 @@ import ruiseki.okcore.item.capability.minecraft.InventoryItemSource;
 public abstract class MixinTileEntityChest extends MixinTileEntity implements ICapabilitySerializable {
 
     @Unique
-    private final LazyOptional<?>[] okcore$itemHandlers = new LazyOptional<?>[7];
+    private final LazyOptional<InventoryHandlerWrapper>[] okcore$itemWrappers = new LazyOptional[7];
 
     @Unique
     private int okcore$getDirectionIndex(@Nullable ForgeDirection facing) {
@@ -45,24 +46,31 @@ public abstract class MixinTileEntityChest extends MixinTileEntity implements IC
             if (inventory != null) {
                 int idx = okcore$getDirectionIndex(facing);
 
-                if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-                    if (okcore$itemHandlers[idx] == null) {
-                        okcore$itemHandlers[idx] = LazyOptional
+                if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY
+                    || capability == CapabilityItemHandler.ITEM_SINK_CAPABILITY
+                    || capability == CapabilityItemHandler.ITEM_SOURCE_CAPABILITY) {
+
+                    if (okcore$itemWrappers[idx] == null) {
+                        okcore$itemWrappers[idx] = LazyOptional
                             .of(() -> new InventoryHandlerWrapper(inventory, facing));
                     }
-                    return (LazyOptional<T>) okcore$itemHandlers[idx];
-                }
 
-                if (capability == CapabilityItemHandler.ITEM_SINK_CAPABILITY) {
-                    return (LazyOptional<T>) LazyOptional.of(() -> new InventoryItemSink(inventory, facing));
-                }
-                if (capability == CapabilityItemHandler.ITEM_SOURCE_CAPABILITY) {
-                    return (LazyOptional<T>) LazyOptional.of(() -> new InventoryItemSource(inventory, facing));
+                    return okcore$itemWrappers[idx].cast();
                 }
             }
         }
 
         return super.okcorecap$getCapability(capability, facing);
+    }
+
+    @Inject(method = "invalidate", at = @At("RETURN"))
+    private void okcore$invalidate(CallbackInfo ci) {
+        for (int i = 0; i < 7; i++) {
+            if (okcore$itemWrappers[i] != null) {
+                okcore$itemWrappers[i].invalidate();
+                okcore$itemWrappers[i] = LazyOptional.empty();
+            }
+        }
     }
 
     public NBTTagCompound okcorecap$serializeNBT() {

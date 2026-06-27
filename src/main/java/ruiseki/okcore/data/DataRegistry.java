@@ -16,7 +16,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.loader.DataLoader;
 import ruiseki.okcore.data.loader.IDataLoader;
 
-public class DataHandler {
+public class DataRegistry {
 
     private static final Map<String, List<IDataLoader>> COMPONENTS = new HashMap<>();
 

@@ -5,7 +5,8 @@ import java.util.function.Predicate;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.okcore.json.AbstractJsonMaterial;
-import ruiseki.okcore.json.IJsonNetwork;
+import ruiseki.okcore.network.INetworkMaterial;
 
-public abstract class IngredientMaterial extends AbstractJsonMaterial implements Predicate<ItemStack>, IJsonNetwork {
+public abstract class IngredientMaterial extends AbstractJsonMaterial
+    implements Predicate<ItemStack>, INetworkMaterial {
 }

@@ -1,10 +1,8 @@
-package ruiseki.okcore.json;
+package ruiseki.okcore.network;
 
 import java.io.IOException;
 
-import ruiseki.okcore.network.ExtendedBuffer;
-
-public interface IJsonNetwork {
+public interface INetworkMaterial {
 
     void toNetwork(ExtendedBuffer buffer) throws IOException;
 

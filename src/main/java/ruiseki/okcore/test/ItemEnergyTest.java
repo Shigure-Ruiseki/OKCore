@@ -1,5 +1,7 @@
 package ruiseki.okcore.test;
 
+import java.util.List;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -7,8 +9,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.ItemOK;
+import ruiseki.okcore.tag.TagKey;
 
 public class ItemEnergyTest extends ItemOK {
 
@@ -34,5 +38,12 @@ public class ItemEnergyTest extends ItemOK {
                 .orElse(false);
         }
         return false;
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
+        for (TagKey<?> key : TagHelpers.getTags(stack)) {
+            list.add(key.toString());
+        }
     }
 }

@@ -162,6 +162,7 @@ public class RecipeRegistry {
 
     public static void processHolders() {
         RecipeManager manager = RecipeManager.getManager();
+        manager.clearRecipes();
 
         List<IRecipeOK<?>> parsedRecipes = new ArrayList<>();
         for (RecipeHolder holder : RECIPE_HOLDERS.values()) {
@@ -171,7 +172,6 @@ public class RecipeRegistry {
             }
         }
 
-        manager.clearRecipes();
         manager.addRecipes(parsedRecipes);
 
         syncMCCraftingManager();

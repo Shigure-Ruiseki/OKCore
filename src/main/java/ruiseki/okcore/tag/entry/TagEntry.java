@@ -77,4 +77,9 @@ public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMat
     public int hashCode() {
         return Objects.hash(this.id, this.meta, this.getType());
     }
+
+    @Override
+    public String toString() {
+        return this.id.toString() + ":" + (this.meta == WILDCARD ? "#wildcard" : this.meta);
+    }
 }

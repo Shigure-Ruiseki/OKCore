@@ -1,5 +1,7 @@
 package ruiseki.okcore.test;
 
+import java.util.List;
+
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -17,8 +19,6 @@ import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tag.TagKey;
-
-import java.util.List;
 
 public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 

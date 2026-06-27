@@ -1,5 +1,7 @@
 package ruiseki.okcore.test;
 
+import java.util.List;
+
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -10,15 +12,17 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.datacomponent.component.UseCooldown;
+import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.tag.TagKey;
 
-public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
+public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
-    public ItemTest() {
+    public ItemItemTest() {
         super("item_test");
         setTextureName("stick");
     }
@@ -89,6 +93,13 @@ public class ItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
             player.addChatComponentMessage(
                 new ChatComponentText("§7[" + held.getDisplayName() + "§7] " + statusColor + statusText));
+        }
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
+        for (TagKey<?> key : TagHelpers.getTags(stack)) {
+            list.add(key.toString());
         }
     }
 }

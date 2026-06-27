@@ -27,8 +27,8 @@ import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.ModItems;
-import ruiseki.okcore.data.DataHandler;
 import ruiseki.okcore.data.DataLoader;
+import ruiseki.okcore.data.DataRegistry;
 import ruiseki.okcore.data.loader.baubles.BaubleSlotRegistry;
 import ruiseki.okcore.data.loader.condition.LoadRegistry;
 import ruiseki.okcore.datacomponent.init.DataComponents;
@@ -44,6 +44,8 @@ import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
 import ruiseki.okcore.recipe.RecipeRegistry;
+import ruiseki.okcore.tag.TagRegistry;
+import ruiseki.okcore.tag.entry.TagEntryRegistry;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -85,7 +87,8 @@ public class OKCore extends ModBase {
         GuideRegistry.loadFromASM(asmData);
         LoadRegistry.loadFromASM(asmData);
         RecipeRegistry.loadFromASM(asmData);
-        DataHandler.loadFromASM(asmData);
+        TagEntryRegistry.loadFromASM(asmData);
+        DataRegistry.loadFromASM(asmData);
     }
 
     @Override
@@ -139,6 +142,7 @@ public class OKCore extends ModBase {
         super.onServerStarting(event);
         DataLoader.loadAllDataAtServerStart(event.getServer());
         RecipeRegistry.processHolders();
+        TagRegistry.processHolders();
     }
 
     @Override

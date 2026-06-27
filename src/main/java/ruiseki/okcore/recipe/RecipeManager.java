@@ -59,7 +59,7 @@ public class RecipeManager {
                 .put(id, recipe);
         }
 
-        this.recipes = copyToImmutable(mutableMap);
+        this.recipes = Helpers.copyMMToImmutable(mutableMap);
     }
 
     @SuppressWarnings("unchecked")
@@ -147,15 +147,6 @@ public class RecipeManager {
             }
         });
 
-        this.recipes = copyToImmutable(map);
-    }
-
-    private static Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> copyToImmutable(
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> map) {
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> copy = new HashMap<>();
-        for (Map.Entry<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> entry : map.entrySet()) {
-            copy.put(entry.getKey(), ImmutableMap.copyOf(entry.getValue()));
-        }
-        return ImmutableMap.copyOf(copy);
+        this.recipes = Helpers.copyMMToImmutable(map);
     }
 }

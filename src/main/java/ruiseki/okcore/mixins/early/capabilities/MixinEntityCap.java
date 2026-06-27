@@ -70,6 +70,11 @@ public abstract class MixinEntityCap {
         }
     }
 
+    @Inject(method = "setDead", at = @At("RETURN"))
+    private void okcore$invalidate(CallbackInfo ci) {
+        this.okcore$capabilities.invalidate();
+    }
+
     public <T> @NotNull LazyOptional<T> okcorecap$getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection facing) {
         return this.okcore$capabilities == null ? LazyOptional.empty()

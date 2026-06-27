@@ -49,7 +49,7 @@ public class ExtendedBuffer extends PacketBuffer {
     /**
      * Reads an BlockStack from this buffer
      */
-    public BlockStack readBlockStack() throws IOException {
+    public BlockStack readBlockStack() {
         BlockStack blockStack = null;
         short id = this.readShort();
 
@@ -64,7 +64,7 @@ public class ExtendedBuffer extends PacketBuffer {
     /**
      * Writes the BlockStack's ID (short), meta (short)
      */
-    public void writeBlockStack(BlockStack stack) throws IOException {
+    public void writeBlockStack(BlockStack stack) {
         if (stack == null) {
             this.writeShort(-1);
         } else {
@@ -76,7 +76,7 @@ public class ExtendedBuffer extends PacketBuffer {
     /**
      * Reads an ResourceLocation from this buffer
      */
-    public ResourceLocation readResourceLocation() throws IOException {
+    public ResourceLocation readResourceLocation() {
         if (!this.readBoolean()) {
             return null;
         }
@@ -94,7 +94,7 @@ public class ExtendedBuffer extends PacketBuffer {
     /**
      * Writes the ResourceLocation's Domain (String), Path (String)
      */
-    public void writeResourceLocation(ResourceLocation location) throws IOException {
+    public void writeResourceLocation(ResourceLocation location) {
         if (location == null) {
             this.writeBoolean(false);
         } else {

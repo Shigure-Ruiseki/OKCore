@@ -10,23 +10,35 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DataLoader;
 import ruiseki.okcore.event.data.DataEvent;
 import ruiseki.okcore.network.packet.PacketUpdateRecipes;
+import ruiseki.okcore.network.packet.PacketUpdateTags;
 import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.RecipeRegistry;
+import ruiseki.okcore.tag.TagManager;
 
-public class RecipeEventHandler {
+public class DataEventHandler {
 
-    public static final RecipeEventHandler INSTANCE = new RecipeEventHandler();
+    public static final DataEventHandler INSTANCE = new DataEventHandler();
 
-    public RecipeEventHandler() {}
+    public DataEventHandler() {}
 
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.player instanceof EntityPlayerMP playerMP) {
-            PacketUpdateRecipes packet = new PacketUpdateRecipes(
-                RecipeManager.getManager()
-                    .getRecipes());
+            // Recipes
             OKCore.instance.getPacketHandler()
-                .sendToPlayer(packet, playerMP);
+                .sendToPlayer(
+                    new PacketUpdateRecipes(
+                        RecipeManager.getManager()
+                            .getRecipes()),
+                    playerMP);
+
+            // Tags
+            OKCore.instance.getPacketHandler()
+                .sendToPlayer(
+                    new PacketUpdateTags(
+                        TagManager.getManager()
+                            .getTags()),
+                    playerMP);
         }
     }
 
@@ -34,15 +46,16 @@ public class RecipeEventHandler {
     public void onReload(DataEvent.Reload event) {
         DataLoader.loadAllDataAtServerStart(event.getServer());
         RecipeRegistry.processHolders();
-        PacketUpdateRecipes packet = new PacketUpdateRecipes(
-            RecipeManager.getManager()
-                .getRecipes());
 
         List<EntityPlayerMP> players = event.getServer()
             .getConfigurationManager().playerEntityList;
         for (EntityPlayerMP playerMP : players) {
             OKCore.instance.getPacketHandler()
-                .sendToPlayer(packet, playerMP);
+                .sendToPlayer(
+                    new PacketUpdateRecipes(
+                        RecipeManager.getManager()
+                            .getRecipes()),
+                    playerMP);
         }
     }
 }

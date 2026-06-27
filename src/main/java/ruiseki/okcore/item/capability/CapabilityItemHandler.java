@@ -26,8 +26,6 @@ import ruiseki.okcore.item.capability.mfr.DSUItemSink;
 import ruiseki.okcore.item.capability.mfr.DSUItemSource;
 import ruiseki.okcore.item.capability.mfr.DeepStorageHandlerWrapper;
 import ruiseki.okcore.item.capability.minecraft.InventoryHandlerWrapper;
-import ruiseki.okcore.item.capability.minecraft.InventoryItemSink;
-import ruiseki.okcore.item.capability.minecraft.InventoryItemSource;
 
 @SuppressWarnings("unchecked")
 public class CapabilityItemHandler implements IInitListener {
@@ -58,14 +56,11 @@ public class CapabilityItemHandler implements IInitListener {
 
             event.addCapability(INVENTORY_CAP, new ICapabilityProvider() {
 
-                private final LazyOptional<IItemHandler>[] invHandlerCache = new LazyOptional[7];
-                private final LazyOptional<IItemSink>[] invSinkCache = new LazyOptional[7];
-                private final LazyOptional<IItemSource>[] invSourceCache = new LazyOptional[7];
+                private final LazyOptional<InventoryHandlerWrapper>[] invCache = new LazyOptional[7];
 
                 private final LazyOptional<IItemHandler>[] dsuHandlerCache = new LazyOptional[7];
                 private final LazyOptional<IItemSink>[] dsuSinkCache = new LazyOptional[7];
                 private final LazyOptional<IItemSource>[] dsuSourceCache = new LazyOptional[7];
-
                 private final LazyOptional<IItemSink>[] ductSinkCache = new LazyOptional[7];
 
                 private int getIndex(@Nullable ForgeDirection facing) {
@@ -78,24 +73,13 @@ public class CapabilityItemHandler implements IInitListener {
                     int idx = getIndex(facing);
 
                     if (finalInv != null) {
-                        if (capability == ITEM_HANDLER_CAPABILITY) {
-                            if (invHandlerCache[idx] == null) {
-                                invHandlerCache[idx] = LazyOptional
-                                    .of(() -> new InventoryHandlerWrapper(finalInv, facing));
+                        if (capability == ITEM_HANDLER_CAPABILITY || capability == ITEM_SINK_CAPABILITY
+                            || capability == ITEM_SOURCE_CAPABILITY) {
+
+                            if (invCache[idx] == null) {
+                                invCache[idx] = LazyOptional.of(() -> new InventoryHandlerWrapper(finalInv, facing));
                             }
-                            return invHandlerCache[idx].cast();
-                        }
-                        if (capability == ITEM_SINK_CAPABILITY) {
-                            if (invSinkCache[idx] == null) {
-                                invSinkCache[idx] = LazyOptional.of(() -> new InventoryItemSink(finalInv, facing));
-                            }
-                            return invSinkCache[idx].cast();
-                        }
-                        if (capability == ITEM_SOURCE_CAPABILITY) {
-                            if (invSourceCache[idx] == null) {
-                                invSourceCache[idx] = LazyOptional.of(() -> new InventoryItemSource(finalInv, facing));
-                            }
-                            return invSourceCache[idx].cast();
+                            return invCache[idx].cast();
                         }
                     }
 

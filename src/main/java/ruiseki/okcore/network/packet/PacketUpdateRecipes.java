@@ -26,10 +26,10 @@ import ruiseki.okcore.recipe.RecipeRegistry;
 
 public class PacketUpdateRecipes extends PacketCodec {
 
-    private List<IRecipeOK<?>> recipes;
+    private List<IRecipeOK<?>> recipes = Lists.newArrayList();
 
     public PacketUpdateRecipes() {
-        this.recipes = Lists.newArrayList();
+
     }
 
     public PacketUpdateRecipes(Collection<IRecipeOK<?>> recipes) {

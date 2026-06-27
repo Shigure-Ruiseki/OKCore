@@ -48,11 +48,7 @@ public abstract class PacketCodec extends PacketBase {
 
             @Override
             public Object decode(ExtendedBuffer input) {
-                try {
-                    return input.readResourceLocation();
-                } catch (IOException ioexception) {
-                    throw new EncoderException(ioexception);
-                }
+                return input.readResourceLocation();
             }
         });
 
@@ -262,11 +258,7 @@ public abstract class PacketCodec extends PacketBase {
 
             @Override
             public Object decode(ExtendedBuffer input) {
-                try {
-                    return input.readBlockStack();
-                } catch (IOException ioexception) {
-                    throw new EncoderException(ioexception);
-                }
+                return input.readBlockStack();
             }
         });
 

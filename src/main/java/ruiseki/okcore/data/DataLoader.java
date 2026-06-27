@@ -197,9 +197,9 @@ public class DataLoader {
 
             try (InputStream is = Files.newInputStream(p)) {
                 if (isWorldContext) {
-                    DataHandler.handleWorld(generatedId, namespace, folder, subPaths, fileName, is);
+                    DataRegistry.handleWorld(generatedId, namespace, folder, subPaths, fileName, is);
                 } else {
-                    DataHandler.handleMod(generatedId, namespace, folder, subPaths, fileName, is);
+                    DataRegistry.handleMod(generatedId, namespace, folder, subPaths, fileName, is);
                 }
             } catch (IOException e) {
                 OKCore.okLog(Level.ERROR, "Failed to read data stream for: " + relativeStr, e);

@@ -4,9 +4,9 @@ import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.event.handler.CooldownEventHandler;
+import ruiseki.okcore.event.handler.DataEventHandler;
 import ruiseki.okcore.event.handler.InputEventHandler;
 import ruiseki.okcore.event.handler.InventoryEventHandler;
-import ruiseki.okcore.event.handler.RecipeEventHandler;
 import ruiseki.okcore.event.handler.TileEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
@@ -15,6 +15,7 @@ import ruiseki.okcore.network.packet.PacketItemToggle;
 import ruiseki.okcore.network.packet.PacketSound;
 import ruiseki.okcore.network.packet.PacketSyncGuidePos;
 import ruiseki.okcore.network.packet.PacketUpdateRecipes;
+import ruiseki.okcore.network.packet.PacketUpdateTags;
 import ruiseki.okcore.proxy.CommonProxyComponent;
 
 public class CommonProxy extends CommonProxyComponent {
@@ -34,6 +35,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(PacketItemToggle.class);
         packetHandler.register(PacketSyncGuidePos.class);
         packetHandler.register(PacketUpdateRecipes.class);
+        packetHandler.register(PacketUpdateTags.class);
     }
 
     @Override
@@ -41,8 +43,8 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerEventHooks();
         FMLCommonHandler.instance()
             .bus()
-            .register(RecipeEventHandler.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(RecipeEventHandler.INSTANCE);
+            .register(DataEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(DataEventHandler.INSTANCE);
 
         MinecraftForge.EVENT_BUS.register(CooldownEventHandler.INSTANCE);
 

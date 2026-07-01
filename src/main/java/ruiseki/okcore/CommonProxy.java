@@ -6,7 +6,6 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.event.handler.CooldownEventHandler;
 import ruiseki.okcore.event.handler.DataEventHandler;
 import ruiseki.okcore.event.handler.InputEventHandler;
-import ruiseki.okcore.event.handler.InventoryEventHandler;
 import ruiseki.okcore.event.handler.TileEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
@@ -49,11 +48,6 @@ public class CommonProxy extends CommonProxyComponent {
         MinecraftForge.EVENT_BUS.register(CooldownEventHandler.INSTANCE);
 
         MinecraftForge.EVENT_BUS.register(InputEventHandler.INSTANCE);
-
-        FMLCommonHandler.instance()
-            .bus()
-            .register(InventoryEventHandler.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(InventoryEventHandler.INSTANCE);
     }
 
     @Override

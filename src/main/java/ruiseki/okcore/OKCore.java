@@ -28,9 +28,7 @@ import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DataLoader;
-import ruiseki.okcore.data.DataRegistry;
-import ruiseki.okcore.data.loader.baubles.BaubleSlotRegistry;
-import ruiseki.okcore.data.loader.condition.LoadRegistry;
+import ruiseki.okcore.data.condition.LoadRegistry;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
@@ -44,7 +42,6 @@ import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
 import ruiseki.okcore.recipe.RecipeRegistry;
-import ruiseki.okcore.tag.TagRegistry;
 import ruiseki.okcore.tag.entry.TagEntryRegistry;
 
 @Mod(
@@ -76,7 +73,6 @@ public class OKCore extends ModBase {
 
         addInitListeners(new DataComponents());
         addInitListeners(new GuideRegistry());
-        addInitListeners(new BaubleSlotRegistry());
     }
 
     @Mod.EventHandler
@@ -88,7 +84,6 @@ public class OKCore extends ModBase {
         LoadRegistry.loadFromASM(asmData);
         RecipeRegistry.loadFromASM(asmData);
         TagEntryRegistry.loadFromASM(asmData);
-        DataRegistry.loadFromASM(asmData);
     }
 
     @Override
@@ -102,8 +97,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
-
-        DataLoader.loadModDataAtPreInit();
 
         ModItems.preInit();
         if (LibMods.Waila.isModLoaded()) {
@@ -141,8 +134,6 @@ public class OKCore extends ModBase {
     public void onServerStarting(FMLServerStartingEvent event) {
         super.onServerStarting(event);
         DataLoader.loadAllDataAtServerStart(event.getServer());
-        RecipeRegistry.processHolders();
-        TagRegistry.processHolders();
     }
 
     @Override

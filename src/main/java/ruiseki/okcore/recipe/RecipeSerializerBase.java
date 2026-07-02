@@ -4,7 +4,7 @@ import net.minecraft.util.ResourceLocation;
 
 import com.google.gson.JsonObject;
 
-import ruiseki.okcore.data.loader.condition.LoadRegistry;
+import ruiseki.okcore.data.condition.LoadRegistry;
 
 public abstract class RecipeSerializerBase<T extends IRecipeOK<?>> implements IRecipeSerializer<T> {
 

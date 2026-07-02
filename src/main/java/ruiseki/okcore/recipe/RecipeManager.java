@@ -15,21 +15,34 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
+import org.apache.logging.log4j.Level;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.gson.*;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.OKCore;
+import ruiseki.okcore.data.DataManager;
+import ruiseki.okcore.data.SimpleJsonResourceReloadListener;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.Helpers;
 
-public class RecipeManager {
+public class RecipeManager extends SimpleJsonResourceReloadListener {
+
+    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting()
+        .disableHtmlEscaping()
+        .create();
 
     private static RecipeManager instance;
 
-    private Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> recipes = ImmutableMap.of();
+    protected Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> recipes = ImmutableMap.of();
+    private Map<ResourceLocation, IRecipeOK<?>> byName = ImmutableMap.of();
 
-    public RecipeManager() {}
+    public RecipeManager() {
+        super(GSON, "recipes");
+    }
 
     public static RecipeManager getManager() {
         if (instance == null) {
@@ -38,28 +51,50 @@ public class RecipeManager {
         return instance;
     }
 
-    public void clearRecipes() {
-        this.recipes = ImmutableMap.of();
-    }
+    @Override
+    protected void apply(Map<ResourceLocation, JsonElement> data, DataManager manager) {
+        Map<IRecipeType<?>, ImmutableMap.Builder<ResourceLocation, IRecipeOK<?>>> map = new HashMap<>();
+        ImmutableMap.Builder<ResourceLocation, IRecipeOK<?>> builder = ImmutableMap.builder();
 
-    public void addRecipes(Iterable<IRecipeOK<?>> incomingRecipes) {
-        if (incomingRecipes == null) return;
+        for (Map.Entry<ResourceLocation, JsonElement> entry : data.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            JsonElement element = entry.getValue();
 
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> mutableMap = new HashMap<>();
-        for (Map.Entry<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> entry : this.recipes.entrySet()) {
-            mutableMap.put(entry.getKey(), new HashMap<>(entry.getValue()));
-        }
+            try {
+                if (element.isJsonObject()) {
+                    JsonObject jsonObject = element.getAsJsonObject();
+                    IRecipeOK<?> recipe = RecipeRegistry.deserialize(id, jsonObject);
+                    if (recipe == null) {
+                        OKCore.okLog(Level.INFO, "Skipping loading recipe {} as its serializer returned null", id);
+                        continue;
+                    }
 
-        for (IRecipeOK<?> recipe : incomingRecipes) {
-            ResourceLocation id = recipe.getId();
-            for (Map<ResourceLocation, IRecipeOK<?>> typeMap : mutableMap.values()) {
-                typeMap.remove(id);
+                    map.computeIfAbsent(recipe.getType(), (type) -> { return ImmutableMap.builder(); })
+                        .put(id, recipe);
+
+                    builder.put(id, recipe);
+                }
+            } catch (IllegalArgumentException | JsonParseException jsonparseexception) {
+                OKCore.okLog(Level.ERROR, "Parsing error loading recipe {}", id, jsonparseexception);
             }
-            mutableMap.computeIfAbsent(recipe.getType(), k -> new HashMap<>())
-                .put(id, recipe);
         }
 
-        this.recipes = Helpers.copyMMToImmutable(mutableMap);
+        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> builtMap = map.entrySet()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> entry.getValue()
+                        .build()));
+
+        this.recipes = ImmutableMap.copyOf(builtMap);
+
+        this.byName = builder.build();
+
+        RecipeRegistry.syncMCCraftingManager();
+        RecipeRegistry.syncMCFurnaceRecipes();
+
+        OKCore.okLog(Level.INFO, "Loaded {} recipes", this.byName.size());
     }
 
     @SuppressWarnings("unchecked")
@@ -118,6 +153,10 @@ public class RecipeManager {
             });
     }
 
+    public Optional<? extends IRecipeOK<?>> byKey(ResourceLocation p_44044_) {
+        return Optional.ofNullable(this.byName.get(p_44044_));
+    }
+
     public Collection<IRecipeOK<?>> getRecipes() {
         return this.recipes.values()
             .stream()
@@ -138,15 +177,18 @@ public class RecipeManager {
     @SideOnly(Side.CLIENT)
     public void replaceRecipes(Iterable<IRecipeOK<?>> serverRecipes) {
         Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> map = Maps.newHashMap();
-
-        serverRecipes.forEach((recipe) -> {
-            Map<ResourceLocation, IRecipeOK<?>> typeMap = map.computeIfAbsent(recipe.getType(), k -> Maps.newHashMap());
-            IRecipeOK<?> oldRecipe = typeMap.put(recipe.getId(), recipe);
-            if (oldRecipe != null) {
-                throw new IllegalStateException("Duplicate recipe ignored with ID " + recipe.getId());
+        ImmutableMap.Builder<ResourceLocation, IRecipeOK<?>> builder = ImmutableMap.builder();
+        serverRecipes.forEach((iRecipeOK) -> {
+            Map<ResourceLocation, IRecipeOK<?>> map1 = map
+                .computeIfAbsent(iRecipeOK.getType(), (p_220272_) -> { return Maps.newHashMap(); });
+            ResourceLocation resourcelocation = iRecipeOK.getId();
+            IRecipeOK<?> recipe = map1.put(resourcelocation, iRecipeOK);
+            builder.put(resourcelocation, iRecipeOK);
+            if (recipe != null) {
+                throw new IllegalStateException("Duplicate recipe ignored with ID " + resourcelocation);
             }
         });
-
-        this.recipes = Helpers.copyMMToImmutable(map);
+        this.recipes = ImmutableMap.copyOf(map);
+        this.byName = builder.build();
     }
 }

@@ -2,7 +2,6 @@ package ruiseki.okcore.data;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
@@ -10,10 +9,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Stream;
 
 import net.minecraft.server.MinecraftServer;
@@ -25,33 +27,70 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.datastructure.Resource;
+import ruiseki.okcore.datastructure.ServerGameExecutor;
+import ruiseki.okcore.event.data.AddReloadListenerEvent;
 
 public class DataLoader {
 
-    public static final Pattern DYNAMIC_DATA_PATTERN = Pattern
-        .compile("^data/([^/]+)/([^/]+)/(?:(.+)/)?([^/]+\\.json)$");
+    private static final ServerGameExecutor SERVER_EXECUTOR = new ServerGameExecutor();
+    private static boolean isExecutorRegistered = false;
 
     private static final Map<String, ?> EMPTY_ENV = Collections.emptyMap();
 
-    public static void loadModDataAtPreInit() {
-        OKCore.okLog(Level.INFO, "DataLoader: Starting global Mod data scan at PreInit...");
-        scanModJars(false);
-    }
-
     public static void loadAllDataAtServerStart(MinecraftServer server) {
-        if (server == null) {
-            OKCore.okLog(Level.WARN, "DataLoader: loadAllDataAtServerStart called with null server instance!");
-            return;
+        if (server == null) return;
+
+        if (!isExecutorRegistered) {
+            FMLCommonHandler.instance()
+                .bus()
+                .register(SERVER_EXECUTOR);
+            isExecutorRegistered = true;
         }
 
-        OKCore.okLog(Level.INFO, "DataLoader: Server started. Initializing full data reload (Mods + Datapacks)...");
+        OKCore.okLog(Level.INFO, "DataLoader: Server started. Initializing full data reload...");
 
-        scanModJars(true);
+        SimpleDataManager dataManager = new SimpleDataManager();
 
-        scanWorldDatapacks(server);
+        List<FileSystem> openedFileSystems = new ArrayList<>();
+
+        scanModJars(dataManager, openedFileSystems);
+        scanWorldDatapacks(server, dataManager);
+
+        AddReloadListenerEvent event = new AddReloadListenerEvent();
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        List<PreparableReloadListener> listeners = event.getListeners();
+
+        Executor backgroundExecutor = ForkJoinPool.commonPool();
+
+        OKCore.okLog(Level.INFO, "DataLoader: Applying {} reload listeners...", listeners.size());
+
+        CompletableFuture<Void> reloadFuture = CompletableFuture.completedFuture(null);
+        SimplePreparationBarrier barrier = new SimplePreparationBarrier();
+
+        for (PreparableReloadListener listener : listeners) {
+            reloadFuture = reloadFuture
+                .thenCompose(v -> listener.reload(barrier, dataManager, backgroundExecutor, SERVER_EXECUTOR));
+        }
+
+        reloadFuture.whenComplete((v, ex) -> {
+            for (FileSystem fs : openedFileSystems) {
+                try {
+                    fs.close();
+                } catch (IOException e) {
+                    OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
+                }
+            }
+
+            if (ex != null) {
+                OKCore.okLog(Level.ERROR, "DataLoader: Error occurred during resource reload pipeline!", ex);
+            } else {
+                OKCore.okLog(Level.INFO, "DataLoader: All data packs and mod resources successfully reloaded.");
+            }
+        });
     }
 
-    private static void scanModJars(boolean isServerContext) {
+    private static void scanModJars(SimpleDataManager dataManager, List<FileSystem> openedFileSystems) {
         for (ModContainer mod : Loader.instance()
             .getModList()) {
             String modId = mod.getModId()
@@ -66,14 +105,13 @@ public class DataLoader {
 
             URI uri = URI.create("jar:" + modSource.toURI());
             FileSystem fileSystem = null;
-            boolean shouldClose = false;
 
             try {
                 try {
                     fileSystem = FileSystems.getFileSystem(uri);
                 } catch (FileSystemNotFoundException e) {
                     fileSystem = FileSystems.newFileSystem(uri, EMPTY_ENV);
-                    shouldClose = true;
+                    openedFileSystems.add(fileSystem);
                 }
 
                 Path dataPath = fileSystem.getPath("/data");
@@ -89,29 +127,17 @@ public class DataLoader {
                 }
 
                 Path rootPath = fileSystem.getPath("/");
-
                 try (Stream<Path> stream = Files.walk(dataPath, FileVisitOption.FOLLOW_LINKS)) {
                     stream.filter(p -> !Files.isDirectory(p))
-                        .filter(
-                            p -> p.toString()
-                                .endsWith(".json"))
-                        .forEach(p -> processStream(p, rootPath, isServerContext));
+                        .forEach(p -> processStream(p, rootPath, dataManager));
                 }
             } catch (Exception e) {
                 OKCore.okLog(Level.ERROR, "Critical error while scanning JAR data for mod: " + modId, e);
-            } finally {
-                if (shouldClose && fileSystem != null) {
-                    try {
-                        fileSystem.close();
-                    } catch (IOException e) {
-                        OKCore.okLog(Level.ERROR, "Failed to close FileSystem for mod: " + modId, e);
-                    }
-                }
             }
         }
     }
 
-    private static void scanWorldDatapacks(MinecraftServer server) {
+    private static void scanWorldDatapacks(MinecraftServer server, SimpleDataManager dataManager) {
         String folderName = server.getFolderName();
         File realWorldDir;
 
@@ -124,15 +150,8 @@ public class DataLoader {
         }
 
         File datapacksDir = new File(realWorldDir, "datapacks");
-        OKCore.okLog(Level.INFO, "DataLoader: Searching for datapacks at: {}", datapacksDir.getAbsolutePath());
-
-        if (!datapacksDir.exists()) {
-            if (datapacksDir.mkdirs()) {
-                OKCore.okLog(Level.INFO, "DataLoader: Created missing datapacks directory.");
-            } else {
-                OKCore.okLog(Level.ERROR, "DataLoader: Failed to create missing datapacks directory!");
-                return;
-            }
+        if (!datapacksDir.exists() && !datapacksDir.mkdirs()) {
+            return;
         }
 
         File[] packs = datapacksDir.listFiles();
@@ -148,15 +167,10 @@ public class DataLoader {
                 continue;
             }
 
-            OKCore.okLog(Level.INFO, "DataLoader: Validated and scanning datapack: '{}'", packDir.getName());
-
             try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
                 final Path rootPath = packDir.toPath();
                 stream.filter(p -> !Files.isDirectory(p))
-                    .filter(
-                        p -> p.toString()
-                            .endsWith(".json"))
-                    .forEach(p -> processStream(p, rootPath, true));
+                    .forEach(p -> processStream(p, rootPath, dataManager));
             } catch (Exception e) {
                 OKCore
                     .okLog(Level.ERROR, "DataLoader: Critical error while scanning datapack: " + packDir.getName(), e);
@@ -164,7 +178,7 @@ public class DataLoader {
         }
     }
 
-    private static void processStream(Path p, Path rootPath, boolean isWorldContext) {
+    private static void processStream(Path p, Path rootPath, SimpleDataManager dataManager) {
         try {
             String relativeStr = rootPath.relativize(p)
                 .toString()
@@ -174,36 +188,23 @@ public class DataLoader {
                 relativeStr = relativeStr.substring(1);
             }
 
-            if (isWorldContext && relativeStr.contains("data/")) {
-                int dataIdx = relativeStr.indexOf("data/");
-                if (dataIdx != -1) {
-                    relativeStr = relativeStr.substring(dataIdx);
-                }
-            }
+            int dataIdx = relativeStr.indexOf("data/");
+            if (dataIdx == -1) return;
 
-            Matcher matcher = DYNAMIC_DATA_PATTERN.matcher(relativeStr);
-            if (!matcher.matches()) return;
+            relativeStr = relativeStr.substring(dataIdx);
 
-            String namespace = matcher.group(1);
-            String folder = matcher.group(2);
-            String[] subPaths = matcher.group(3) != null ? matcher.group(3)
-                .split("/") : new String[0];
-            String fileName = matcher.group(4);
+            String[] segments = relativeStr.split("/");
+            if (segments.length < 3) return;
 
-            String cleanName = fileName.substring(0, fileName.lastIndexOf('.'));
-            String pathPrefix = matcher.group(3) != null ? matcher.group(3) + "/" : "";
+            String namespace = segments[1];
 
-            ResourceLocation generatedId = new ResourceLocation(namespace, folder + "/" + pathPrefix + cleanName);
+            int prefixLength = "data/".length() + namespace.length() + 1;
+            String resourcePath = relativeStr.substring(prefixLength);
 
-            try (InputStream is = Files.newInputStream(p)) {
-                if (isWorldContext) {
-                    DataRegistry.handleWorld(generatedId, namespace, folder, subPaths, fileName, is);
-                } else {
-                    DataRegistry.handleMod(generatedId, namespace, folder, subPaths, fileName, is);
-                }
-            } catch (IOException e) {
-                OKCore.okLog(Level.ERROR, "Failed to read data stream for: " + relativeStr, e);
-            }
+            ResourceLocation fileLocation = new ResourceLocation(namespace, resourcePath);
+
+            Resource resource = new Resource(() -> Files.newInputStream(p));
+            dataManager.registerResource(namespace, fileLocation, resource);
         } catch (Exception e) {
             OKCore.okLog(Level.ERROR, "Error processing data stream at: " + p, e);
         }

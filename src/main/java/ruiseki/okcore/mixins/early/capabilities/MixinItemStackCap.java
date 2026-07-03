@@ -56,7 +56,8 @@ public abstract class MixinItemStackCap {
             provider = capItem.initCapabilities(stack, this.okcore$capNBT);
         }
 
-        this.okcore$capabilities = OKEventFactory.gatherCapabilities((Class) ItemStack.class, provider);
+        this.okcore$capabilities = OKEventFactory
+            .gatherCapabilities((Class) ItemStack.class, (ICapabilityProvider) this, provider);
         if (this.okcore$capNBT != null && this.okcore$capabilities != null) {
             this.okcore$capabilities.deserializeNBT(this.okcore$capNBT);
         }

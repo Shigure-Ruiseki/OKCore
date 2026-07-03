@@ -235,7 +235,7 @@ public class ItemStackHelpers {
     }
 
     public static <T> LazyOptional<T> getCapability(ItemStack stack, @NotNull Capability<T> capability) {
-        if (stack == null) return null;
+        if (stack == null) return LazyOptional.empty();
         try {
             ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
 

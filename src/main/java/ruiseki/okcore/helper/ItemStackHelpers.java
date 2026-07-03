@@ -242,7 +242,7 @@ public class ItemStackHelpers {
             return provider.getCapability(capability);
 
         } catch (ClassCastException ignored) {
-            return null;
+            return LazyOptional.empty();
         }
     }
 

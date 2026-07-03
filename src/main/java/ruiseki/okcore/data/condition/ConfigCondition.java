@@ -6,6 +6,7 @@ import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.gson.JsonObject;
+
 import ruiseki.okcore.helper.GsonHelpers;
 import ruiseki.okcore.helper.Helpers;
 
@@ -60,7 +61,8 @@ public class ConfigCondition implements ICondition {
             ResourceLocation configId = Helpers.parseLocation(GsonHelpers.getAsString(json, "id"));
             boolean expectedValue = true;
             if (json.has("value")) {
-                expectedValue = json.get("value").getAsBoolean();
+                expectedValue = json.get("value")
+                    .getAsBoolean();
             }
 
             return new ConfigCondition(configId, expectedValue);

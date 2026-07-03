@@ -4,18 +4,15 @@ import net.minecraft.util.ResourceLocation;
 
 import com.google.gson.JsonObject;
 
-import ruiseki.okcore.data.condition.LoadRegistry;
+import ruiseki.okcore.data.condition.ConditionRegistry;
 
 public abstract class RecipeSerializerBase<T extends IRecipeOK<?>> implements IRecipeSerializer<T> {
 
     @Override
     public final T fromJson(ResourceLocation id, JsonObject json) {
-        if (json.has(LoadRegistry.CONDITION_KEY)) {
-            if (!LoadRegistry.checkConditional(id, json)) {
-                return null;
-            }
+        if (!ConditionRegistry.checkConditional(json)) {
+            return null;
         }
-
         return this.readWithCondition(id, json);
     }
 

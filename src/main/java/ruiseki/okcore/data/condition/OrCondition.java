@@ -1,35 +1,78 @@
 package ruiseki.okcore.data.condition;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.util.ResourceLocation;
+
+import com.google.common.base.Joiner;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
-@LoadCondition
-public class OrCondition implements ILoadCondition {
+import ruiseki.okcore.helper.GsonHelpers;
 
-    @Override
-    public String getID() {
-        return "okcore:or";
+public class OrCondition implements ICondition {
+
+    private static final ResourceLocation NAME = new ResourceLocation("okcore", "or");
+    private final ICondition[] children;
+
+    public OrCondition(ICondition... values) {
+        if (values == null || values.length == 0) throw new IllegalArgumentException("Values must not be empty");
+
+        for (ICondition child : values) {
+            if (child == null) throw new IllegalArgumentException("Value must not be null");
+        }
+
+        this.children = values;
     }
 
     @Override
-    public boolean test(JsonObject json) {
-        if (!json.has("values") || !json.get("values")
-            .isJsonArray()) return false;
+    public ResourceLocation getID() {
+        return NAME;
+    }
 
-        JsonArray valuesArray = json.getAsJsonArray("values");
-        if (valuesArray.size() == 0) return false;
-
-        for (JsonElement element : valuesArray) {
-            if (!element.isJsonObject()) return false;
-
-            JsonObject subJson = element.getAsJsonObject();
-            ILoadCondition cond = LoadRegistry.createConditionInstance(subJson);
-            if (cond == null) return false;
-
-            if (cond.test(subJson)) return true;
+    @Override
+    public boolean test(IContext context) {
+        for (ICondition child : children) {
+            if (child.test(context)) return true;
         }
 
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return Joiner.on(" || ")
+            .join(children);
+    }
+
+    public static class Serializer implements IConditionSerializer<OrCondition> {
+
+        public static final Serializer INSTANCE = new Serializer();
+
+        @Override
+        public void write(JsonObject json, OrCondition value) {
+            JsonArray values = new JsonArray();
+            for (ICondition child : value.children) values.add(ConditionRegistry.serialize(child));
+            json.add("values", values);
+        }
+
+        @Override
+        public OrCondition read(JsonObject json) {
+            List<ICondition> children = new ArrayList<>();
+            for (JsonElement j : GsonHelpers.getAsJsonArray(json, "values")) {
+                if (!j.isJsonObject())
+                    throw new JsonSyntaxException("Or condition values must be an array of JsonObjects");
+                children.add(ConditionRegistry.getCondition(j.getAsJsonObject()));
+            }
+            return new OrCondition(children.toArray(new ICondition[children.size()]));
+        }
+
+        @Override
+        public ResourceLocation getID() {
+            return OrCondition.NAME;
+        }
     }
 }

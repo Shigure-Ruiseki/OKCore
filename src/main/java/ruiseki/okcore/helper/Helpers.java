@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.util.ResourceLocation;
 
 public class Helpers {
 
@@ -23,26 +24,11 @@ public class Helpers {
         return other.get();
     }
 
-    public static <K, V> Map<K, Set<V>> copyToMSImmutable(Map<K, Set<V>> map) {
-        if (map == null) return ImmutableMap.of();
-        Map<K, Set<V>> copy = new HashMap<>();
-        for (Map.Entry<K, Set<V>> entry : map.entrySet()) {
-            if (entry.getValue() != null) {
-                copy.put(entry.getKey(), ImmutableSet.copyOf(entry.getValue()));
-            }
+    public static ResourceLocation parseLocation(String location) {
+        int idx = location.indexOf(':');
+        if (idx == -1) {
+            return new ResourceLocation("minecraft", location);
         }
-        return ImmutableMap.copyOf(copy);
-    }
-
-    public static <K1, K2, V> Map<K1, Map<K2, V>> copyMMToImmutable(Map<K1, Map<K2, V>> map) {
-        if (map == null) return ImmutableMap.of();
-
-        Map<K1, Map<K2, V>> copy = new HashMap<>();
-        for (Map.Entry<K1, Map<K2, V>> entry : map.entrySet()) {
-            if (entry.getValue() != null) {
-                copy.put(entry.getKey(), ImmutableMap.copyOf(entry.getValue()));
-            }
-        }
-        return ImmutableMap.copyOf(copy);
+        return new ResourceLocation(location.substring(0, idx), location.substring(idx + 1));
     }
 }

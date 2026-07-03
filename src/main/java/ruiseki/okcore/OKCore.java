@@ -28,7 +28,6 @@ import ruiseki.okcore.command.CommandOKCore;
 import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DataLoader;
-import ruiseki.okcore.data.condition.LoadRegistry;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
@@ -81,7 +80,6 @@ public class OKCore extends ModBase {
 
         CapabilityManager.INSTANCE.injectCapabilities(asmData);
         GuideRegistry.loadFromASM(asmData);
-        LoadRegistry.loadFromASM(asmData);
         RecipeRegistry.loadFromASM(asmData);
         TagEntryRegistry.loadFromASM(asmData);
     }

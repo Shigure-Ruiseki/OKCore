@@ -34,5 +34,4 @@ public class SimpleDataManager implements DataManager {
         }
         return filteredMap;
     }
-
 }

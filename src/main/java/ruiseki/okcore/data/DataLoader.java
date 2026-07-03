@@ -50,12 +50,12 @@ public class DataLoader {
 
         OKCore.okLog(Level.INFO, "DataLoader: Server started. Initializing full data reload...");
 
-        SimpleDataManager dataManager = new SimpleDataManager();
+        MultiDataManager multiDataManager = new MultiDataManager();
 
         List<FileSystem> openedFileSystems = new ArrayList<>();
 
-        scanModJars(dataManager, openedFileSystems);
-        scanWorldDatapacks(server, dataManager);
+        scanModJars(multiDataManager, openedFileSystems);
+        scanWorldDatapacks(server, multiDataManager);
 
         AddReloadListenerEvent event = new AddReloadListenerEvent();
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
@@ -70,7 +70,7 @@ public class DataLoader {
 
         for (PreparableReloadListener listener : listeners) {
             reloadFuture = reloadFuture
-                .thenCompose(v -> listener.reload(barrier, dataManager, backgroundExecutor, SERVER_EXECUTOR));
+                .thenCompose(v -> listener.reload(barrier, multiDataManager, backgroundExecutor, SERVER_EXECUTOR));
         }
 
         reloadFuture.whenComplete((v, ex) -> {
@@ -90,7 +90,7 @@ public class DataLoader {
         });
     }
 
-    private static void scanModJars(SimpleDataManager dataManager, List<FileSystem> openedFileSystems) {
+    private static void scanModJars(MultiDataManager multiDataManager, List<FileSystem> openedFileSystems) {
         for (ModContainer mod : Loader.instance()
             .getModList()) {
             String modId = mod.getModId()
@@ -127,17 +127,23 @@ public class DataLoader {
                 }
 
                 Path rootPath = fileSystem.getPath("/");
+
+                SimpleDataManager modDataManager = new SimpleDataManager();
+
                 try (Stream<Path> stream = Files.walk(dataPath, FileVisitOption.FOLLOW_LINKS)) {
                     stream.filter(p -> !Files.isDirectory(p))
-                        .forEach(p -> processStream(p, rootPath, dataManager));
+                        .forEach(p -> processStream(p, rootPath, modDataManager));
                 }
+
+                multiDataManager.addManager(modDataManager);
+
             } catch (Exception e) {
                 OKCore.okLog(Level.ERROR, "Critical error while scanning JAR data for mod: " + modId, e);
             }
         }
     }
 
-    private static void scanWorldDatapacks(MinecraftServer server, SimpleDataManager dataManager) {
+    private static void scanWorldDatapacks(MinecraftServer server, MultiDataManager multiDataManager) {
         String folderName = server.getFolderName();
         File realWorldDir;
 
@@ -167,10 +173,17 @@ public class DataLoader {
                 continue;
             }
 
-            try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
-                final Path rootPath = packDir.toPath();
-                stream.filter(p -> !Files.isDirectory(p))
-                    .forEach(p -> processStream(p, rootPath, dataManager));
+            try {
+                SimpleDataManager packDataManager = new SimpleDataManager();
+
+                try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
+                    final Path rootPath = packDir.toPath();
+                    stream.filter(p -> !Files.isDirectory(p))
+                        .forEach(p -> processStream(p, rootPath, packDataManager));
+                }
+
+                multiDataManager.addManager(packDataManager);
+
             } catch (Exception e) {
                 OKCore
                     .okLog(Level.ERROR, "DataLoader: Critical error while scanning datapack: " + packDir.getName(), e);

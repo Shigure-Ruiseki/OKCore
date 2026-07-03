@@ -2,7 +2,9 @@ package ruiseki.okcore.data;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.util.ResourceLocation;
@@ -17,26 +19,26 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.datastructure.Resource;
 import ruiseki.okcore.helper.GsonHelpers;
 
-public abstract class SimpleJsonResourceReloadListener
-    extends SimplePreparableReloadListener<Map<ResourceLocation, JsonElement>> {
+public abstract class MultiJsonResourceReloadListener
+    extends SimplePreparableReloadListener<Map<ResourceLocation, List<JsonElement>>> {
 
     private final Gson gson;
     private final String directory;
 
-    public SimpleJsonResourceReloadListener(Gson gson, String directory) {
+    public MultiJsonResourceReloadListener(Gson gson, String directory) {
         this.gson = gson;
         this.directory = directory;
     }
 
     @Override
-    protected Map<ResourceLocation, JsonElement> prepare(DataManager manager) {
-        Map<ResourceLocation, JsonElement> map = new HashMap<>();
+    protected Map<ResourceLocation, List<JsonElement>> prepare(DataManager manager) {
+        Map<ResourceLocation, List<JsonElement>> map = new HashMap<>();
         scanDirectory(manager, this.directory, this.gson, map);
         return map;
     }
 
     private void scanDirectory(DataManager manager, String directory, Gson gson,
-        Map<ResourceLocation, JsonElement> map) {
+        Map<ResourceLocation, List<JsonElement>> map) {
         FileToIdConverter filetoidconverter = FileToIdConverter.json(directory);
 
         for (Map.Entry<ResourceLocation, Resource> entry : filetoidconverter.listMatchingResources(manager)
@@ -47,10 +49,8 @@ public abstract class SimpleJsonResourceReloadListener
             try (Reader reader = entry.getValue()
                 .openAsReader()) {
                 JsonElement jsonelement = GsonHelpers.fromJson(gson, reader, JsonElement.class);
-                JsonElement jsonelement1 = map.put(resourcelocation1, jsonelement);
-                if (jsonelement1 != null) {
-                    OKCore.okLog(Level.INFO, "Duplicate data file ignored with ID " + resourcelocation1);
-                }
+                map.computeIfAbsent(resourcelocation1, k -> new ArrayList<>())
+                    .add(jsonelement);
             } catch (IllegalArgumentException | IOException | JsonParseException jsonparseexception) {
                 OKCore.okLog(
                     Level.ERROR,

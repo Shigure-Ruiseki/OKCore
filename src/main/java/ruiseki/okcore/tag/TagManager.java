@@ -26,11 +26,11 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DataManager;
-import ruiseki.okcore.data.SimpleJsonResourceReloadListener;
+import ruiseki.okcore.data.MultiJsonResourceReloadListener;
 import ruiseki.okcore.tag.entry.TagEntry;
 import ruiseki.okcore.tag.entry.TagEntryRegistry;
 
-public class TagManager extends SimpleJsonResourceReloadListener {
+public class TagManager extends MultiJsonResourceReloadListener {
 
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting()
         .disableHtmlEscaping()
@@ -53,83 +53,90 @@ public class TagManager extends SimpleJsonResourceReloadListener {
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> data, DataManager manager) {
+    protected void apply(Map<ResourceLocation, List<JsonElement>> data, DataManager manager) {
         Map<TagKey<?>, Set<TagEntry<?>>> finalTagsMap = new HashMap<>();
 
-        for (Map.Entry<ResourceLocation, JsonElement> entry : data.entrySet()) {
+        for (Map.Entry<ResourceLocation, List<JsonElement>> entry : data.entrySet()) {
             ResourceLocation fileId = entry.getKey();
-            JsonElement root = entry.getValue();
+            List<JsonElement> jsonFiles = entry.getValue();
 
-            try {
-                if (!root.isJsonObject()) continue;
-                JsonObject jsonObject = root.getAsJsonObject();
+            String fullPath = fileId.getResourcePath();
+            int firstSlash = fullPath.indexOf('/');
+            if (firstSlash == -1) continue;
 
-                String fullPath = fileId.getResourcePath();
-                int firstSlash = fullPath.indexOf('/');
-                if (firstSlash == -1) continue;
+            String subfolder = fullPath.substring(0, firstSlash);
+            String tagPath = fullPath.substring(firstSlash + 1);
 
-                String subfolder = fullPath.substring(0, firstSlash);
-                String tagPath = fullPath.substring(firstSlash + 1);
+            TagEntry<?> factory = TagEntryRegistry.getFactory(subfolder);
+            if (factory == null) {
+                OKCore.okLog(
+                    Level.WARN,
+                    "No TagEntry factory registered for subfolder [{}] from file {}",
+                    subfolder,
+                    fileId);
+                continue;
+            }
 
-                TagEntry<?> factory = TagEntryRegistry.getFactory(subfolder);
-                if (factory == null) {
-                    OKCore.okLog(
-                        Level.WARN,
-                        "No TagEntry factory registered for subfolder [{}] from file {}",
-                        subfolder,
-                        fileId);
-                    continue;
-                }
+            ResourceKey<?> registryKey = ResourceKey.createRegistryKey(new ResourceLocation("minecraft", subfolder));
+            ResourceLocation tagId = new ResourceLocation(fileId.getResourceDomain(), tagPath);
+            TagKey<?> tagKey = TagKey.create(registryKey, tagId);
 
-                boolean replace = jsonObject.has("replace") && jsonObject.get("replace")
-                    .getAsBoolean();
-                List<TagEntry<?>> entries = new ArrayList<>();
+            Set<TagEntry<?>> accumulatedEntries = finalTagsMap.computeIfAbsent(tagKey, k -> new HashSet<>());
 
-                if (jsonObject.has("values") && jsonObject.get("values")
-                    .isJsonArray()) {
-                    JsonArray valuesArray = jsonObject.getAsJsonArray("values");
+            int fileIndex = 0;
+            for (JsonElement root : jsonFiles) {
+                fileIndex++;
+                try {
+                    if (!root.isJsonObject()) continue;
+                    JsonObject jsonObject = root.getAsJsonObject();
 
-                    for (JsonElement element : valuesArray) {
-                        if (!element.isJsonPrimitive()) continue;
-                        String rawValue = element.getAsString();
+                    boolean replace = jsonObject.has("replace") && jsonObject.get("replace")
+                        .getAsBoolean();
 
-                        String[] parts = rawValue.split(":");
-                        if (parts.length < 2) continue;
+                    if (replace) {
+                        int beforeClearCount = accumulatedEntries.size();
+                        accumulatedEntries.clear();
+                    }
 
-                        String namespace = parts[0];
-                        String path = parts[1];
-                        int meta = 0;
+                    List<TagEntry<?>> currentFileEntries = new ArrayList<>();
 
-                        if (parts.length >= 3) {
-                            String rawMeta = parts[2];
-                            if (!rawMeta.equalsIgnoreCase("#wildcard")) {
-                                try {
-                                    meta = Integer.parseInt(rawMeta);
-                                } catch (NumberFormatException ignored) {}
+                    if (jsonObject.has("values") && jsonObject.get("values")
+                        .isJsonArray()) {
+                        JsonArray valuesArray = jsonObject.getAsJsonArray("values");
+
+                        for (JsonElement element : valuesArray) {
+                            if (!element.isJsonPrimitive()) continue;
+                            String rawValue = element.getAsString();
+
+                            String[] parts = rawValue.split(":");
+                            if (parts.length < 2) continue;
+
+                            String namespace = parts[0];
+                            String path = parts[1];
+                            int meta = 0;
+
+                            if (parts.length >= 3) {
+                                String rawMeta = parts[2];
+                                if (!rawMeta.equalsIgnoreCase("#wildcard")) {
+                                    try {
+                                        meta = Integer.parseInt(rawMeta);
+                                    } catch (NumberFormatException ignored) {}
+                                }
+                            }
+
+                            ResourceLocation entryId = new ResourceLocation(namespace, path);
+                            TagEntry<?> newEntry = factory.create(entryId, meta);
+                            if (newEntry != null) {
+                                currentFileEntries.add(newEntry);
                             }
                         }
-
-                        ResourceLocation entryId = new ResourceLocation(namespace, path);
-                        TagEntry<?> newEntry = factory.create(entryId, meta);
-                        if (newEntry != null) {
-                            entries.add(newEntry);
-                        }
                     }
+
+                    accumulatedEntries.addAll(currentFileEntries);
+                } catch (IllegalArgumentException | JsonParseException e) {
+                    OKCore
+                        .okLog(Level.ERROR, "Parsing error loading datapack tag file [{}]: {}", fileId, e.getMessage());
                 }
-
-                ResourceKey<?> registryKey = ResourceKey
-                    .createRegistryKey(new ResourceLocation("minecraft", subfolder));
-                ResourceLocation tagId = new ResourceLocation(fileId.getResourceDomain(), tagPath);
-                TagKey<?> tagKey = TagKey.create(registryKey, tagId);
-
-                Set<TagEntry<?>> accumulatedEntries = finalTagsMap.computeIfAbsent(tagKey, k -> new HashSet<>());
-                if (replace) {
-                    accumulatedEntries.clear();
-                }
-                accumulatedEntries.addAll(entries);
-
-            } catch (IllegalArgumentException | JsonParseException e) {
-                OKCore.okLog(Level.ERROR, "Parsing error loading datapack tag file [{}]: {}", fileId, e.getMessage());
             }
         }
 

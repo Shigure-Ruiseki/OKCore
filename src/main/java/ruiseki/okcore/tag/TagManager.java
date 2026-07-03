@@ -1,6 +1,5 @@
 package ruiseki.okcore.tag;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +26,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DataManager;
 import ruiseki.okcore.data.MultiJsonResourceReloadListener;
+import ruiseki.okcore.tag.entry.ITagEntrySerializer;
 import ruiseki.okcore.tag.entry.TagEntry;
 import ruiseki.okcore.tag.entry.TagEntryRegistry;
 
@@ -67,72 +67,64 @@ public class TagManager extends MultiJsonResourceReloadListener {
             String subfolder = fullPath.substring(0, firstSlash);
             String tagPath = fullPath.substring(firstSlash + 1);
 
-            TagEntry<?> factory = TagEntryRegistry.getFactory(subfolder);
-            if (factory == null) {
+            ITagEntrySerializer<?, ?> serializer = TagEntryRegistry.getSerializer(subfolder);
+            if (serializer == null) {
                 OKCore.okLog(
                     Level.WARN,
-                    "No TagEntry factory registered for subfolder [{}] from file {}",
+                    "No TagEntry serializer registered for subfolder [{}] from file {}",
                     subfolder,
                     fileId);
                 continue;
             }
 
-            ResourceKey<?> registryKey = ResourceKey.createRegistryKey(new ResourceLocation("minecraft", subfolder));
-            ResourceLocation tagId = new ResourceLocation(fileId.getResourceDomain(), tagPath);
-            TagKey<?> tagKey = TagKey.create(registryKey, tagId);
+            ResourceKey<?> registryKey = ResourceKey.createRegistryKey(new ResourceLocation(subfolder));
+            TagKey<?> tagKey = TagKey.create(registryKey, new ResourceLocation(fileId.getResourceDomain(), tagPath));
 
             Set<TagEntry<?>> accumulatedEntries = finalTagsMap.computeIfAbsent(tagKey, k -> new HashSet<>());
 
-            int fileIndex = 0;
             for (JsonElement root : jsonFiles) {
-                fileIndex++;
                 try {
                     if (!root.isJsonObject()) continue;
                     JsonObject jsonObject = root.getAsJsonObject();
 
                     boolean replace = jsonObject.has("replace") && jsonObject.get("replace")
                         .getAsBoolean();
-
                     if (replace) {
-                        int beforeClearCount = accumulatedEntries.size();
                         accumulatedEntries.clear();
                     }
-
-                    List<TagEntry<?>> currentFileEntries = new ArrayList<>();
 
                     if (jsonObject.has("values") && jsonObject.get("values")
                         .isJsonArray()) {
                         JsonArray valuesArray = jsonObject.getAsJsonArray("values");
 
                         for (JsonElement element : valuesArray) {
-                            if (!element.isJsonPrimitive()) continue;
-                            String rawValue = element.getAsString();
+                            if (element.isJsonPrimitive()) {
+                                String rawValue = element.getAsString();
+                                String[] parts = rawValue.split(":");
+                                if (parts.length < 2) continue;
 
-                            String[] parts = rawValue.split(":");
-                            if (parts.length < 2) continue;
+                                String namespace = parts[0];
+                                String path = parts[1];
+                                int meta = 0;
 
-                            String namespace = parts[0];
-                            String path = parts[1];
-                            int meta = 0;
-
-                            if (parts.length >= 3) {
-                                String rawMeta = parts[2];
-                                if (!rawMeta.equalsIgnoreCase("#wildcard")) {
-                                    try {
-                                        meta = Integer.parseInt(rawMeta);
-                                    } catch (NumberFormatException ignored) {}
+                                if (parts.length >= 3) {
+                                    String rawMeta = parts[2];
+                                    if (rawMeta.equalsIgnoreCase("#wildcard")) {
+                                        meta = TagEntry.WILDCARD;
+                                    } else {
+                                        try {
+                                            meta = Integer.parseInt(rawMeta);
+                                        } catch (NumberFormatException ignored) {}
+                                    }
                                 }
-                            }
-
-                            ResourceLocation entryId = new ResourceLocation(namespace, path);
-                            TagEntry<?> newEntry = factory.create(entryId, meta);
-                            if (newEntry != null) {
-                                currentFileEntries.add(newEntry);
+                                ResourceLocation entryId = new ResourceLocation(namespace, path);
+                                TagEntry<?> parsedEntry = serializer.read(entryId, meta);
+                                if (parsedEntry != null) {
+                                    accumulatedEntries.add(parsedEntry);
+                                }
                             }
                         }
                     }
-
-                    accumulatedEntries.addAll(currentFileEntries);
                 } catch (IllegalArgumentException | JsonParseException e) {
                     OKCore
                         .okLog(Level.ERROR, "Parsing error loading datapack tag file [{}]: {}", fileId, e.getMessage());
@@ -160,6 +152,24 @@ public class TagManager extends MultiJsonResourceReloadListener {
         if (target == null || this.entryToTagsCache.isEmpty()) return Collections.emptySet();
         Set<TagKey<T>> cached = (Set<TagKey<T>>) (Set<?>) this.entryToTagsCache.get(target);
         return cached != null ? cached : Collections.emptySet();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Set<TagKey<T>> getTags(Class<T> type, ResourceLocation id, int meta) {
+        if (id == null || this.entryToTagsCache.isEmpty()) return Collections.emptySet();
+        Set<TagKey<T>> result = new HashSet<>();
+        for (Map.Entry<TagEntry<?>, Set<TagKey<?>>> cacheEntry : this.entryToTagsCache.entrySet()) {
+            TagEntry<?> entry = cacheEntry.getKey();
+            if (entry.getType() == type) {
+                if (entry.getId()
+                    .equals(id)) {
+                    if (entry.getMeta() == TagEntry.WILDCARD || meta == TagEntry.WILDCARD || entry.getMeta() == meta) {
+                        result.addAll((Set<TagKey<T>>) (Set<?>) cacheEntry.getValue());
+                    }
+                }
+            }
+        }
+        return result.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(result);
     }
 
     @SuppressWarnings("unchecked")

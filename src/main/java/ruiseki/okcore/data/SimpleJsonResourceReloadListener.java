@@ -14,6 +14,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.datastructure.FileToIdConverter;
 import ruiseki.okcore.datastructure.Resource;
 import ruiseki.okcore.helper.GsonHelpers;
 

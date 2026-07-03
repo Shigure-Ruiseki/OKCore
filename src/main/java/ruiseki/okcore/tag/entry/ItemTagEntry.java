@@ -4,15 +4,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
-import ruiseki.okcore.tag.Registries;
-import ruiseki.okcore.tag.ResourceKey;
-
-@TagData
 public class ItemTagEntry extends TagEntry<ItemStack> {
-
-    public ItemTagEntry() {
-        super(null, 0);
-    }
 
     public ItemTagEntry(Item item) {
         super((item != null) ? new ResourceLocation(Item.itemRegistry.getNameForObject(item)) : null, 0);
@@ -35,27 +27,18 @@ public class ItemTagEntry extends TagEntry<ItemStack> {
         return ItemStack.class;
     }
 
-    @Override
-    public String getKey() {
-        return "item";
-    }
+    public static class Serializer implements ITagEntrySerializer<ItemStack, ItemTagEntry> {
 
-    @Override
-    public ResourceKey<?> getRegistryKey() {
-        return Registries.ITEM;
-    }
+        public static final ItemTagEntry.Serializer INSTANCE = new ItemTagEntry.Serializer();
 
-    @Override
-    public TagEntry<ItemStack> create(ResourceLocation id, int meta) {
-        return new ItemTagEntry(id, meta);
-    }
+        @Override
+        public String getKey() {
+            return "item";
+        }
 
-    @Override
-    public ItemStack to() {
-        if (this.id == null) return null;
-        Item item = (Item) Item.itemRegistry.getObject(this.id.toString());
-        if (item == null) return null;
-        int finalMeta = (this.meta == WILDCARD) ? 0 : this.meta;
-        return new ItemStack(item, 1, finalMeta);
+        @Override
+        public ItemTagEntry read(ResourceLocation id, int meta) {
+            return new ItemTagEntry(id, meta);
+        }
     }
 }

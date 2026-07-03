@@ -4,7 +4,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.Fluid;
 
 public class Helpers {
 
@@ -25,5 +30,28 @@ public class Helpers {
             return new ResourceLocation("minecraft", location);
         }
         return new ResourceLocation(location.substring(0, idx), location.substring(idx + 1));
+    }
+
+    public static ResourceLocation getLocation(Item item) {
+        if (item == null) return null;
+        String nameObj = Item.itemRegistry.getNameForObject(item);
+        return nameObj != null ? parseLocation(nameObj) : null;
+    }
+
+    public static ResourceLocation getLocation(Block block) {
+        if (block == null) return null;
+        String nameObj = Block.blockRegistry.getNameForObject(block);
+        return nameObj != null ? parseLocation(nameObj) : null;
+    }
+
+    public static ResourceLocation getLocation(Entity entity) {
+        if (entity == null) return null;
+        String entityName = EntityList.getEntityString(entity);
+        return entityName != null ? parseLocation(entityName) : null;
+    }
+
+    public static ResourceLocation getLocation(Fluid fluid) {
+        if (fluid == null) return null;
+        return parseLocation(fluid.getName());
     }
 }

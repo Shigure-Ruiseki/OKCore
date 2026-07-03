@@ -2,18 +2,9 @@ package ruiseki.okcore.tag.entry;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
-import ruiseki.okcore.tag.Registries;
-import ruiseki.okcore.tag.ResourceKey;
-
-@TagData
 public class FluidTagEntry extends TagEntry<Fluid> {
-
-    public FluidTagEntry() {
-        super(null, WILDCARD);
-    }
 
     public FluidTagEntry(Fluid fluid) {
         super((fluid != null) ? new ResourceLocation(fluid.getName()) : null, WILDCARD);
@@ -32,24 +23,18 @@ public class FluidTagEntry extends TagEntry<Fluid> {
         return Fluid.class;
     }
 
-    @Override
-    public String getKey() {
-        return "fluid";
-    }
+    public static class Serializer implements ITagEntrySerializer<Fluid, FluidTagEntry> {
 
-    @Override
-    public ResourceKey<?> getRegistryKey() {
-        return Registries.FLUID;
-    }
+        public static final FluidTagEntry.Serializer INSTANCE = new FluidTagEntry.Serializer();
 
-    @Override
-    public TagEntry<Fluid> create(ResourceLocation id, int meta) {
-        return new FluidTagEntry(id, meta);
-    }
+        @Override
+        public String getKey() {
+            return "fluid";
+        }
 
-    @Override
-    public Fluid to() {
-        if (this.id == null) return null;
-        return FluidRegistry.getFluid(this.id.getResourcePath());
+        @Override
+        public FluidTagEntry read(ResourceLocation id, int meta) {
+            return new FluidTagEntry(id, meta);
+        }
     }
 }

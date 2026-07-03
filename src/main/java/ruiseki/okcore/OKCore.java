@@ -41,7 +41,6 @@ import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
 import ruiseki.okcore.recipe.RecipeRegistry;
-import ruiseki.okcore.tag.entry.TagEntryRegistry;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -81,7 +80,6 @@ public class OKCore extends ModBase {
         CapabilityManager.INSTANCE.injectCapabilities(asmData);
         GuideRegistry.loadFromASM(asmData);
         RecipeRegistry.loadFromASM(asmData);
-        TagEntryRegistry.loadFromASM(asmData);
     }
 
     @Override

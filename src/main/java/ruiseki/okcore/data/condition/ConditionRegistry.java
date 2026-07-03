@@ -41,7 +41,8 @@ public class ConditionRegistry {
     }
 
     public static boolean processConditions(JsonObject json, String memberName, ICondition.IContext context) {
-        return !json.has(memberName) || processConditions(GsonHelpers.getAsJsonArray(json, memberName), context);
+        if (json == null || !json.has(memberName)) return true;
+        return processConditions(GsonHelpers.getAsJsonArray(json, memberName), context);
     }
 
     public static boolean processConditions(JsonArray conditions, ICondition.IContext context) {

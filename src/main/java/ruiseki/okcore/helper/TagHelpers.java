@@ -5,18 +5,17 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.datastructure.BlockStack;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
-import ruiseki.okcore.tag.entry.BlockTagEntry;
-import ruiseki.okcore.tag.entry.EntityTagEntry;
-import ruiseki.okcore.tag.entry.FluidTagEntry;
-import ruiseki.okcore.tag.entry.ItemTagEntry;
+import ruiseki.okcore.tag.entry.TagEntry;
 
 public class TagHelpers {
 
@@ -26,36 +25,47 @@ public class TagHelpers {
 
     public static Set<TagKey<ItemStack>> getTags(ItemStack stack) {
         if (stack == null || stack.getItem() == null) return Collections.emptySet();
-        return getManager().getTags(new ItemTagEntry(stack));
+        ResourceLocation id = Helpers.getLocation(stack.getItem());
+        return getManager().getTags(ItemStack.class, id, stack.getItemDamage());
     }
 
     public static Set<TagKey<ItemStack>> getTags(Item item) {
         if (item == null) return Collections.emptySet();
-        return getManager().getTags(new ItemTagEntry(item));
+        ResourceLocation id = Helpers.getLocation(item);
+        return getManager().getTags(ItemStack.class, id, TagEntry.WILDCARD);
     }
 
     public static Set<TagKey<BlockStack>> getTags(BlockStack stack) {
         if (stack == null || stack.getBlock() == null) return Collections.emptySet();
-        return getManager().getTags(new BlockTagEntry(stack));
+        ResourceLocation id = Helpers.getLocation(stack.getBlock());
+        return getManager().getTags(BlockStack.class, id, stack.getMeta());
     }
 
     public static Set<TagKey<BlockStack>> getTags(Block block) {
         if (block == null) return Collections.emptySet();
-        return getManager().getTags(new BlockTagEntry(block));
+        ResourceLocation id = Helpers.getLocation(block);
+        return getManager().getTags(BlockStack.class, id, TagEntry.WILDCARD);
     }
 
     public static Set<TagKey<Entity>> getTags(Entity entity) {
         if (entity == null) return Collections.emptySet();
-        return getManager().getTags(new EntityTagEntry(entity));
+        String entityName = EntityList.getEntityString(entity);
+        if (entityName == null) return Collections.emptySet();
+        return getManager().getTags(Entity.class, new ResourceLocation(entityName), 0);
     }
 
     public static Set<TagKey<Fluid>> getTags(Fluid fluid) {
         if (fluid == null) return Collections.emptySet();
-        return getManager().getTags(new FluidTagEntry(fluid));
+        return getManager().getTags(Fluid.class, new ResourceLocation(fluid.getName()), TagEntry.WILDCARD);
     }
 
     public static Set<TagKey<Fluid>> getTags(FluidStack stack) {
         if (stack == null || stack.getFluid() == null) return Collections.emptySet();
-        return getManager().getTags(new FluidTagEntry(stack));
+        return getManager().getTags(
+            Fluid.class,
+            new ResourceLocation(
+                stack.getFluid()
+                    .getName()),
+            0);
     }
 }

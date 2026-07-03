@@ -4,15 +4,8 @@ import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.datastructure.BlockStack;
-import ruiseki.okcore.tag.Registries;
-import ruiseki.okcore.tag.ResourceKey;
 
-@TagData
 public class BlockTagEntry extends TagEntry<BlockStack> {
-
-    public BlockTagEntry() {
-        super(null, 0);
-    }
 
     public BlockTagEntry(Block block) {
         super((block != null) ? new ResourceLocation(Block.blockRegistry.getNameForObject(block)) : null, 0);
@@ -35,27 +28,18 @@ public class BlockTagEntry extends TagEntry<BlockStack> {
         return BlockStack.class;
     }
 
-    @Override
-    public String getKey() {
-        return "block";
-    }
+    public static class Serializer implements ITagEntrySerializer<BlockStack, BlockTagEntry> {
 
-    @Override
-    public ResourceKey<?> getRegistryKey() {
-        return Registries.BLOCK;
-    }
+        public static final Serializer INSTANCE = new Serializer();
 
-    @Override
-    public TagEntry<BlockStack> create(ResourceLocation id, int meta) {
-        return new BlockTagEntry(id, meta);
-    }
+        @Override
+        public String getKey() {
+            return "block";
+        }
 
-    @Override
-    public BlockStack to() {
-        if (this.id == null) return null;
-        Block block = (Block) Block.blockRegistry.getObject(this.id.toString());
-        if (block == null) return null;
-        int finalMeta = (this.meta == WILDCARD) ? 0 : this.meta;
-        return new BlockStack(block, finalMeta);
+        @Override
+        public BlockTagEntry read(ResourceLocation id, int meta) {
+            return new BlockTagEntry(id, meta);
+        }
     }
 }

@@ -1,10 +1,10 @@
-package ruiseki.okcore.data;
+package ruiseki.okcore.datastructure;
 
 import java.util.Map;
 
 import net.minecraft.util.ResourceLocation;
 
-import ruiseki.okcore.datastructure.Resource;
+import ruiseki.okcore.data.DataManager;
 
 public class FileToIdConverter {
 

@@ -9,7 +9,6 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.INetworkMaterial;
-import ruiseki.okcore.tag.ResourceKey;
 
 public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMaterial {
 
@@ -32,18 +31,6 @@ public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMat
     }
 
     public abstract Class<T> getType();
-
-    public abstract String getKey();
-
-    public abstract ResourceKey<?> getRegistryKey();
-
-    public abstract TagEntry<T> create(ResourceLocation id, int meta);
-
-    public TagEntry<T> empty() {
-        return this.create(new ResourceLocation("minecraft", "air"), 0);
-    }
-
-    public abstract T to();
 
     @Override
     public void toNetwork(ExtendedBuffer buffer) throws IOException {

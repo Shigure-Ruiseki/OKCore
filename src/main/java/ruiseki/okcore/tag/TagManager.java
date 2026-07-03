@@ -3,26 +3,47 @@ package ruiseki.okcore.tag;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import net.minecraft.util.ResourceLocation;
+
+import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.OKCore;
+import ruiseki.okcore.data.DataManager;
+import ruiseki.okcore.data.MultiJsonResourceReloadListener;
+import ruiseki.okcore.tag.entry.ITagEntrySerializer;
 import ruiseki.okcore.tag.entry.TagEntry;
+import ruiseki.okcore.tag.entry.TagEntryRegistry;
 
-public class TagManager {
+public class TagManager extends MultiJsonResourceReloadListener {
+
+    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting()
+        .disableHtmlEscaping()
+        .create();
 
     private static TagManager instance;
 
     private Map<TagKey<?>, Set<TagEntry<?>>> tagToEntriesMap = ImmutableMap.of();
     private Map<TagEntry<?>, Set<TagKey<?>>> entryToTagsCache = ImmutableMap.of();
 
-    public TagManager() {}
+    public TagManager() {
+        super(GSON, "tags");
+    }
 
     public static TagManager getManager() {
         if (instance == null) {
@@ -31,9 +52,99 @@ public class TagManager {
         return instance;
     }
 
-    public void clearTags() {
-        this.tagToEntriesMap = ImmutableMap.of();
-        this.entryToTagsCache = ImmutableMap.of();
+    @Override
+    protected void apply(Map<ResourceLocation, List<JsonElement>> data, DataManager manager) {
+        Map<TagKey<?>, Set<TagEntry<?>>> finalTagsMap = new HashMap<>();
+
+        for (Map.Entry<ResourceLocation, List<JsonElement>> entry : data.entrySet()) {
+            ResourceLocation fileId = entry.getKey();
+            List<JsonElement> jsonFiles = entry.getValue();
+
+            String fullPath = fileId.getResourcePath();
+            int firstSlash = fullPath.indexOf('/');
+            if (firstSlash == -1) continue;
+
+            String subfolder = fullPath.substring(0, firstSlash);
+            String tagPath = fullPath.substring(firstSlash + 1);
+
+            ITagEntrySerializer<?, ?> serializer = TagEntryRegistry.getSerializer(subfolder);
+            if (serializer == null) {
+                OKCore.okLog(
+                    Level.WARN,
+                    "No TagEntry serializer registered for subfolder [{}] from file {}",
+                    subfolder,
+                    fileId);
+                continue;
+            }
+
+            ResourceKey<?> registryKey = ResourceKey.createRegistryKey(new ResourceLocation(subfolder));
+            TagKey<?> tagKey = TagKey.create(registryKey, new ResourceLocation(fileId.getResourceDomain(), tagPath));
+
+            Set<TagEntry<?>> accumulatedEntries = finalTagsMap.computeIfAbsent(tagKey, k -> new HashSet<>());
+
+            for (JsonElement root : jsonFiles) {
+                try {
+                    if (!root.isJsonObject()) continue;
+                    JsonObject jsonObject = root.getAsJsonObject();
+
+                    boolean replace = jsonObject.has("replace") && jsonObject.get("replace")
+                        .getAsBoolean();
+                    if (replace) {
+                        accumulatedEntries.clear();
+                    }
+
+                    if (jsonObject.has("values") && jsonObject.get("values")
+                        .isJsonArray()) {
+                        JsonArray valuesArray = jsonObject.getAsJsonArray("values");
+
+                        for (JsonElement element : valuesArray) {
+                            if (element.isJsonPrimitive()) {
+                                String rawValue = element.getAsString();
+                                String[] parts = rawValue.split(":");
+                                if (parts.length < 2) continue;
+
+                                String namespace = parts[0];
+                                String path = parts[1];
+                                int meta = 0;
+
+                                if (parts.length >= 3) {
+                                    String rawMeta = parts[2];
+                                    if (rawMeta.equalsIgnoreCase("#wildcard")) {
+                                        meta = TagEntry.WILDCARD;
+                                    } else {
+                                        try {
+                                            meta = Integer.parseInt(rawMeta);
+                                        } catch (NumberFormatException ignored) {}
+                                    }
+                                }
+                                ResourceLocation entryId = new ResourceLocation(namespace, path);
+                                TagEntry<?> parsedEntry = serializer.read(entryId, meta);
+                                if (parsedEntry != null) {
+                                    accumulatedEntries.add(parsedEntry);
+                                }
+                            }
+                        }
+                    }
+                } catch (IllegalArgumentException | JsonParseException e) {
+                    OKCore
+                        .okLog(Level.ERROR, "Parsing error loading datapack tag file [{}]: {}", fileId, e.getMessage());
+                }
+            }
+        }
+
+        finalTagsMap.values()
+            .removeIf(Set::isEmpty);
+
+        ImmutableMap.Builder<TagKey<?>, Set<TagEntry<?>>> builder = ImmutableMap.builder();
+        finalTagsMap.forEach((tagKey, entries) -> builder.put(tagKey, Collections.unmodifiableSet(entries)));
+
+        this.tagToEntriesMap = builder.build();
+        this.bakeCache();
+
+        OKCore.okLog(
+            Level.INFO,
+            "Loaded {} tags natively. TagRegistry has been completely phased out.",
+            this.tagToEntriesMap.size());
     }
 
     @SuppressWarnings("unchecked")
@@ -44,32 +155,28 @@ public class TagManager {
     }
 
     @SuppressWarnings("unchecked")
+    public <T> Set<TagKey<T>> getTags(Class<T> type, ResourceLocation id, int meta) {
+        if (id == null || this.entryToTagsCache.isEmpty()) return Collections.emptySet();
+        Set<TagKey<T>> result = new HashSet<>();
+        for (Map.Entry<TagEntry<?>, Set<TagKey<?>>> cacheEntry : this.entryToTagsCache.entrySet()) {
+            TagEntry<?> entry = cacheEntry.getKey();
+            if (entry.getType() == type) {
+                if (entry.getId()
+                    .equals(id)) {
+                    if (entry.getMeta() == TagEntry.WILDCARD || meta == TagEntry.WILDCARD || entry.getMeta() == meta) {
+                        result.addAll((Set<TagKey<T>>) (Set<?>) cacheEntry.getValue());
+                    }
+                }
+            }
+        }
+        return result.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(result);
+    }
+
+    @SuppressWarnings("unchecked")
     public <T> Set<TagEntry<T>> getEntries(TagKey<T> tagKey) {
         if (tagKey == null) return Collections.emptySet();
         Set<TagEntry<T>> elements = (Set<TagEntry<T>>) (Set<?>) this.tagToEntriesMap.get(tagKey);
-        return elements != null ? Collections.unmodifiableSet(elements) : Collections.emptySet();
-    }
-
-    public void addTags(Map<TagKey<?>, Set<TagEntry<?>>> incomingTags) {
-        if (incomingTags == null) return;
-
-        Map<TagKey<?>, Set<TagEntry<?>>> mutableMap = new HashMap<>();
-        for (Map.Entry<TagKey<?>, Set<TagEntry<?>>> entry : this.tagToEntriesMap.entrySet()) {
-            if (entry.getKey() != null && entry.getValue() != null) {
-                mutableMap.put(entry.getKey(), new HashSet<>(entry.getValue()));
-            }
-        }
-
-        for (Map.Entry<TagKey<?>, Set<TagEntry<?>>> entry : incomingTags.entrySet()) {
-            TagKey<?> tagKey = entry.getKey();
-            Set<TagEntry<?>> wrappers = entry.getValue();
-            if (tagKey != null && wrappers != null) {
-                mutableMap.computeIfAbsent(tagKey, k -> new HashSet<>())
-                    .addAll(wrappers);
-            }
-        }
-        this.tagToEntriesMap = Helpers.copyToMSImmutable(mutableMap);
-        this.bakeCache();
+        return elements != null ? elements : Collections.emptySet();
     }
 
     public Map<TagKey<?>, Set<TagEntry<?>>> getTags() {
@@ -91,7 +198,10 @@ public class TagManager {
                 typeSet.addAll(wrappers);
             }
         });
-        this.tagToEntriesMap = Helpers.copyToMSImmutable(map);
+
+        ImmutableMap.Builder<TagKey<?>, Set<TagEntry<?>>> builder = ImmutableMap.builder();
+        map.forEach((tagKey, entries) -> builder.put(tagKey, Collections.unmodifiableSet(entries)));
+        this.tagToEntriesMap = builder.build();
         this.bakeCache();
     }
 
@@ -109,6 +219,9 @@ public class TagManager {
                 }
             }
         }
-        this.entryToTagsCache = ImmutableMap.copyOf(tempCache);
+
+        ImmutableMap.Builder<TagEntry<?>, Set<TagKey<?>>> cacheBuilder = ImmutableMap.builder();
+        tempCache.forEach((entry, keys) -> cacheBuilder.put(entry, Collections.unmodifiableSet(keys)));
+        this.entryToTagsCache = cacheBuilder.build();
     }
 }

@@ -17,6 +17,7 @@ import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
+import ruiseki.okcore.tag.entry.ITagEntrySerializer;
 import ruiseki.okcore.tag.entry.TagEntry;
 import ruiseki.okcore.tag.entry.TagEntryRegistry;
 
@@ -42,20 +43,20 @@ public class PacketUpdateTags extends PacketCodec {
                 String subfolder = tagKey.registry()
                     .location()
                     .getResourcePath();
-                TagEntry<?> factory = TagEntryRegistry.getFactory(subfolder);
+
+                ITagEntrySerializer<?, ?> serializer = TagEntryRegistry.getSerializer(subfolder);
 
                 int entryCount = input.readVarIntFromBuffer();
                 Set<TagEntry<?>> entries = new HashSet<>();
 
                 for (int j = 0; j < entryCount; j++) {
-                    if (factory != null) {
-                        TagEntry<?> entry = factory.empty();
+                    if (serializer != null) {
+                        TagEntry<?> entry = serializer.read(input);
                         if (entry != null) {
-                            entry.fromNetwork(input);
                             entries.add(entry);
                         }
                     } else {
-                        throw new IOException("Missing TagEntry factory for subfolder: " + subfolder);
+                        throw new IOException("Missing TagEntry serializer for subfolder: " + subfolder);
                     }
                 }
 

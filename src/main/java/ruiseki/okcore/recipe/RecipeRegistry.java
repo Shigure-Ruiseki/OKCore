@@ -1,6 +1,5 @@
 package ruiseki.okcore.recipe;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,13 +14,11 @@ import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
-import cpw.mods.fml.common.IFuelHandler;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+
 import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.data.loader.recipes.RecipeHolder;
-import ruiseki.okcore.helper.CraftingHelpers;
-import ruiseki.okcore.recipe.type.cooking.fuel.FuelRecipe;
 import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingRecipe;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
@@ -30,7 +27,6 @@ public class RecipeRegistry {
 
     private static final Map<String, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
     private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
-    private static final Map<ResourceLocation, RecipeHolder> RECIPE_HOLDERS = new HashMap<>();
 
     private static final Map<ItemStack, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
     private static boolean isFuelHandlerRegistered = false;
@@ -127,82 +123,18 @@ public class RecipeRegistry {
         }
     }
 
-    public static void addHolder(RecipeHolder holder) {
-        RECIPE_HOLDERS.put(holder.id(), holder);
-    }
-
-    public static IRecipeOK<?> fromHolder(RecipeHolder holder) {
-        if (holder == null) {
-            OKCore.okLog(Level.ERROR, "Cannot parse recipe from a null RecipeHolder!");
-            return null;
+    public static IRecipeOK<?> deserialize(ResourceLocation id, JsonObject json) {
+        if (!json.has("type")) {
+            throw new JsonSyntaxException("Missing 'type' string inside recipe JSON for: " + id);
         }
-
-        IRecipeSerializer<?> serializer = RecipeRegistry.getSerializer(holder.type());
+        String typeStr = json.get("type")
+            .getAsString();
+        IRecipeSerializer<?> serializer = getSerializer(typeStr);
         if (serializer == null) {
-            OKCore.okLog(
-                Level.WARN,
-                "Missing recipe serializer for type: '{}' (Recipe ID: '{}')",
-                holder.type(),
-                holder.id());
+            OKCore.okLog(Level.WARN, "Missing recipe serializer for type: '{}' (Recipe ID: '{}')", typeStr, id);
             return null;
         }
-
-        try {
-            return serializer.fromJson(holder.id(), holder.json());
-        } catch (Exception e) {
-            OKCore.okLog(
-                Level.ERROR,
-                "Failed to parse recipe '{}' of type '{}' due to an unexpected error!",
-                holder.id(),
-                holder.type(),
-                e);
-            return null;
-        }
-    }
-
-    public static void processHolders() {
-        RecipeManager manager = RecipeManager.getManager();
-        manager.clearRecipes();
-
-        List<IRecipeOK<?>> parsedRecipes = new ArrayList<>();
-        for (RecipeHolder holder : RECIPE_HOLDERS.values()) {
-            IRecipeOK<?> recipe = fromHolder(holder);
-            if (recipe != null) {
-                parsedRecipes.add(recipe);
-            }
-        }
-
-        manager.addRecipes(parsedRecipes);
-
-        syncMCCraftingManager();
-        syncMCFurnaceRecipes();
-
-        if (!isFuelHandlerRegistered) {
-            GameRegistry.registerFuelHandler(new IFuelHandler() {
-
-                @Override
-                public int getBurnTime(ItemStack fuel) {
-                    if (fuel == null || fuel.getItem() == null) return 0;
-
-                    Collection<FuelRecipe> fuelRecipes = CraftingHelpers.getFuelRecipes();
-                    if (fuelRecipes == null || fuelRecipes.isEmpty()) return 0;
-
-                    for (FuelRecipe fuelRecipe : fuelRecipes) {
-                        if (fuelRecipe != null && fuelRecipe.matchesFuel(fuel)) {
-                            return fuelRecipe.getBurnTime();
-                        }
-                    }
-                    return 0;
-                }
-            });
-            isFuelHandlerRegistered = true;
-        }
-
-        OKCore.okLog(
-            Level.INFO,
-            "Successfully processed and registered {} recipes into unified storage.",
-            parsedRecipes.size());
-        RECIPE_HOLDERS.clear();
+        return serializer.fromJson(id, json);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

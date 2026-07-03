@@ -4,15 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
 
-import ruiseki.okcore.tag.Registries;
-import ruiseki.okcore.tag.ResourceKey;
-
-@TagData
 public class EntityTagEntry extends TagEntry<Entity> {
-
-    public EntityTagEntry() {
-        super(null, WILDCARD);
-    }
 
     public EntityTagEntry(Entity entity) {
         super((entity != null) ? new ResourceLocation(EntityList.getEntityString(entity)) : null, WILDCARD);
@@ -27,23 +19,18 @@ public class EntityTagEntry extends TagEntry<Entity> {
         return Entity.class;
     }
 
-    @Override
-    public String getKey() {
-        return "entity_type";
-    }
+    public static class Serializer implements ITagEntrySerializer<Entity, EntityTagEntry> {
 
-    @Override
-    public ResourceKey<?> getRegistryKey() {
-        return Registries.ENTITY_TYPE;
-    }
+        public static final EntityTagEntry.Serializer INSTANCE = new EntityTagEntry.Serializer();
 
-    @Override
-    public TagEntry<Entity> create(ResourceLocation id, int meta) {
-        return new EntityTagEntry(id, meta);
-    }
+        @Override
+        public String getKey() {
+            return "entity_type";
+        }
 
-    @Override
-    public Entity to() {
-        return null;
+        @Override
+        public EntityTagEntry read(ResourceLocation id, int meta) {
+            return new EntityTagEntry(id, meta);
+        }
     }
 }

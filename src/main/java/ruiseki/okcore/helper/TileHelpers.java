@@ -77,13 +77,13 @@ public class TileHelpers {
         if (tile instanceof ICapabilityProvider provider) {
             return provider.getCapability(capability, side);
         }
-        return null;
+        return LazyOptional.empty();
     }
 
     public static <C> LazyOptional<C> getCapability(DimPos dimPos, @NotNull Capability<C> capability,
         @NotNull ForgeDirection side) {
         World world = dimPos.getWorld();
-        return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : null;
+        return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : LazyOptional.empty();
     }
 
     public static <C> LazyOptional<C> getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,

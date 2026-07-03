@@ -20,7 +20,7 @@ public class ChunkHelpers {
             return provider.getCapability(capability);
 
         } catch (ClassCastException ignored) {
-            return null;
+            return LazyOptional.empty();
         }
     }
 

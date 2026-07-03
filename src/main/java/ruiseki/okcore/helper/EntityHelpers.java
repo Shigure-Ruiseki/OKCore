@@ -35,7 +35,7 @@ public class EntityHelpers {
             return provider.getCapability(capability);
 
         } catch (ClassCastException ignored) {
-            return null;
+            return LazyOptional.empty();
         }
     }
 

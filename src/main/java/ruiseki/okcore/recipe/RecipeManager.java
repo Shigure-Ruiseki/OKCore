@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -89,7 +88,6 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
                         .build()));
 
         this.recipes = ImmutableMap.copyOf(builtMap);
-
         this.byName = builder.build();
 
         RecipeRegistry.syncMCCraftingManager();
@@ -108,11 +106,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
 
     public Optional<? extends IRecipeOK<?>> getRecipesByKey(ResourceLocation location) {
         if (location == null) return Optional.empty();
-        return this.recipes.values()
-            .stream()
-            .map(typeMap -> typeMap.get(location))
-            .filter(Objects::nonNull)
-            .findFirst();
+        return Optional.ofNullable(this.byName.get(location));
     }
 
     @SuppressWarnings("unchecked")
@@ -154,25 +148,25 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
             });
     }
 
-    public Optional<? extends IRecipeOK<?>> byKey(ResourceLocation p_44044_) {
-        return Optional.ofNullable(this.byName.get(p_44044_));
+    public Optional<? extends IRecipeOK<?>> byKey(ResourceLocation location) {
+        if (location == null) return Optional.empty();
+        return Optional.ofNullable(this.byName.get(location));
     }
 
     public Collection<IRecipeOK<?>> getRecipes() {
-        return this.recipes.values()
-            .stream()
-            .flatMap(
-                typeMap -> typeMap.values()
-                    .stream())
-            .collect(Collectors.toSet());
+        return this.byName.values();
     }
 
     public Stream<ResourceLocation> getRecipeIds() {
-        return this.recipes.values()
-            .stream()
-            .flatMap(
-                typeMap -> typeMap.keySet()
-                    .stream());
+        return this.byName.keySet()
+            .stream();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends IRecipeOK<?>> Map<ResourceLocation, T> getRecipes(IRecipeType<T> recipeType) {
+        if (recipeType == null) return Collections.emptyMap();
+        Map<ResourceLocation, ?> innerMap = this.recipes.get(recipeType);
+        return innerMap != null ? (Map<ResourceLocation, T>) innerMap : Collections.emptyMap();
     }
 
     @SideOnly(Side.CLIENT)

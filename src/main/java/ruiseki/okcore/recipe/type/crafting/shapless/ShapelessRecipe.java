@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.crafting.shapless;
 
-import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.SHAPELESS;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +34,7 @@ public class ShapelessRecipe implements IShapelessRecipe<InventoryCrafting> {
 
     @Override
     public IRecipeSerializer<?> getSerializer() {
-        return RecipeRegistry.getSerializer(SHAPELESS);
+        return RecipeRegistry.SHAPELESS_SERIALIZER;
     }
 
     @Override

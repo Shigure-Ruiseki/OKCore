@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.cooking.fuel;
 
-import static ruiseki.okcore.recipe.type.cooking.fuel.FuelType.FUEL;
-
 import java.io.IOException;
 
 import net.minecraft.item.ItemStack;
@@ -21,10 +19,7 @@ import ruiseki.okcore.recipe.RecipeData;
 @RecipeData
 public class FuelSerializer implements IRecipeSerializer<FuelRecipe> {
 
-    @Override
-    public String getTypeKey() {
-        return FUEL;
-    }
+    public static final FuelSerializer INSTANCE = new FuelSerializer();
 
     @Override
     public FuelRecipe fromJson(ResourceLocation id, JsonObject json) {

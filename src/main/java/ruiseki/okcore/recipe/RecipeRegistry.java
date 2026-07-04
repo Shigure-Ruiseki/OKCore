@@ -10,119 +10,115 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import cpw.mods.fml.common.discovery.ASMDataTable;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.NEIHelpers;
 import ruiseki.okcore.lib.LibMods;
+import ruiseki.okcore.recipe.type.cooking.fuel.FuelRecipe;
+import ruiseki.okcore.recipe.type.cooking.fuel.FuelSerializer;
+import ruiseki.okcore.recipe.type.cooking.fuel.FuelType;
 import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingRecipe;
+import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingSerializer;
+import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingType;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
+import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeSerializer;
+import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
+import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeSerializer;
+import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType;
+import ruiseki.okcore.recipe.type.other.NoneRecipe;
+import ruiseki.okcore.recipe.type.other.NoneRecipeSerializer;
+import ruiseki.okcore.recipe.type.other.NoneRecipeType;
 
 public class RecipeRegistry {
 
-    private static final Map<String, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
-    private static final Map<String, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
+    public final static IRecipeType<ShapedRecipe> SHAPED_TYPE = registerType(
+        new ResourceLocation("minecraft", "crafting_shaped"),
+        ShapedRecipeType.INSTANCE);
+    public final static IRecipeSerializer<ShapedRecipe> SHAPED_SERIALIZER = registerSerializer(
+        new ResourceLocation("minecraft", "crafting_shaped"),
+        ShapedRecipeSerializer.INSTANCE);
 
-    private static final Map<ItemStack, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
-    private static boolean isFuelHandlerRegistered = false;
+    public final static IRecipeType<ShapelessRecipe> SHAPELESS_TYPE = registerType(
+        new ResourceLocation("minecraft", "crafting_shapeless"),
+        ShapelessRecipeType.INSTANCE);
+    public final static IRecipeSerializer<ShapelessRecipe> SHAPELESS_SERIALIZER = registerSerializer(
+        new ResourceLocation("minecraft", "crafting_shapeless"),
+        ShapelessRecipeSerializer.INSTANCE);
 
-    public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(IRecipeType<T> recipeType) {
-        if (recipeType == null || recipeType.getTypeKey() == null) return null;
-        String key = recipeType.getTypeKey();
-        TYPE_MAPPING.put(key, recipeType);
+    public final static IRecipeType<FuelRecipe> FUEL_TYPE = registerType(
+        new ResourceLocation("minecraft", "fuel"),
+        FuelType.INSTANCE);
+    public final static IRecipeSerializer<FuelRecipe> FUEL_SERIALIZER = registerSerializer(
+        new ResourceLocation("minecraft", "fuel"),
+        FuelSerializer.INSTANCE);
 
-        if (recipeType.isForgeRecipe() && recipeType.getRecipeClass() != null) {
-            try {
-                RecipeSorter.register(
-                    recipeType.getTypeKey(),
-                    recipeType.getRecipeClass(),
-                    recipeType.getSorterCategory(),
-                    recipeType.getSorterDependencies());
-            } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Failed to register RecipeSorter for type [{}]: {}", key, e.toString());
-            }
+    public final static IRecipeType<SmeltingRecipe> SMELTING_TYPE = registerType(
+        new ResourceLocation("minecraft", "smelting"),
+        SmeltingType.INSTANCE);
+    public final static IRecipeSerializer<SmeltingRecipe> SMELTING_SERIALIZER = registerSerializer(
+        new ResourceLocation("minecraft", "smelting"),
+        SmeltingSerializer.INSTANCE);
+
+    public final static IRecipeType<NoneRecipe> NONE_TYPE = registerType(
+        new ResourceLocation("okcore", "none"),
+        NoneRecipeType.INSTANCE);
+    public final static IRecipeSerializer<NoneRecipe> NONE_SERIALIZER = registerSerializer(
+        new ResourceLocation("okcore", "none"),
+        NoneRecipeSerializer.INSTANCE);
+
+    private static final Map<ResourceLocation, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
+    private static final Map<ResourceLocation, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
+
+    private static final Map<ResourceLocation, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
+
+    public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(ResourceLocation key) {
+        return registerType(key, IRecipeType.simple(key));
+    }
+
+    public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(ResourceLocation key,
+        IRecipeType<T> recipeType) {
+        if (recipeType == null || key == null) return null;
+        if (TYPE_MAPPING != null) {
+            TYPE_MAPPING.put(key, recipeType);
         }
         return recipeType;
     }
 
-    public static <T extends IRecipeOK<?>> IRecipeSerializer<T> registerSerializer(
+    public static <T extends IRecipeOK<?>> IRecipeSerializer<T> registerSerializer(ResourceLocation key,
         IRecipeSerializer<T> recipeSerializer) {
-        if (recipeSerializer == null || recipeSerializer.getTypeKey() == null) return null;
-        SERIALIZER_MAPPING.put(recipeSerializer.getTypeKey(), recipeSerializer);
+        if (recipeSerializer == null || key == null) return null;
+        if (SERIALIZER_MAPPING != null) {
+            SERIALIZER_MAPPING.put(key, recipeSerializer);
+        }
         return recipeSerializer;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends IRecipeOK<?>> IRecipeType<T> getType(String key) {
+    public static <T extends IRecipeOK<?>> IRecipeType<T> getType(ResourceLocation key) {
         if (key == null) return null;
         return (IRecipeType<T>) TYPE_MAPPING.get(key);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends IRecipeOK<?>> IRecipeSerializer<T> getSerializer(String type) {
+    public static <T extends IRecipeOK<?>> IRecipeSerializer<T> getSerializer(ResourceLocation type) {
         if (type == null) return null;
         return (IRecipeSerializer<T>) SERIALIZER_MAPPING.get(type);
     }
 
-    public static void loadFromASM(ASMDataTable dataTable) {
-        for (ASMDataTable.ASMData data : dataTable.getAll(RecipeData.class.getCanonicalName())) {
-            try {
-                Class<?> clazz = Class.forName(data.getClassName());
-
-                boolean isType = IRecipeType.class.isAssignableFrom(clazz);
-                boolean isSerializer = IRecipeSerializer.class.isAssignableFrom(clazz);
-
-                if (!isType && !isSerializer) continue;
-
-                Object instance = clazz.getDeclaredConstructor()
-                    .newInstance();
-                boolean registeredAny = false;
-
-                if (isType) {
-                    IRecipeType<?> recipeType = (IRecipeType<?>) instance;
-                    if (recipeType.shouldRegisterType()) {
-                        registerType(recipeType);
-                        registeredAny = true;
-                    } else {
-                        OKCore
-                            .okLog(Level.INFO, "Skipping recipe type: {} (Condition not met)", recipeType.getTypeKey());
-                    }
-                }
-
-                if (isSerializer) {
-                    IRecipeSerializer<?> recipeSerializer = (IRecipeSerializer<?>) instance;
-                    if (recipeSerializer.shouldRegisterSerializer()) {
-                        registerSerializer(recipeSerializer);
-                        registeredAny = true;
-                    } else {
-                        OKCore.okLog(
-                            Level.INFO,
-                            "Skipping recipe serializer: {} (Condition not met)",
-                            recipeSerializer.getTypeKey());
-                    }
-                }
-
-                if (registeredAny) {
-                    OKCore.okLog(
-                        Level.INFO,
-                        "Successfully registered @RecipeData components for class: [{}]",
-                        data.getClassName());
-                }
-            } catch (Exception e) {
-                OKCore.okLog(
-                    Level.ERROR,
-                    "Failed to initialize ASM RecipeHandler [{}]: {}",
-                    data.getClassName(),
-                    e.toString());
+    public static ResourceLocation getKey(IRecipeSerializer<?> serializer) {
+        if (serializer == null) return null;
+        for (Map.Entry<ResourceLocation, IRecipeSerializer<?>> entry : SERIALIZER_MAPPING.entrySet()) {
+            if (entry.getValue() == serializer) {
+                return entry.getKey();
             }
         }
+        return null;
     }
 
     public static IRecipeOK<?> deserialize(ResourceLocation id, JsonObject json) {
@@ -131,7 +127,7 @@ public class RecipeRegistry {
         }
         String typeStr = json.get("type")
             .getAsString();
-        IRecipeSerializer<?> serializer = getSerializer(typeStr);
+        IRecipeSerializer<?> serializer = getSerializer(new ResourceLocation(typeStr));
         if (serializer == null) {
             OKCore.okLog(Level.WARN, "Missing recipe serializer for type: '{}' (Recipe ID: '{}')", typeStr, id);
             return null;
@@ -166,18 +162,29 @@ public class RecipeRegistry {
         Map mcExperienceList = furnaceInstance.experienceList;
 
         if (mcSmeltingList == null) return;
-        for (ItemStack registeredOutput : FURNACE_BRIDGE_MAP.keySet()) {
+        for (SmeltingRecipe oldRecipe : FURNACE_BRIDGE_MAP.values()) {
+            ItemStack oldOutput = oldRecipe.getRecipeOutput();
+            if (oldOutput == null) continue;
+
             Iterator<Map.Entry> smeltingIterator = mcSmeltingList.entrySet()
                 .iterator();
             while (smeltingIterator.hasNext()) {
                 Map.Entry entry = smeltingIterator.next();
-                if (entry.getValue() == registeredOutput) {
+                ItemStack valueStack = (ItemStack) entry.getValue();
+                if (ItemStack.areItemStacksEqual(valueStack, oldOutput)) {
                     smeltingIterator.remove();
                 }
             }
 
             if (mcExperienceList != null) {
-                mcExperienceList.remove(registeredOutput);
+                Iterator<Map.Entry> expIterator = mcExperienceList.entrySet()
+                    .iterator();
+                while (expIterator.hasNext()) {
+                    Map.Entry entry = expIterator.next();
+                    if (ItemStack.areItemStacksEqual((ItemStack) entry.getKey(), oldOutput)) {
+                        expIterator.remove();
+                    }
+                }
             }
         }
 
@@ -187,11 +194,10 @@ public class RecipeRegistry {
 
         for (IRecipeOK<?> recipe : targetRecipes) {
             if (recipe instanceof SmeltingRecipe customRecipe) {
+                ResourceLocation recipeId = customRecipe.getId();
                 ItemStack customOutput = customRecipe.getRecipeOutput();
                 float customExp = customRecipe.getExperience();
-
-                if (customRecipe.getIngredient() == null || customOutput == null) continue;
-
+                if (customRecipe.getIngredient() == null || customOutput == null || recipeId == null) continue;
                 List<ItemStack> matchingStacks = customRecipe.getIngredient()
                     .toStacks();
                 if (matchingStacks == null || matchingStacks.isEmpty()) continue;
@@ -203,7 +209,7 @@ public class RecipeRegistry {
                 if (mcExperienceList != null) {
                     mcExperienceList.put(customOutput, customExp);
                 }
-                FURNACE_BRIDGE_MAP.put(customOutput, customRecipe);
+                FURNACE_BRIDGE_MAP.put(recipeId, customRecipe);
             }
         }
         if (LibMods.NotEnoughItems.isModLoaded()) {

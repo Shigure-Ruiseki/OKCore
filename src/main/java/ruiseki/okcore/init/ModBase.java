@@ -32,6 +32,7 @@ import ruiseki.okcore.helper.VersionHelpers;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ICommonProxy;
+import ruiseki.okcore.recipe.RecipeTypeRegistry;
 
 /**
  * Base class for mods which adds a few convenience methods.
@@ -67,6 +68,7 @@ public abstract class ModBase {
     private final RegistryManager registryManager;
     private final IKeyRegistry keyRegistry;
     private final PacketHandler packetHandler;
+    private final RecipeTypeRegistry recipeTypeRegistry;
     private final ModuleManager moduleManager;
 
     private CreativeTabs defaultCreativeTab = null;
@@ -80,6 +82,7 @@ public abstract class ModBase {
         this.registryManager = constructRegistryManager();
         this.keyRegistry = new KeyRegistry();
         this.packetHandler = constructPacketHandler();
+        this.recipeTypeRegistry = constructRecipeTypeRegistry();
         this.moduleManager = constructModuleManager();
 
         populateDefaultGenericReferences();
@@ -95,6 +98,10 @@ public abstract class ModBase {
 
     protected PacketHandler constructPacketHandler() {
         return new PacketHandler(this);
+    }
+
+    protected RecipeTypeRegistry constructRecipeTypeRegistry() {
+        return new RecipeTypeRegistry(this);
     }
 
     protected CommandMod constructBaseCommand() {
@@ -264,12 +271,6 @@ public abstract class ModBase {
             proxy.registerTickHandlers();
         }
         moduleManager.proxyInit();
-
-        // Register recipes
-        // RecipeHandler recipeHandler = getRecipeHandler();
-        // if(recipeHandler != null) {
-        // recipeHandler.registerRecipes(getConfigFolder());
-        // }
     }
 
     /**

@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.crafting.shaped;
 
-import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -67,7 +65,7 @@ public class ShapedRecipe implements IShapedRecipe<InventoryCrafting> {
 
     @Override
     public IRecipeSerializer<?> getSerializer() {
-        return RecipeRegistry.getSerializer(SHAPED);
+        return RecipeRegistry.SHAPED_SERIALIZER;
     }
 
     @Override

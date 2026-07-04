@@ -11,11 +11,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
-import org.apache.logging.log4j.Level;
-
 import com.google.common.collect.Lists;
 
-import ruiseki.okcore.OKCore;
 import ruiseki.okcore.event.recipes.RecipesUpdatedEvent;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -28,48 +25,31 @@ public class PacketUpdateRecipes extends PacketCodec {
 
     private List<IRecipeOK<?>> recipes = Lists.newArrayList();
 
-    public PacketUpdateRecipes() {
-
-    }
+    public PacketUpdateRecipes() {}
 
     public PacketUpdateRecipes(Collection<IRecipeOK<?>> recipes) {
         this.recipes = Lists.newArrayList(recipes);
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void decode(ExtendedBuffer input) {
         this.recipes = new ArrayList<>();
-        try {
-            int count = input.readVarIntFromBuffer();
-            for (int i = 0; i < count; i++) {
-                IRecipeSerializer serializer = RecipeRegistry.getSerializer(input.readString());
-                ResourceLocation id = new ResourceLocation(input.readString());
-                if (serializer != null) {
-                    IRecipeOK<?> decoded = serializer.fromNetwork(id, input);
-                    if (decoded != null) this.recipes.add(decoded);
+        int count = input.readVarIntFromBuffer();
+        for (int i = 0; i < count; i++) {
+            try {
+                IRecipeOK<?> recipe = fromNetwork(input);
+                if (recipe != null) {
+                    this.recipes.add(recipe);
                 }
-            }
-        } catch (IOException e) {
-            OKCore.okLog(Level.ERROR, "Failed to decode recipes", e);
+            } catch (IOException ignored) {}
         }
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void encode(ExtendedBuffer output) {
-        try {
-            output.writeVarIntToBuffer(this.recipes.size());
-            for (IRecipeOK<?> iRecipe : this.recipes) {
-                IRecipeSerializer serializer = iRecipe.getSerializer();
-                output.writeString(serializer.getTypeKey());
-                output.writeString(
-                    iRecipe.getId()
-                        .toString());
-                serializer.toNetwork(output, iRecipe);
-            }
-        } catch (IOException e) {
-            OKCore.okLog(Level.ERROR, "Failed to encode recipes", e);
+        output.writeVarIntToBuffer(this.recipes.size());
+        for (IRecipeOK<?> recipe : this.recipes) {
+            toNetwork(output, recipe);
         }
     }
 
@@ -89,4 +69,34 @@ public class PacketUpdateRecipes extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {}
+
+    public static IRecipeOK<?> fromNetwork(ExtendedBuffer buffer) throws IOException {
+        ResourceLocation serializerKey = buffer.readResourceLocation();
+        ResourceLocation recipeId = buffer.readResourceLocation();
+
+        IRecipeSerializer<?> serializer = RecipeRegistry.getSerializer(serializerKey);
+        if (serializer == null) {
+            throw new IllegalArgumentException("Unknown recipe serializer " + serializerKey);
+        }
+
+        return serializer.fromNetwork(recipeId, buffer);
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    public static <T extends IRecipeOK<?>> void toNetwork(ExtendedBuffer buffer, T recipe) {
+        IRecipeSerializer<T> serializer = (IRecipeSerializer<T>) recipe.getSerializer();
+        ResourceLocation serializerKey = RecipeRegistry.getKey(serializer);
+
+        if (serializerKey == null) {
+            throw new IllegalArgumentException(
+                "Recipe serializer is not registered: " + serializer.getClass()
+                    .getName());
+        }
+
+        buffer.writeResourceLocation(serializerKey);
+        buffer.writeResourceLocation(recipe.getId());
+        try {
+            serializer.toNetwork(buffer, recipe);
+        } catch (IOException ignore) {}
+    }
 }

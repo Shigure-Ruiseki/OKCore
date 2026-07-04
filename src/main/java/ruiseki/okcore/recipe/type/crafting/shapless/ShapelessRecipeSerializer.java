@@ -18,18 +18,11 @@ import ruiseki.okcore.json.item.CompoundItemMaterial;
 import ruiseki.okcore.json.item.IngredientMaterial;
 import ruiseki.okcore.json.item.ItemMaterial;
 import ruiseki.okcore.network.ExtendedBuffer;
-import ruiseki.okcore.recipe.RecipeData;
 import ruiseki.okcore.recipe.RecipeSerializerBase;
 
-@RecipeData
 public class ShapelessRecipeSerializer extends RecipeSerializerBase<ShapelessRecipe> {
 
-    public static final String SHAPELESS_RECIPE = "minecraft:crafting_shapeless";
-
-    @Override
-    public String getTypeKey() {
-        return SHAPELESS_RECIPE;
-    }
+    public final static ShapelessRecipeSerializer INSTANCE = new ShapelessRecipeSerializer();
 
     @Override
     protected ShapelessRecipe readWithCondition(ResourceLocation id, JsonObject json) {

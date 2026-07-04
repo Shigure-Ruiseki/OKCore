@@ -1,0 +1,8 @@
+{
+  "values": [
+    "minecraft:rail",
+    "minecraft:golden_rail",
+    "minecraft:detector_rail",
+    "minecraft:activator_rail"
+  ]
+}

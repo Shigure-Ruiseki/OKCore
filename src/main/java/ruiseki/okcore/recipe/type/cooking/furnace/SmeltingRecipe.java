@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.cooking.furnace;
 
-import static ruiseki.okcore.recipe.type.cooking.furnace.SmeltingType.SMELTING;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
@@ -19,12 +17,12 @@ public class SmeltingRecipe extends AbstractCookingRecipe {
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer() {
-        return RecipeRegistry.getSerializer(SMELTING);
+    public IRecipeSerializer<SmeltingRecipe> getSerializer() {
+        return RecipeRegistry.SMELTING_SERIALIZER;
     }
 
     @Override
-    public IRecipeType<?> getType() {
-        return RecipeRegistry.getType(SMELTING);
+    public IRecipeType<SmeltingRecipe> getType() {
+        return RecipeRegistry.SMELTING_TYPE;
     }
 }

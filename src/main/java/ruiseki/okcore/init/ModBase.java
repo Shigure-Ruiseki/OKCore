@@ -264,12 +264,6 @@ public abstract class ModBase {
             proxy.registerTickHandlers();
         }
         moduleManager.proxyInit();
-
-        // Register recipes
-        // RecipeHandler recipeHandler = getRecipeHandler();
-        // if(recipeHandler != null) {
-        // recipeHandler.registerRecipes(getConfigFolder());
-        // }
     }
 
     /**
@@ -289,13 +283,16 @@ public abstract class ModBase {
         }
     }
 
+    public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
+
+    }
+
     /**
      * Override this, call super and annotate with {@link Mod.EventHandler}.
      * Register the things that are related to when the server is starting.
      *
      * @param event The Forge event required for this.
      */
-    @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent event) {
         moduleManager.onServerStarting(event);
 
@@ -311,7 +308,6 @@ public abstract class ModBase {
      *
      * @param event The Forge event required for this.
      */
-    @Mod.EventHandler
     public void onAboutToStartEvent(FMLServerAboutToStartEvent event) {
         moduleManager.onAboutToStartEvent(event);
         for (WorldStorage worldStorage : worldStorages) {
@@ -325,7 +321,6 @@ public abstract class ModBase {
      *
      * @param event The Forge event required for this.
      */
-    @Mod.EventHandler
     public void onServerStarted(FMLServerStartedEvent event) {
         moduleManager.onServerStarted(event);
         for (WorldStorage worldStorage : worldStorages) {
@@ -339,7 +334,6 @@ public abstract class ModBase {
      *
      * @param event The Forge event required for this.
      */
-    @Mod.EventHandler
     public void onServerStopping(FMLServerStoppingEvent event) {
         moduleManager.onServerStopping(event);
         for (WorldStorage worldStorage : worldStorages) {
@@ -353,7 +347,6 @@ public abstract class ModBase {
      *
      * @param event The Forge event required for this.
      */
-    @Mod.EventHandler
     public void onServerStopped(FMLServerStoppedEvent event) {
         moduleManager.onServerStopped(event);
         for (WorldStorage worldStorage : worldStorages) {

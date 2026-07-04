@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.crafting.shaped;
 
-import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,16 +18,11 @@ import ruiseki.okcore.json.AbstractJsonMaterial;
 import ruiseki.okcore.json.item.CompoundItemMaterial;
 import ruiseki.okcore.json.item.ItemMaterial;
 import ruiseki.okcore.network.ExtendedBuffer;
-import ruiseki.okcore.recipe.RecipeData;
 import ruiseki.okcore.recipe.RecipeSerializerBase;
 
-@RecipeData
 public class ShapedRecipeSerializer extends RecipeSerializerBase<ShapedRecipe> {
 
-    @Override
-    public String getTypeKey() {
-        return SHAPED;
-    }
+    public static final ShapedRecipeSerializer INSTANCE = new ShapedRecipeSerializer();
 
     @Override
     protected ShapedRecipe readWithCondition(ResourceLocation id, JsonObject json) {

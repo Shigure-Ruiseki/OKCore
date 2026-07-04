@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.crafting.shapless;
 
-import static ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipeType.SHAPELESS;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -13,7 +11,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.json.item.CompoundItemMaterial;
-import ruiseki.okcore.json.item.IngredientMaterial;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.RecipeRegistry;
 
@@ -36,7 +33,7 @@ public class ShapelessRecipe implements IShapelessRecipe<InventoryCrafting> {
 
     @Override
     public IRecipeSerializer<?> getSerializer() {
-        return RecipeRegistry.getSerializer(SHAPELESS);
+        return RecipeRegistry.SHAPELESS_SERIALIZER;
     }
 
     @Override
@@ -56,16 +53,20 @@ public class ShapelessRecipe implements IShapelessRecipe<InventoryCrafting> {
 
     @Override
     public boolean matchesOK(InventoryCrafting inv, World world) {
-        List<IngredientMaterial> requiredIngredients = new ArrayList<>(this.ingredients);
+        List<CompoundItemMaterial> requiredIngredients = new ArrayList<>(this.ingredients);
+        int itemCountInGrid = 0;
 
         for (int slotIndex = 0; slotIndex < inv.getSizeInventory(); slotIndex++) {
             ItemStack stackInSlot = inv.getStackInSlot(slotIndex);
 
             if (stackInSlot != null) {
+                itemCountInGrid++;
+
                 boolean matchedForSlot = false;
-                Iterator<IngredientMaterial> ingredientIterator = requiredIngredients.iterator();
+                Iterator<CompoundItemMaterial> ingredientIterator = requiredIngredients.iterator();
+
                 while (ingredientIterator.hasNext()) {
-                    IngredientMaterial ingredient = ingredientIterator.next();
+                    CompoundItemMaterial ingredient = ingredientIterator.next();
 
                     if (ingredient.test(stackInSlot)) {
                         matchedForSlot = true;
@@ -80,7 +81,7 @@ public class ShapelessRecipe implements IShapelessRecipe<InventoryCrafting> {
             }
         }
 
-        return requiredIngredients.isEmpty();
+        return requiredIngredients.isEmpty() && itemCountInGrid == this.ingredients.size();
     }
 
     public List<CompoundItemMaterial> getIngredients() {

@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.other;
 
-import static ruiseki.okcore.recipe.type.other.NoneRecipeType.NONE;
-
 import java.io.IOException;
 
 import net.minecraft.util.ResourceLocation;
@@ -11,32 +9,24 @@ import org.jetbrains.annotations.Nullable;
 import com.google.gson.JsonObject;
 
 import ruiseki.okcore.network.ExtendedBuffer;
-import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.IRecipeSerializer;
-import ruiseki.okcore.recipe.RecipeData;
 
-@RecipeData
-public class NoneRecipeSerializer implements IRecipeSerializer<IRecipeOK<?>> {
+public class NoneRecipeSerializer implements IRecipeSerializer<NoneRecipe> {
 
-    public static final String NONE_RECIPE = "okcore:none";
+    public final static NoneRecipeSerializer INSTANCE = new NoneRecipeSerializer();
 
     @Override
-    public String getTypeKey() {
-        return NONE;
-    }
-
-    @Override
-    public IRecipeOK<?> fromJson(ResourceLocation id, JsonObject json) {
+    public NoneRecipe fromJson(ResourceLocation id, JsonObject json) {
         return new NoneRecipe(id);
     }
 
     @Override
-    public @Nullable IRecipeOK<?> fromNetwork(ResourceLocation id, ExtendedBuffer buffer) throws IOException {
-        return new NoneRecipe(id);
+    public @Nullable NoneRecipe fromNetwork(ResourceLocation id, ExtendedBuffer buffer) throws IOException {
+        return null;
     }
 
     @Override
-    public void toNetwork(ExtendedBuffer buffer, IRecipeOK<?> iRecipes) throws IOException {
+    public void toNetwork(ExtendedBuffer buffer, NoneRecipe iRecipes) throws IOException {
 
     }
 }

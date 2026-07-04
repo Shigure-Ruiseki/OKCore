@@ -1,8 +1,5 @@
 package ruiseki.okcore.recipe.type.other;
 
-import static ruiseki.okcore.recipe.type.other.NoneRecipeSerializer.NONE_RECIPE;
-import static ruiseki.okcore.recipe.type.other.NoneRecipeType.NONE;
-
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.recipe.IRecipeSerializer;
@@ -17,12 +14,12 @@ public class NoneRecipe extends RecipeDataBase {
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer() {
-        return RecipeRegistry.getSerializer(NONE_RECIPE);
+    public IRecipeSerializer<NoneRecipe> getSerializer() {
+        return RecipeRegistry.NONE_SERIALIZER;
     }
 
     @Override
-    public IRecipeType<?> getType() {
-        return RecipeRegistry.getType(NONE);
+    public IRecipeType<NoneRecipe> getType() {
+        return RecipeRegistry.NONE_TYPE;
     }
 }

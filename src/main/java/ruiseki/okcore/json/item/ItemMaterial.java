@@ -3,17 +3,24 @@ package ruiseki.okcore.json.item;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 
 import com.google.gson.JsonObject;
 
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.helper.JsonNBTHelpers;
+import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.tag.Registries;
+import ruiseki.okcore.tag.TagKey;
+import ruiseki.okcore.tag.TagManager;
+import ruiseki.okcore.tag.entry.TagEntry;
 
 public class ItemMaterial extends IngredientMaterial {
 
@@ -116,7 +123,12 @@ public class ItemMaterial extends IngredientMaterial {
     public ItemStack toStack() {
         int count = this.amount > 0 ? this.amount : 1;
         if (this.ore != null && !this.ore.isEmpty()) {
-            return resolveFromOre(this.ore, count, this.nbt);
+            if (this.ore.startsWith("#")) {
+                String tagIdentifier = this.ore.substring(1);
+                return resolveFromTag(tagIdentifier, count, this.nbt);
+            } else {
+                return resolveFromOre(this.ore, count, this.nbt);
+            }
         }
 
         Item item = getItem();
@@ -129,6 +141,35 @@ public class ItemMaterial extends IngredientMaterial {
             }
 
             return stack;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    private static ItemStack resolveFromTag(String tagStr, int count, NBTTagCompound nbt) {
+        if (tagStr == null || tagStr.isEmpty()) return null;
+        try {
+            ResourceLocation loc = new ResourceLocation(tagStr);
+            TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
+
+            Set<TagEntry<ItemStack>> entries = TagManager.getManager()
+                .getEntries(tagKey);
+            if (entries == null || entries.isEmpty()) return null;
+
+            TagEntry<ItemStack> firstEntry = entries.iterator()
+                .next();
+            Item item = GameData.getItemRegistry()
+                .getObject(
+                    firstEntry.getId()
+                        .toString());
+            if (item == null) return null;
+
+            int itemMeta = firstEntry.getMeta() == TagEntry.WILDCARD ? 0 : firstEntry.getMeta();
+            ItemStack result = new ItemStack(item, count, itemMeta);
+            if (nbt != null) {
+                result.setTagCompound((NBTTagCompound) nbt.copy());
+            }
+            return result;
         } catch (Throwable t) {
             return null;
         }
@@ -217,6 +258,13 @@ public class ItemMaterial extends IngredientMaterial {
         }
 
         if (this.ore != null && !this.ore.isEmpty()) {
+            if (this.ore.startsWith("#")) {
+                String tagIdentifier = this.ore.substring(1);
+                ResourceLocation loc = new ResourceLocation(tagIdentifier);
+                TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
+                return TagHelpers.hasTag(stack, tagKey);
+            }
+
             List<ItemStack> ores = OreDictionary.getOres(this.ore);
             if (ores != null) {
                 for (ItemStack oreStack : ores) {

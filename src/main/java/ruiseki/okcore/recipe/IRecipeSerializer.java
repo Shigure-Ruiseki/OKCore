@@ -12,12 +12,6 @@ import ruiseki.okcore.network.ExtendedBuffer;
 
 public interface IRecipeSerializer<T extends IRecipeOK<?>> {
 
-    String getTypeKey();
-
-    default boolean shouldRegisterSerializer() {
-        return true;
-    }
-
     T fromJson(ResourceLocation id, JsonObject json);
 
     @Nullable

@@ -55,7 +55,7 @@ public class BlockMaterial extends AbstractJsonMaterial {
 
     public BlockStack toStack() {
         Block currentBlock = getBlock();
-        if (currentBlock == null) return BlockStack.empty();
+        if (currentBlock == null) return null;
         return new BlockStack(currentBlock, this.meta);
     }
 

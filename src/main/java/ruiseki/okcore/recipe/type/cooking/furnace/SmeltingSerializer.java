@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.cooking.furnace;
 
-import static ruiseki.okcore.recipe.type.cooking.furnace.SmeltingType.SMELTING;
-
 import java.io.IOException;
 
 import net.minecraft.item.ItemStack;
@@ -17,15 +15,10 @@ import ruiseki.okcore.json.item.CompoundItemMaterial;
 import ruiseki.okcore.json.item.ItemMaterial;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.IRecipeSerializer;
-import ruiseki.okcore.recipe.RecipeData;
 
-@RecipeData
 public class SmeltingSerializer implements IRecipeSerializer<SmeltingRecipe> {
 
-    @Override
-    public String getTypeKey() {
-        return SMELTING;
-    }
+    public static final SmeltingSerializer INSTANCE = new SmeltingSerializer();
 
     @Override
     public SmeltingRecipe fromJson(ResourceLocation id, JsonObject json) {

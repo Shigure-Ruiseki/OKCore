@@ -1,0 +1,11 @@
+{
+  "values": [
+    "#minecraft:wooden_stairs",
+    "minecraft:stone_stairs",
+    "minecraft:brick_stairs",
+    "minecraft:stone_brick_stairs",
+    "minecraft:nether_brick_stairs",
+    "minecraft:sandstone_stairs",
+    "minecraft:quartz_stairs"
+  ]
+}

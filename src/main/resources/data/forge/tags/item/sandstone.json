@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:sandstone",
+    "minecraft:sandstone:1",
+    "minecraft:sandstone:2"
+  ]
+}

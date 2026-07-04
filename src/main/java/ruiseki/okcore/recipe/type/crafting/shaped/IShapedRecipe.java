@@ -1,7 +1,5 @@
 package ruiseki.okcore.recipe.type.crafting.shaped;
 
-import static ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipeType.SHAPED;
-
 import net.minecraft.inventory.IInventory;
 
 import ruiseki.okcore.recipe.IRecipeOK;
@@ -16,6 +14,6 @@ public interface IShapedRecipe<C extends IInventory> extends IRecipeOK<C> {
 
     @Override
     default IRecipeType<?> getType() {
-        return RecipeRegistry.getType(SHAPED);
+        return RecipeRegistry.SHAPED_TYPE;
     }
 }

@@ -1,6 +1,7 @@
 package ruiseki.okcore.test;
 
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
@@ -8,17 +9,20 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.datacomponent.component.UseCooldown;
-import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagKey;
+import ruiseki.okcore.tag.TagManager;
+import ruiseki.okcore.tag.entry.TagEntry;
 
 public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
@@ -98,8 +102,21 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        for (TagKey<?> key : TagHelpers.getTags(stack)) {
-            list.add(key.toString());
+        TagKey<ItemStack> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
+
+        Set<TagEntry<ItemStack>> entries = TagManager.getManager()
+            .getEntries(dustTagKey);
+
+        list.add("§6Items in #forge:rods:");
+        if (entries.isEmpty()) {
+            list.add(" §7(Empty Tag)");
+        } else {
+            for (TagEntry<ItemStack> entry : entries) {
+                String itemId = entry.getId()
+                    .toString();
+                int meta = entry.getMeta();
+                list.add(" §7- " + itemId + (meta == TagEntry.WILDCARD ? ":*" : ":" + meta));
+            }
         }
     }
 }

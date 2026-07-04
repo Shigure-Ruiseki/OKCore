@@ -32,26 +32,26 @@ public class PacketUpdateTags extends PacketCodec {
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     public void decode(ExtendedBuffer input) {
         this.tagsMap = new HashMap<>();
         try {
             int tagCount = input.readVarIntFromBuffer();
             for (int i = 0; i < tagCount; i++) {
-                TagKey<?> tagKey = TagKey.read(input);
+                TagKey<?> tagKey = TagKey.fromNetwork(input);
 
                 String subfolder = tagKey.registry()
                     .location()
                     .getResourcePath();
 
-                ITagEntrySerializer<?, ?> serializer = TagEntryRegistry.getSerializer(subfolder);
+                ITagEntrySerializer serializer = TagEntryRegistry.getSerializer(subfolder);
 
                 int entryCount = input.readVarIntFromBuffer();
                 Set<TagEntry<?>> entries = new HashSet<>();
 
                 for (int j = 0; j < entryCount; j++) {
                     if (serializer != null) {
-                        TagEntry<?> entry = serializer.read(input);
+                        TagEntry<?> entry = serializer.fromNetwork(input);
                         if (entry != null) {
                             entries.add(entry);
                         }
@@ -70,6 +70,7 @@ public class PacketUpdateTags extends PacketCodec {
     }
 
     @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void encode(ExtendedBuffer output) {
         try {
             output.writeVarIntToBuffer(this.tagsMap.size());
@@ -80,9 +81,20 @@ public class PacketUpdateTags extends PacketCodec {
 
                 tagKey.toNetwork(output);
 
+                String subfolder = tagKey.registry()
+                    .location()
+                    .getResourcePath();
+
+                ITagEntrySerializer serializer = TagEntryRegistry.getSerializer(subfolder);
+                if (serializer == null) {
+                    throw new IOException("Missing TagEntry serializer for subfolder: " + subfolder);
+                }
+
                 output.writeVarIntToBuffer(entries.size());
                 for (TagEntry<?> tagEntry : entries) {
-                    tagEntry.toNetwork(output);
+                    if (tagEntry != null) {
+                        serializer.toNetwork(output, tagEntry);
+                    }
                 }
             }
         } catch (IOException e) {

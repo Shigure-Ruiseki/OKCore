@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:planks",
+    "minecraft:planks:1",
+    "minecraft:planks:2",
+    "minecraft:planks:3",
+    "minecraft:planks:4",
+    "minecraft:planks:5"
+  ]
+}

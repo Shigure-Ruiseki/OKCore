@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:skull",
+    "minecraft:skull:1",
+    "minecraft:skull:2",
+    "minecraft:skull:3",
+    "minecraft:skull:4"
+  ]
+}

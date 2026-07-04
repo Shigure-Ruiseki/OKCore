@@ -19,19 +19,19 @@ public interface IImmutableBlockMeta {
      * @return The block stored in this pair.
      */
     @Nonnull
-    public Block getBlock();
+    Block getBlock();
 
     /**
      * The value of this must not change while this object is exposed via an API.
      *
      * @return The block's metadata stored in this pair. May be {@link OreDictionary#WILDCARD_VALUE}.
      */
-    public int getBlockMeta();
+    int getBlockMeta();
 
     /**
      * Gets the corresponding item for this block. Subclasses may provide a faster implementation.
      */
-    public default Item getItem() {
+    default Item getItem() {
         return Item.getItemFromBlock(getBlock());
     }
 
@@ -43,7 +43,7 @@ public interface IImmutableBlockMeta {
      *              then meta checks are ignored.
      * @return Whether this pair matches or not.
      */
-    public default boolean matches(Block block, int meta) {
+    default boolean matches(Block block, int meta) {
         return getBlock() == block
             && (meta == OreDictionary.WILDCARD_VALUE || getBlockMeta() == OreDictionary.WILDCARD_VALUE
                 || getBlockMeta() == meta);

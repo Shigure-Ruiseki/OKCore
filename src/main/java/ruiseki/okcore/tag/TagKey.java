@@ -11,10 +11,8 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
 import ruiseki.okcore.network.ExtendedBuffer;
-import ruiseki.okcore.network.INetworkMaterial;
 
-public record TagKey<T> (ResourceKey<?> registry, ResourceLocation location)
-    implements Comparable<TagKey<?>>, INetworkMaterial {
+public record TagKey<T> (ResourceKey<?> registry, ResourceLocation location) implements Comparable<TagKey<?>> {
 
     private static final Interner<TagKey<?>> VALUES = Interners.newWeakInterner();
 
@@ -32,16 +30,12 @@ public record TagKey<T> (ResourceKey<?> registry, ResourceLocation location)
         return this.isFor(registryKey) ? Optional.of((TagKey<E>) this) : Optional.empty();
     }
 
-    @Override
     public void toNetwork(ExtendedBuffer buffer) throws IOException {
         this.registry.toNetwork(buffer);
         buffer.writeResourceLocation(this.location);
     }
 
-    @Override
-    public void fromNetwork(ExtendedBuffer buffer) throws IOException {}
-
-    public static <T> TagKey<T> read(ExtendedBuffer buffer) throws IOException {
+    public static <T> TagKey<T> fromNetwork(ExtendedBuffer buffer) throws IOException {
         ResourceKey<?> regKey = ResourceKey.read(buffer);
         ResourceLocation loc = buffer.readResourceLocation();
         return create(regKey, loc);

@@ -14,6 +14,7 @@ import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
@@ -40,7 +41,6 @@ import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
-import ruiseki.okcore.recipe.RecipeRegistry;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -79,7 +79,6 @@ public class OKCore extends ModBase {
 
         CapabilityManager.INSTANCE.injectCapabilities(asmData);
         GuideRegistry.loadFromASM(asmData);
-        RecipeRegistry.loadFromASM(asmData);
     }
 
     @Override
@@ -127,9 +126,15 @@ public class OKCore extends ModBase {
 
     @Override
     @Mod.EventHandler
+    public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
+        super.onServerAboutToStart(event);
+        DataLoader.loadAllDataAtServerStart(event.getServer());
+    }
+
+    @Override
+    @Mod.EventHandler
     public void onServerStarting(FMLServerStartingEvent event) {
         super.onServerStarting(event);
-        DataLoader.loadAllDataAtServerStart(event.getServer());
     }
 
     @Override

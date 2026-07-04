@@ -238,29 +238,22 @@ public class TagManager extends MultiJsonResourceReloadListener {
 
     @SideOnly(Side.CLIENT)
     public void replaceTags(Map<TagKey<?>, Set<TagEntry<?>>> serverTags) {
-        if (serverTags == null) {
-            this.tagToEntriesMap = ImmutableMap.of();
-            this.entryToTagsCache = ImmutableMap.of();
-            return;
-        }
-
         Map<TagKey<?>, Set<TagEntry<?>>> map = Maps.newHashMap();
+        ImmutableMap.Builder<TagKey<?>, Set<TagEntry<?>>> builder = ImmutableMap.builder();
         serverTags.forEach((tagKey, wrappers) -> {
             if (tagKey != null && wrappers != null) {
                 Set<TagEntry<?>> typeSet = map.computeIfAbsent(tagKey, k -> Sets.newHashSet());
                 typeSet.addAll(wrappers);
+                builder.put(tagKey, Collections.unmodifiableSet(typeSet));
             }
         });
-
-        ImmutableMap.Builder<TagKey<?>, Set<TagEntry<?>>> builder = ImmutableMap.builder();
-        map.forEach((tagKey, entries) -> builder.put(tagKey, Collections.unmodifiableSet(entries)));
         this.tagToEntriesMap = builder.build();
         this.bakeCache();
     }
 
     private void bakeCache() {
         Map<TagEntry<?>, Set<TagKey<?>>> tempCache = new HashMap<>();
-
+        ImmutableMap.Builder<TagEntry<?>, Set<TagKey<?>>> cacheBuilder = ImmutableMap.builder();
         for (Map.Entry<TagKey<?>, Set<TagEntry<?>>> entry : this.tagToEntriesMap.entrySet()) {
             TagKey<?> key = entry.getKey();
             if (key == null || entry.getValue() == null) continue;
@@ -272,8 +265,6 @@ public class TagManager extends MultiJsonResourceReloadListener {
                 }
             }
         }
-
-        ImmutableMap.Builder<TagEntry<?>, Set<TagKey<?>>> cacheBuilder = ImmutableMap.builder();
         tempCache.forEach((entry, keys) -> cacheBuilder.put(entry, Collections.unmodifiableSet(keys)));
         this.entryToTagsCache = cacheBuilder.build();
     }

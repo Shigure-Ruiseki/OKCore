@@ -37,6 +37,10 @@ import ruiseki.okcore.recipe.type.other.NoneRecipeType;
 
 public class RecipeRegistry {
 
+    private static final Map<ResourceLocation, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
+    private static final Map<ResourceLocation, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
+    private static final Map<ResourceLocation, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
+
     public final static IRecipeType<ShapedRecipe> SHAPED_TYPE = registerType(
         new ResourceLocation("minecraft", "crafting_shaped"),
         ShapedRecipeType.INSTANCE);
@@ -71,11 +75,6 @@ public class RecipeRegistry {
     public final static IRecipeSerializer<NoneRecipe> NONE_SERIALIZER = registerSerializer(
         new ResourceLocation("okcore", "none"),
         NoneRecipeSerializer.INSTANCE);
-
-    private static final Map<ResourceLocation, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
-    private static final Map<ResourceLocation, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
-
-    private static final Map<ResourceLocation, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
 
     public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(ResourceLocation key) {
         return registerType(key, IRecipeType.simple(key));

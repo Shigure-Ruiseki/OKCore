@@ -62,7 +62,7 @@ public class DataLoader {
         CompletableFuture<Void> scanDatapacksFuture = CompletableFuture
             .runAsync(() -> scanWorldDatapacks(server, multiDataManager), ioExecutor);
 
-        CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
+        CompletableFuture<Void> pipelineFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
             .thenAcceptAsync(v -> {
                 AddReloadListenerEvent event = new AddReloadListenerEvent();
                 net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
@@ -82,32 +82,34 @@ public class DataLoader {
                 }
 
                 CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0]))
-                    .whenComplete((v2, ex) -> {
-                        for (FileSystem fs : openedFileSystems) {
-                            try {
-                                fs.close();
-                            } catch (IOException e) {
-                                OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
-                            }
-                        }
-
-                        if (ex != null) {
-                            OKCore.okLog(
-                                Level.ERROR,
-                                "DataLoader: Critical error occurred during resource reload pipeline!",
-                                ex);
-                        } else {
-                            OKCore.okLog(
-                                Level.INFO,
-                                "DataLoader: All data successfully reloaded in Total: {} ms.",
-                                (System.currentTimeMillis() - startTime));
-                        }
-                    });
+                    .join();
             }, ioExecutor)
-            .exceptionally(ex -> {
-                OKCore.okLog(Level.ERROR, "DataLoader: Pipeline crashed during initial scanning phase!", ex);
-                return null;
+            .whenComplete((v2, ex) -> {
+                for (FileSystem fs : openedFileSystems) {
+                    try {
+                        fs.close();
+                    } catch (IOException e) {
+                        OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
+                    }
+                }
+
+                if (ex != null) {
+                    OKCore
+                        .okLog(Level.ERROR, "DataLoader: Critical error occurred during resource reload pipeline!", ex);
+                    throw new RuntimeException("Data reload failed", ex);
+                } else {
+                    OKCore.okLog(
+                        Level.INFO,
+                        "DataLoader: All data successfully reloaded in Total: {} ms.",
+                        (System.currentTimeMillis() - startTime));
+                }
             });
+
+        try {
+            pipelineFuture.join();
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "DataLoader: Pipeline crashed during execution block!", e);
+        }
     }
 
     private static void scanModJars(MultiDataManager multiDataManager,
@@ -158,8 +160,7 @@ public class DataLoader {
                     SimpleDataManager modDataManager = new SimpleDataManager();
 
                     try (Stream<Path> stream = Files.walk(dataPath, FileVisitOption.FOLLOW_LINKS)) {
-                        stream.parallel()
-                            .filter(p -> !Files.isDirectory(p))
+                        stream.filter(p -> !Files.isDirectory(p))
                             .forEach(p -> processStream(p, rootPath, modDataManager));
                     }
 
@@ -200,8 +201,7 @@ public class DataLoader {
 
                     try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
                         final Path rootPath = packDir.toPath();
-                        stream.parallel()
-                            .filter(p -> !Files.isDirectory(p))
+                        stream.filter(p -> !Files.isDirectory(p))
                             .forEach(p -> processStream(p, rootPath, packDataManager));
                     }
 

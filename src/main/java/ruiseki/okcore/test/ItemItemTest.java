@@ -102,12 +102,12 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        TagKey<ItemStack> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "dusts"));
+        TagKey<ItemStack> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
 
         Set<TagEntry<ItemStack>> entries = TagManager.getManager()
             .getEntries(dustTagKey);
 
-        list.add("§6Items in #forge:dusts:");
+        list.add("§6Items in #forge:rods:");
         if (entries.isEmpty()) {
             list.add(" §7(Empty Tag)");
         } else {

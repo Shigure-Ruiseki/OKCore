@@ -15,7 +15,6 @@ import com.google.gson.JsonObject;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.json.item.CompoundItemMaterial;
-import ruiseki.okcore.json.item.IngredientMaterial;
 import ruiseki.okcore.json.item.ItemMaterial;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.RecipeSerializerBase;
@@ -27,25 +26,29 @@ public class ShapelessRecipeSerializer extends RecipeSerializerBase<ShapelessRec
     @Override
     protected ShapelessRecipe readWithCondition(ResourceLocation id, JsonObject json) {
         ItemStack outputStack = null;
-        if (json.has("result")) {
+
+        if (json.has("result") && json.get("result").isJsonObject()) {
             ItemMaterial mat = new ItemMaterial();
             mat.read(json.getAsJsonObject("result"));
             outputStack = mat.toStack();
         }
 
         if (outputStack == null) {
-            OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] failed to generate: 'result' is missing or invalid.", id);
+            OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] failed to generate: 'result' is missing, invalid, or the output item is not yet registered.", id);
             return null;
         }
 
         List<CompoundItemMaterial> ingredientsList = new ArrayList<>();
-        if (json.has("ingredients") && json.get("ingredients")
-            .isJsonArray()) {
+            if (json.has("ingredients") && json.get("ingredients").isJsonArray()) {
             for (JsonElement element : json.getAsJsonArray("ingredients")) {
                 CompoundItemMaterial compMaterial = new CompoundItemMaterial();
                 compMaterial.read(element);
-                if (!compMaterial.isEmpty()) {
+
+                if (compMaterial.validate()) {
                     ingredientsList.add(compMaterial);
+                } else {
+                    OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] contains an invalid or unparseable ingredient.", id);
+                    return null;
                 }
             }
         } else {
@@ -53,8 +56,8 @@ public class ShapelessRecipeSerializer extends RecipeSerializerBase<ShapelessRec
             return null;
         }
 
-        if (ingredientsList.isEmpty()) {
-            OKCore.okLog(Level.WARN, "Shapeless Recipe [{}] has no valid ingredients parsed.", id);
+        if (ingredientsList.isEmpty() || ingredientsList.size() > 9) {
+            OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] must have between 1 and 9 ingredients. Parsed count: {}", id, ingredientsList.size());
             return null;
         }
 
@@ -68,7 +71,7 @@ public class ShapelessRecipeSerializer extends RecipeSerializerBase<ShapelessRec
         List<CompoundItemMaterial> inputs = recipe.getIngredients();
         buffer.writeInt(inputs.size());
 
-        for (IngredientMaterial ingredient : inputs) {
+        for (CompoundItemMaterial ingredient : inputs) {
             ingredient.toNetwork(buffer);
         }
     }

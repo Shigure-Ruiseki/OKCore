@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Level;
 
@@ -65,7 +66,7 @@ public class DataLoader {
         CompletableFuture<Void> pipelineFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
             .thenAcceptAsync(v -> {
                 AddReloadListenerEvent event = new AddReloadListenerEvent();
-                net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+                MinecraftForge.EVENT_BUS.post(event);
                 List<PreparableReloadListener> listeners = event.getListeners();
 
                 OKCore.okLog(

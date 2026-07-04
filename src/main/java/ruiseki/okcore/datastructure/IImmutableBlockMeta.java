@@ -4,14 +4,17 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+
+import java.util.function.Predicate;
 
 /**
  * An immutable block-meta pair. This must not be cast down to its mutable version unless you have a very good reason.
  * It can be assumed that the values of {@link #getBlock()} and {@link #getBlockMeta()} will never change for this
  * object if the object is exposed through an API.
  */
-public interface IImmutableBlockMeta {
+public interface IImmutableBlockMeta  {
 
     /**
      * The value of this must not change while this object is exposed via an API.
@@ -19,19 +22,19 @@ public interface IImmutableBlockMeta {
      * @return The block stored in this pair.
      */
     @Nonnull
-    public Block getBlock();
+    Block getBlock();
 
     /**
      * The value of this must not change while this object is exposed via an API.
      *
      * @return The block's metadata stored in this pair. May be {@link OreDictionary#WILDCARD_VALUE}.
      */
-    public int getBlockMeta();
+    int getBlockMeta();
 
     /**
      * Gets the corresponding item for this block. Subclasses may provide a faster implementation.
      */
-    public default Item getItem() {
+    default Item getItem() {
         return Item.getItemFromBlock(getBlock());
     }
 
@@ -43,7 +46,7 @@ public interface IImmutableBlockMeta {
      *              then meta checks are ignored.
      * @return Whether this pair matches or not.
      */
-    public default boolean matches(Block block, int meta) {
+    default boolean matches(Block block, int meta) {
         return getBlock() == block
             && (meta == OreDictionary.WILDCARD_VALUE || getBlockMeta() == OreDictionary.WILDCARD_VALUE
                 || getBlockMeta() == meta);

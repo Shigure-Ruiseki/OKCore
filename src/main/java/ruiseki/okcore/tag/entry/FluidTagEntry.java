@@ -2,6 +2,7 @@ package ruiseki.okcore.tag.entry;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 public class FluidTagEntry extends TagEntry<Fluid> {
@@ -21,6 +22,12 @@ public class FluidTagEntry extends TagEntry<Fluid> {
     @Override
     public Class<Fluid> getType() {
         return Fluid.class;
+    }
+
+    @Override
+    public Fluid to() {
+        if (this.id == null) return null;
+        return FluidRegistry.getFluid(this.id.getResourcePath());
     }
 
     public static class Serializer implements ITagEntrySerializer<Fluid, FluidTagEntry> {

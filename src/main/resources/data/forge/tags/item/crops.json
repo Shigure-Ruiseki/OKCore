@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "#forge:crops/carrot",
+    "#forge:crops/nether_wart",
+    "#forge:crops/potato",
+    "#forge:crops/wheat"
+  ]
+}

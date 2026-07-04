@@ -27,6 +27,15 @@ public class ItemTagEntry extends TagEntry<ItemStack> {
         return ItemStack.class;
     }
 
+    @Override
+    public ItemStack to() {
+        if (this.id == null) return null;
+        Item item = (Item) Item.itemRegistry.getObject(this.id.toString());
+        if (item == null) return null;
+        int itemMeta = this.meta == WILDCARD ? 0 : this.meta;
+        return new ItemStack(item, 1, itemMeta);
+    }
+
     public static class Serializer implements ITagEntrySerializer<ItemStack, ItemTagEntry> {
 
         public static final ItemTagEntry.Serializer INSTANCE = new ItemTagEntry.Serializer();

@@ -19,6 +19,11 @@ public class EntityTagEntry extends TagEntry<Entity> {
         return Entity.class;
     }
 
+    @Override
+    public Entity to() {
+        return null;
+    }
+
     public static class Serializer implements ITagEntrySerializer<Entity, EntityTagEntry> {
 
         public static final EntityTagEntry.Serializer INSTANCE = new EntityTagEntry.Serializer();

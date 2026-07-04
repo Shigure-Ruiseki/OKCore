@@ -28,6 +28,15 @@ public class BlockTagEntry extends TagEntry<BlockStack> {
         return BlockStack.class;
     }
 
+    @Override
+    public BlockStack to() {
+        if (this.id == null) return null;
+        Block block = (Block) Block.blockRegistry.getObject(this.id.toString());
+        if (block == null) return null;
+        int blockMeta = this.meta == WILDCARD ? 0 : this.meta;
+        return new BlockStack(block, blockMeta);
+    }
+
     public static class Serializer implements ITagEntrySerializer<BlockStack, BlockTagEntry> {
 
         public static final Serializer INSTANCE = new Serializer();

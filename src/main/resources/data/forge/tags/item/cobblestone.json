@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#forge:cobblestone/normal",
+    "#forge:cobblestone/infested",
+    "#forge:cobblestone/mossy"
+  ]
+}

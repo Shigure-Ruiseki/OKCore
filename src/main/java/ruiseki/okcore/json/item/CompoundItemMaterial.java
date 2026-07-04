@@ -5,15 +5,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.tag.Registries;
+import ruiseki.okcore.tag.TagKey;
+import ruiseki.okcore.tag.TagManager;
+import ruiseki.okcore.tag.entry.TagEntry;
 
 public class CompoundItemMaterial extends IngredientMaterial {
 
@@ -99,21 +105,47 @@ public class CompoundItemMaterial extends IngredientMaterial {
         for (ItemMaterial mat : this.materials) {
             if (mat == null) continue;
 
-            if (mat.getOre() != null && !mat.getOre()
-                .isEmpty()) {
-                List<ItemStack> ores = OreDictionary.getOres(mat.getOre());
-                if (ores != null) {
-                    for (ItemStack oreStack : ores) {
-                        if (oreStack != null) {
-                            ItemStack copy = oreStack.copy();
-                            copy.stackSize = mat.getAmount();
+            String oreStr = mat.getOre();
+            if (oreStr != null && !oreStr.isEmpty()) {
 
-                            if (mat.getNbt() != null) {
-                                copy.setTagCompound(
-                                    (NBTTagCompound) mat.getNbt()
-                                        .copy());
+                if (oreStr.startsWith("#")) {
+                    try {
+                        String tagIdentifier = oreStr.substring(1);
+                        ResourceLocation loc = new ResourceLocation(tagIdentifier);
+                        TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
+
+                        Set<TagEntry<ItemStack>> entries = TagManager.getManager()
+                            .getEntries(tagKey);
+                        if (entries != null) {
+                            for (TagEntry<ItemStack> entry : entries) {
+                                ItemStack copy = entry.to();
+                                if (copy == null) continue;
+
+                                copy.stackSize = mat.getAmount();
+                                if (mat.getNbt() != null) {
+                                    copy.setTagCompound(
+                                        (NBTTagCompound) mat.getNbt()
+                                            .copy());
+                                }
+                                displayStacks.add(copy);
                             }
-                            displayStacks.add(copy);
+                        }
+                    } catch (Throwable ignored) {}
+                } else {
+                    List<ItemStack> ores = OreDictionary.getOres(oreStr);
+                    if (ores != null) {
+                        for (ItemStack oreStack : ores) {
+                            if (oreStack != null) {
+                                ItemStack copy = oreStack.copy();
+                                copy.stackSize = mat.getAmount();
+
+                                if (mat.getNbt() != null) {
+                                    copy.setTagCompound(
+                                        (NBTTagCompound) mat.getNbt()
+                                            .copy());
+                                }
+                                displayStacks.add(copy);
+                            }
                         }
                     }
                 }

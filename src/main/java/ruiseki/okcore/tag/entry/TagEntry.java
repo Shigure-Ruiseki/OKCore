@@ -44,6 +44,8 @@ public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMat
         this.meta = buffer.readVarIntFromBuffer();
     }
 
+    public abstract T to();
+
     @Override
     public boolean test(TagEntry<?> other) {
         if (other == null) return false;

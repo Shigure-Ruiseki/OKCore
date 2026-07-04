@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:wool",
+    "minecraft:wool:1",
+    "minecraft:wool:2",
+    "minecraft:wool:3",
+    "minecraft:wool:4",
+    "minecraft:wool:5",
+    "minecraft:wool:6",
+    "minecraft:wool:7",
+    "minecraft:wool:8",
+    "minecraft:wool:9",
+    "minecraft:wool:10",
+    "minecraft:wool:11",
+    "minecraft:wool:12",
+    "minecraft:wool:13",
+    "minecraft:wool:14",
+    "minecraft:wool:15"
+  ]
+}

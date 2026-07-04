@@ -11,7 +11,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.json.item.CompoundItemMaterial;
-import ruiseki.okcore.json.item.IngredientMaterial;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.RecipeRegistry;
 
@@ -51,6 +50,7 @@ public class ShapelessRecipe implements IShapelessRecipe<InventoryCrafting> {
     public ItemStack getCraftingResultOK(InventoryCrafting inv) {
         return this.output.copy();
     }
+
     @Override
     public boolean matchesOK(InventoryCrafting inv, World world) {
         List<CompoundItemMaterial> requiredIngredients = new ArrayList<>(this.ingredients);

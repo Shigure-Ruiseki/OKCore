@@ -57,59 +57,64 @@ public class DataLoader {
         ConcurrentLinkedQueue<FileSystem> openedFileSystems = new ConcurrentLinkedQueue<>();
         Executor ioExecutor = ForkJoinPool.commonPool();
 
+        ConcurrentLinkedQueue<Runnable> startupTaskQueue = new ConcurrentLinkedQueue<>();
+        Executor startupAppExecutor = startupTaskQueue::add;
+
         CompletableFuture<Void> scanModJarsFuture = CompletableFuture
             .runAsync(() -> scanModJars(multiDataManager, openedFileSystems), ioExecutor);
 
         CompletableFuture<Void> scanDatapacksFuture = CompletableFuture
             .runAsync(() -> scanWorldDatapacks(server, multiDataManager), ioExecutor);
 
-        CompletableFuture<Void> pipelineFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
-            .thenAcceptAsync(v -> {
-                AddReloadListenerEvent event = new AddReloadListenerEvent();
-                MinecraftForge.EVENT_BUS.post(event);
-                List<PreparableReloadListener> listeners = event.getListeners();
-
-                OKCore.okLog(
-                    Level.INFO,
-                    "DataLoader: Core Scan done in {} ms. Applying {} reload listeners asynchronously...",
-                    (System.currentTimeMillis() - startTime),
-                    listeners.size());
-
-                SimplePreparationBarrier barrier = new SimplePreparationBarrier();
-
-                List<CompletableFuture<Void>> listenerFutures = new ArrayList<>();
-                for (PreparableReloadListener listener : listeners) {
-                    listenerFutures.add(listener.reload(barrier, multiDataManager, ioExecutor, SERVER_EXECUTOR));
-                }
-
-                CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0]))
-                    .join();
-            }, ioExecutor)
-            .whenComplete((v2, ex) -> {
-                for (FileSystem fs : openedFileSystems) {
-                    try {
-                        fs.close();
-                    } catch (IOException e) {
-                        OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
-                    }
-                }
-
-                if (ex != null) {
-                    OKCore
-                        .okLog(Level.ERROR, "DataLoader: Critical error occurred during resource reload pipeline!", ex);
-                    throw new RuntimeException("Data reload failed", ex);
-                } else {
-                    OKCore.okLog(
-                        Level.INFO,
-                        "DataLoader: All data successfully reloaded in Total: {} ms.",
-                        (System.currentTimeMillis() - startTime));
-                }
-            });
+        CompletableFuture<Void> scanPhaseFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture);
 
         try {
-            pipelineFuture.join();
+            scanPhaseFuture.join();
+
+            AddReloadListenerEvent event = new AddReloadListenerEvent();
+            MinecraftForge.EVENT_BUS.post(event);
+            List<PreparableReloadListener> listeners = event.getListeners();
+
+            OKCore.okLog(
+                Level.INFO,
+                "DataLoader: Core Scan done in {} ms. Initiating parallel preparation for {} listeners...",
+                (System.currentTimeMillis() - startTime),
+                listeners.size());
+
+            SimplePreparationBarrier barrier = new SimplePreparationBarrier();
+            List<CompletableFuture<Void>> listenerFutures = new ArrayList<>();
+
+            for (PreparableReloadListener listener : listeners) {
+                listenerFutures.add(listener.reload(barrier, multiDataManager, ioExecutor, startupAppExecutor));
+            }
+
+            CompletableFuture<Void> allPreparationsFuture = CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0]));
+
+            while (!allPreparationsFuture.isDone() || !startupTaskQueue.isEmpty()) {
+                Runnable task = startupTaskQueue.poll();
+                if (task != null) {
+                    task.run();
+                } else {
+                    Thread.yield();
+                }
+            }
+
+            allPreparationsFuture.join();
+            OKCore.okLog(
+                Level.INFO,
+                "DataLoader: All data successfully reloaded in Total: {} ms.",
+                (System.currentTimeMillis() - startTime));
         } catch (Exception e) {
-            OKCore.okLog(Level.ERROR, "DataLoader: Pipeline crashed during execution block!", e);
+            OKCore.okLog(Level.ERROR, "DataLoader: Critical error occurred during resource reload pipeline!", e);
+            throw new RuntimeException("Data reload failed", e);
+        } finally {
+            for (FileSystem fs : openedFileSystems) {
+                try {
+                    fs.close();
+                } catch (IOException e) {
+                    OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
+                }
+            }
         }
     }
 

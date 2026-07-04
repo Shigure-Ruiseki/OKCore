@@ -88,7 +88,8 @@ public class DataLoader {
                 listenerFutures.add(listener.reload(barrier, multiDataManager, ioExecutor, startupAppExecutor));
             }
 
-            CompletableFuture<Void> allPreparationsFuture = CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0]));
+            CompletableFuture<Void> allPreparationsFuture = CompletableFuture
+                .allOf(listenerFutures.toArray(new CompletableFuture[0]));
 
             while (!allPreparationsFuture.isDone() || !startupTaskQueue.isEmpty()) {
                 Runnable task = startupTaskQueue.poll();

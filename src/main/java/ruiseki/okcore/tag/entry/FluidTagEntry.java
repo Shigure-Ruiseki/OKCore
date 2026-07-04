@@ -3,17 +3,8 @@ package ruiseki.okcore.tag.entry;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
 
 public class FluidTagEntry extends TagEntry<Fluid> {
-
-    public FluidTagEntry(Fluid fluid) {
-        super((fluid != null) ? new ResourceLocation(fluid.getName()) : null, WILDCARD);
-    }
-
-    public FluidTagEntry(FluidStack stack) {
-        this(stack.getFluid());
-    }
 
     public FluidTagEntry(ResourceLocation id, int meta) {
         super(id, meta);
@@ -25,8 +16,7 @@ public class FluidTagEntry extends TagEntry<Fluid> {
     }
 
     @Override
-    public Fluid to() {
-        if (this.id == null) return null;
+    public Fluid get() {
         return FluidRegistry.getFluid(this.id.getResourcePath());
     }
 

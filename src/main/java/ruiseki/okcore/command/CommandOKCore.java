@@ -15,7 +15,6 @@ public class CommandOKCore extends CommandMod {
     public CommandOKCore(ModBase mod, Map<String, ICommand> subCommands) {
         super(mod, subCommands);
         addSubcommands(CommandDataComponent.NAME, new CommandDataComponent(mod));
-        addSubcommands(CommandReload.NAME, new CommandReload(mod));
     }
 
     @Override

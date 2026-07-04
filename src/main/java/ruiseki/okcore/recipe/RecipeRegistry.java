@@ -19,6 +19,8 @@ import com.google.gson.JsonSyntaxException;
 
 import cpw.mods.fml.common.discovery.ASMDataTable;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.helper.NEIHelpers;
+import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingRecipe;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
@@ -203,6 +205,9 @@ public class RecipeRegistry {
                 }
                 FURNACE_BRIDGE_MAP.put(customOutput, customRecipe);
             }
+        }
+        if (LibMods.NotEnoughItems.isModLoaded()) {
+            NEIHelpers.reloadNEIFuels();
         }
     }
 }

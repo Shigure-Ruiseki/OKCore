@@ -4,17 +4,14 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
-
-import java.util.function.Predicate;
 
 /**
  * An immutable block-meta pair. This must not be cast down to its mutable version unless you have a very good reason.
  * It can be assumed that the values of {@link #getBlock()} and {@link #getBlockMeta()} will never change for this
  * object if the object is exposed through an API.
  */
-public interface IImmutableBlockMeta  {
+public interface IImmutableBlockMeta {
 
     /**
      * The value of this must not change while this object is exposed via an API.

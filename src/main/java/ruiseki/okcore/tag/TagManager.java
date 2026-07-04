@@ -36,7 +36,7 @@ public class TagManager extends MultiJsonResourceReloadListener {
         .disableHtmlEscaping()
         .create();
 
-    private static TagManager instance;
+    private final static TagManager INSTANCE = new TagManager();
 
     private Map<TagKey<?>, Set<TagEntry<?>>> tagToEntriesMap = ImmutableMap.of();
     private Map<TagEntry<?>, Set<TagKey<?>>> entryToTagsCache = ImmutableMap.of();
@@ -46,10 +46,7 @@ public class TagManager extends MultiJsonResourceReloadListener {
     }
 
     public static TagManager getManager() {
-        if (instance == null) {
-            instance = new TagManager();
-        }
-        return instance;
+        return INSTANCE;
     }
 
     @Override

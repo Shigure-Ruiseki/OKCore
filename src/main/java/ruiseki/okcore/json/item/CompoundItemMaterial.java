@@ -118,7 +118,7 @@ public class CompoundItemMaterial extends IngredientMaterial {
                             .getEntries(tagKey);
                         if (entries != null) {
                             for (TagEntry<ItemStack> entry : entries) {
-                                ItemStack copy = entry.to();
+                                ItemStack copy = entry.get();
                                 if (copy == null) continue;
 
                                 copy.stackSize = mat.getAmount();

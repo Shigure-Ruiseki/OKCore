@@ -6,18 +6,6 @@ import net.minecraft.util.ResourceLocation;
 
 public class ItemTagEntry extends TagEntry<ItemStack> {
 
-    public ItemTagEntry(Item item) {
-        super((item != null) ? new ResourceLocation(Item.itemRegistry.getNameForObject(item)) : null, 0);
-    }
-
-    public ItemTagEntry(ItemStack stack) {
-        super(
-            (stack != null && stack.getItem() != null)
-                ? new ResourceLocation(Item.itemRegistry.getNameForObject(stack.getItem()))
-                : null,
-            (stack != null) ? stack.getItemDamage() : 0);
-    }
-
     public ItemTagEntry(ResourceLocation id, int meta) {
         super(id, meta);
     }
@@ -28,8 +16,7 @@ public class ItemTagEntry extends TagEntry<ItemStack> {
     }
 
     @Override
-    public ItemStack to() {
-        if (this.id == null) return null;
+    public ItemStack get() {
         Item item = (Item) Item.itemRegistry.getObject(this.id.toString());
         if (item == null) return null;
         int itemMeta = this.meta == WILDCARD ? 0 : this.meta;

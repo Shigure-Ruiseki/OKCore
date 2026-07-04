@@ -1,14 +1,9 @@
 package ruiseki.okcore.tag.entry;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.util.ResourceLocation;
 
 public class EntityTagEntry extends TagEntry<Entity> {
-
-    public EntityTagEntry(Entity entity) {
-        super((entity != null) ? new ResourceLocation(EntityList.getEntityString(entity)) : null, WILDCARD);
-    }
 
     public EntityTagEntry(ResourceLocation id, int meta) {
         super(id, meta);
@@ -20,7 +15,7 @@ public class EntityTagEntry extends TagEntry<Entity> {
     }
 
     @Override
-    public Entity to() {
+    public Entity get() {
         return null;
     }
 

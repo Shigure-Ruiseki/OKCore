@@ -39,7 +39,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
         .disableHtmlEscaping()
         .create();
 
-    private static RecipeManager instance;
+    private final static RecipeManager INSTANCE = new RecipeManager();
 
     protected Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> recipes = ImmutableMap.of();
     private Map<ResourceLocation, IRecipeOK<?>> byName = ImmutableMap.of();
@@ -49,10 +49,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
     }
 
     public static RecipeManager getManager() {
-        if (instance == null) {
-            instance = new RecipeManager();
-        }
-        return instance;
+        return INSTANCE;
     }
 
     @Override

@@ -9,14 +9,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Lists;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.helper.NEIHelpers;
-import ruiseki.okcore.lib.LibMods;
+import ruiseki.okcore.event.recipes.RecipesUpdatedEvent;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.recipe.IRecipeOK;
@@ -84,9 +84,7 @@ public class PacketUpdateRecipes extends PacketCodec {
             .replaceRecipes(this.recipes);
         RecipeRegistry.syncMCCraftingManager();
         RecipeRegistry.syncMCFurnaceRecipes();
-        if (LibMods.NotEnoughItems.isModLoaded()) {
-            NEIHelpers.reloadNEIFuels();
-        }
+        MinecraftForge.EVENT_BUS.post(new RecipesUpdatedEvent(RecipeManager.getManager()));
     }
 
     @Override

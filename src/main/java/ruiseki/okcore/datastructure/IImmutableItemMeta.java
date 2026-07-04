@@ -1,7 +1,5 @@
 package ruiseki.okcore.datastructure;
 
-import java.util.function.Predicate;
-
 import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;

@@ -1,28 +1,28 @@
 package ruiseki.okcore.tag.entry;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 
-import ruiseki.okcore.network.ExtendedBuffer;
-import ruiseki.okcore.network.INetworkMaterial;
+import org.jetbrains.annotations.NotNull;
 
-public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMaterial {
+public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, Supplier<T> {
 
     public static final int WILDCARD = OreDictionary.WILDCARD_VALUE;
 
-    protected ResourceLocation id;
-    protected int meta;
+    @NotNull
+    protected final ResourceLocation id;
+    protected final int meta;
 
-    protected TagEntry(ResourceLocation id, int meta) {
-        this.id = id;
+    protected TagEntry(@NotNull ResourceLocation id, int meta) {
+        this.id = Objects.requireNonNull(id, "TagEntry ID cannot be null!");
         this.meta = meta;
     }
 
-    public ResourceLocation getId() {
+    public @NotNull ResourceLocation getId() {
         return this.id;
     }
 
@@ -32,26 +32,14 @@ public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMat
 
     public abstract Class<T> getType();
 
-    @Override
-    public void toNetwork(ExtendedBuffer buffer) throws IOException {
-        buffer.writeResourceLocation(id);
-        buffer.writeVarIntToBuffer(meta);
-    }
-
-    @Override
-    public void fromNetwork(ExtendedBuffer buffer) throws IOException {
-        this.id = buffer.readResourceLocation();
-        this.meta = buffer.readVarIntFromBuffer();
-    }
-
-    public abstract T to();
+    public abstract T get();
 
     @Override
     public boolean test(TagEntry<?> other) {
         if (other == null) return false;
         if (this.getType() != other.getType()) return false;
-
         if (!this.id.equals(other.id)) return false;
+
         return this.meta == WILDCARD || other.meta == WILDCARD || this.meta == other.meta;
     }
 
@@ -59,7 +47,7 @@ public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMat
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TagEntry<?>other)) return false;
-        return this.getType() == other.getType() && this.meta == other.meta && this.id.equals(other.id);
+        return this.test(other);
     }
 
     @Override
@@ -69,6 +57,6 @@ public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, INetworkMat
 
     @Override
     public String toString() {
-        return this.id.toString() + ":" + (this.meta == WILDCARD ? "#wildcard" : this.meta);
+        return this.id + ":" + (this.meta == WILDCARD ? "#wildcard" : this.meta);
     }
 }

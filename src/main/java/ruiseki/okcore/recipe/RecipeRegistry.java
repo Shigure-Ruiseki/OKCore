@@ -17,11 +17,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.helper.NEIHelpers;
-import ruiseki.okcore.lib.LibMods;
-import ruiseki.okcore.recipe.type.cooking.fuel.FuelRecipe;
-import ruiseki.okcore.recipe.type.cooking.fuel.FuelSerializer;
-import ruiseki.okcore.recipe.type.cooking.fuel.FuelType;
+import ruiseki.okcore.recipe.type.cooking.AbstractCookingRecipe;
 import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingRecipe;
 import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingSerializer;
 import ruiseki.okcore.recipe.type.cooking.furnace.SmeltingType;
@@ -39,7 +35,7 @@ public class RecipeRegistry {
 
     private static final Map<ResourceLocation, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
     private static final Map<ResourceLocation, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
-    private static final Map<ResourceLocation, SmeltingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
+    private static final Map<ResourceLocation, AbstractCookingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
 
     public final static IRecipeType<ShapedRecipe> SHAPED_TYPE = registerType(
         new ResourceLocation("minecraft", "crafting_shaped"),
@@ -54,13 +50,6 @@ public class RecipeRegistry {
     public final static IRecipeSerializer<ShapelessRecipe> SHAPELESS_SERIALIZER = registerSerializer(
         new ResourceLocation("minecraft", "crafting_shapeless"),
         ShapelessRecipeSerializer.INSTANCE);
-
-    public final static IRecipeType<FuelRecipe> FUEL_TYPE = registerType(
-        new ResourceLocation("minecraft", "fuel"),
-        FuelType.INSTANCE);
-    public final static IRecipeSerializer<FuelRecipe> FUEL_SERIALIZER = registerSerializer(
-        new ResourceLocation("minecraft", "fuel"),
-        FuelSerializer.INSTANCE);
 
     public final static IRecipeType<SmeltingRecipe> SMELTING_TYPE = registerType(
         new ResourceLocation("minecraft", "smelting"),
@@ -161,7 +150,7 @@ public class RecipeRegistry {
         Map mcExperienceList = furnaceInstance.experienceList;
 
         if (mcSmeltingList == null) return;
-        for (SmeltingRecipe oldRecipe : FURNACE_BRIDGE_MAP.values()) {
+        for (AbstractCookingRecipe oldRecipe : FURNACE_BRIDGE_MAP.values()) {
             ItemStack oldOutput = oldRecipe.getRecipeOutput();
             if (oldOutput == null) continue;
 
@@ -192,7 +181,7 @@ public class RecipeRegistry {
         if (targetRecipes == null || targetRecipes.isEmpty()) return;
 
         for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe instanceof SmeltingRecipe customRecipe) {
+            if (recipe instanceof AbstractCookingRecipe customRecipe) {
                 ResourceLocation recipeId = customRecipe.getId();
                 ItemStack customOutput = customRecipe.getRecipeOutput();
                 float customExp = customRecipe.getExperience();
@@ -210,9 +199,6 @@ public class RecipeRegistry {
                 }
                 FURNACE_BRIDGE_MAP.put(recipeId, customRecipe);
             }
-        }
-        if (LibMods.NotEnoughItems.isModLoaded()) {
-            NEIHelpers.reloadNEIFuels();
         }
     }
 }

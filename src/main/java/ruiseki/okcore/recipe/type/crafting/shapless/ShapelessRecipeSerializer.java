@@ -27,19 +27,24 @@ public class ShapelessRecipeSerializer extends RecipeSerializerBase<ShapelessRec
     protected ShapelessRecipe readWithCondition(ResourceLocation id, JsonObject json) {
         ItemStack outputStack = null;
 
-        if (json.has("result") && json.get("result").isJsonObject()) {
+        if (json.has("result") && json.get("result")
+            .isJsonObject()) {
             ItemMaterial mat = new ItemMaterial();
             mat.read(json.getAsJsonObject("result"));
             outputStack = mat.toStack();
         }
 
         if (outputStack == null) {
-            OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] failed to generate: 'result' is missing, invalid, or the output item is not yet registered.", id);
+            OKCore.okLog(
+                Level.ERROR,
+                "Shapeless Recipe [{}] failed to generate: 'result' is missing, invalid, or the output item is not yet registered.",
+                id);
             return null;
         }
 
         List<CompoundItemMaterial> ingredientsList = new ArrayList<>();
-            if (json.has("ingredients") && json.get("ingredients").isJsonArray()) {
+        if (json.has("ingredients") && json.get("ingredients")
+            .isJsonArray()) {
             for (JsonElement element : json.getAsJsonArray("ingredients")) {
                 CompoundItemMaterial compMaterial = new CompoundItemMaterial();
                 compMaterial.read(element);
@@ -47,7 +52,8 @@ public class ShapelessRecipeSerializer extends RecipeSerializerBase<ShapelessRec
                 if (compMaterial.validate()) {
                     ingredientsList.add(compMaterial);
                 } else {
-                    OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] contains an invalid or unparseable ingredient.", id);
+                    OKCore
+                        .okLog(Level.ERROR, "Shapeless Recipe [{}] contains an invalid or unparseable ingredient.", id);
                     return null;
                 }
             }
@@ -57,7 +63,11 @@ public class ShapelessRecipeSerializer extends RecipeSerializerBase<ShapelessRec
         }
 
         if (ingredientsList.isEmpty() || ingredientsList.size() > 9) {
-            OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] must have between 1 and 9 ingredients. Parsed count: {}", id, ingredientsList.size());
+            OKCore.okLog(
+                Level.ERROR,
+                "Shapeless Recipe [{}] must have between 1 and 9 ingredients. Parsed count: {}",
+                id,
+                ingredientsList.size());
             return null;
         }
 

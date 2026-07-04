@@ -65,7 +65,6 @@ public abstract class CommonProxyComponent implements ICommonProxy {
         if (retroGenRegistry != null) {
             MinecraftForge.EVENT_BUS.register(retroGenRegistry);
         }
-        MinecraftForge.EVENT_BUS.register(getMod().getRecipeTypeRegistry());
 
         // TODO: add bucketRegistry
         // IBucketRegistry bucketRegistry = getMod().getRegistryManager()

@@ -38,7 +38,7 @@ public class WorldGenMinableExtended extends WorldGenMinable implements IRetroGe
      * @param replaceTarget The replace target blockState. Stone for overworld, netherrack for nether.
      */
     public WorldGenMinableExtended(Block block, int meta, int blocksPerVein, float veinsPerChunk, int startY, int endY,
-                                   Block replaceTarget) {
+        Block replaceTarget) {
         super(block, meta, blocksPerVein, replaceTarget);
         this.block = block;
         this.meta = meta;

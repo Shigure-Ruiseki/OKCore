@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Level;
 
@@ -56,58 +57,66 @@ public class DataLoader {
         ConcurrentLinkedQueue<FileSystem> openedFileSystems = new ConcurrentLinkedQueue<>();
         Executor ioExecutor = ForkJoinPool.commonPool();
 
+        ConcurrentLinkedQueue<Runnable> startupTaskQueue = new ConcurrentLinkedQueue<>();
+        Executor startupAppExecutor = startupTaskQueue::add;
+
         CompletableFuture<Void> scanModJarsFuture = CompletableFuture
             .runAsync(() -> scanModJars(multiDataManager, openedFileSystems), ioExecutor);
 
         CompletableFuture<Void> scanDatapacksFuture = CompletableFuture
             .runAsync(() -> scanWorldDatapacks(server, multiDataManager), ioExecutor);
 
-        CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
-            .thenAcceptAsync(v -> {
-                AddReloadListenerEvent event = new AddReloadListenerEvent();
-                net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
-                List<PreparableReloadListener> listeners = event.getListeners();
+        CompletableFuture<Void> scanPhaseFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture);
 
-                OKCore.okLog(
-                    Level.INFO,
-                    "DataLoader: Core Scan done in {} ms. Applying {} reload listeners asynchronously...",
-                    (System.currentTimeMillis() - startTime),
-                    listeners.size());
+        try {
+            scanPhaseFuture.join();
 
-                SimplePreparationBarrier barrier = new SimplePreparationBarrier();
+            AddReloadListenerEvent event = new AddReloadListenerEvent();
+            MinecraftForge.EVENT_BUS.post(event);
+            List<PreparableReloadListener> listeners = event.getListeners();
 
-                List<CompletableFuture<Void>> listenerFutures = new ArrayList<>();
-                for (PreparableReloadListener listener : listeners) {
-                    listenerFutures.add(listener.reload(barrier, multiDataManager, ioExecutor, SERVER_EXECUTOR));
+            OKCore.okLog(
+                Level.INFO,
+                "DataLoader: Core Scan done in {} ms. Initiating parallel preparation for {} listeners...",
+                (System.currentTimeMillis() - startTime),
+                listeners.size());
+
+            SimplePreparationBarrier barrier = new SimplePreparationBarrier();
+            List<CompletableFuture<Void>> listenerFutures = new ArrayList<>();
+
+            for (PreparableReloadListener listener : listeners) {
+                listenerFutures.add(listener.reload(barrier, multiDataManager, ioExecutor, startupAppExecutor));
+            }
+
+            CompletableFuture<Void> allPreparationsFuture = CompletableFuture
+                .allOf(listenerFutures.toArray(new CompletableFuture[0]));
+
+            while (!allPreparationsFuture.isDone() || !startupTaskQueue.isEmpty()) {
+                Runnable task = startupTaskQueue.poll();
+                if (task != null) {
+                    task.run();
+                } else {
+                    Thread.yield();
                 }
+            }
 
-                CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0]))
-                    .whenComplete((v2, ex) -> {
-                        for (FileSystem fs : openedFileSystems) {
-                            try {
-                                fs.close();
-                            } catch (IOException e) {
-                                OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
-                            }
-                        }
-
-                        if (ex != null) {
-                            OKCore.okLog(
-                                Level.ERROR,
-                                "DataLoader: Critical error occurred during resource reload pipeline!",
-                                ex);
-                        } else {
-                            OKCore.okLog(
-                                Level.INFO,
-                                "DataLoader: All data successfully reloaded in Total: {} ms.",
-                                (System.currentTimeMillis() - startTime));
-                        }
-                    });
-            }, ioExecutor)
-            .exceptionally(ex -> {
-                OKCore.okLog(Level.ERROR, "DataLoader: Pipeline crashed during initial scanning phase!", ex);
-                return null;
-            });
+            allPreparationsFuture.join();
+            OKCore.okLog(
+                Level.INFO,
+                "DataLoader: All data successfully reloaded in Total: {} ms.",
+                (System.currentTimeMillis() - startTime));
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "DataLoader: Critical error occurred during resource reload pipeline!", e);
+            throw new RuntimeException("Data reload failed", e);
+        } finally {
+            for (FileSystem fs : openedFileSystems) {
+                try {
+                    fs.close();
+                } catch (IOException e) {
+                    OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
+                }
+            }
+        }
     }
 
     private static void scanModJars(MultiDataManager multiDataManager,
@@ -158,8 +167,7 @@ public class DataLoader {
                     SimpleDataManager modDataManager = new SimpleDataManager();
 
                     try (Stream<Path> stream = Files.walk(dataPath, FileVisitOption.FOLLOW_LINKS)) {
-                        stream.parallel()
-                            .filter(p -> !Files.isDirectory(p))
+                        stream.filter(p -> !Files.isDirectory(p))
                             .forEach(p -> processStream(p, rootPath, modDataManager));
                     }
 
@@ -200,8 +208,7 @@ public class DataLoader {
 
                     try (Stream<Path> stream = Files.walk(packDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
                         final Path rootPath = packDir.toPath();
-                        stream.parallel()
-                            .filter(p -> !Files.isDirectory(p))
+                        stream.filter(p -> !Files.isDirectory(p))
                             .forEach(p -> processStream(p, rootPath, packDataManager));
                     }
 

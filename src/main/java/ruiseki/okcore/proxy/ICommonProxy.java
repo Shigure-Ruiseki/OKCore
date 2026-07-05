@@ -67,7 +67,6 @@ public interface ICommonProxy {
      * Please use the automated annotation-based registration system
      * (e.g., {@code @Mod.EventBusSubscriber}) instead of manual registration.
      */
-    @Deprecated
     public void registerTickHandlers();
 
     /**
@@ -76,7 +75,6 @@ public interface ICommonProxy {
      * Please use the automated annotation-based registration system
      * (e.g., {@code @Mod.EventBusSubscriber}) instead of manual registration.
      */
-    @Deprecated
     public void registerEventHooks();
 
     /**

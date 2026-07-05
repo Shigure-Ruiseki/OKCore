@@ -1,11 +1,13 @@
 package ruiseki.okcore;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
-import com.google.common.collect.Maps;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
@@ -24,17 +26,18 @@ import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
-import ruiseki.okcore.command.CommandMod;
-import ruiseki.okcore.command.CommandOKCore;
+import ruiseki.okcore.command.CommandComponent;
+import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.ModItems;
-import ruiseki.okcore.data.DataLoader;
+import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
+import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.lib.LibMods;
@@ -82,10 +85,11 @@ public class OKCore extends ModBase {
     }
 
     @Override
-    protected CommandMod constructBaseCommand() {
-        CommandMod command = new CommandOKCore(this, Maps.newHashMap());
-        command.addAlias("ok");
-        return command;
+    protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
+        LiteralArgumentBuilder<ICommandSender> root = super.constructBaseCommand(server);
+        root.then(new CommandComponent(this).make());
+        root.then(new CommandDatapack(this, server).make());
+        return root;
     }
 
     @Override
@@ -128,7 +132,7 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
         super.onServerAboutToStart(event);
-        DataLoader.loadAllDataAtServerStart(event.getServer());
+        DatapackLoader.loadAllDataAtServerStart(event.getServer());
     }
 
     @Override

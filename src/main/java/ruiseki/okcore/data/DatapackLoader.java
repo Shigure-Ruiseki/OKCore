@@ -34,7 +34,7 @@ import ruiseki.okcore.datastructure.Resource;
 import ruiseki.okcore.datastructure.ServerGameExecutor;
 import ruiseki.okcore.event.data.AddReloadListenerEvent;
 
-public class DataLoader {
+public class DatapackLoader {
 
     private static final ServerGameExecutor SERVER_EXECUTOR = new ServerGameExecutor();
     private static boolean isExecutorRegistered = false;
@@ -53,7 +53,17 @@ public class DataLoader {
         long startTime = System.currentTimeMillis();
         OKCore.okLog(Level.INFO, "DataLoader: Starting parallel data reload pipeline...");
 
-        MultiDataManager multiDataManager = new MultiDataManager();
+        String folderName = server.getFolderName();
+        File realWorldDir = server.isDedicatedServer() ? new File(folderName)
+            : new File(
+                FMLCommonHandler.instance()
+                    .getSavesDirectory(),
+                folderName);
+
+        DatapackManager datapackManager = DatapackManager.INSTANCE;
+        datapackManager.clear();
+        datapackManager.loadDisabledPacksConfig(realWorldDir);
+
         ConcurrentLinkedQueue<FileSystem> openedFileSystems = new ConcurrentLinkedQueue<>();
         Executor ioExecutor = ForkJoinPool.commonPool();
 
@@ -61,10 +71,10 @@ public class DataLoader {
         Executor startupAppExecutor = startupTaskQueue::add;
 
         CompletableFuture<Void> scanModJarsFuture = CompletableFuture
-            .runAsync(() -> scanModJars(multiDataManager, openedFileSystems), ioExecutor);
+            .runAsync(() -> scanModJars(datapackManager, openedFileSystems), ioExecutor);
 
         CompletableFuture<Void> scanDatapacksFuture = CompletableFuture
-            .runAsync(() -> scanWorldDatapacks(server, multiDataManager), ioExecutor);
+            .runAsync(() -> scanWorldDatapacks(realWorldDir, datapackManager), ioExecutor);
 
         CompletableFuture<Void> scanPhaseFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture);
 
@@ -85,7 +95,7 @@ public class DataLoader {
             List<CompletableFuture<Void>> listenerFutures = new ArrayList<>();
 
             for (PreparableReloadListener listener : listeners) {
-                listenerFutures.add(listener.reload(barrier, multiDataManager, ioExecutor, startupAppExecutor));
+                listenerFutures.add(listener.reload(barrier, datapackManager, ioExecutor, startupAppExecutor));
             }
 
             CompletableFuture<Void> allPreparationsFuture = CompletableFuture
@@ -119,7 +129,7 @@ public class DataLoader {
         }
     }
 
-    private static void scanModJars(MultiDataManager multiDataManager,
+    private static void scanModJars(DatapackManager datapackManager,
         ConcurrentLinkedQueue<FileSystem> openedFileSystems) {
         java.util.Set<File> uniqueJarFiles = Loader.instance()
             .getModList()
@@ -141,7 +151,7 @@ public class DataLoader {
                     try {
                         fileSystem = FileSystems.getFileSystem(uri);
                     } catch (FileSystemNotFoundException e) {
-                        synchronized (DataLoader.class) {
+                        synchronized (DatapackLoader.class) {
                             try {
                                 fileSystem = FileSystems.getFileSystem(uri);
                             } catch (FileSystemNotFoundException ex) {
@@ -171,7 +181,7 @@ public class DataLoader {
                             .forEach(p -> processStream(p, rootPath, modDataManager));
                     }
 
-                    multiDataManager.addManager(modDataManager);
+                    datapackManager.registerDatapack(modSource.getName(), modDataManager, true);
 
                 } catch (Exception e) {
                     OKCore.okLog(Level.ERROR, "Critical error while scanning JAR data for: " + modSource.getName(), e);
@@ -179,14 +189,7 @@ public class DataLoader {
             });
     }
 
-    private static void scanWorldDatapacks(MinecraftServer server, MultiDataManager multiDataManager) {
-        String folderName = server.getFolderName();
-        File realWorldDir = server.isDedicatedServer() ? new File(folderName)
-            : new File(
-                FMLCommonHandler.instance()
-                    .getSavesDirectory(),
-                folderName);
-
+    private static void scanWorldDatapacks(File realWorldDir, DatapackManager datapackManager) {
         File datapacksDir = new File(realWorldDir, "datapacks");
         if (!datapacksDir.exists() && !datapacksDir.mkdirs()) return;
 
@@ -212,7 +215,7 @@ public class DataLoader {
                             .forEach(p -> processStream(p, rootPath, packDataManager));
                     }
 
-                    multiDataManager.addManager(packDataManager);
+                    datapackManager.registerDatapack(packDir.getName(), packDataManager, false);
 
                 } catch (Exception e) {
                     OKCore.okLog(

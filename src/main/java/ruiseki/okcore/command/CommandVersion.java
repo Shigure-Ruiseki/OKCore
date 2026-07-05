@@ -1,16 +1,18 @@
 package ruiseki.okcore.command;
 
-import java.util.List;
-
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatComponentText;
+
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 
 import ruiseki.okcore.init.ModBase;
 
 /**
- * Command for checking the version.
+ * Command for checking the version via Brigadier.
+ * Extended from CommandMod.
  *
- * @author rubensworks
+ * @author ruiseki
  *
  */
 public class CommandVersion extends CommandMod {
@@ -18,16 +20,29 @@ public class CommandVersion extends CommandMod {
     public static final String NAME = "version";
 
     public CommandVersion(ModBase mod) {
-        super(mod, NAME);
+        super(mod);
     }
 
     @Override
-    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
-        return super.addTabCompletionOptions(sender, args);
+    public String getCommandName() {
+        return NAME;
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) {
-        sender.addChatMessage(new ChatComponentText(getMod().getReferenceValue(ModBase.REFKEY_MOD_VERSION)));
+    public int run(CommandContext<ICommandSender> context) {
+        ICommandSender sender = context.getSource();
+
+        String version = getMod().getReferenceValue(ModBase.REFKEY_MOD_VERSION);
+
+        printLineToChat(sender, version);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public LiteralArgumentBuilder<ICommandSender> make() {
+        return LiteralArgumentBuilder.<ICommandSender>literal(getCommandName())
+            .requires(sender -> sender.canCommandSenderUseCommand(getRequiredPermissionLevel(), getMod().getModId()))
+            .executes(this);
     }
 }

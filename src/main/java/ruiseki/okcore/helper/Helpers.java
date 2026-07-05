@@ -1,5 +1,6 @@
 package ruiseki.okcore.helper;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -9,12 +10,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.datastructure.BlockStack;
 
 public class Helpers {
@@ -100,5 +103,18 @@ public class Helpers {
     public static ResourceLocation getLocation(Fluid fluid) {
         if (fluid == null) return null;
         return parseLocation(fluid.getName());
+    }
+
+    public static String getServerName(MinecraftServer server) {
+        return server.getFolderName();
+    }
+
+    public static File getServerFolder(MinecraftServer server) {
+        String folderName = getServerName(server);
+        return server.isDedicatedServer() ? new File(folderName)
+            : new File(
+                FMLCommonHandler.instance()
+                    .getSavesDirectory(),
+                folderName);
     }
 }

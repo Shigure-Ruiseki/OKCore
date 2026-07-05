@@ -1,10 +1,12 @@
 package ruiseki.okcore.mixins;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.falsepattern.deploader.DeploaderStub;
 import com.gtnewhorizon.gtnhlib.config.ConfigException;
@@ -21,6 +23,7 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
         try {
             Class.forName("com.gtnewhorizons.gtnhextlib.core.GTNHExtLibCore", true, Launch.classLoader);
         } catch (ClassNotFoundException notExtLib) {
+            removeBrigadierClassLoaderException();
             DeploaderStub.bootstrap(false);
             DeploaderStub.runDepLoader();
         }
@@ -28,6 +31,25 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
         try {
             ModConfig.registerConfig();
         } catch (ConfigException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void removeBrigadierClassLoaderException() {
+        try {
+            Field cleF = LaunchClassLoader.class.getDeclaredField("classLoaderExceptions");
+            cleF.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Set<String> cle = (Set<String>) cleF.get(Launch.classLoader);
+            // for Brigadier
+            cle.remove("com.mojang.");
+            // Thermos console log compat
+            boolean hybridServer = Launch.classLoader.getResource("org/bukkit/World.class") != null
+                || Launch.classLoader.getResource("thermos/Thermos.class") != null;
+            if (hybridServer) {
+                cle.add("com.mojang.util.QueueLogAppender");
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

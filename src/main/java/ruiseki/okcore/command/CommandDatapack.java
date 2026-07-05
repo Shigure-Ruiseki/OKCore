@@ -83,7 +83,9 @@ public class CommandDatapack extends CommandMod {
             DatapackLoader.loadAllDataAtServerStart(this.server);
 
             long endTime = System.currentTimeMillis() - startTime;
-            printLineToChat(sender, EnumChatFormatting.GREEN + "Successfully reloaded all datapacks in " + endTime + " ms!");
+            printLineToChat(
+                sender,
+                EnumChatFormatting.GREEN + "Successfully reloaded all datapacks in " + endTime + " ms!");
         } catch (Exception e) {
             printErrorToChat(sender, "Critical error occurred during data reload! Check server logs.");
         }

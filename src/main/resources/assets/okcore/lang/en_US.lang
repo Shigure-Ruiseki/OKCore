@@ -9,6 +9,12 @@ button.next.name=Next
 button.prev.name=Previous
 button.search.name=Search
 
+# Redstone mode
+gui.button.redstone_mode.always_on=Always on
+gui.button.redstone_mode.high_on=On with redstone signal
+gui.button.redstone_mode.high_off=Off with redstone signal
+gui.button.redstone_mode.always_off=Always off
+
 text.shaped.crafting=Shaped Crafting
 text.shapeless.crafting=Shapeless Crafting
 text.furnace.smelting=Smelting

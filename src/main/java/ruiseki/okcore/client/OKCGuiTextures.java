@@ -1,5 +1,6 @@
 package ruiseki.okcore.client;
 
+import com.cleanroommc.modularui.drawable.AdaptableUITexture;
 import com.cleanroommc.modularui.drawable.UITexture;
 
 import ruiseki.okcore.Reference;
@@ -34,5 +35,47 @@ public class OKCGuiTextures {
     public static final UITexture INACCESSIBLE_SLOT = UITexture.builder()
         .location(Reference.MOD_ID, "items/inaccessible_slot")
         .imageSize(16, 16)
+        .build();
+
+    public static final UITexture STANDARD_BUTTON = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/gui_controls.png")
+        .imageSize(256, 256)
+        .xy(29, 0, 18, 18)
+        .build();
+    public static final UITexture STANDARD_BUTTON_HOVERED = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/gui_controls.png")
+        .imageSize(256, 256)
+        .xy(47, 0, 18, 18)
+        .build();
+
+    public static final UITexture HIGH_OFF = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(0, 0, 16, 16)
+        .build();
+
+    public static final UITexture HIGH_ON = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(16, 0, 16, 16)
+        .build();
+
+    public static final UITexture ALWAYS_ON = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(32, 0, 16, 16)
+        .build();
+    public static final UITexture ALWAYS_OFF = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(48, 0, 16, 16)
+        .build();
+
+    public static final AdaptableUITexture TITLE_TEXTURE = (AdaptableUITexture) UITexture.builder()
+        .location(Reference.MOD_ID, "gui/gui_controls")
+        .imageSize(256, 256)
+        .xy(128, 0, 128, 10)
+        .adaptable(4)
+        .tiled()
         .build();
 }

@@ -1,10 +1,9 @@
-package ruiseki.okcore.color;
+package ruiseki.okcore.enums;
 
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
-@Deprecated
 public enum EnumDye {
 
     BLACK,
@@ -22,8 +21,7 @@ public enum EnumDye {
     LIGHT_BLUE,
     MAGENTA,
     ORANGE,
-    WHITE,
-    CRYSTAL;
+    WHITE;
 
     public static final String[] DYE_ORE_NAMES = { "dyeBlack", "dyeRed", "dyeGreen", "dyeBrown", "dyeBlue", "dyePurple",
         "dyeCyan", "dyeLightGray", "dyeGray", "dyePink", "dyeLime", "dyeYellow", "dyeLightBlue", "dyeMagenta",
@@ -60,16 +58,10 @@ public enum EnumDye {
     private EnumDye() {}
 
     public int getColor() {
-        if (this == CRYSTAL) {
-            return 0xAAFFFF; // Crystal color (Light Blue-ish)
-        }
         return ItemDye.field_150922_c[ordinal()];
     }
 
     public String getName() {
-        if (this == CRYSTAL) {
-            return "crystal";
-        }
         return ItemDye.field_150921_b[ordinal()];
     }
 

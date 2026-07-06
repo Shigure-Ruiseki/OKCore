@@ -35,4 +35,15 @@ public class OKCGuiTextures {
         .location(Reference.MOD_ID, "items/inaccessible_slot")
         .imageSize(16, 16)
         .build();
+
+    public static final UITexture STANDARD_BUTTON = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/gui_controls.png")
+        .imageSize(256, 256)
+        .xy(29, 0, 18, 18)
+        .build();
+    public static final UITexture STANDARD_BUTTON_HOVERED = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/gui_controls.png")
+        .imageSize(256, 256)
+        .xy(47, 0, 18, 18)
+        .build();
 }

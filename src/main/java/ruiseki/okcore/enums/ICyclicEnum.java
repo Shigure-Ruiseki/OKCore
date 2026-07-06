@@ -9,6 +9,10 @@ public interface ICyclicEnum<E extends Enum<E> & ICyclicEnum<E>> {
         return ((Class<E>) this.getClass()).getEnumConstants();
     }
 
+    default int getIndex() {
+        return this.getOrdinal();
+    }
+
     default int getOrdinal() {
         return ((Enum<?>) this).ordinal();
     }

@@ -1,6 +1,7 @@
 package ruiseki.okcore.tileentity;
 
 import net.minecraft.world.World;
+
 import ruiseki.okcore.enums.RedstoneMode;
 
 /**
@@ -59,9 +60,9 @@ public interface IRedstoneMode {
      * Automatically queries neighbors for Redstone signals using 1.7.10 physics methods.
      *
      * @param world the world the device resides in
-     * @param x the X coordinate of the device
-     * @param y the Y coordinate of the device
-     * @param z the Z coordinate of the device
+     * @param x     the X coordinate of the device
+     * @param y     the Y coordinate of the device
+     * @param z     the Z coordinate of the device
      * @return true if the device can execute its ticking logic; false otherwise
      */
     default boolean canRunInWorld(World world, int x, int y, int z) {

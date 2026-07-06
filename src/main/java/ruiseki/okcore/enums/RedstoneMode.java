@@ -11,10 +11,6 @@ public enum RedstoneMode implements ICyclicEnum<RedstoneMode> {
         return (mode == ALWAYS_ON) || (mode == HIGH_ON && redstonePowered) || (mode == HIGH_OFF && !redstonePowered);
     }
 
-    public int getIndex() {
-        return this.ordinal();
-    }
-
     public static RedstoneMode byIndex(int index) {
         RedstoneMode[] values = RedstoneMode.values();
         if (index < 0 || index >= values.length) return ALWAYS_ON;

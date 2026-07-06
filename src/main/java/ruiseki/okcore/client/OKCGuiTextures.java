@@ -46,4 +46,27 @@ public class OKCGuiTextures {
         .imageSize(256, 256)
         .xy(47, 0, 18, 18)
         .build();
+
+    public static final UITexture HIGH_OFF = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(0, 0, 16, 16)
+        .build();
+
+    public static final UITexture HIGH_ON = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(16, 0, 16, 16)
+        .build();
+
+    public static final UITexture ALWAYS_ON = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(32, 0, 16, 16)
+        .build();
+    public static final UITexture ALWAYS_OFF = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .imageSize(256, 256)
+        .xy(48, 0, 16, 16)
+        .build();
 }

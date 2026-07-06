@@ -7,10 +7,6 @@ public enum SortType implements ICyclicEnum<SortType> {
     BY_COUNT,
     BY_ORE_DICT;
 
-    public int getIndex() {
-        return this.ordinal();
-    }
-
     public static SortType byIndex(int index) {
         SortType[] values = SortType.values();
         if (index < 0 || index >= values.length) return BY_NAME;

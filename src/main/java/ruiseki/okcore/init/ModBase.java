@@ -5,14 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.server.MinecraftServer;
 
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.gtnewhorizon.gtnhlib.brigadier.BrigadierApi;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -27,6 +30,7 @@ import lombok.Data;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyRegistry;
 import ruiseki.okcore.command.CommandMod;
+import ruiseki.okcore.command.CommandVersion;
 import ruiseki.okcore.helper.LoggerHelpers;
 import ruiseki.okcore.helper.VersionHelpers;
 import ruiseki.okcore.network.PacketHandler;
@@ -62,7 +66,8 @@ public abstract class ModBase {
     private final Set<IInitListener> initListeners;
     private final Map<EnumReferenceKey, Object> genericReference = Maps.newHashMap();
     private final List<WorldStorage> worldStorages = Lists.newLinkedList();
-    private CommandMod baseCommand;
+
+    private LiteralArgumentBuilder<ICommandSender> baseCommand;
 
     private final RegistryManager registryManager;
     private final IKeyRegistry keyRegistry;
@@ -97,8 +102,9 @@ public abstract class ModBase {
         return new PacketHandler(this);
     }
 
-    protected CommandMod constructBaseCommand() {
-        return new CommandMod(this, Maps.<String, ICommand>newHashMap());
+    protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
+        return new CommandMod(this).make()
+            .then(new CommandVersion(this).make());
     }
 
     protected ModuleManager constructModuleManager() {
@@ -180,7 +186,7 @@ public abstract class ModBase {
         }
     }
 
-    public void registerSubCommand(Map<String, ICommand> subcommand) {
+    public void registerSubCommand(LiteralArgumentBuilder<ICommandSender> parent) {
 
     }
 
@@ -296,10 +302,10 @@ public abstract class ModBase {
     public void onServerStarting(FMLServerStartingEvent event) {
         moduleManager.onServerStarting(event);
 
-        this.baseCommand = constructBaseCommand();
-        registerSubCommand(baseCommand.getSubcommands());
-        moduleManager.registerSubCommand(baseCommand.getSubcommands());
-        event.registerServerCommand(baseCommand);
+        this.baseCommand = constructBaseCommand(event.getServer());
+        moduleManager.registerModuleCommand(this.baseCommand, event.getServer());
+        BrigadierApi.getCommandDispatcher()
+            .register(this.baseCommand);
     }
 
     /**

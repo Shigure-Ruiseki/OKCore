@@ -1,9 +1,9 @@
 package ruiseki.okcore.init;
 
-import java.util.Map;
-
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -14,6 +14,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import lombok.Getter;
+import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ICommonProxy;
 
@@ -21,10 +22,13 @@ public abstract class ModModuleBase {
 
     @Getter
     protected final ModBase mod;
+    public final String moduleName;
     protected final ICommonProxy moduleProxy;
+    private LiteralArgumentBuilder<ICommandSender> command;
 
-    public ModModuleBase(ModBase mod) {
+    public ModModuleBase(ModBase mod, String moduleName) {
         this.mod = mod;
+        this.moduleName = moduleName;
         this.moduleProxy = createProxy();
     }
 
@@ -40,7 +44,9 @@ public abstract class ModModuleBase {
         mod.registerWorldStorage(storage);
     }
 
-    protected void registerSubCommand(Map<String, ICommand> subcommand) {}
+    protected LiteralArgumentBuilder<ICommandSender> constructModuleCommand(MinecraftServer server) {
+        return new CommandMod(this.mod, this.moduleName).make();
+    }
 
     /**
      * Reloads module's runtime data.

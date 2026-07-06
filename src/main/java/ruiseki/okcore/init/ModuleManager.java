@@ -2,12 +2,13 @@ package ruiseki.okcore.init;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -120,10 +121,14 @@ public class ModuleManager {
         }
     }
 
-    public void registerSubCommand(Map<String, ICommand> subcommand) {
+    public void registerModuleCommand(LiteralArgumentBuilder<ICommandSender> parent, MinecraftServer server) {
         for (ModModuleBase module : modules) {
             if (!module.isEnable()) continue;
-            module.registerSubCommand(subcommand);
+
+            LiteralArgumentBuilder<ICommandSender> moduleCommand = module.constructModuleCommand(server);
+            if (moduleCommand != null) {
+                parent.then(moduleCommand);
+            }
         }
     }
 

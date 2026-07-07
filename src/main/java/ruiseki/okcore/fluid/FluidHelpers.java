@@ -815,6 +815,16 @@ public class FluidHelpers {
             .orElse(d);
     }
 
+    public static boolean stackHasFluidHandler(ItemStack stackIn) {
+        return getFluidHandler(stackIn).isPresent();
+    }
+
+    public static boolean hasFluidHandler(TileEntity tile, ForgeDirection side) {
+        return tile != null
+            && CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)
+                .isPresent();
+    }
+
     public static boolean isEmptyOfFluid(ItemStack returnMe) {
         FluidStack fs = getFluidContained(returnMe);
         return fs == null || fs.amount == 0;

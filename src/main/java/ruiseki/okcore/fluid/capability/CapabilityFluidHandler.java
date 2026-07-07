@@ -14,6 +14,7 @@ import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.IItemCapability;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.fluid.IFluidHandlerItem;
+import ruiseki.okcore.fluid.capability.wrapper.FluidContainerWrapper;
 import ruiseki.okcore.init.IInitListener;
 
 public class CapabilityFluidHandler implements IInitListener {

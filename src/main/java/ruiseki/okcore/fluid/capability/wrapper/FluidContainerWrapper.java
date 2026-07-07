@@ -1,4 +1,4 @@
-package ruiseki.okcore.fluid.capability;
+package ruiseki.okcore.fluid.capability.wrapper;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -14,6 +14,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.IFluidHandlerItem;
+import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 
 public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProvider {
 

@@ -1,22 +1,31 @@
 package ruiseki.okcore.fluid;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.item.ItemStack;
 
 public class FluidActionResult {
 
-    private final boolean success;
-    private final ItemStack result;
+    public static final FluidActionResult FAILURE = new FluidActionResult(false, null);
 
-    public FluidActionResult(boolean success, ItemStack result) {
+    public final boolean success;
+    public final ItemStack result;
+
+    public FluidActionResult(ItemStack result) {
+        this(true, result);
+    }
+
+    private FluidActionResult(boolean success, ItemStack result) {
         this.success = success;
         this.result = result;
     }
 
     public boolean isSuccess() {
-        return this.success;
+        return success;
     }
 
+    @Nonnull
     public ItemStack getResult() {
-        return this.result;
+        return result;
     }
 }

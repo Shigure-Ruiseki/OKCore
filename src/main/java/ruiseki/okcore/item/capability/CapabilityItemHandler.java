@@ -1,5 +1,7 @@
 package ruiseki.okcore.item.capability;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -21,6 +23,9 @@ import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.item.IItemHandler;
+import ruiseki.okcore.item.PlayerArmorInvWrapper;
+import ruiseki.okcore.item.PlayerInvWrapper;
+import ruiseki.okcore.item.PlayerMainInvWrapper;
 import ruiseki.okcore.item.capability.cofh.ItemDuctSink;
 import ruiseki.okcore.item.capability.mfr.DSUItemSink;
 import ruiseki.okcore.item.capability.mfr.DSUItemSource;
@@ -42,7 +47,7 @@ public class CapabilityItemHandler implements IInitListener {
     public static final ResourceLocation INVENTORY_CAP = new ResourceLocation(Reference.MOD_ID, "inventory");
 
     @SubscribeEvent
-    public void attachMCCapability(AttachCapabilitiesEvent<TileEntity> event) {
+    public void attachMCTECapability(AttachCapabilitiesEvent<TileEntity> event) {
         TileEntity tile = event.getObject();
 
         boolean isInv = tile instanceof IInventory;
@@ -113,6 +118,46 @@ public class CapabilityItemHandler implements IInitListener {
                         }
                     }
 
+                    return LazyOptional.empty();
+                }
+            });
+        }
+    }
+
+    @SubscribeEvent
+    public void attachEntityCapability(AttachCapabilitiesEvent<Entity> event) {
+        Entity entity = event.getObject();
+
+        if (entity instanceof EntityPlayer player) {
+
+            event.addCapability(INVENTORY_CAP, new ICapabilityProvider() {
+
+                private final LazyOptional<IItemHandler>[] entityCache = new LazyOptional[7];
+                private final IItemHandler playerMainHandler = new PlayerMainInvWrapper(player.inventory);
+                private final IItemHandler playerEquipmentHandler = new PlayerArmorInvWrapper(player.inventory);
+                private final IItemHandler playerJoinedHandler = new PlayerInvWrapper(player.inventory);
+
+                private int getIndex(@Nullable ForgeDirection facing) {
+                    return facing == null ? 6 : facing.ordinal();
+                }
+
+                @Override
+                public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                    @Nullable ForgeDirection facing) {
+                    if (capability == ITEM_HANDLER_CAPABILITY || capability == ITEM_SINK_CAPABILITY
+                        || capability == ITEM_SOURCE_CAPABILITY) {
+                        int idx = getIndex(facing);
+                        if (entityCache[idx] == null) {
+                            if (facing == null) {
+                                entityCache[idx] = LazyOptional.of(() -> playerJoinedHandler);
+                            } else if (facing == ForgeDirection.UP || facing == ForgeDirection.DOWN) {
+                                entityCache[idx] = LazyOptional.of(() -> playerMainHandler);
+                            } else {
+                                entityCache[idx] = LazyOptional.of(() -> playerEquipmentHandler);
+                            }
+                        }
+                        return entityCache[idx].cast();
+                    }
                     return LazyOptional.empty();
                 }
             });

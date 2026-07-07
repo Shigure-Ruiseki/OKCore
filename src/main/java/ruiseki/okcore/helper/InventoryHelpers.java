@@ -131,24 +131,6 @@ public class InventoryHelpers {
     /**
      * Drop an ItemStack into the world
      *
-     * @param world   the world
-     * @param handler inventory with ItemStacks
-     * @param pos     The position.
-     */
-    public static void dropItems(World world, IItemHandler handler, BlockPos pos) {
-        if (handler == null) return;
-        for (int i = 0; i < handler.getSlots(); i++) {
-            ItemStack stack = handler.getStackInSlot(i);
-            if (stack != null && stack.stackSize > 0) {
-                dropItems(world, stack.copy(), pos);
-                handler.extractItem(i, stack.stackSize, false);
-            }
-        }
-    }
-
-    /**
-     * Drop an ItemStack into the world
-     *
      * @param world    the world
      * @param stack    ItemStack to drop
      * @param blockPos The position.
@@ -168,6 +150,39 @@ public class InventoryHelpers {
             entityitem.delayBeforeCanPickup = 10;
 
             world.spawnEntityInWorld(entityitem);
+        }
+    }
+
+    /**
+     * Drop ALL ItemStacks from the inventory into the world
+     */
+    public static void dropItems(World world, IItemHandler handler, BlockPos pos) {
+        dropItems(world, handler, pos, 0);
+    }
+
+    /**
+     * Drop ItemStacks from a specific starting slot to the end of the inventory
+     */
+    public static void dropItems(World world, IItemHandler handler, BlockPos pos, int startingSlot) {
+        if (handler == null) return;
+        dropItems(world, handler, pos, startingSlot, handler.getSlots());
+    }
+
+    /**
+     * Core Method: Drop ItemStacks from a specific slot range
+     */
+    public static void dropItems(World world, IItemHandler handler, BlockPos pos, int startingSlot, int maxSlot) {
+        if (handler == null) return;
+
+        int endSlot = Math.min(maxSlot, handler.getSlots());
+        int startSlot = Math.max(0, startingSlot);
+
+        for (int i = startSlot; i < endSlot; i++) {
+            ItemStack stack = handler.getStackInSlot(i);
+            if (stack != null && stack.stackSize > 0) {
+                dropItems(world, stack.copy(), pos);
+                handler.extractItem(i, stack.stackSize, false);
+            }
         }
     }
 

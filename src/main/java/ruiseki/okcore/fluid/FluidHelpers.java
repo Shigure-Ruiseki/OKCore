@@ -470,8 +470,6 @@ public class FluidHelpers {
     /**
      * Fill a destination fluid handler from a source fluid handler using a specific fluid.
      * To specify a max amount to transfer instead of specific fluid, use
-     * {@link #tryFluidTransfer(IFluidHandler, IFluidHandler, ForgeDirection, int, boolean)}
-     * To transfer as much as possible, use {@link Integer#MAX_VALUE} for resource.amount.
      *
      * @param fluidDestination The fluid handler to be filled.
      * @param fluidSource      The fluid handler to be drained.
@@ -492,9 +490,6 @@ public class FluidHelpers {
     /**
      * Internal method for filling a destination fluid handler from a source fluid handler using a specific fluid.
      * Assumes that "drainable" can be drained from "fluidSource".
-     *
-     * Modders: Instead of this method, use {@link #tryFluidTransfer(IFluidHandler, IFluidHandler, FluidStack, boolean)}
-     * or {@link #tryFluidTransfer(IFluidHandler, IFluidHandler, int, boolean)}.
      */
     @Nullable
     private static FluidStack tryFluidTransfer_Internal(IFluidHandler fluidDestination, IFluidHandler fluidSource,
@@ -584,9 +579,6 @@ public class FluidHelpers {
     }
 
     /**
-     * ItemStack version of {@link #tryPlaceFluid(EntityPlayer, World, BlockPos, IFluidHandler, FluidStack)}.
-     * Use the returned {@link FluidActionResult} to update the container ItemStack.
-     *
      * @param player    Player who places the fluid. May be null for blocks like dispensers.
      * @param world     World to place the fluid in
      * @param pos       The position in the world to place the fluid block
@@ -612,8 +604,6 @@ public class FluidHelpers {
      * Makes a fluid emptying or vaporization sound when successful.
      * Honors the amount of fluid contained by the used container.
      * Checks if water-like fluids should vaporize like in the nether.
-     *
-     * Modeled after {@link ItemBucket#tryPlaceContainedLiquid(World, int, int, int)}
      *
      * @param player      Player who places the fluid. May be null for blocks like dispensers.
      * @param world       World to place the fluid in
@@ -699,9 +689,6 @@ public class FluidHelpers {
 
     /**
      * Internal method for getting a fluid block handler for placing a fluid.
-     *
-     * Modders: Instead of this method, use {@link #tryPlaceFluid(EntityPlayer, World, BlockPos, ItemStack, FluidStack)}
-     * or {@link #tryPlaceFluid(EntityPlayer, World, BlockPos, IFluidHandler, FluidStack)}
      */
     private static IFluidHandler getFluidBlockHandler(Fluid fluid, World world, BlockPos pos) {
         Block block = fluid.getBlock();
@@ -781,29 +768,27 @@ public class FluidHelpers {
 
     /**
      * Drains a filled container and places the fluid.
-     *
      * RETURN new item stack that has been drained after placing in world if it works null otherwise
      */
     public static ItemStack dumpContainer(World world, BlockPos pos, ItemStack stackIn, ForgeDirection facing) {
         ItemStack dispensedStack = stackIn.copy();
-        return FluidHelpers.getFluidHandler(dispensedStack)
-            .map(handler -> {
-                FluidStack fluidStack = handler.drain(BUCKET_VOLUME, false);
-                if (fluidStack != null// && fluidStack.amount >= Fluid.BUCKET_VOLUME
-                ) {
-                    FluidActionResult placementResult = tryPlaceFluid(
-                        null,
-                        world,
-                        pos,
-                        dispensedStack,
-                        fluidStack.copy(),
-                        facing);
-                    if (placementResult.isSuccess()) {
-                        return placementResult.result;
-                    }
+        return getFluidHandler(dispensedStack).map(handler -> {
+            FluidStack fluidStack = handler.drain(BUCKET_VOLUME, false);
+            if (fluidStack != null// && fluidStack.amount >= Fluid.BUCKET_VOLUME
+            ) {
+                FluidActionResult placementResult = tryPlaceFluid(
+                    null,
+                    world,
+                    pos,
+                    dispensedStack,
+                    fluidStack.copy(),
+                    facing);
+                if (placementResult.isSuccess()) {
+                    return placementResult.result;
                 }
-                return stackIn;
-            })
+            }
+            return stackIn;
+        })
             .orElse(stackIn);
     }
 

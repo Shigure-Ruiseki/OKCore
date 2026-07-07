@@ -22,7 +22,7 @@ public interface IBlock {
     }
 
     default void registerBlock() {
-        GameRegistry.registerBlock(this.getBlock(), getItemBlockClass(), getName(), getItemBlockArgs());
+        GameRegistry.registerBlock(this.getBlock(), getItemBlockClass(), getName());
     }
 
     default void registerTileEntity() {}
@@ -33,9 +33,5 @@ public interface IBlock {
 
     default Class<? extends ItemBlock> getItemBlockClass() {
         return ItemBlockOK.class;
-    }
-
-    default Object[] getItemBlockArgs() {
-        return new Object[0];
     }
 }

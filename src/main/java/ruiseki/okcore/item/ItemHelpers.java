@@ -1,4 +1,4 @@
-package ruiseki.okcore.helper;
+package ruiseki.okcore.item;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ import it.unimi.dsi.fastutil.Hash;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.IImmutableItemMeta;
 import ruiseki.okcore.hash.Fnv1a32;
-import ruiseki.okcore.item.IImmutableItemStack;
+import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.capability.IItemSink;
 import ruiseki.okcore.item.capability.IItemSource;

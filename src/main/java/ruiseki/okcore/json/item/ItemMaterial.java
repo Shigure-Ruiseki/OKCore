@@ -14,7 +14,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import com.google.gson.JsonObject;
 
 import cpw.mods.fml.common.registry.GameData;
-import ruiseki.okcore.helper.JsonNBTHelpers;
+import ruiseki.okcore.helper.GsonHelpers;
 import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.tag.Registries;
@@ -41,7 +41,7 @@ public class ItemMaterial extends IngredientMaterial {
 
         this.amount = getInt(json, "amount", 1);
         this.meta = getInt(json, "meta", 0);
-        this.nbt = json.has("nbt") ? JsonNBTHelpers.jsonToNBT(json.getAsJsonObject("nbt")) : null;
+        this.nbt = json.has("nbt") ? GsonHelpers.jsonToNBT(json.getAsJsonObject("nbt")) : null;
         captureUnknownProperties(json, "item", "ore", "amount", "meta", "nbt");
     }
 
@@ -60,7 +60,7 @@ public class ItemMaterial extends IngredientMaterial {
         json.addProperty("amount", this.amount);
         json.addProperty("meta", this.meta);
         if (this.nbt != null && !this.nbt.hasNoTags()) {
-            json.add("nbt", JsonNBTHelpers.nbtToJSON(this.nbt));
+            json.add("nbt", GsonHelpers.nbtToJSON(this.nbt));
         }
         writeUnknownProperties(json);
     }

@@ -895,7 +895,7 @@ public class FluidHelpers {
                     return false;
                 }
                 int filled = handler.fill(sideOpp, wasDrained, false);
-                if (wasDrained != null && wasDrained.amount > 0 && filled > 0) {
+                if (wasDrained.amount > 0 && filled > 0) {
                     int realAmt = Math.min(filled, wasDrained.amount);
                     wasDrained = tankFrom.drain(realAmt, true);
                     if (wasDrained == null) {

@@ -2,7 +2,8 @@ package ruiseki.okcore.fluid;
 
 import net.minecraft.item.ItemStack;
 
-public  class FluidActionResult {
+public class FluidActionResult {
+
     private final boolean success;
     private final ItemStack result;
 

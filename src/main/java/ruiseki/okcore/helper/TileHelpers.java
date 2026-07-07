@@ -5,18 +5,11 @@ import java.util.Optional;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.capabilities.Capability;
-import ruiseki.okcore.capabilities.CapabilityDispatcher;
-import ruiseki.okcore.capabilities.ICapabilityInternal;
-import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * Contains helper methods for various tile entity specific things.

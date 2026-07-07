@@ -133,9 +133,10 @@ public class CapabilityItemHandler implements IInitListener {
             event.addCapability(INVENTORY_CAP, new ICapabilityProvider() {
 
                 private final LazyOptional<IItemHandler>[] entityCache = new LazyOptional[7];
-                private final IItemHandler playerMainHandler = new PlayerMainInvWrapper(player.inventory);
-                private final IItemHandler playerEquipmentHandler = new PlayerArmorInvWrapper(player.inventory);
-                private final IItemHandler playerJoinedHandler = new PlayerInvWrapper(player.inventory);
+
+                private IItemHandler playerMainHandler = null;
+                private IItemHandler playerEquipmentHandler = null;
+                private IItemHandler playerJoinedHandler = null;
 
                 private int getIndex(@Nullable ForgeDirection facing) {
                     return facing == null ? 6 : facing.ordinal();
@@ -146,13 +147,27 @@ public class CapabilityItemHandler implements IInitListener {
                     @Nullable ForgeDirection facing) {
                     if (capability == ITEM_HANDLER_CAPABILITY || capability == ITEM_SINK_CAPABILITY
                         || capability == ITEM_SOURCE_CAPABILITY) {
+
+                        if (player.inventory == null) {
+                            return LazyOptional.empty();
+                        }
+
                         int idx = getIndex(facing);
                         if (entityCache[idx] == null) {
                             if (facing == null) {
+                                if (playerJoinedHandler == null) {
+                                    playerJoinedHandler = new PlayerInvWrapper(player.inventory);
+                                }
                                 entityCache[idx] = LazyOptional.of(() -> playerJoinedHandler);
                             } else if (facing == ForgeDirection.UP || facing == ForgeDirection.DOWN) {
+                                if (playerMainHandler == null) {
+                                    playerMainHandler = new PlayerMainInvWrapper(player.inventory);
+                                }
                                 entityCache[idx] = LazyOptional.of(() -> playerMainHandler);
                             } else {
+                                if (playerEquipmentHandler == null) {
+                                    playerEquipmentHandler = new PlayerArmorInvWrapper(player.inventory);
+                                }
                                 entityCache[idx] = LazyOptional.of(() -> playerEquipmentHandler);
                             }
                         }

@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.datacomponent.component.UseCooldown;
-import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
@@ -59,7 +59,7 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
         if (te != null) {
             ForgeDirection direction = ForgeDirection.getOrientation(side);
 
-            return TileHelpers.getCapability(te, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction)
+            return CapabilityHelpers.getCapability(te, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction)
                 .map(handler -> {
                     ItemStack toInsert = new ItemStack(Items.stick);
                     ItemStack remainder = toInsert;

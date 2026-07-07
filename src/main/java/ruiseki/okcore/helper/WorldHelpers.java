@@ -1,9 +1,11 @@
 package ruiseki.okcore.helper;
 
 import java.util.List;
+import java.util.Random;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -130,6 +132,19 @@ public class WorldHelpers {
             }
         }
         return value;
+    }
+
+    public static BlockPos getRandomPos(Random rand, BlockPos here, int hRadius) {
+        int x = here.getX();
+        int z = here.getZ();
+        // search in a square
+        int xMin = x - hRadius;
+        int xMax = x + hRadius;
+        int zMin = z - hRadius;
+        int zMax = z + hRadius;
+        int posX = MathHelper.getRandomIntegerInRange(rand, xMin, xMax);
+        int posZ = MathHelper.getRandomIntegerInRange(rand, zMin, zMax);
+        return new BlockPos(posX, here.getY(), posZ);
     }
 
     /**

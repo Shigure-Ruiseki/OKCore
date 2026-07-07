@@ -750,7 +750,7 @@ public class FluidHelpers {
      *         Returns null if none of the enabled buckets can hold the fluid.
      */
     @Nullable
-    public static ItemStack getFilledBucket(@Nonnull FluidStack fluidStack) {
+    public static ItemStack getFilledBucket(FluidStack fluidStack) {
         Fluid fluid = fluidStack.getFluid();
         if (fluid == null) {
             return null;

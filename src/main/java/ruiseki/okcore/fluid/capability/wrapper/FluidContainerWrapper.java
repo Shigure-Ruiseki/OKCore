@@ -27,8 +27,6 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
         this.legacy = legacy;
     }
 
-    // ===== Capability bridge =====
-
     @Override
     public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection facing) {
@@ -44,13 +42,13 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
     }
 
     @Override
-    public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
-        if (resource == null) return 0;
-        return legacy.fill(stack, resource, doFill);
+    public FluidStack drain(int maxDrain, boolean doDrain) {
+        if (maxDrain <= 0) return null;
+        return legacy.drain(stack, maxDrain, doDrain);
     }
 
     @Override
-    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
+    public FluidStack drain(FluidStack resource, boolean doDrain) {
         if (resource == null) return null;
 
         FluidStack current = legacy.getFluid(stack);
@@ -62,9 +60,8 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
     }
 
     @Override
-    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
-        if (maxDrain <= 0) return null;
-        return legacy.drain(stack, maxDrain, doDrain);
+    public int fill(FluidStack resource, boolean doFill) {
+        return legacy.fill(stack, resource, doFill);
     }
 
     @Override

@@ -17,6 +17,8 @@
 package ruiseki.okcore.fluid;
 
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidHandler;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,4 +37,16 @@ public interface IFluidHandlerItem extends IFluidHandler {
      */
     @NotNull
     ItemStack getContainer();
+
+    default FluidStack drain(int maxDrain, boolean simulate) {
+        return drain(ForgeDirection.UNKNOWN, maxDrain, simulate);
+    }
+
+    default FluidStack drain(FluidStack stack, boolean simulate) {
+        return drain(ForgeDirection.UNKNOWN, stack, simulate);
+    }
+
+    default int fill(FluidStack resource, boolean doFill) {
+        return fill(ForgeDirection.UNKNOWN, resource, doFill);
+    };
 }

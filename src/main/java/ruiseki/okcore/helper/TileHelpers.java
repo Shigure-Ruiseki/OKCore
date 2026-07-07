@@ -72,37 +72,6 @@ public class TileHelpers {
         }
     }
 
-    public static <C> LazyOptional<C> getCapability(TileEntity tile, @NotNull Capability<C> capability,
-        @NotNull ForgeDirection side) {
-        if (tile instanceof ICapabilityProvider provider) {
-            return provider.getCapability(capability, side);
-        }
-        return LazyOptional.empty();
-    }
-
-    public static <C> LazyOptional<C> getCapability(DimPos dimPos, @NotNull Capability<C> capability,
-        @NotNull ForgeDirection side) {
-        World world = dimPos.getWorld();
-        return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : LazyOptional.empty();
-    }
-
-    public static <C> LazyOptional<C> getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
-        @NotNull ForgeDirection side) {
-        return getCapability(pos.getTileEntity(world), capability, side);
-    }
-
-    public static CapabilityDispatcher getCapabilities(TileEntity tile) {
-        if (tile == null) return null;
-        try {
-            ICapabilityInternal provider = (ICapabilityInternal) (Object) tile;
-
-            return provider.getCapabilities();
-
-        } catch (ClassCastException ignored) {
-            return null;
-        }
-    }
-
     public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess level, int x, int y, int z) {
         if (level == null) return Optional.empty();
         return Optional.ofNullable(level.getTileEntity(x, y, z));

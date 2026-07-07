@@ -5,7 +5,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.guide.capability.CapabilityGuide;
-import ruiseki.okcore.helper.EntityHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -36,7 +36,7 @@ public class PacketSyncGuidePos extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
+        CapabilityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
             .ifPresent(cap -> cap.setLastPos(this.entryName, this.categoryIndex, this.pageIndex));
     }
 

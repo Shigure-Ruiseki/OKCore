@@ -15,19 +15,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.intellij.lang.annotations.MagicConstant;
-import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 
 import cpw.mods.fml.common.registry.GameData;
 import it.unimi.dsi.fastutil.Hash;
-import ruiseki.okcore.capabilities.Capability;
-import ruiseki.okcore.capabilities.CapabilityDispatcher;
-import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.IImmutableItemMeta;
-import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.hash.Fnv1a32;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 import ruiseki.okcore.item.IImmutableItemStack;
@@ -232,30 +227,6 @@ public class ItemStackHelpers {
     public static boolean areItemStacksIdentical(ItemStack a, ItemStack b) {
         return ItemStack.areItemStacksEqual(a, b)
             && ((a == null && b == null) || (a != null && a.stackSize == b.stackSize));
-    }
-
-    public static <T> LazyOptional<T> getCapability(ItemStack stack, @NotNull Capability<T> capability) {
-        if (stack == null) return LazyOptional.empty();
-        try {
-            ICapabilityProvider provider = (ICapabilityProvider) (Object) stack;
-
-            return provider.getCapability(capability);
-
-        } catch (ClassCastException ignored) {
-            return LazyOptional.empty();
-        }
-    }
-
-    public static CapabilityDispatcher getCapabilities(ItemStack stack) {
-        if (stack == null) return null;
-        try {
-            ICapabilityInternal provider = (ICapabilityInternal) (Object) stack;
-
-            return provider.getCapabilities();
-
-        } catch (ClassCastException ignored) {
-            return null;
-        }
     }
 
     public static void copyWSList(List<WeightedStackBase> dest, List<WeightedStackBase> src) {

@@ -16,7 +16,7 @@ import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.event.guide.BookEvent;
 import ruiseki.okcore.guide.IGuideItem;
 import ruiseki.okcore.guide.impl.Book;
-import ruiseki.okcore.helper.EntityHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.init.IInitListener;
 
 public class CapabilityGuide implements IInitListener {
@@ -36,7 +36,7 @@ public class CapabilityGuide implements IInitListener {
     @SubscribeEvent
     public void onPlayerDiscoverBook(BookEvent.Open event) {
         EntityPlayer player = event.player;
-        EntityHelpers.getCapability(player, GUIDE_CAPABILITY)
+        CapabilityHelpers.getCapability(player, GUIDE_CAPABILITY)
             .ifPresent(
                 handler -> handler.discoverBook(
                     event.book.getRegistryName()
@@ -46,7 +46,7 @@ public class CapabilityGuide implements IInitListener {
     @SubscribeEvent
     public void onPlayerPickupBook(InventoryChangedEvent.ItemAdded event) {
         EntityPlayer player = event.entityPlayer;
-        EntityHelpers.getCapability(player, GUIDE_CAPABILITY)
+        CapabilityHelpers.getCapability(player, GUIDE_CAPABILITY)
             .ifPresent(handler -> {
                 if (!(event.item.getItem() instanceof IGuideItem guideItem)) return;
                 Book book = guideItem.getBook();

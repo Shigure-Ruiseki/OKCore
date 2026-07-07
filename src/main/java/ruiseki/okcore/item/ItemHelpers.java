@@ -9,10 +9,11 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.intellij.lang.annotations.MagicConstant;
 
+import com.gtnewhorizon.gtnhlib.hash.Fnv1a32;
+
 import it.unimi.dsi.fastutil.Hash;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.IImmutableItemMeta;
-import ruiseki.okcore.hash.Fnv1a32;
 import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.capability.IItemSink;

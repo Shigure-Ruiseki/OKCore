@@ -7,7 +7,7 @@ import net.minecraft.inventory.Slot;
 import baubles.api.BaublesApi;
 import baubles.api.expanded.BaubleExpandedSlots;
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.lib.LibMods;
+import ruiseki.okcore.enums.Mods;
 
 public class BaublesHelpers {
 
@@ -15,27 +15,27 @@ public class BaublesHelpers {
     private static boolean hasCheckedClass = false;
 
     public static boolean checkAndRegisterType(String slotType) {
-        if (slotType == null || slotType.isEmpty() || !LibMods.BaublesExpanded.isModLoaded()) return false;
+        if (slotType == null || slotType.isEmpty() || !Mods.BaublesExpanded.isModLoaded()) return false;
         return BaubleExpandedSlots.isTypeRegistered(slotType) || BaubleExpandedSlots.tryRegisterType(slotType);
     }
 
     public static void assignSlot(String slotType) {
-        if (!LibMods.BaublesExpanded.isModLoaded()) return;
+        if (!Mods.BaublesExpanded.isModLoaded()) return;
         BaubleExpandedSlots.tryAssignSlotOfType(slotType);
     }
 
     public static void assignSlotsUpToMinimum(String slotType, int size) {
-        if (!LibMods.BaublesExpanded.isModLoaded()) return;
+        if (!Mods.BaublesExpanded.isModLoaded()) return;
         BaubleExpandedSlots.tryAssignSlotsUpToMinimum(slotType, size);
     }
 
     public static void unassignSlotsDownToMaximum(String slotType, int size) {
-        if (!LibMods.BaublesExpanded.isModLoaded()) return;
+        if (!Mods.BaublesExpanded.isModLoaded()) return;
         BaubleExpandedSlots.tryUnassignSlotsDownToMaximum(slotType, size);
     }
 
     public static IInventory getBaubles(EntityPlayer player) {
-        if (player == null || !LibMods.Baubles.isModLoaded()) return null;
+        if (player == null || !Mods.Baubles.isModLoaded()) return null;
         return BaublesApi.getBaubles(player);
     }
 
@@ -44,13 +44,13 @@ public class BaublesHelpers {
     }
 
     public static boolean isBaubles(IInventory inventory) {
-        if (inventory == null || !LibMods.Baubles.isModLoaded()) return false;
+        if (inventory == null || !Mods.Baubles.isModLoaded()) return false;
 
         if (!hasCheckedClass) {
             try {
                 cachedBaublesClass = Class.forName("baubles.common.container.InventoryBaubles");
             } catch (ClassNotFoundException ignored) {
-                OKCore.okLog(LibMods.Baubles.modid + "not loaded");
+                OKCore.okLog(Mods.Baubles.modid + "not loaded");
             }
             hasCheckedClass = true;
         }

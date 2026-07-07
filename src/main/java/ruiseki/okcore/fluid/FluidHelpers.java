@@ -1,5 +1,7 @@
 package ruiseki.okcore.fluid;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
@@ -18,13 +20,16 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fluids.IFluidHandler;
+import net.minecraftforge.fluids.IFluidTank;
 
+import org.apache.logging.log4j.Level;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
@@ -765,5 +770,145 @@ public class FluidHelpers {
         ItemStack emptyBucket = new ItemStack(Items.bucket);
         FluidStack bucketVolumeStack = new FluidStack(fluidStack, FluidContainerRegistry.BUCKET_VOLUME);
         return FluidContainerRegistry.fillFluidContainer(bucketVolumeStack, emptyBucket);
+    }
+
+    /**
+     * Picks up fluid fills a container with it.
+     */
+    public static FluidActionResult fillContainer(World world, BlockPos pos, ItemStack stackIn, ForgeDirection facing) {
+        return tryPickUpFluid(stackIn, null, world, pos, facing);
+    }
+
+    /**
+     * Drains a filled container and places the fluid.
+     *
+     * RETURN new item stack that has been drained after placing in world if it works null otherwise
+     */
+    public static ItemStack dumpContainer(World world, BlockPos pos, ItemStack stackIn, ForgeDirection facing) {
+        ItemStack dispensedStack = stackIn.copy();
+        return FluidHelpers.getFluidHandler(dispensedStack)
+            .map(handler -> {
+                FluidStack fluidStack = handler.drain(BUCKET_VOLUME, false);
+                if (fluidStack != null// && fluidStack.amount >= Fluid.BUCKET_VOLUME
+                ) {
+                    FluidActionResult placementResult = tryPlaceFluid(
+                        null,
+                        world,
+                        pos,
+                        dispensedStack,
+                        fluidStack.copy(),
+                        facing);
+                    if (placementResult.isSuccess()) {
+                        return placementResult.result;
+                    }
+                }
+                return stackIn;
+            })
+            .orElse(stackIn);
+    }
+
+    public static ItemStack drainOneBucket(ItemStack d) {
+        return getFluidHandler(d).map(handler -> {
+            handler.drain(BUCKET_VOLUME, true);
+            return handler.getContainer();
+        })
+            .orElse(d);
+    }
+
+    public static boolean isEmptyOfFluid(ItemStack returnMe) {
+        FluidStack fs = getFluidContained(returnMe);
+        return fs == null || fs.amount == 0;
+    }
+
+    public static Fluid getFluidType(ItemStack returnMe) {
+        FluidStack f = getFluidContained(returnMe);
+        return (f == null) ? null : f.getFluid();
+    }
+
+    public static boolean tryFillTankFromPosition(World world, BlockPos posSide, ForgeDirection sideOpp,
+        IFluidTank tankTo, final int amount) {
+        return tryFillTankFromPosition(world, posSide, sideOpp, tankTo, amount, false, null);
+    }
+
+    public static boolean isStackInvalid(FluidStack stackToTest, boolean isWhitelist, List<FluidStack> filterList) {
+        if (filterList == null) {
+            return true;
+        }
+        boolean hasMatch = false;
+        for (FluidStack filt : filterList) {
+            if (stackToTest.getFluid() == filt.getFluid()) {
+                hasMatch = true;
+                break;
+            }
+        }
+        if (hasMatch) {
+            // fluid matches something in my list . so whitelist means ok
+            return isWhitelist;
+        }
+        // here is the opposite: i did NOT match the list
+        return !isWhitelist;
+    }
+
+    /**
+     * Look for a fluid handler with gien position and direction try to extract from that pos and fill the tank
+     *
+     */
+    public static boolean tryFillTankFromPosition(World world, BlockPos posSide, ForgeDirection sideOpp,
+        IFluidTank tankTo, final int amount, boolean isWhitelist, List<FluidStack> allowedToMove) {
+        try {
+            return getFluidHandler(world, posSide, sideOpp).map(handler -> {
+                // its not my facing dir
+                // SO: pull fluid from that into myself
+                FluidStack wasDrained = handler.drain(sideOpp, amount, false);
+                if (wasDrained == null) {
+                    return false;
+                }
+                if (!isStackInvalid(wasDrained, isWhitelist, allowedToMove)) {
+                    return false;
+                }
+                int filled = tankTo.fill(wasDrained, false);
+                if (wasDrained.amount > 0 && filled > 0) {
+                    int realAmt = Math.min(filled, wasDrained.amount);
+                    wasDrained = handler.drain(sideOpp, realAmt, true);
+                    if (wasDrained == null) {
+                        return false;
+                    }
+                    return tankTo.fill(wasDrained, true) > 0;
+                }
+                return false;
+            })
+                .orElse(false);
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "External fluid block had an issue when we tried to drain", e);
+            return false;
+        }
+    }
+
+    public static boolean tryFillPositionFromTank(World world, BlockPos posSide, ForgeDirection sideOpp,
+        IFluidTank tankFrom, int amount) {
+        try {
+            return getFluidHandler(world, posSide, sideOpp).map(handler -> {
+                // its not my facing dir
+                // SO: pull fluid from that into myself
+                FluidStack wasDrained = tankFrom.drain(amount, false);
+                if (wasDrained == null) {
+                    return false;
+                }
+                int filled = handler.fill(sideOpp, wasDrained, false);
+                if (wasDrained != null && wasDrained.amount > 0 && filled > 0) {
+                    int realAmt = Math.min(filled, wasDrained.amount);
+                    wasDrained = tankFrom.drain(realAmt, true);
+                    if (wasDrained == null) {
+                        return false;
+                    }
+                    return handler.fill(sideOpp, wasDrained, true) > 0;
+                }
+                return false;
+            })
+                .orElse(false);
+        } catch (Exception e) {
+            OKCore.okLog(Level.ERROR, "A fluid tank had an issue when we tried to fill", e);
+            return false;
+        }
     }
 }

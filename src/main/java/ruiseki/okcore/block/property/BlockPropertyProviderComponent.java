@@ -26,7 +26,10 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
 
             for (Field field : current.getDeclaredFields()) {
 
-                if (!field.isAnnotationPresent(BlockProperty.class)) continue;
+                if (!field.isAnnotationPresent(BlockProperty.class)
+                    && !field.isAnnotationPresent(BlockPropertyReg.class)) {
+                    continue;
+                }
 
                 field.setAccessible(true);
                 fields.add(field);

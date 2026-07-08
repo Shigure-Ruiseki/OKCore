@@ -56,22 +56,20 @@ public interface DirectionProperty extends IProperty<ForgeDirection> {
     static AbstractDirectionProperty facing(ForgeDirection defaultValue) {
         return facing(defaultValue, (world, x, y, z) -> {
             if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
-                direction.getDirection(world, x, y, z);
+                return direction.getDirection(world, x, y, z);
             }
             IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
             if (direction != null) {
-                direction.getDirection(world, x, y, z);
+                return direction.getDirection(world, x, y, z);
             }
             return null;
-        }, (w, x, y, z, v) -> {
-            if (w instanceof World world) {
-                if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
-                    direction.setDirection(world, x, y, z, v);
-                }
-                IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-                if (direction != null) {
-                    direction.setDirection(world, x, y, z, v);
-                }
+        }, (world, x, y, z, v) -> {
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
+                direction.setDirection(world, x, y, z, v);
+            }
+            IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
+            if (direction != null) {
+                direction.setDirection(world, x, y, z, v);
             }
         });
     }

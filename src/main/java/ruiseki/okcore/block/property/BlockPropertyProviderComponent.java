@@ -26,8 +26,7 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
 
             for (Field field : current.getDeclaredFields()) {
 
-                if (!field.isAnnotationPresent(BlockProperty.class)
-                    && !field.isAnnotationPresent(BlockPropertyReg.class)) {
+                if (!field.isAnnotationPresent(BlockProperty.class)) {
                     continue;
                 }
 

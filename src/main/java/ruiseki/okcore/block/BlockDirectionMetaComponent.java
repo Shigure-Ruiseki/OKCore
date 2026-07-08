@@ -29,7 +29,7 @@ public class BlockDirectionMetaComponent implements IBlockDirection {
     }
 
     @Override
-    public void setDirection(IBlockAccess world, int x, int y, int z, ForgeDirection direction) {
+    public void setDirection(World world, int x, int y, int z, ForgeDirection direction) {
         if (direction == ForgeDirection.UNKNOWN) return;
 
         int currentMeta = world.getBlockMetadata(x, y, z);
@@ -45,9 +45,6 @@ public class BlockDirectionMetaComponent implements IBlockDirection {
         }
 
         int finalMeta = (currentMeta & ~mask) | newDirMeta;
-
-        if (world instanceof World world1) {
-            world1.setBlockMetadataWithNotify(x, y, z, finalMeta, 3);
-        }
+        world.setBlockMetadataWithNotify(x, y, z, finalMeta, 3);
     }
 }

@@ -64,32 +64,46 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
     }
 
     static AbstractDirectionProperty facing(ForgeDirection defaultValue) {
+        return facing(defaultValue, (world, x, y, z) -> {
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
+                direction.getDirection(world, x, y, z);
+            }
+            IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
+            if (direction != null) {
+                direction.getDirection(world, x, y, z);
+            }
+            return null;
+        }, (w, x, y, z, v) -> {
+            if (w instanceof World world) {
+                if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
+                    direction.setDirection(world, x, y, z, v);
+                }
+                IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
+                if (direction != null) {
+                    direction.setDirection(world, x, y, z, v);
+                }
+            }
+        });
+    }
+
+    static AbstractDirectionProperty facing(ForgeDirection defaultValue, PropertyGetter<ForgeDirection> getter,
+        PropertySetter<ForgeDirection> setter) {
         return new AbstractDirectionProperty("facing", defaultValue) {
 
             @Override
-            public ForgeDirection getValue(ItemStack stack) {
+            public ForgeDirection getValue(ItemStack s) {
                 return getDefaultValue();
             }
 
             @Override
-            public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
-                if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
-                    return direction.getDirection(world, x, y, z);
-                }
-
-                IBlockDirection orientable = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-                return orientable != null ? orientable.getDirection(world, x, y, z) : getDefaultValue();
+            public ForgeDirection getValue(IBlockAccess w, int x, int y, int z) {
+                ForgeDirection r = getter.get(w, x, y, z);
+                return r != null ? r : getDefaultValue();
             }
 
             @Override
-            public void setValue(World world, int x, int y, int z, ForgeDirection value) {
-                if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
-                    direction.setDirection(world, x, y, z, value);
-                    return;
-                }
-
-                IBlockDirection orientable = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-                if (orientable != null) orientable.setDirection(world, x, y, z, value);
+            public void setValue(World w, int x, int y, int z, ForgeDirection v) {
+                setter.accept(w, x, y, z, v);
             }
         };
     }

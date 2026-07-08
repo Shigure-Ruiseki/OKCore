@@ -11,26 +11,16 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 
 import ruiseki.okcore.block.IBlockDirection;
 import ruiseki.okcore.helper.TileHelpers;
 
-public interface DirectionProperty extends BlockProperty<ForgeDirection> {
+public interface DirectionProperty extends IProperty<ForgeDirection> {
 
     @Override
     default Type getType() {
         return ForgeDirection.class;
-    }
-
-    @Override
-    default boolean hasTrait(BlockPropertyTrait trait) {
-        return switch (trait) {
-            case SupportsWorld, WorldMutable, SupportsStacks, StackMutable -> true;
-            default -> false;
-        };
     }
 
     @Override
@@ -88,7 +78,12 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
 
     static AbstractDirectionProperty facing(ForgeDirection defaultValue, PropertyGetter<ForgeDirection> getter,
         PropertySetter<ForgeDirection> setter) {
-        return new AbstractDirectionProperty("facing", defaultValue) {
+        return construct("facing", defaultValue, getter, setter);
+    }
+
+    static AbstractDirectionProperty construct(String name, ForgeDirection defaultValue,
+        PropertyGetter<ForgeDirection> getter, PropertySetter<ForgeDirection> setter) {
+        return new AbstractDirectionProperty(name, defaultValue) {
 
             @Override
             public ForgeDirection getValue(ItemStack s) {
@@ -127,6 +122,7 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
             return this;
         }
 
+        @Override
         public ForgeDirection getDefaultValue() {
             return this.defaultValue;
         }

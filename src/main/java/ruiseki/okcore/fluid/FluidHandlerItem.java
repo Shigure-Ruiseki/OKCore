@@ -112,7 +112,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
 
     @Override
     public FluidStack drain(FluidStack resource, boolean doDrain) {
-        if (container.stackSize != 1 || resource == null
+        if (container == null || container.stackSize != 1 || resource == null
             || resource.amount <= 0
             || !resource.isFluidEqual(getFluid())) {
             return null;

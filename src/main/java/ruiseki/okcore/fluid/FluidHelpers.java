@@ -74,7 +74,7 @@ public class FluidHelpers {
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
             IFluidSource source = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SOURCE_CAPABILITY, side)
-                .resolveOrNull();
+                .getOrNull();
             if (source != null) {
                 return source;
             }
@@ -106,7 +106,7 @@ public class FluidHelpers {
 
         if (obj instanceof ICapabilityProvider capabilityProvider) {
             IFluidSink sink = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SINK_CAPABILITY, side)
-                .resolveOrNull();
+                .getOrNull();
             if (sink != null) {
                 return sink;
             }
@@ -514,15 +514,19 @@ public class FluidHelpers {
         return CapabilityHelpers.getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY);
     }
 
-    /**
-     * Helper method to get the fluid contained in an itemStack
-     */
     @Nullable
     public static FluidStack getFluidContained(@NotNull ItemStack container) {
         container = ItemHandlerHelpers.copyStackWithSize(container, 1);
         if (container == null) return null;
-        return getFluidHandler(container).map(handler -> handler.drain(Integer.MAX_VALUE, false))
-            .orElse(null);
+        LazyOptional<IFluidHandlerItem> cap = getFluidHandler(container);
+        if (cap.isPresent()) {
+            IFluidHandlerItem handler = cap.getOrNull();
+            if (handler != null) {
+                return handler.drain(Integer.MAX_VALUE, false);
+            }
+        }
+
+        return null;
     }
 
     public static LazyOptional<IFluidHandler> getFluidHandler(TileEntity tile, ForgeDirection side) {

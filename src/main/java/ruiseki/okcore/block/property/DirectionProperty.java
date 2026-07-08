@@ -60,11 +60,15 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
     }
 
     static AbstractDirectionProperty facing() {
-        return new AbstractDirectionProperty("facing") {
+        return facing(ForgeDirection.SOUTH);
+    }
+
+    static AbstractDirectionProperty facing(ForgeDirection defaultValue) {
+        return new AbstractDirectionProperty("facing", defaultValue) {
 
             @Override
             public ForgeDirection getValue(ItemStack stack) {
-                return ForgeDirection.NORTH;
+                return getDefaultValue();
             }
 
             @Override
@@ -74,7 +78,7 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
                 }
 
                 IBlockDirection orientable = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-                return orientable != null ? orientable.getDirection(world, x, y, z) : ForgeDirection.NORTH;
+                return orientable != null ? orientable.getDirection(world, x, y, z) : getDefaultValue();
             }
 
             @Override
@@ -93,14 +97,24 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
     abstract class AbstractDirectionProperty implements DirectionProperty {
 
         private String name;
+        private ForgeDirection defaultValue;
+
+        public AbstractDirectionProperty(String name, ForgeDirection defaultValue) {
+            this.name = name;
+            this.defaultValue = defaultValue;
+        }
 
         public AbstractDirectionProperty(String name) {
-            this.name = name;
+            this(name, ForgeDirection.SOUTH);
         }
 
         public AbstractDirectionProperty setName(String name) {
             this.name = name;
             return this;
+        }
+
+        public ForgeDirection getDefaultValue() {
+            return this.defaultValue;
         }
 
         @Override

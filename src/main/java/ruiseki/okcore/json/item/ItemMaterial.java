@@ -26,7 +26,7 @@ public class ItemMaterial extends IngredientMaterial {
 
     private Item item;
     private String name;
-    private String ore;
+    private String tag;
     private int amount = 1;
     private int meta = 0;
     private NBTTagCompound nbt;
@@ -36,13 +36,15 @@ public class ItemMaterial extends IngredientMaterial {
         this.name = getString(json, "item", null);
         this.item = null;
 
-        String oreName = getString(json, "ore", null);
-        this.ore = (oreName != null && !oreName.isEmpty()) ? oreName : null;
+        String tagName = getString(json, "tag", null);
+        if (tagName == null || tagName.isEmpty()) tagName = getString(json, "ore", null);
+        this.tag = (tagName != null && !tagName.isEmpty()) ? tagName : null;
 
         this.amount = getInt(json, "amount", 1);
         this.meta = getInt(json, "meta", 0);
         this.nbt = json.has("nbt") ? GsonHelpers.jsonToNBT(json.getAsJsonObject("nbt")) : null;
-        captureUnknownProperties(json, "item", "ore", "amount", "meta", "nbt");
+
+        captureUnknownProperties(json, "item", "tag", "ore", "amount", "meta", "nbt");
     }
 
     @Override
@@ -51,12 +53,12 @@ public class ItemMaterial extends IngredientMaterial {
         if (currentItem != null) {
             json.addProperty(
                 "item",
-                GameData.getBlockRegistry()
+                GameData.getItemRegistry()
                     .getNameForObject(currentItem));
         } else if (this.name != null) {
             json.addProperty("item", this.name);
         }
-        if (this.ore != null) json.addProperty("ore", this.ore);
+        if (this.tag != null) json.addProperty("tag", this.tag);
         json.addProperty("amount", this.amount);
         json.addProperty("meta", this.meta);
         if (this.nbt != null && !this.nbt.hasNoTags()) {
@@ -67,8 +69,8 @@ public class ItemMaterial extends IngredientMaterial {
 
     @Override
     public boolean validate() {
-        if (this.name == null && ore == null) {
-            logValidationError("ItemMaterial item or ore cannot be empty!");
+        if (this.name == null && this.tag == null) {
+            logValidationError("ItemMaterial item or tag cannot be empty!");
             return false;
         }
         return true;
@@ -94,15 +96,20 @@ public class ItemMaterial extends IngredientMaterial {
         return nbt;
     }
 
+    public String getTag() {
+        return tag;
+    }
+
+    @Deprecated
     public String getOre() {
-        return ore;
+        return getTag();
     }
 
     public void fromStack(ItemStack stack) {
         if (stack == null || stack.getItem() == null) {
             this.item = null;
             this.name = null;
-            this.ore = null;
+            this.tag = null;
             this.amount = 0;
             this.meta = 0;
             this.nbt = null;
@@ -116,18 +123,19 @@ public class ItemMaterial extends IngredientMaterial {
         this.meta = stack.getItemDamage();
         this.nbt = stack.hasTagCompound() ? (NBTTagCompound) stack.getTagCompound()
             .copy() : null;
-        this.ore = null;
+        this.tag = null;
         this.unknownProperties.clear();
     }
 
     public ItemStack toStack() {
         int count = this.amount > 0 ? this.amount : 1;
-        if (this.ore != null && !this.ore.isEmpty()) {
-            if (this.ore.startsWith("#")) {
-                String tagIdentifier = this.ore.substring(1);
+
+        if (this.tag != null && !this.tag.isEmpty()) {
+            if (this.tag.startsWith("#") || this.tag.contains(":")) {
+                String tagIdentifier = this.tag.startsWith("#") ? this.tag.substring(1) : this.tag;
                 return resolveFromTag(tagIdentifier, count, this.nbt);
             } else {
-                return resolveFromOre(this.ore, count, this.nbt);
+                return resolveFromOre(this.tag, count, this.nbt);
             }
         }
 
@@ -202,7 +210,6 @@ public class ItemMaterial extends IngredientMaterial {
         }
 
         ItemMaterial material = new ItemMaterial();
-
         material.item = stack.getItem();
         material.name = GameData.getItemRegistry()
             .getNameForObject(stack.getItem());
@@ -215,7 +222,7 @@ public class ItemMaterial extends IngredientMaterial {
             material.nbt = null;
         }
 
-        material.ore = null;
+        material.tag = null;
         return material;
     }
 
@@ -229,14 +236,13 @@ public class ItemMaterial extends IngredientMaterial {
         if (amount != that.amount) return false;
         if (meta != that.meta) return false;
         if (!Objects.equals(item, that.item)) return false;
-        if (!Objects.equals(ore, that.ore)) return false;
-        return Objects.equals(nbt, that.nbt);
+        return Objects.equals(tag, that.tag) && Objects.equals(nbt, that.nbt);
     }
 
     @Override
     public int hashCode() {
         int result = getItem() != null ? getItem().hashCode() : 0;
-        result = 31 * result + (ore != null ? ore.hashCode() : 0);
+        result = 31 * result + (tag != null ? tag.hashCode() : 0);
         result = 31 * result + amount;
         result = 31 * result + meta;
         result = 31 * result + (nbt != null ? nbt.hashCode() : 0);
@@ -245,8 +251,12 @@ public class ItemMaterial extends IngredientMaterial {
 
     @Override
     public String toString() {
-        if (ore != null && !ore.isEmpty()) {
-            return "ItemMaterial[Ore=" + ore + " x" + amount + "]";
+        if (tag != null && !tag.isEmpty()) {
+            if (tag.startsWith("#") || tag.contains(":")) {
+                String cleanTag = tag.startsWith("#") ? tag.substring(1) : tag;
+                return "ItemMaterial[Tag=" + cleanTag + " x" + amount + "]";
+            }
+            return "ItemMaterial[Ore=" + tag + " x" + amount + "]";
         }
         return "ItemMaterial[Item=" + item + ":" + meta + " x" + amount + (nbt != null ? " (Has NBT)" : "") + "]";
     }
@@ -257,15 +267,15 @@ public class ItemMaterial extends IngredientMaterial {
             return false;
         }
 
-        if (this.ore != null && !this.ore.isEmpty()) {
-            if (this.ore.startsWith("#")) {
-                String tagIdentifier = this.ore.substring(1);
+        if (this.tag != null && !this.tag.isEmpty()) {
+            if (this.tag.startsWith("#") || this.tag.contains(":")) {
+                String tagIdentifier = this.tag.startsWith("#") ? this.tag.substring(1) : this.tag;
                 ResourceLocation loc = new ResourceLocation(tagIdentifier);
                 TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
                 return TagHelpers.hasTag(stack, tagKey);
             }
 
-            List<ItemStack> ores = OreDictionary.getOres(this.ore);
+            List<ItemStack> ores = OreDictionary.getOres(this.tag);
             if (ores != null) {
                 for (ItemStack oreStack : ores) {
                     if (OreDictionary.itemMatches(oreStack, stack, false)) {
@@ -290,11 +300,15 @@ public class ItemMaterial extends IngredientMaterial {
 
     @Override
     public void toNetwork(ExtendedBuffer buffer) throws IOException {
-        boolean isOre = (this.ore != null && !this.ore.isEmpty());
-        buffer.writeBoolean(isOre);
+        int mode = 0;
+        if (this.tag != null && !this.tag.isEmpty()) {
+            mode = (this.tag.startsWith("#") || this.tag.contains(":")) ? 2 : 1;
+        }
 
-        if (isOre) {
-            buffer.writeString(this.ore);
+        buffer.writeInt(mode);
+
+        if (mode == 2 || mode == 1) {
+            buffer.writeString(this.tag);
         } else {
             String registryName = this.name;
             if (registryName == null && getItem() != null) {
@@ -319,15 +333,15 @@ public class ItemMaterial extends IngredientMaterial {
         this.item = null;
         this.unknownProperties.clear();
 
-        boolean isOre = buffer.readBoolean();
-        if (isOre) {
-            this.ore = buffer.readString();
+        int mode = buffer.readInt();
+        if (mode == 2 || mode == 1) {
+            this.tag = buffer.readString();
             this.name = null;
         } else {
             this.name = buffer.readString();
             if (this.name.isEmpty()) this.name = null;
             this.meta = buffer.readInt();
-            this.ore = null;
+            this.tag = null;
         }
 
         this.amount = buffer.readInt();

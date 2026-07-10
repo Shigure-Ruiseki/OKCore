@@ -1,4 +1,4 @@
-package ruiseki.okcore.lib;
+package ruiseki.okcore.enums;
 
 import java.util.Locale;
 
@@ -6,7 +6,7 @@ import com.gtnewhorizon.gtnhlib.util.data.IMod;
 
 import cpw.mods.fml.common.Loader;
 
-public enum LibMods implements IMod {
+public enum Mods implements IMod {
 
     ActuallyAdditions("ActuallyAdditions"),
     AppliedEnergistics2("appliedenergistics2"),
@@ -41,7 +41,7 @@ public enum LibMods implements IMod {
     public final String resourceDomain;
     private Boolean loaded;
 
-    LibMods(String modid) {
+    Mods(String modid) {
         this.modid = modid;
         this.resourceDomain = modid != null ? modid.toLowerCase(Locale.ENGLISH) : null;
     }

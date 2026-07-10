@@ -60,6 +60,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     }
 
     protected void setFluid(FluidStack fluid) {
+        if (container == null) return;
         if (!container.hasTagCompound()) {
             container.setTagCompound(new NBTTagCompound());
         }
@@ -76,12 +77,9 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     }
 
     @Override
-    public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
-        return fill(resource, doFill);
-    }
-
     public int fill(FluidStack resource, boolean doFill) {
-        if (container.stackSize != 1 || resource == null
+        if (container == null || container.stackSize != 1
+            || resource == null
             || resource.amount <= 0
             || !canFill(null, resource.getFluid())) {
             return 0;
@@ -115,18 +113,9 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     }
 
     @Override
-    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
-        if (resource == null) return null;
-        return drain(resource.amount, doDrain);
-    }
-
-    @Override
-    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
-        return drain(maxDrain, doDrain);
-    }
-
     public FluidStack drain(FluidStack resource, boolean doDrain) {
-        if (container.stackSize != 1 || resource == null
+        if (container == null || container.stackSize != 1
+            || resource == null
             || resource.amount <= 0
             || !resource.isFluidEqual(getFluid())) {
             return null;
@@ -134,8 +123,9 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
         return drain(resource.amount, doDrain);
     }
 
+    @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
-        if (container == null || maxDrain <= 0) return null;
+        if (container == null || container == null || maxDrain <= 0) return null;
 
         if (container.stackSize != 1) return null;
 

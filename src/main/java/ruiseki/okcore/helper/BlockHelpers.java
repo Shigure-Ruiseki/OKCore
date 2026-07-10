@@ -7,7 +7,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -74,36 +73,4 @@ public class BlockHelpers {
         return creativeTab == null || creativeTab == CreativeTabs.tabAllSearch
             || block.getCreativeTabToDisplayOn() == creativeTab;
     }
-
-    public static float getFacingAngle(ForgeDirection dir) {
-        return switch (dir) {
-            case SOUTH -> 0F;
-            case EAST -> (float) (Math.PI / 2F);
-            case NORTH -> (float) Math.PI;
-            case WEST -> (float) (3F * Math.PI / 2F);
-            default -> 0F;
-        };
-    }
-
-    public static float getFacingAngle(int side) {
-        return getFacingAngle(ForgeDirection.getOrientation(side));
-    }
-
-    public static ForgeDirection crossProduct(final ForgeDirection forward, final ForgeDirection up) {
-        final int west_x = forward.offsetY * up.offsetZ - forward.offsetZ * up.offsetY;
-        final int west_y = forward.offsetZ * up.offsetX - forward.offsetX * up.offsetZ;
-        final int west_z = forward.offsetX * up.offsetY - forward.offsetY * up.offsetX;
-
-        return switch (west_x + west_y * 2 + west_z * 3) {
-            case 1 -> ForgeDirection.EAST;
-            case -1 -> ForgeDirection.WEST;
-            case 2 -> ForgeDirection.UP;
-            case -2 -> ForgeDirection.DOWN;
-            case 3 -> ForgeDirection.SOUTH;
-            case -3 -> ForgeDirection.NORTH;
-            default -> ForgeDirection.UNKNOWN;
-        };
-
-    }
-
 }

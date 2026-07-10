@@ -9,8 +9,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.TagHelpers;
-import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.tag.TagKey;
 
@@ -30,7 +30,7 @@ public class ItemEnergyTest extends ItemOK {
         if (te != null) {
             ForgeDirection direction = ForgeDirection.getOrientation(side);
 
-            return TileHelpers.getCapability(te, CapabilityEnergy.ENERGY, direction)
+            return CapabilityHelpers.getCapability(te, CapabilityEnergy.ENERGY, direction)
                 .map(handler -> {
                     int extracted = handler.extractEnergy(1000, false);
                     return extracted > 0;

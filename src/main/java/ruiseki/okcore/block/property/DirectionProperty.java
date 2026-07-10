@@ -11,26 +11,16 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 
 import ruiseki.okcore.block.IBlockDirection;
 import ruiseki.okcore.helper.TileHelpers;
 
-public interface DirectionProperty extends BlockProperty<ForgeDirection> {
+public interface DirectionProperty extends IProperty<ForgeDirection> {
 
     @Override
     default Type getType() {
         return ForgeDirection.class;
-    }
-
-    @Override
-    default boolean hasTrait(BlockPropertyTrait trait) {
-        return switch (trait) {
-            case SupportsWorld, WorldMutable, SupportsStacks, StackMutable -> true;
-            default -> false;
-        };
     }
 
     @Override
@@ -60,32 +50,53 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
     }
 
     static AbstractDirectionProperty facing() {
-        return new AbstractDirectionProperty("facing") {
+        return facing(ForgeDirection.SOUTH);
+    }
+
+    static AbstractDirectionProperty facing(ForgeDirection defaultValue) {
+        return facing(defaultValue, (world, x, y, z) -> {
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
+                return direction.getDirection(world, x, y, z);
+            }
+            IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
+            if (direction != null) {
+                return direction.getDirection(world, x, y, z);
+            }
+            return null;
+        }, (world, x, y, z, v) -> {
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
+                direction.setDirection(world, x, y, z, v);
+            }
+            IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
+            if (direction != null) {
+                direction.setDirection(world, x, y, z, v);
+            }
+        });
+    }
+
+    static AbstractDirectionProperty facing(ForgeDirection defaultValue, PropertyGetter<ForgeDirection> getter,
+        PropertySetter<ForgeDirection> setter) {
+        return construct("facing", defaultValue, getter, setter);
+    }
+
+    static AbstractDirectionProperty construct(String name, ForgeDirection defaultValue,
+        PropertyGetter<ForgeDirection> getter, PropertySetter<ForgeDirection> setter) {
+        return new AbstractDirectionProperty(name, defaultValue) {
 
             @Override
-            public ForgeDirection getValue(ItemStack stack) {
-                return ForgeDirection.NORTH;
+            public ForgeDirection getValue(ItemStack s) {
+                return getDefaultValue();
             }
 
             @Override
-            public ForgeDirection getValue(IBlockAccess world, int x, int y, int z) {
-                if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
-                    return direction.getDirection(world, x, y, z);
-                }
-
-                IBlockDirection orientable = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-                return orientable != null ? orientable.getDirection(world, x, y, z) : ForgeDirection.NORTH;
+            public ForgeDirection getValue(IBlockAccess w, int x, int y, int z) {
+                ForgeDirection r = getter.get(w, x, y, z);
+                return r != null ? r : getDefaultValue();
             }
 
             @Override
-            public void setValue(World world, int x, int y, int z, ForgeDirection value) {
-                if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
-                    direction.setDirection(world, x, y, z, value);
-                    return;
-                }
-
-                IBlockDirection orientable = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-                if (orientable != null) orientable.setDirection(world, x, y, z, value);
+            public void setValue(World w, int x, int y, int z, ForgeDirection v) {
+                setter.accept(w, x, y, z, v);
             }
         };
     }
@@ -93,14 +104,25 @@ public interface DirectionProperty extends BlockProperty<ForgeDirection> {
     abstract class AbstractDirectionProperty implements DirectionProperty {
 
         private String name;
+        private ForgeDirection defaultValue;
+
+        public AbstractDirectionProperty(String name, ForgeDirection defaultValue) {
+            this.name = name;
+            this.defaultValue = defaultValue;
+        }
 
         public AbstractDirectionProperty(String name) {
-            this.name = name;
+            this(name, ForgeDirection.SOUTH);
         }
 
         public AbstractDirectionProperty setName(String name) {
             this.name = name;
             return this;
+        }
+
+        @Override
+        public ForgeDirection getDefaultValue() {
+            return this.defaultValue;
         }
 
         @Override

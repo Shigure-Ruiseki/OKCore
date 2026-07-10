@@ -7,7 +7,6 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
 public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
@@ -27,7 +26,9 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
 
             for (Field field : current.getDeclaredFields()) {
 
-                if (!field.isAnnotationPresent(BlockPropertyReg.class)) continue;
+                if (!field.isAnnotationPresent(BlockProperty.class)) {
+                    continue;
+                }
 
                 field.setAccessible(true);
                 fields.add(field);
@@ -45,11 +46,11 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
                 Object value = field.get(isStatic ? null : block);
                 if (value == null) continue;
 
-                if (value instanceof BlockProperty<?>property) {
+                if (value instanceof IProperty<?>property) {
                     register(property);
 
-                } else if (value instanceof BlockProperty<?>[]array) {
-                    for (BlockProperty<?> property : array) {
+                } else if (value instanceof IProperty<?>[]array) {
+                    for (IProperty<?> property : array) {
                         if (property != null) {
                             register(property);
                         }
@@ -62,7 +63,7 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
         }
     }
 
-    private void register(BlockProperty<?> property) {
+    private void register(IProperty<?> property) {
         BlockPropertyRegistry.registerBlockItemProperty(block, property);
     }
 }

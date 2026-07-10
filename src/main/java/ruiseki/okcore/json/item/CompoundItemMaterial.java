@@ -105,12 +105,12 @@ public class CompoundItemMaterial extends IngredientMaterial {
         for (ItemMaterial mat : this.materials) {
             if (mat == null) continue;
 
-            String oreStr = mat.getOre();
-            if (oreStr != null && !oreStr.isEmpty()) {
+            String tagStr = mat.getTag();
+            if (tagStr != null && !tagStr.isEmpty()) {
 
-                if (oreStr.startsWith("#")) {
+                if (tagStr.startsWith("#") || tagStr.contains(":")) {
                     try {
-                        String tagIdentifier = oreStr.substring(1);
+                        String tagIdentifier = tagStr.startsWith("#") ? tagStr.substring(1) : tagStr;
                         ResourceLocation loc = new ResourceLocation(tagIdentifier);
                         TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
 
@@ -132,7 +132,7 @@ public class CompoundItemMaterial extends IngredientMaterial {
                         }
                     } catch (Throwable ignored) {}
                 } else {
-                    List<ItemStack> ores = OreDictionary.getOres(oreStr);
+                    List<ItemStack> ores = OreDictionary.getOres(tagStr);
                     if (ores != null) {
                         for (ItemStack oreStack : ores) {
                             if (oreStack != null) {

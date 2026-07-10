@@ -14,18 +14,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.helper.ChunkHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 @Mixin(AnvilChunkLoader.class)
 public abstract class MixinAnvilChunkLoader {
 
     @Inject(method = "writeChunkToNBT", at = @At("RETURN"))
     private void okcore$writeChunkCaps(Chunk chunk, World world, NBTTagCompound compound, CallbackInfo ci) {
-        if (ChunkHelpers.getCapabilities(chunk) != null) {
+        if (CapabilityHelpers.getCapabilities(chunk) != null) {
             try {
                 compound.setTag(
                     "OKCaps",
-                    ChunkHelpers.getCapabilities(chunk)
+                    CapabilityHelpers.getCapabilities(chunk)
                         .serializeNBT());
             } catch (Exception exception) {
                 OKCore.okLog(
@@ -41,8 +41,8 @@ public abstract class MixinAnvilChunkLoader {
         @NotNull CallbackInfoReturnable<Chunk> cir) {
         Chunk chunk = cir.getReturnValue();
         if (chunk != null && compound.hasKey("OKCaps")) {
-            if (ChunkHelpers.getCapabilities(chunk) != null) {
-                ChunkHelpers.getCapabilities(chunk)
+            if (CapabilityHelpers.getCapabilities(chunk) != null) {
+                CapabilityHelpers.getCapabilities(chunk)
                     .deserializeNBT(compound.getCompoundTag("OKCaps"));
             }
         }

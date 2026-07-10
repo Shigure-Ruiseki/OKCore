@@ -32,8 +32,6 @@ public abstract class TagEntry<T> implements Predicate<TagEntry<?>>, Supplier<T>
 
     public abstract Class<T> getType();
 
-    public abstract T get();
-
     @Override
     public boolean test(TagEntry<?> other) {
         if (other == null) return false;

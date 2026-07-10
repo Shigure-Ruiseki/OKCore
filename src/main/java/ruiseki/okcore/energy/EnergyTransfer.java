@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import ruiseki.okcore.energy.capability.IEnergySink;
 import ruiseki.okcore.energy.capability.IEnergySource;
-import ruiseki.okcore.helper.EnergyHelpers;
 
 public class EnergyTransfer {
 

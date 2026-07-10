@@ -18,10 +18,10 @@ import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.cofh.CoFHEnergyWrapper;
+import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.helper.EnderIOHelpers;
 import ruiseki.okcore.init.IInitListener;
-import ruiseki.okcore.lib.LibMods;
 
 @SuppressWarnings("unchecked")
 public class CapabilityEnergy implements IInitListener {
@@ -60,7 +60,7 @@ public class CapabilityEnergy implements IInitListener {
                     int idx = getIndex(facing);
 
                     if (energyCache[idx] == null) {
-                        if (LibMods.EnderIO.isModLoaded()) {
+                        if (Mods.EnderIO.isModLoaded()) {
                             energyCache[idx] = EnderIOHelpers.getPowerCapability(tile, facing);
                         }
 

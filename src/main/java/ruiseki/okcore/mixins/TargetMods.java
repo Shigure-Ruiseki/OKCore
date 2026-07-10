@@ -5,19 +5,19 @@ import org.jetbrains.annotations.NotNull;
 import com.gtnewhorizon.gtnhmixins.builders.ITargetMod;
 import com.gtnewhorizon.gtnhmixins.builders.TargetModBuilder;
 
-import ruiseki.okcore.lib.LibMods;
+import ruiseki.okcore.enums.Mods;
 
 public enum TargetMods implements ITargetMod {
 
-    NotEnoughItems(LibMods.NotEnoughItems);
+    NotEnoughItems(Mods.NotEnoughItems);
 
     private final TargetModBuilder builder;
 
-    TargetMods(@NotNull LibMods libMod) {
+    TargetMods(@NotNull Mods libMod) {
         this.builder = new TargetModBuilder().setModId(libMod.modid);
     }
 
-    TargetMods(String coreModClass, @NotNull LibMods libMod) {
+    TargetMods(String coreModClass, @NotNull Mods libMod) {
         this.builder = new TargetModBuilder().setCoreModClass(coreModClass)
             .setModId(libMod.modid);
     }

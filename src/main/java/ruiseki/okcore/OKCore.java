@@ -33,13 +33,13 @@ import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
-import ruiseki.okcore.lib.LibMods;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.NBTShapedOreRecipe;
 import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
@@ -97,7 +97,7 @@ public class OKCore extends ModBase {
         super.preInit(event);
 
         ModItems.preInit();
-        if (LibMods.Waila.isModLoaded()) {
+        if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
         }
 

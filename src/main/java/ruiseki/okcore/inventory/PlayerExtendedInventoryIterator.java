@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 
 import baubles.api.BaublesApi;
 import cpw.mods.fml.common.Optional;
-import ruiseki.okcore.lib.LibMods;
+import ruiseki.okcore.enums.Mods;
 
 /**
  * Iterate over a player's inventory and any other attached inventory like baubles.
@@ -29,7 +29,7 @@ public class PlayerExtendedInventoryIterator implements Iterator<ItemStack> {
      */
     public PlayerExtendedInventoryIterator(EntityPlayer player) {
         innerIt = new PlayerInventoryIterator(player);
-        if (LibMods.Baubles.isModLoaded()) {
+        if (Mods.Baubles.isModLoaded()) {
             setBaublesData();
         }
     }

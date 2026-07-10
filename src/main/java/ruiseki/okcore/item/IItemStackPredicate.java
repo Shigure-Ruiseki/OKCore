@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * A predicate for ItemStacks.

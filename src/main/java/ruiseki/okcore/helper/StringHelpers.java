@@ -2,10 +2,15 @@ package ruiseki.okcore.helper;
 
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
+
+import ruiseki.okcore.OKCore;
 
 /**
  * A collection of String helper methods.
@@ -14,6 +19,11 @@ import com.mojang.realmsclient.gui.ChatFormatting;
  *
  */
 public class StringHelpers {
+
+    /**
+     * One day i might make this a setting or an input arg for now i have no use to turn it off
+     */
+    public static final boolean matchWildcard = true;
 
     private static final String SPACE = " ";
     private static final String NEWLINE_PATTERN = "\\\\n";
@@ -80,5 +90,46 @@ public class StringHelpers {
     public static String uppercaseFirst(String original) {
         return original.substring(0, 1)
             .toUpperCase() + original.substring(1);
+    }
+
+    /**
+     * If the list has "hc:*_sapling" and input is "hc:whatever_sapling" then match is true
+     *
+     * @param list
+     * @param toMatch
+     * @return
+     */
+    public static boolean isInList(final List<String> list, ResourceLocation toMatch) {
+        if (toMatch == null || list == null) {
+            return false;
+        }
+        String id = toMatch.getResourceDomain();
+        for (String strFromList : list) {
+            if (strFromList == null || strFromList.isEmpty()) {
+                continue;// just ignore me
+            }
+            if (strFromList.equals(id)) {
+                return true;
+            }
+            if (matchWildcard) {
+                String[] blockIdArray = strFromList.split(":");
+                if (blockIdArray.length <= 1) {
+                    OKCore.okLog(Level.ERROR, "Invalid config value for block : " + strFromList);
+                    return false;
+                }
+                String modIdFromList = blockIdArray[0];
+                String blockIdFromList = blockIdArray[1];// has the *
+                String modIdToMatch = toMatch.getResourceDomain();
+                String blockIdToMatch = toMatch.getResourcePath();
+                if (!modIdFromList.equals(modIdToMatch)) {
+                    continue;
+                }
+                String blockIdListWC = blockIdFromList.replace("*", "");
+                if (blockIdToMatch.contains(blockIdListWC)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

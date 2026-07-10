@@ -1,11 +1,14 @@
 package ruiseki.okcore.world.gen;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.feature.WorldGenMinable;
@@ -25,9 +28,11 @@ public class WorldGenMinableExtended extends WorldGenMinable implements IRetroGe
     protected Block block;
     protected int meta;
     protected Block replaceTarget;
+    protected Set<Integer> biomeIds = new HashSet<>();
+    protected boolean isWhitelist = false;
 
     /**
-     * Make a new instance.
+     * Make a new instance with Biome filter.
      *
      * @param block         Block to spawn.
      * @param meta          meta to spawn.
@@ -47,6 +52,24 @@ public class WorldGenMinableExtended extends WorldGenMinable implements IRetroGe
         this.startY = startY;
         this.endY = endY;
         this.replaceTarget = replaceTarget;
+    }
+
+    public WorldGenMinableExtended setWhitelist(boolean isWhitelist, Set<Integer> biomeIds) {
+        this.isWhitelist = isWhitelist;
+        this.biomeIds = biomeIds;
+        return this;
+    }
+
+    protected boolean isBiomeAllowed(World world, int blockX, int blockZ) {
+        if (this.biomeIds == null || this.biomeIds.isEmpty()) {
+            return true;
+        }
+
+        BiomeGenBase biome = world.getBiomeGenForCoords(blockX, blockZ);
+        if (biome == null) return false;
+
+        boolean contains = this.biomeIds.contains(biome.biomeID);
+        return this.isWhitelist ? contains : !contains;
     }
 
     /**
@@ -79,7 +102,9 @@ public class WorldGenMinableExtended extends WorldGenMinable implements IRetroGe
             int firstBlockYCoord = startY + rand.nextInt(endY - startY);
             int firstBlockZCoord = chunkZ + rand.nextInt(16);
 
-            this.generate(world, rand, firstBlockXCoord, firstBlockYCoord, firstBlockZCoord);
+            if (isBiomeAllowed(world, firstBlockXCoord, firstBlockZCoord)) {
+                this.generate(world, rand, firstBlockXCoord, firstBlockYCoord, firstBlockZCoord);
+            }
         }
     }
 
@@ -99,6 +124,12 @@ public class WorldGenMinableExtended extends WorldGenMinable implements IRetroGe
      * @return If generation succeeded.
      */
     protected boolean generate(Chunk chunk, Random rand, int x, int y, int z) {
+        int worldX = chunk.xPosition * 16 + x;
+        int worldZ = chunk.zPosition * 16 + z;
+
+        if (!isBiomeAllowed(chunk.worldObj, worldX, worldZ)) {
+            return false;
+        }
 
         float f = rand.nextFloat() * (float) Math.PI;
         double d0 = (double) ((float) (x + 8) + MathHelper.sin(f) * (float) this.blocksPerVein / 8.0F);
@@ -171,6 +202,10 @@ public class WorldGenMinableExtended extends WorldGenMinable implements IRetroGe
 
     @Override
     public void retroGenerateChunk(NBTTagCompound tag, Chunk chunk, Random rand) {
+        if (!isBiomeAllowed(chunk.worldObj, chunk.xPosition * 16 + 8, chunk.zPosition * 16 + 8)) {
+            return;
+        }
+
         int actualVeins = getVeinCountToGenerate(rand);
 
         for (int k = 0; k < actualVeins; k++) {

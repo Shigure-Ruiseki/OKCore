@@ -15,7 +15,7 @@ import ruiseki.okcore.guide.gui.GuiHome;
 import ruiseki.okcore.guide.impl.Book;
 import ruiseki.okcore.guide.impl.abstraction.CategoryAbstract;
 import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
-import ruiseki.okcore.helper.EntityHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.GuideHelpers;
 
 public class GuideGuiHandler implements IGuiHandler {
@@ -30,8 +30,8 @@ public class GuideGuiHandler implements IGuiHandler {
     @Override
     @SideOnly(Side.CLIENT)
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        IGuideHandler cap = EntityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
-            .resolveOrNull();
+        IGuideHandler cap = CapabilityHelpers.getCapability(player, CapabilityGuide.GUIDE_CAPABILITY)
+            .getOrNull();
         if (cap == null) return null;
 
         Book book = GuideHelpers.getIndexedBooks()

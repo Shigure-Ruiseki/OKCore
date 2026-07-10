@@ -229,7 +229,7 @@ public class MinecraftHelpers {
         TileEntity tile = world.getTileEntity(x, y, z);
 
         if (tile != null && block.shouldDropInventory(world, x, y, z) && !world.isRemote) {
-            TileHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, ForgeDirection.UNKNOWN)
+            CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, ForgeDirection.UNKNOWN)
                 .ifPresent(handler -> {
                     InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
                     InventoryHelpers.clearInventory(handler);

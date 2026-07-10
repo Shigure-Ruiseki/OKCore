@@ -104,7 +104,7 @@ public class LazyOptional<T> {
         return ret;
     }
 
-    public @Nullable T resolveOrNull() {
+    public @Nullable T getOrNull() {
         return getValue();
     }
 

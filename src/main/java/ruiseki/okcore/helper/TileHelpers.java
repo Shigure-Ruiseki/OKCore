@@ -5,18 +5,11 @@ import java.util.Optional;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.capabilities.Capability;
-import ruiseki.okcore.capabilities.CapabilityDispatcher;
-import ruiseki.okcore.capabilities.ICapabilityInternal;
-import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * Contains helper methods for various tile entity specific things.
@@ -68,37 +61,6 @@ public class TileHelpers {
         try {
             return targetClazz.cast(tile);
         } catch (ClassCastException e) {
-            return null;
-        }
-    }
-
-    public static <C> LazyOptional<C> getCapability(TileEntity tile, @NotNull Capability<C> capability,
-        @NotNull ForgeDirection side) {
-        if (tile instanceof ICapabilityProvider provider) {
-            return provider.getCapability(capability, side);
-        }
-        return LazyOptional.empty();
-    }
-
-    public static <C> LazyOptional<C> getCapability(DimPos dimPos, @NotNull Capability<C> capability,
-        @NotNull ForgeDirection side) {
-        World world = dimPos.getWorld();
-        return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : LazyOptional.empty();
-    }
-
-    public static <C> LazyOptional<C> getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
-        @NotNull ForgeDirection side) {
-        return getCapability(pos.getTileEntity(world), capability, side);
-    }
-
-    public static CapabilityDispatcher getCapabilities(TileEntity tile) {
-        if (tile == null) return null;
-        try {
-            ICapabilityInternal provider = (ICapabilityInternal) (Object) tile;
-
-            return provider.getCapabilities();
-
-        } catch (ClassCastException ignored) {
             return null;
         }
     }

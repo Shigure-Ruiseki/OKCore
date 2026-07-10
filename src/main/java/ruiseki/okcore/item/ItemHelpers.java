@@ -1,4 +1,4 @@
-package ruiseki.okcore.helper;
+package ruiseki.okcore.item;
 
 import java.util.Objects;
 
@@ -9,11 +9,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.intellij.lang.annotations.MagicConstant;
 
+import com.gtnewhorizon.gtnhlib.hash.Fnv1a32;
+
 import it.unimi.dsi.fastutil.Hash;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.IImmutableItemMeta;
-import ruiseki.okcore.hash.Fnv1a32;
-import ruiseki.okcore.item.IImmutableItemStack;
+import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.capability.IItemSink;
 import ruiseki.okcore.item.capability.IItemSource;
@@ -40,7 +41,7 @@ public class ItemHelpers {
 
         if (obj instanceof ICapabilityProvider provider) {
             IItemSource source = provider.getCapability(CapabilityItemHandler.ITEM_SOURCE_CAPABILITY, side)
-                .resolveOrNull();
+                .getOrNull();
 
             if (source != null) return source;
         }
@@ -62,7 +63,7 @@ public class ItemHelpers {
 
         if (obj instanceof ICapabilityProvider provider) {
             IItemSink sink = provider.getCapability(CapabilityItemHandler.ITEM_SINK_CAPABILITY)
-                .resolveOrNull();
+                .getOrNull();
 
             if (sink != null) return sink;
         }

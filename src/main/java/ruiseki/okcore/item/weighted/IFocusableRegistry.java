@@ -4,7 +4,7 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 
-import ruiseki.okcore.color.EnumDye;
+import ruiseki.okcore.enums.EnumDye;
 
 public interface IFocusableRegistry {
 

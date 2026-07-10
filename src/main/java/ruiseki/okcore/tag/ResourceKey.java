@@ -15,7 +15,7 @@ import com.google.common.collect.MapMaker;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.INetworkMaterial;
 
-public class ResourceKey<T> implements Comparable<ResourceKey<?>>, INetworkMaterial {
+public class ResourceKey<T> implements Comparable<ResourceKey<T>>, INetworkMaterial {
 
     private static final ConcurrentMap<ResourceKey.InternKey, ResourceKey<?>> VALUES = new MapMaker().weakValues()
         .makeMap();
@@ -91,7 +91,7 @@ public class ResourceKey<T> implements Comparable<ResourceKey<?>>, INetworkMater
     }
 
     @Override
-    public int compareTo(@NotNull ResourceKey<?> o) {
+    public int compareTo(@NotNull ResourceKey<T> o) {
         int ret = this.registry()
             .toString()
             .compareTo(

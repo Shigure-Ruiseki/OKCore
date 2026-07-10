@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
@@ -17,12 +18,12 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
+import ruiseki.okcore.item.UseCooldown;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
-import ruiseki.okcore.item.component.UseCooldown;
 import ruiseki.okcore.tag.Registries;
+import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
-import ruiseki.okcore.tag.entry.TagEntry;
 
 public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
@@ -102,19 +103,19 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        TagKey<ItemStack> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
+        TagKey<Item> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
 
-        Set<TagEntry<ItemStack>> entries = TagManager.getManager()
+        Set<TagEntry> entries = TagManager.getManager()
             .getEntries(dustTagKey);
 
         list.add("§6Items in #forge:rods:");
         if (entries.isEmpty()) {
             list.add(" §7(Empty Tag)");
         } else {
-            for (TagEntry<ItemStack> entry : entries) {
-                String itemId = entry.getId()
+            for (TagEntry entry : entries) {
+                String itemId = entry.id()
                     .toString();
-                int meta = entry.getMeta();
+                int meta = entry.meta();
                 list.add(" §7- " + itemId + (meta == TagEntry.WILDCARD ? ":*" : ":" + meta));
             }
         }

@@ -9,7 +9,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.okcore.entity.cooldown.ItemCooldowns;
 import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
-import ruiseki.okcore.item.component.UseCooldown;
+import ruiseki.okcore.item.UseCooldown;
 
 public class CooldownEventHandler {
 

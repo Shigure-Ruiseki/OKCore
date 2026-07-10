@@ -1,4 +1,4 @@
-package ruiseki.okcore.item.component;
+package ruiseki.okcore.item;
 
 import java.util.Optional;
 

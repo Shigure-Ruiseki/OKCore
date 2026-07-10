@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Maps;
 
 import ruiseki.okcore.item.IItemCooldown;
-import ruiseki.okcore.item.component.UseCooldown;
+import ruiseki.okcore.item.UseCooldown;
 
 public class ItemCooldowns {
 

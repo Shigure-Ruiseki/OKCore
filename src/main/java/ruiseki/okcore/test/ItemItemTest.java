@@ -13,12 +13,12 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.okcore.datacomponent.component.UseCooldown;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.component.UseCooldown;
 import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;

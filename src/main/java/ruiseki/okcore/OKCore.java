@@ -26,12 +26,10 @@ import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
-import ruiseki.okcore.command.CommandComponent;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.ModItems;
 import ruiseki.okcore.data.DatapackLoader;
-import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
@@ -71,7 +69,6 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityRedstone());
         addInitListeners(new CapabilityGuide());
 
-        addInitListeners(new DataComponents());
         addInitListeners(new GuideRegistry());
     }
 
@@ -86,7 +83,6 @@ public class OKCore extends ModBase {
     @Override
     protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
         LiteralArgumentBuilder<ICommandSender> root = super.constructBaseCommand(server);
-        root.then(new CommandComponent(this).make());
         root.then(new CommandDatapack(this, server).make());
         return root;
     }

@@ -1,4 +1,4 @@
-package ruiseki.okcore.datacomponent.component;
+package ruiseki.okcore.item.component;
 
 import java.util.Optional;
 

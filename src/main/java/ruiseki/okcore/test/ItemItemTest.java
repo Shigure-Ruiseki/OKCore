@@ -28,7 +28,7 @@ import ruiseki.okcore.tag.TagManager;
 public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
     public ItemItemTest() {
-        super("item_test");
+        super();
         setTextureName("stick");
     }
 

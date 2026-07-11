@@ -32,7 +32,7 @@ public class ResourceKey<T> implements Comparable<ResourceKey<T>>, INetworkMater
         return create(parentRegistry.location(), location);
     }
 
-    public static <T> ResourceKey<ResourceKey<T>> createRegistryKey(ResourceLocation registryName) {
+    public static <T> ResourceKey<T> createRegistryKey(ResourceLocation registryName) {
         return create(ROOT_REGISTRY_NAME, registryName);
     }
 

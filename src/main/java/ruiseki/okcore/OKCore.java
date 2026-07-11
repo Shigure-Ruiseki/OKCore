@@ -28,7 +28,8 @@ import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ModConfig;
-import ruiseki.okcore.core.ModItems;
+import ruiseki.okcore.core.OKCoreBlocks;
+import ruiseki.okcore.core.OKCoreItems;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.enums.Mods;
@@ -92,7 +93,8 @@ public class OKCore extends ModBase {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
 
-        ModItems.preInit();
+        OKCoreItems.register();
+        OKCoreBlocks.register();
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
         }

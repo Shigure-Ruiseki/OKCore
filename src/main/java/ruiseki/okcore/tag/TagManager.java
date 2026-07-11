@@ -162,7 +162,7 @@ public class TagManager extends MultiJsonResourceReloadListener {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Set<TagKey<T>> getTags(ResourceKey<ResourceKey<T>> registryKey, ResourceLocation id, int meta) {
+    public <T> Set<TagKey<T>> getTags(ResourceKey<T> registryKey, ResourceLocation id, int meta) {
         if (id == null || this.registryToTagsCache.isEmpty()) return Collections.emptySet();
 
         Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>> idMap = this.registryToTagsCache.get(registryKey);

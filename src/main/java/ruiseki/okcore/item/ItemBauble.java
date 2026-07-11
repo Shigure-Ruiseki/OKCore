@@ -28,8 +28,8 @@ public class ItemBauble extends ItemOK implements IBaubleExpanded {
     private static final String TAG_BAUBLE_UUID_LEAST = "baubleUUIDLeast";
     private boolean disableRightClickEquip = false;
 
-    public ItemBauble(String name) {
-        super(name);
+    public ItemBauble() {
+        super();
         setMaxStackSize(1);
     }
 

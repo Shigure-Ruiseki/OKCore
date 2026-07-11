@@ -17,7 +17,7 @@ import ruiseki.okcore.tag.TagKey;
 public class ItemEnergyTest extends ItemOK {
 
     public ItemEnergyTest() {
-        super("energy_test");
+        super();
         setTextureName("stick");
     }
 

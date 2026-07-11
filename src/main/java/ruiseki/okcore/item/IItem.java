@@ -4,23 +4,24 @@ import net.minecraft.item.Item;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.recipe.IOreDictEntry;
+import ruiseki.okcore.registries.IRegistrable;
 
-public interface IItem {
-
-    default void init() {
-        registerItem();
-        registerComponent();
-    }
+public interface IItem extends IRegistrable {
 
     Item getItem();
 
-    String getName();
-
-    default void registerItem() {
-        GameRegistry.registerItem(this.getItem(), getName());
+    @Override
+    default void register(String name) {
+        getItem().setUnlocalizedName(name);
+        registerItem(name);
+        registerComponent(name);
     }
 
-    default void registerComponent() {
+    default void registerItem(String name) {
+        GameRegistry.registerItem(this.getItem(), name);
+    }
+
+    default void registerComponent(String name) {
         if (this instanceof IOreDictEntry oreDictEntry) oreDictEntry.registerOreDict();
     }
 }

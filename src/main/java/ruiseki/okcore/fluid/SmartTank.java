@@ -72,7 +72,8 @@ public class SmartTank extends FluidTank {
         if (fluid != null) {
             return fluid.isFluidEqual(resource);
         } else if (restriction != null) {
-            return restriction.getID() == resource.getFluid().getID();
+            return restriction.getID() == resource.getFluid()
+                .getID();
         } else {
             return true;
         }
@@ -84,7 +85,8 @@ public class SmartTank extends FluidTank {
         }
 
         if (fluid != null) {
-            return fluid.getFluid().getID() == fl.getID();
+            return fluid.getFluid()
+                .getID() == fl.getID();
         } else if (restriction != null) {
             return restriction.getID() == fl.getID();
         } else {

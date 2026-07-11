@@ -62,14 +62,14 @@ public class DeferredRegister<T> {
     public void register() {
         if (hasRegistered) return;
         this.hasRegistered = true;
-        for (Entry<RegistryObject<T>, Supplier<? extends T>> e : entries.entrySet()) {
-            T value = e.getValue()
+        for (Entry<RegistryObject<T>, Supplier<? extends T>> entry : entries.entrySet()) {
+            T value = entry.getValue()
                 .get();
-            RegistryObject<T> regObj = e.getKey();
+            RegistryObject<T> regObj = entry.getKey();
 
             String name = regObj.getId() != null ? regObj.getId()
                 .getResourcePath() : "null";
-            if (value instanceof IRegistrable registrable) {
+            if (value instanceof IRegistrable<?>registrable) {
                 registrable.register(name);
             } else {
                 if (value instanceof Item item) {

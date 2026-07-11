@@ -20,8 +20,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
-import ruiseki.okcore.item.capability.minecraft.InventoryHandlerWrapper;
+import ruiseki.okcore.item.capability.wrapper.InventoryHandlerWrapper;
 
 @NotNullByDefault
 @Mixin(TileEntityChest.class)
@@ -29,34 +30,43 @@ import ruiseki.okcore.item.capability.minecraft.InventoryHandlerWrapper;
 public abstract class MixinTileEntityChest extends MixinTileEntity implements ICapabilitySerializable {
 
     @Unique
-    private final LazyOptional<InventoryHandlerWrapper>[] okcore$itemWrappers = new LazyOptional[7];
+    private final LazyOptional<IItemHandler>[] okcore$itemWrappers = new LazyOptional[7];
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void okcore$init(CallbackInfo ci) {
+        for (int i = 0; i < okcore$itemWrappers.length; i++) {
+            okcore$itemWrappers[i] = LazyOptional.empty();
+        }
+    }
 
     @Unique
     private int okcore$getDirectionIndex(@Nullable ForgeDirection facing) {
-        return facing == null ? 6 : facing.ordinal();
+        return facing == null || facing == ForgeDirection.UNKNOWN ? 6 : facing.ordinal();
     }
 
     @SuppressWarnings("unchecked")
     public <T> LazyOptional<T> okcorecap$getCapability(Capability<T> capability, @Nullable ForgeDirection facing) {
-        TileEntityChest self = (TileEntityChest) (Object) this;
-        Block block = self.getBlockType();
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            int idx = okcore$getDirectionIndex(facing);
+            LazyOptional<IItemHandler> cachedCap = okcore$itemWrappers[idx];
 
-        if (block instanceof BlockChest chest) {
-            IInventory inventory = chest.func_149951_m(self.getWorldObj(), self.xCoord, self.yCoord, self.zCoord);
-            if (inventory != null) {
-                int idx = okcore$getDirectionIndex(facing);
+            if (!cachedCap.isPresent()) {
+                TileEntityChest self = (TileEntityChest) (Object) this;
+                Block block = self.getBlockType();
 
-                if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY
-                    || capability == CapabilityItemHandler.ITEM_SINK_CAPABILITY
-                    || capability == CapabilityItemHandler.ITEM_SOURCE_CAPABILITY) {
-
-                    if (okcore$itemWrappers[idx] == null) {
-                        okcore$itemWrappers[idx] = LazyOptional
-                            .of(() -> new InventoryHandlerWrapper(inventory, facing));
+                if (block instanceof BlockChest chest) {
+                    IInventory inventory = chest
+                        .func_149951_m(self.getWorldObj(), self.xCoord, self.yCoord, self.zCoord);
+                    if (inventory != null) {
+                        ForgeDirection dir = facing == null ? ForgeDirection.UNKNOWN : facing;
+                        cachedCap = LazyOptional.of(() -> new InventoryHandlerWrapper(inventory, dir));
+                        okcore$itemWrappers[idx] = cachedCap;
                     }
-
-                    return okcore$itemWrappers[idx].cast();
                 }
+            }
+
+            if (cachedCap.isPresent()) {
+                return cachedCap.cast();
             }
         }
 
@@ -65,7 +75,7 @@ public abstract class MixinTileEntityChest extends MixinTileEntity implements IC
 
     @Inject(method = "invalidate", at = @At("RETURN"))
     private void okcore$invalidate(CallbackInfo ci) {
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < okcore$itemWrappers.length; i++) {
             if (okcore$itemWrappers[i] != null) {
                 okcore$itemWrappers[i].invalidate();
                 okcore$itemWrappers[i] = LazyOptional.empty();

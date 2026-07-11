@@ -11,6 +11,7 @@ import ruiseki.okcore.registries.DeferredRegister;
 import ruiseki.okcore.registries.RegistryObject;
 import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.test.ItemEnergyTest;
+import ruiseki.okcore.test.ItemFluidTest;
 import ruiseki.okcore.test.ItemItemTest;
 
 public final class OKCoreItems {
@@ -27,6 +28,11 @@ public final class OKCoreItems {
         () -> ModConfig.useItemTest,
         ItemEnergyTest::new);
 
+    public static final RegistryObject<Item> FLUID_TEST = register(
+        "fluid_test",
+        () -> ModConfig.useItemTest,
+        ItemFluidTest::new);
+
     private static RegistryObject<Item> register(String name, Supplier<Boolean> configCondition,
         Supplier<IItem> itemSupplier) {
         if (!configCondition.get()) {
@@ -35,10 +41,8 @@ public final class OKCoreItems {
 
         return ITEMS.register(
             name,
-            () -> {
-                return itemSupplier.get()
-                    .getItem();
-            });
+            () -> itemSupplier.get()
+                .get());
     }
 
     public static void register() {

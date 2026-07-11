@@ -1,67 +1,30 @@
 package ruiseki.okcore.energy;
 
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.intellij.lang.annotations.MagicConstant;
-
-import ruiseki.okcore.capabilities.ICapabilityProvider;
+import cofh.api.energy.IEnergyStorage;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
-import ruiseki.okcore.energy.capability.IEnergySink;
-import ruiseki.okcore.energy.capability.IEnergySource;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 public class EnergyHelpers {
 
-    private static int counter = 0;
-    public static final int WRAP_HANDLER = 0b1 << counter++;
-    public static final int FOR_INSERTS = 0b1 << counter++;
-    public static final int FOR_EXTRACTS = 0b1 << counter++;
-    public static final int DEFAULT = WRAP_HANDLER | FOR_INSERTS | FOR_EXTRACTS;
-
-    public static IEnergySource getEnergySource(Object obj, ForgeDirection side) {
-        return getEnergySource(obj, side, DEFAULT);
+    public static LazyOptional<IEnergyStorage> getEnergyStorage(Object object, ForgeDirection side) {
+        return object instanceof TileEntity tile ? getEnergyStorage(tile, side) : LazyOptional.empty();
     }
 
-    public static IEnergySource getEnergySource(Object obj, ForgeDirection side,
-        @MagicConstant(flagsFromClass = EnergyHelpers.class) int usage) {
-        if ((usage & FOR_EXTRACTS) == 0) return null;
-
-        if (obj instanceof IEnergySource source) {
-            return source;
-        }
-
-        if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IEnergySource source = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SOURCE_CAPABILITY, side)
-                .getOrNull();
-
-            if (source != null) return source;
-        }
-
-        return null;
+    public static LazyOptional<IEnergyStorage> getEnergyStorage(TileEntity tile, ForgeDirection side) {
+        return CapabilityHelpers.getCapability(tile, CapabilityEnergy.ENERGY, side);
     }
 
-    public static IEnergySink getEnergySink(Object obj, ForgeDirection side) {
-        return getEnergySink(obj, side, DEFAULT);
+    public static LazyOptional<IEnergyStorage> getEnergyStorage(World world, BlockPos pos, ForgeDirection side) {
+        return getEnergyStorage(pos.getTileEntity(world), side);
     }
 
-    public static IEnergySink getEnergySink(Object obj, ForgeDirection side,
-        @MagicConstant(flagsFromClass = EnergyHelpers.class) int usage) {
-        if ((usage & FOR_INSERTS) == 0) {
-            return null;
-        }
-
-        if (obj instanceof IEnergySink sink) {
-            return sink;
-        }
-
-        if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IEnergySink sink = capabilityProvider.getCapability(CapabilityEnergy.ENERGY_SINK_CAPABILITY, side)
-                .getOrNull();
-
-            if (sink != null) {
-                return sink;
-            }
-        }
-
-        return null;
+    public static LazyOptional<IEnergyStorage> getEnergyStorage(World world, int x, int y, int z, ForgeDirection side) {
+        return getEnergyStorage(world, new BlockPos(x, y, z), side);
     }
 }

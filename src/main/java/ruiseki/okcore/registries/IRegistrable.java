@@ -1,7 +1,8 @@
 package ruiseki.okcore.registries;
 
-public interface IRegistrable {
+import java.util.function.Supplier;
+
+public interface IRegistrable<T> extends Supplier<T> {
 
     void register(String name);
-
 }

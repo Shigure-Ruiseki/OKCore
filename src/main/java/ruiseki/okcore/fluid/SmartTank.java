@@ -1,19 +1,13 @@
 package ruiseki.okcore.fluid;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTank;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
 
 import com.google.common.base.Strings;
 
-import ruiseki.okcore.persist.nbt.INBTSerializable;
-
-public class SmartTank extends FluidTank implements IFluidHandler, INBTSerializable {
+public class SmartTank extends FluidTank {
 
     protected Fluid restriction;
 
@@ -47,11 +41,12 @@ public class SmartTank extends FluidTank implements IFluidHandler, INBTSerializa
         return getFluidAmount() >= getCapacity();
     }
 
-    public boolean canDrainFluidType(FluidStack resource) {
-        if (resource == null || resource.getFluid() == null || fluid == null) {
-            return false;
-        }
-        return fluid.isFluidEqual(resource);
+    public int getAvailableSpace() {
+        return getCapacity() - getFluidAmount();
+    }
+
+    public void addFluidAmount(int amount) {
+        setFluidAmount(getFluidAmount() + amount);
     }
 
     public boolean canDrainFluidType(Fluid fl) {
@@ -61,40 +56,66 @@ public class SmartTank extends FluidTank implements IFluidHandler, INBTSerializa
         return fl.getID() == fluid.getFluidID();
     }
 
-    public FluidStack drain(FluidStack resource, boolean doDrain) {
-        if (!canDrainFluidType(resource)) {
-            return null;
+    @Override
+    public boolean canDrainFluidType(FluidStack resource) {
+        if (resource == null || resource.getFluid() == null || fluid == null) {
+            return false;
         }
-        FluidStack drained = super.drain(resource.amount, doDrain);
-        if (doDrain && drained != null && drained.amount > 0) {
-            onContentsChanged();
-        }
-        return drained;
+        return fluid.isFluidEqual(resource) && canDrain();
     }
 
     public boolean canFill(FluidStack resource) {
-        if (resource == null || resource.getFluid() == null) {
+        if (resource == null || resource.getFluid() == null || !canFill()) {
             return false;
         }
 
         if (fluid != null) {
             return fluid.isFluidEqual(resource);
         } else if (restriction != null) {
-            return restriction.getID() == resource.getFluid()
-                .getID();
+            return restriction.getID() == resource.getFluid().getID();
         } else {
             return true;
         }
     }
 
     public boolean canFill(Fluid fl) {
+        if (!canFill() || fl == null) {
+            return false;
+        }
+
         if (fluid != null) {
-            return fluid.getFluid()
-                .getID() == fl.getID();
+            return fluid.getFluid().getID() == fl.getID();
         } else if (restriction != null) {
             return restriction.getID() == fl.getID();
         } else {
             return true;
+        }
+    }
+
+    @Override
+    public int fill(FluidStack resource, boolean doFill) {
+        if (!canFill(resource)) {
+            return 0;
+        }
+        return super.fill(resource, doFill);
+    }
+
+    @Override
+    public FluidStack drain(FluidStack resource, boolean doDrain) {
+        if (!canDrainFluidType(resource)) {
+            return null;
+        }
+        return super.drain(resource.amount, doDrain);
+    }
+
+    @Override
+    public FluidStack getFluid() {
+        if (fluid != null) {
+            return fluid;
+        } else if (restriction != null) {
+            return new FluidStack(restriction, 0);
+        } else {
+            return null;
         }
     }
 
@@ -114,137 +135,37 @@ public class SmartTank extends FluidTank implements IFluidHandler, INBTSerializa
     }
 
     @Override
-    public int fill(FluidStack resource, boolean doFill) {
-        if (!canFill(resource)) {
-            return 0;
-        }
-        int filled = super.fill(resource, doFill);
-        if (doFill && filled > 0) {
-            onContentsChanged();
-        }
-        return filled;
-    }
-
-    @Override
-    public FluidStack getFluid() {
-        if (fluid != null) {
-            return fluid;
-        } else if (restriction != null) {
-            return new FluidStack(restriction, 0);
-        } else {
-            return null;
-        }
-    }
-
-    public int getAvailableSpace() {
-        return getCapacity() - getFluidAmount();
-    }
-
-    public void addFluidAmount(int amount) {
-        setFluidAmount(getFluidAmount() + amount);
-    }
-
-    @Override
     public void setCapacity(int capacity) {
         super.setCapacity(capacity);
         if (getFluidAmount() > capacity) {
             setFluidAmount(capacity);
         }
-        onContentsChanged();
-    }
-
-    public void writeCommon(NBTTagCompound nbtRoot) {
-        writeCommon("tank", nbtRoot);
-    }
-
-    public void writeCommon(String name, NBTTagCompound nbtRoot) {
-        if (getFluidAmount() > 0 || restriction != null) {
-            NBTTagCompound tankRoot = new NBTTagCompound();
-            writeToNBT(tankRoot);
-            if (restriction != null) {
-                tankRoot.setString("FluidRestriction", FluidRegistry.getFluidName(restriction));
-            }
-            nbtRoot.setTag(name, tankRoot);
-        } else {
-            nbtRoot.removeTag(name);
-        }
-    }
-
-    public void readCommon(NBTTagCompound nbtRoot) {
-        readCommon("tank", nbtRoot);
-    }
-
-    public void readCommon(String name, NBTTagCompound nbtRoot) {
-        if (!nbtRoot.hasKey(name)) {
-            setFluid(null);
-            return;
-        }
-
-        NBTTagCompound tankRoot = nbtRoot.getCompoundTag(name);
-        if (tankRoot != null) {
-            readFromNBT(tankRoot);
-            restriction = null;
-            if (tankRoot.hasKey("FluidRestriction")) {
-                String fluidName = tankRoot.getString("FluidRestriction");
-                if (!Strings.isNullOrEmpty(fluidName)) {
-                    restriction = FluidRegistry.getFluid(fluidName);
-                }
-            }
-            onContentsChanged();
-        } else {
-            setFluid(null);
-            // not reseting 'restriction' here on purpose
-        }
     }
 
     @Override
-    public void setFluid(FluidStack fluid) {
-        super.setFluid(fluid);
+    public FluidTank readFromNBT(NBTTagCompound nbt) {
+        super.readFromNBT(nbt);
+
+        this.restriction = null;
+        if (nbt.hasKey("FluidRestriction")) {
+            String fluidName = nbt.getString("FluidRestriction");
+            if (!Strings.isNullOrEmpty(fluidName)) {
+                this.restriction = FluidRegistry.getFluid(fluidName);
+            }
+        }
+
         onContentsChanged();
+        return this;
     }
 
-    protected void onContentsChanged() {}
-
     @Override
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        writeCommon(nbt);
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        super.writeToNBT(nbt);
+
+        if (restriction != null) {
+            nbt.setString("FluidRestriction", FluidRegistry.getFluidName(restriction));
+        }
+
         return nbt;
-    }
-
-    @Override
-    public void deserializeNBT(NBTTagCompound tag) {
-        readCommon(tag);
-    }
-
-    @Override
-    public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
-        return fill(resource, doFill);
-    }
-
-    @Override
-    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
-        if (resource == null) return null;
-        return drain(resource.amount, doDrain);
-    }
-
-    @Override
-    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
-        return drain(maxDrain, doDrain);
-    }
-
-    @Override
-    public boolean canFill(ForgeDirection from, Fluid fluid) {
-        return canFill(fluid);
-    }
-
-    @Override
-    public boolean canDrain(ForgeDirection from, Fluid fluid) {
-        return canDrainFluidType(fluid);
-    }
-
-    @Override
-    public FluidTankInfo[] getTankInfo(ForgeDirection from) {
-        return new FluidTankInfo[] { new FluidTankInfo(this) };
     }
 }

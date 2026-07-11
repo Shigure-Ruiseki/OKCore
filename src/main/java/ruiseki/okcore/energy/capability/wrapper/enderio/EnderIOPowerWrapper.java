@@ -1,4 +1,4 @@
-package ruiseki.okcore.energy.capability.enderio;
+package ruiseki.okcore.energy.capability.wrapper.enderio;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -9,10 +9,8 @@ import crazypants.enderio.power.IInternalPowerProvider;
 import crazypants.enderio.power.IInternalPowerReceiver;
 import crazypants.enderio.power.IInternalPoweredTile;
 import crazypants.enderio.power.IPowerStorage;
-import ruiseki.okcore.energy.capability.IEnergySink;
-import ruiseki.okcore.energy.capability.IEnergySource;
 
-public class EnderIOPowerWrapper implements IEnergyStorage, IEnergySink, IEnergySource {
+public class EnderIOPowerWrapper implements IEnergyStorage {
 
     protected final TileEntity tile;
     protected final ForgeDirection side;
@@ -98,25 +96,5 @@ public class EnderIOPowerWrapper implements IEnergyStorage, IEnergySink, IEnergy
             return eioTile.getMaxEnergyStored();
         }
         return 0;
-    }
-
-    @Override
-    public int insert(int amount, boolean simulate) {
-        return receiveEnergy(amount, simulate);
-    }
-
-    @Override
-    public int extract(int amount, boolean simulate) {
-        return extractEnergy(amount, simulate);
-    }
-
-    @Override
-    public boolean canConnect() {
-        if (tile instanceof IPowerStorage storage) {
-            return storage.isInputEnabled(side) || storage.isOutputEnabled(side);
-        } else if (tile instanceof IInternalPoweredTile eioTile) {
-            return eioTile.canConnectEnergy(side);
-        }
-        return false;
     }
 }

@@ -22,10 +22,8 @@ public final class OKCoreBlocks {
 
         return BLOCKS.register(
             name,
-            () -> {
-                return blockSupplier.get()
-                    .getBlock();
-            });
+            () -> blockSupplier.get()
+                .get());
     }
 
     public static void register() {

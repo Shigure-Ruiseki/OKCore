@@ -48,7 +48,7 @@ public class BlockOK extends Block implements IBlock, IBlockPropertyProvider {
     }
 
     @Override
-    public Block getBlock() {
+    public Block get() {
         return this;
     }
 

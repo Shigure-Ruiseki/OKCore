@@ -1,16 +1,13 @@
-package ruiseki.okcore.energy.capability.cofh;
+package ruiseki.okcore.energy.capability.wrapper.cofh;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import cofh.api.energy.IEnergyConnection;
 import cofh.api.energy.IEnergyProvider;
 import cofh.api.energy.IEnergyReceiver;
 import cofh.api.energy.IEnergyStorage;
-import ruiseki.okcore.energy.capability.IEnergySink;
-import ruiseki.okcore.energy.capability.IEnergySource;
 
-public class CoFHEnergyWrapper implements IEnergyStorage, IEnergySink, IEnergySource {
+public class CoFHEnergyWrapper implements IEnergyStorage {
 
     protected final TileEntity tile;
     protected final ForgeDirection side;
@@ -38,10 +35,8 @@ public class CoFHEnergyWrapper implements IEnergyStorage, IEnergySink, IEnergySo
 
     @Override
     public int getEnergyStored() {
-        if (tile instanceof IEnergyConnection connection) {
-            if (tile instanceof IEnergyReceiver r) return r.getEnergyStored(side);
-            if (tile instanceof IEnergyProvider p) return p.getEnergyStored(side);
-        }
+        if (tile instanceof IEnergyReceiver r) return r.getEnergyStored(side);
+        if (tile instanceof IEnergyProvider p) return p.getEnergyStored(side);
         return 0;
     }
 
@@ -50,23 +45,5 @@ public class CoFHEnergyWrapper implements IEnergyStorage, IEnergySink, IEnergySo
         if (tile instanceof IEnergyReceiver r) return r.getMaxEnergyStored(side);
         if (tile instanceof IEnergyProvider p) return p.getMaxEnergyStored(side);
         return 0;
-    }
-
-    @Override
-    public int insert(int amount, boolean simulate) {
-        return receiveEnergy(amount, simulate);
-    }
-
-    @Override
-    public int extract(int amount, boolean simulate) {
-        return extractEnergy(amount, simulate);
-    }
-
-    @Override
-    public boolean canConnect() {
-        if (tile instanceof IEnergyConnection connection) {
-            return connection.canConnectEnergy(side);
-        }
-        return false;
     }
 }

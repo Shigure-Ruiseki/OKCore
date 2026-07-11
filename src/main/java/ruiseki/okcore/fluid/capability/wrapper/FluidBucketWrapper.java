@@ -7,10 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBucketMilk;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.*;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +16,9 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.fluid.FluidTankProperties;
 import ruiseki.okcore.fluid.IFluidHandlerItem;
+import ruiseki.okcore.fluid.IFluidTankProperties;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 
 public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvider {
@@ -45,6 +44,13 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
         return container;
     }
 
+    public boolean canFillFluidType(FluidStack fluidStack) {
+        Fluid fluid = fluidStack.getFluid();
+        return fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA
+            || fluid.getName()
+                .equals("milk");
+    }
+
     @Nullable
     public FluidStack getFluid() {
         Item item = container.getItem();
@@ -68,20 +74,25 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
     }
 
     @Override
-    public FluidStack drain(int maxDrain, boolean doDrain) {
-        if (container.stackSize != 1 || maxDrain < FluidHelpers.BUCKET_VOLUME) {
-            return null;
+    public IFluidTankProperties[] getTankProperties() {
+        return new FluidTankProperties[] { new FluidTankProperties(getFluid(), FluidHelpers.BUCKET_VOLUME) };
+    }
+
+    @Override
+    public int fill(FluidStack resource, boolean doFill) {
+        if (container.stackSize != 1 || resource == null
+            || resource.amount < FluidHelpers.BUCKET_VOLUME
+            || container.getItem() instanceof ItemBucketMilk
+            || getFluid() != null
+            || !canFillFluidType(resource)) {
+            return 0;
         }
 
-        FluidStack fluidStack = getFluid();
-        if (fluidStack != null) {
-            if (doDrain) {
-                setFluid(null);
-            }
-            return fluidStack;
+        if (doFill) {
+            setFluid(resource);
         }
 
-        return null;
+        return FluidHelpers.BUCKET_VOLUME;
     }
 
     @Override
@@ -102,38 +113,19 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
     }
 
     @Override
-    public int fill(FluidStack resource, boolean doFill) {
-        if (container.stackSize != 1 || resource == null
-            || resource.amount < FluidHelpers.BUCKET_VOLUME
-            || container.getItem() instanceof ItemBucketMilk
-            || getFluid() != null
-            || !canFill(ForgeDirection.UNKNOWN, resource.getFluid())) {
-            return 0;
+    public FluidStack drain(int maxDrain, boolean doDrain) {
+        if (container.stackSize != 1 || maxDrain < FluidHelpers.BUCKET_VOLUME) {
+            return null;
         }
-        if (doFill) {
-            setFluid(resource);
+
+        FluidStack fluidStack = getFluid();
+        if (fluidStack != null) {
+            if (doDrain) {
+                setFluid(null);
+            }
+            return fluidStack;
         }
-        return FluidHelpers.BUCKET_VOLUME;
-    }
 
-    @Override
-    public boolean canFill(ForgeDirection from, Fluid fluid) {
-        if (fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA
-            || fluid.getName()
-                .equals("milk")) {
-            return true;
-        }
-        return FluidRegistry.isFluidRegistered(fluid);
-    }
-
-    @Override
-    public boolean canDrain(ForgeDirection from, Fluid fluid) {
-        FluidStack contained = getFluid();
-        return contained != null && contained.getFluid() == fluid;
-    }
-
-    @Override
-    public FluidTankInfo[] getTankInfo(ForgeDirection from) {
-        return new FluidTankInfo[] { new FluidTankInfo(getFluid(), FluidHelpers.BUCKET_VOLUME) };
+        return null;
     }
 }

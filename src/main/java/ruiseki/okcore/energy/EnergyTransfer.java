@@ -2,17 +2,18 @@ package ruiseki.okcore.energy;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+import cofh.api.energy.IEnergyStorage;
 import lombok.Getter;
 import lombok.Setter;
-import ruiseki.okcore.energy.capability.IEnergySink;
-import ruiseki.okcore.energy.capability.IEnergySource;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 public class EnergyTransfer {
 
     @Getter
-    protected IEnergySource source;
-    @Getter
-    protected IEnergySink sink;
+    protected LazyOptional<IEnergyStorage> sourceCap = LazyOptional.empty();
+
+    @Setter
+    protected LazyOptional<IEnergyStorage> sinkCap = LazyOptional.empty();
 
     @Setter
     protected int maxEnergyPerTransfer = Integer.MAX_VALUE;
@@ -24,21 +25,28 @@ public class EnergyTransfer {
     @Getter
     protected int prevEnergyTransferred = 0;
 
-    // --- Set source ---
-    public void source(IEnergySource source) {
-        this.source = source;
+    public void source(IEnergyStorage source) {
+        this.sourceCap = source != null ? LazyOptional.of(() -> source) : LazyOptional.empty();
+    }
+
+    public void source(LazyOptional<IEnergyStorage> source) {
+        this.sourceCap = source != null ? source : LazyOptional.empty();
     }
 
     public void source(Object source, ForgeDirection side) {
-        this.source = EnergyHelpers.getEnergySource(source, side);
+        this.sourceCap = EnergyHelpers.getEnergyStorage(source, side);
     }
 
-    public void sink(IEnergySink sink) {
-        this.sink = sink;
+    public void sink(IEnergyStorage sink) {
+        this.sinkCap = sink != null ? LazyOptional.of(() -> sink) : LazyOptional.empty();
+    }
+
+    public void sink(LazyOptional<IEnergyStorage> sink) {
+        this.sinkCap = sink != null ? sink : LazyOptional.empty();
     }
 
     public void sink(Object sink, ForgeDirection side) {
-        this.sink = EnergyHelpers.getEnergySink(sink, side);
+        this.sinkCap = EnergyHelpers.getEnergyStorage(sink, side);
     }
 
     public void push(Object self, ForgeDirection side, Object target) {
@@ -52,30 +60,51 @@ public class EnergyTransfer {
     }
 
     public int transfer() {
-        if (source == null || sink == null) {
+        if (!sourceCap.isPresent() || !sinkCap.isPresent()) {
             return 0;
         }
 
-        // 1. Simulate extraction
-        int toExtract = Math.min(maxEnergyPerTransfer, maxTotalTransferred);
-        int simulatedPull = source.extract(toExtract, true);
-        if (simulatedPull <= 0) {
+        int remainingAllowance = maxTotalTransferred - totalEnergyTransferred;
+        if (remainingAllowance <= 0) {
+            prevEnergyTransferred = 0;
             return 0;
         }
 
-        // 2. Simulate insert
-        int simulatedAccepted = sink.insert(simulatedPull, true);
-        if (simulatedAccepted <= 0) {
-            return 0;
-        }
+        int toTransfer = Math.min(maxEnergyPerTransfer, remainingAllowance);
 
-        // 3. Do actual extraction & insertion
-        int pulled = source.extract(simulatedAccepted, false);
-        int accepted = sink.insert(pulled, false);
+        return sourceCap.map(src -> sinkCap.map(snk -> {
+            int simulatedPull = src.extractEnergy(toTransfer, true);
+            if (simulatedPull <= 0) {
+                prevEnergyTransferred = 0;
+                return 0;
+            }
 
-        totalEnergyTransferred += accepted;
-        prevEnergyTransferred = accepted;
+            int simulatedAccepted = snk.receiveEnergy(simulatedPull, true);
+            if (simulatedAccepted <= 0) {
+                prevEnergyTransferred = 0;
+                return 0;
+            }
 
-        return accepted;
+            int actualPulled = src.extractEnergy(simulatedAccepted, false);
+            int actualAccepted = snk.receiveEnergy(actualPulled, false);
+
+            if (actualAccepted < actualPulled) {
+                int leak = actualPulled - actualAccepted;
+                src.receiveEnergy(leak, false);
+            }
+
+            totalEnergyTransferred += actualAccepted;
+            prevEnergyTransferred = actualAccepted;
+
+            return actualAccepted;
+        })
+            .orElseGet(() -> {
+                prevEnergyTransferred = 0;
+                return 0;
+            }))
+            .orElseGet(() -> {
+                prevEnergyTransferred = 0;
+                return 0;
+            });
     }
 }

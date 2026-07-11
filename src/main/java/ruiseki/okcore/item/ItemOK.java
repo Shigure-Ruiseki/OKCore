@@ -11,7 +11,7 @@ public class ItemOK extends Item implements IItem, IItemCapability, IItemSharedT
     }
 
     @Override
-    public Item getItem() {
+    public Item get() {
         return this;
     }
 }

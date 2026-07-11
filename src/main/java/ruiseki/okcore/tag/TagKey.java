@@ -36,7 +36,7 @@ public record TagKey<T> (ResourceKey<T> registry, ResourceLocation location) imp
     }
 
     public static <T> TagKey<T> fromNetwork(ExtendedBuffer buffer) throws IOException {
-        ResourceKey<?> regKey = ResourceKey.read(buffer);
+        ResourceKey<?> regKey = ResourceKey.fromNetwork(buffer);
         ResourceLocation loc = buffer.readResourceLocation();
         return create(regKey, loc);
     }

@@ -9,22 +9,20 @@ import ruiseki.okcore.item.ItemBlockOK;
 import ruiseki.okcore.recipe.IOreDictEntry;
 import ruiseki.okcore.registries.IRegistrable;
 
-public interface IBlock extends IRegistrable {
-
-    Block getBlock();
+public interface IBlock extends IRegistrable<Block> {
 
     boolean isHasSubtypes();
 
     @Override
     default void register(String name) {
-        getBlock().setBlockName(name);
+        get().setBlockName(name);
         registerBlock(name);
         registerTileEntity(name);
         registerComponent(name);
     }
 
     default void registerBlock(String name) {
-        GameRegistry.registerBlock(this.getBlock(), getItemBlockClass(), name);
+        GameRegistry.registerBlock(this.get(), getItemBlockClass(), name);
     }
 
     default void registerTileEntity(String name) {}

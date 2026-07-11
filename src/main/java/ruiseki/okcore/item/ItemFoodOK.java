@@ -10,7 +10,7 @@ public class ItemFoodOK extends ItemFood implements IItem {
     }
 
     @Override
-    public Item getItem() {
+    public Item get() {
         return this;
     }
 }

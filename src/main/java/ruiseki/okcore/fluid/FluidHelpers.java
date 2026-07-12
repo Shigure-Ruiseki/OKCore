@@ -85,7 +85,7 @@ public class FluidHelpers {
             return false;
         }
 
-        return CapabilityHelpers.getCapability(player, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        return CapabilityHelpers.getCapability(player, CapabilityItemHandler.ITEM_HANDLER)
             .map(playerInventory -> {
                 FluidActionResult actionResult = tryFillContainerAndStow(
                     heldItem,
@@ -434,7 +434,7 @@ public class FluidHelpers {
     }
 
     public static LazyOptional<IFluidHandlerItem> getFluidHandler(@NotNull ItemStack stack) {
-        return CapabilityHelpers.getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY);
+        return CapabilityHelpers.getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM);
     }
 
     @Nullable
@@ -457,7 +457,7 @@ public class FluidHelpers {
     }
 
     public static LazyOptional<IFluidHandler> getFluidHandler(TileEntity tile, ForgeDirection side) {
-        return CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
+        return CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER, side);
     }
 
     public static LazyOptional<IFluidHandler> getFluidHandler(World world, BlockPos pos, ForgeDirection side) {
@@ -736,9 +736,8 @@ public class FluidHelpers {
     }
 
     public static boolean hasFluidHandler(TileEntity tile, ForgeDirection side) {
-        return tile != null
-            && CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)
-                .isPresent();
+        return tile != null && CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER, side)
+            .isPresent();
     }
 
     public static boolean isEmptyOfFluid(ItemStack returnMe) {

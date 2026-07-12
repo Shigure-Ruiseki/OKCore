@@ -1,5 +1,6 @@
 package ruiseki.okcore.item;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,9 +26,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     public ItemStackHandler(int size) {
-        ItemStack[] stacks = new ItemStack[size];
-        Arrays.fill(stacks, null);
-        this.stacks = Arrays.asList(stacks);
+        setSize(size);
     }
 
     public ItemStackHandler(List<ItemStack> stacks) {
@@ -38,10 +37,14 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         this.stacks = Arrays.asList(stacks);
     }
 
+    public void setEmpty() {
+        this.stacks.replaceAll(ignored -> null);
+    }
+
     public void setSize(int size) {
-        ItemStack[] stacks = new ItemStack[size];
-        Arrays.fill(stacks, null);
-        this.stacks = Arrays.asList(stacks);
+        ItemStack[] array = new ItemStack[size];
+        Arrays.fill(array, null);
+        this.stacks = new ArrayList<>(Arrays.asList(array));
     }
 
     @Override
@@ -64,7 +67,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
 
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        if (stack == null) {
+        if (stack == null || stack.stackSize <= 0) {
             return null;
         } else {
             this.validateSlotIndex(slot);
@@ -100,7 +103,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
 
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if (amount == 0) {
+        if (amount <= 0) {
             return null;
         } else {
             this.validateSlotIndex(slot);

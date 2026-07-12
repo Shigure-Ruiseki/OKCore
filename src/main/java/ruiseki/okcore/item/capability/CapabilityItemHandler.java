@@ -18,7 +18,7 @@ import ruiseki.okcore.item.capability.wrapper.ItemHandlerWrapper;
 public class CapabilityItemHandler implements IInitListener {
 
     @CapabilityInject(IItemHandler.class)
-    public static Capability<IItemHandler> ITEM_HANDLER_CAPABILITY = null;
+    public static Capability<IItemHandler> ITEM_HANDLER = null;
 
     @SubscribeEvent
     public void attachMCTECapability(AttachCapabilitiesEvent<TileEntity> event) {

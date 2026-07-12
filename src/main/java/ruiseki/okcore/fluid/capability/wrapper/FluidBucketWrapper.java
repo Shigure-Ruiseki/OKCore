@@ -33,7 +33,7 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable ForgeDirection side) {
-        if (cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) {
+        if (cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM) {
             return holder.cast();
         }
         return LazyOptional.empty();

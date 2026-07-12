@@ -28,13 +28,13 @@ public class ItemHandlerResolver implements ICapabilityResolver {
 
     @Override
     public List<Capability<?>> getSupportedCapabilities() {
-        return List.of(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
+        return List.of(CapabilityItemHandler.ITEM_HANDLER);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> LazyOptional<T> resolve(Capability<T> capability, @Nullable ForgeDirection side) {
-        if (capability != CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return LazyOptional.empty();
+        if (capability != CapabilityItemHandler.ITEM_HANDLER) return LazyOptional.empty();
 
         ForgeDirection actualSide = (side == null) ? ForgeDirection.UNKNOWN : side;
 

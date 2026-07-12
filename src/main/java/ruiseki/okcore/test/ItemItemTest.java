@@ -3,7 +3,6 @@ package ruiseki.okcore.test;
 import java.util.List;
 import java.util.Set;
 
-import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -38,20 +37,6 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
     }
 
     @Override
-    public ItemStack onItemRightClick(ItemStack stack, World worldIn, EntityPlayer player) {
-        if (!player.capabilities.isCreativeMode) {
-            --stack.stackSize;
-        }
-
-        worldIn.playSoundAtEntity(player, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-        if (!worldIn.isRemote) {
-            worldIn.spawnEntityInWorld(new EntityEnderPearl(worldIn, player));
-        }
-
-        return stack;
-    }
-
-    @Override
     public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
         float hitX, float hitY, float hitZ) {
         if (world.isRemote) return true;
@@ -60,7 +45,7 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
         if (te != null) {
             ForgeDirection direction = ForgeDirection.getOrientation(side);
 
-            return CapabilityHelpers.getCapability(te, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction)
+            return CapabilityHelpers.getCapability(te, CapabilityItemHandler.ITEM_HANDLER, direction)
                 .map(handler -> {
                     ItemStack toInsert = new ItemStack(Items.stick);
                     ItemStack remainder = toInsert;

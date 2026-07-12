@@ -16,7 +16,7 @@ public class ItemHelpers {
     }
 
     public static LazyOptional<IItemHandler> getItemHandler(TileEntity tile, ForgeDirection side) {
-        return CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side);
+        return CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, side);
     }
 
     public static LazyOptional<IItemHandler> getItemHandler(World world, BlockPos pos, ForgeDirection side) {

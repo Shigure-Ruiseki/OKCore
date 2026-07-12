@@ -30,7 +30,7 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
     @Override
     public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection facing) {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM) {
             return holder.cast();
         }
         return LazyOptional.empty();

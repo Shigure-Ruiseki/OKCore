@@ -18,14 +18,14 @@ import ruiseki.okcore.json.AbstractJsonMaterial;
 import ruiseki.okcore.json.item.CompoundItemMaterial;
 import ruiseki.okcore.json.item.ItemMaterial;
 import ruiseki.okcore.network.ExtendedBuffer;
-import ruiseki.okcore.recipe.RecipeSerializerBase;
+import ruiseki.okcore.recipe.IRecipeSerializer;
 
-public class ShapedRecipeSerializer extends RecipeSerializerBase<ShapedRecipe> {
+public class ShapedRecipeSerializer implements IRecipeSerializer<ShapedRecipe> {
 
     public static final ShapedRecipeSerializer INSTANCE = new ShapedRecipeSerializer();
 
     @Override
-    protected ShapedRecipe readWithCondition(ResourceLocation id, JsonObject json) {
+    public ShapedRecipe fromJson(ResourceLocation id, JsonObject json) {
         ItemStack outputStack = null;
         if (json.has("result")) {
             ItemMaterial mat = new ItemMaterial();

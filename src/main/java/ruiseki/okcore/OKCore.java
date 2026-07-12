@@ -3,7 +3,6 @@ package ruiseki.okcore;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
@@ -40,8 +39,6 @@ import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
-import ruiseki.okcore.recipe.NBTShapedOreRecipe;
-import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -106,17 +103,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         super.init(event);
-
-        RecipeSorter.register(
-            Reference.PREFIX_MOD + "nbtshaped",
-            NBTShapedOreRecipe.class,
-            RecipeSorter.Category.SHAPED,
-            "after:minecraft:shaped");
-        RecipeSorter.register(
-            Reference.PREFIX_MOD + "nbtshapeless",
-            NBTShapelessOreRecipe.class,
-            RecipeSorter.Category.SHAPELESS,
-            "after:minecraft:shapeless");
     }
 
     @Override

@@ -12,9 +12,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
 
-import ruiseki.okcore.datacomponent.component.UseCooldown;
-import ruiseki.okcore.datacomponent.init.DataComponents;
-import ruiseki.okcore.helper.DataComponentHelpers;
+import ruiseki.okcore.item.IItemCooldown;
+import ruiseki.okcore.item.UseCooldown;
 
 public class ItemCooldowns {
 
@@ -60,7 +59,8 @@ public class ItemCooldowns {
     @Nullable
     public ResourceLocation getCooldownGroup(ItemStack item) {
         if (item == null || item.getItem() == null) return null;
-        UseCooldown useCooldown = DataComponentHelpers.get(item, DataComponents.USE_COOLDOWN);
+        if (!(item.getItem() instanceof IItemCooldown cooldown)) return null;
+        UseCooldown useCooldown = cooldown.getUseCooldown(item);
         if (useCooldown != null && useCooldown.cooldownGroup()
             .isPresent()) {
             return useCooldown.cooldownGroup()

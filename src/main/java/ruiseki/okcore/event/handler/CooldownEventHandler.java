@@ -6,12 +6,10 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import ruiseki.okcore.datacomponent.component.UseCooldown;
-import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.entity.cooldown.ItemCooldowns;
-import ruiseki.okcore.helper.DataComponentHelpers;
 import ruiseki.okcore.helper.EntityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
+import ruiseki.okcore.item.UseCooldown;
 
 public class CooldownEventHandler {
 
@@ -38,9 +36,10 @@ public class CooldownEventHandler {
                 return;
             }
 
-            UseCooldown cooldownData = DataComponentHelpers.get(stack, DataComponents.USE_COOLDOWN);
-            if (cooldownData != null) {
-                cooldownData.apply(stack, player);
+            if (!(stack.getItem() instanceof IItemCooldown cooldown)) return;
+            UseCooldown useCooldown = cooldown.getUseCooldown(stack);
+            if (useCooldown != null) {
+                useCooldown.apply(stack, player);
             }
         }
     }

@@ -18,9 +18,9 @@ import ruiseki.okcore.helper.GsonHelpers;
 import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.tag.Registries;
+import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
-import ruiseki.okcore.tag.entry.TagEntry;
 
 public class ItemMaterial extends IngredientMaterial {
 
@@ -160,19 +160,19 @@ public class ItemMaterial extends IngredientMaterial {
             ResourceLocation loc = new ResourceLocation(tagStr);
             TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
 
-            Set<TagEntry<ItemStack>> entries = TagManager.getManager()
+            Set<TagEntry> entries = TagManager.getManager()
                 .getEntries(tagKey);
             if (entries == null || entries.isEmpty()) return null;
 
-            TagEntry<ItemStack> firstEntry = entries.iterator()
+            TagEntry firstEntry = entries.iterator()
                 .next();
             Item item = GameData.getItemRegistry()
                 .getObject(
-                    firstEntry.getId()
+                    firstEntry.id()
                         .toString());
             if (item == null) return null;
 
-            int itemMeta = firstEntry.getMeta() == TagEntry.WILDCARD ? 0 : firstEntry.getMeta();
+            int itemMeta = firstEntry.meta() == TagEntry.WILDCARD ? 0 : firstEntry.meta();
             ItemStack result = new ItemStack(item, count, itemMeta);
             if (nbt != null) {
                 result.setTagCompound((NBTTagCompound) nbt.copy());
@@ -271,7 +271,7 @@ public class ItemMaterial extends IngredientMaterial {
             if (this.tag.startsWith("#") || this.tag.contains(":")) {
                 String tagIdentifier = this.tag.startsWith("#") ? this.tag.substring(1) : this.tag;
                 ResourceLocation loc = new ResourceLocation(tagIdentifier);
-                TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
+                TagKey<Item> tagKey = TagKey.create(Registries.ITEM, loc);
                 return TagHelpers.hasTag(stack, tagKey);
             }
 

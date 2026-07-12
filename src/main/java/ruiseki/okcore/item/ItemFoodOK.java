@@ -5,21 +5,12 @@ import net.minecraft.item.ItemFood;
 
 public class ItemFoodOK extends ItemFood implements IItem {
 
-    private final String name;
-
-    public ItemFoodOK(String name, int amount, float saturation, boolean isWolfFood) {
+    public ItemFoodOK(int amount, float saturation, boolean isWolfFood) {
         super(amount, saturation, isWolfFood);
-        this.name = name;
-        this.setUnlocalizedName(this.name);
     }
 
     @Override
-    public Item getItem() {
+    public Item get() {
         return this;
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
     }
 }

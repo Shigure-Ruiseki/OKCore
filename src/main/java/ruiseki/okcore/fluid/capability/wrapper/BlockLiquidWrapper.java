@@ -5,15 +5,14 @@ import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.fluid.FluidTankProperties;
+import ruiseki.okcore.fluid.IFluidHandler;
+import ruiseki.okcore.fluid.IFluidTankProperties;
 
 public class BlockLiquidWrapper implements IFluidHandler {
 
@@ -28,7 +27,18 @@ public class BlockLiquidWrapper implements IFluidHandler {
     }
 
     @Override
-    public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+    public IFluidTankProperties[] getTankProperties() {
+        FluidStack containedStack = null;
+        Block blockState = blockPos.getBlock(world);
+        if (blockState == blockLiquid) {
+            containedStack = getStack();
+        }
+        return new FluidTankProperties[] {
+            new FluidTankProperties(containedStack, FluidHelpers.BUCKET_VOLUME, false, true) };
+    }
+
+    @Override
+    public int fill(FluidStack resource, boolean doFill) {
         if (resource == null || resource.amount < FluidHelpers.BUCKET_VOLUME) {
             return 0;
         }
@@ -50,7 +60,7 @@ public class BlockLiquidWrapper implements IFluidHandler {
     }
 
     @Override
-    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
+    public FluidStack drain(FluidStack resource, boolean doDrain) {
         if (resource == null || resource.amount < FluidHelpers.BUCKET_VOLUME) {
             return null;
         }
@@ -74,7 +84,7 @@ public class BlockLiquidWrapper implements IFluidHandler {
     }
 
     @Override
-    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
+    public FluidStack drain(int maxDrain, boolean doDrain) {
         if (maxDrain < FluidHelpers.BUCKET_VOLUME) {
             return null;
         }
@@ -94,30 +104,6 @@ public class BlockLiquidWrapper implements IFluidHandler {
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean canFill(ForgeDirection from, Fluid fluid) {
-        return false;
-    }
-
-    @Override
-    public boolean canDrain(ForgeDirection from, Fluid fluid) {
-        if (fluid == null) return false;
-        FluidStack containedStack = getStack();
-        return containedStack != null && containedStack.getFluid() == fluid;
-    }
-
-    @Override
-    public FluidTankInfo[] getTankInfo(ForgeDirection from) {
-        FluidStack containedStack = null;
-        Block block = world.getBlock(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-
-        if (block == blockLiquid) {
-            containedStack = getStack();
-        }
-
-        return new FluidTankInfo[] { new FluidTankInfo(containedStack, FluidHelpers.BUCKET_VOLUME) };
     }
 
     private FluidStack getStack() {

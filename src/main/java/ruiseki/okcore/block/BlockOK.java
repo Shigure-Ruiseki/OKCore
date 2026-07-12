@@ -17,12 +17,9 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
-import cpw.mods.fml.common.registry.GameRegistry;
 import lombok.experimental.Delegate;
-import ruiseki.okcore.OKCore;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -32,9 +29,6 @@ import ruiseki.okcore.tileentity.TileEntityOK;
 
 public class BlockOK extends Block implements IBlock, IBlockPropertyProvider {
 
-    protected final Class<? extends TileEntityOK> teClass;
-    protected final String name;
-
     @Delegate
     private final IBlockPropertyProvider propertyComponent = new BlockPropertyProviderComponent(this);
 
@@ -42,30 +36,19 @@ public class BlockOK extends Block implements IBlock, IBlockPropertyProvider {
     protected boolean isFullSize = true;
     public boolean hasSubtypes = false;
 
-    protected BlockOK(String name) {
-        this(name, null, new Material(MapColor.ironColor));
+    protected BlockOK() {
+        this(new Material(MapColor.ironColor));
     }
 
-    public BlockOK(String name, Material material) {
-        this(name, null, material);
-    }
-
-    protected BlockOK(String name, Class<? extends TileEntityOK> teClass) {
-        this(name, teClass, new Material(MapColor.ironColor));
-    }
-
-    protected BlockOK(String name, @Nullable Class<? extends TileEntityOK> teClass, Material mat) {
+    protected BlockOK(Material mat) {
         super(mat);
-        this.teClass = teClass;
-        this.name = name;
         setHardness(0.5F);
-        setBlockName(name);
         setHarvestLevel("pickaxe", 0);
         this.setStepSound(getSoundForMaterial(mat));
     }
 
     @Override
-    public Block getBlock() {
+    public Block get() {
         return this;
     }
 
@@ -74,50 +57,9 @@ public class BlockOK extends Block implements IBlock, IBlockPropertyProvider {
         return hasSubtypes;
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void registerTileEntity() {
-        if (teClass != null) {
-            GameRegistry.registerTileEntity(teClass, getName() + "TileEntity");
-        }
-    }
-
-    @Override
-    public boolean hasTileEntity(int metadata) {
-        return teClass != null;
-    }
-
-    @Override
-    public void registerComponent() {
-        IBlock.super.registerComponent();
-        registerProperties();
-    }
-
-    @Override
-    public TileEntity createTileEntity(World world, int metadata) {
-        if (teClass != null) {
-            try {
-                return teClass.getDeclaredConstructor()
-                    .newInstance();
-            } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Could not create tile entity for block {} for class {}", name, teClass);
-            }
-        }
-        return null;
-    }
-
     public BlockOK setTextureName(String texture) {
         this.textureName = texture;
         return this;
-    }
-
-    @Override
-    public String getTextureName() {
-        return textureName == null ? name : textureName;
     }
 
     @Override

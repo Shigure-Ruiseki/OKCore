@@ -58,6 +58,11 @@ public class CapabilityHelpers {
         return (world != null) ? getCapability(world, dimPos.getBlockPos(), capability, side) : LazyOptional.empty();
     }
 
+    public static <C> LazyOptional<C> getCapability(World world, int x, int y, int z, @NotNull Capability<C> capability,
+        @NotNull ForgeDirection side) {
+        return (world != null) ? getCapability(world, new BlockPos(x, y, z), capability, side) : LazyOptional.empty();
+    }
+
     public static <C> LazyOptional<C> getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
         @NotNull ForgeDirection side) {
         return getCapability(pos.getTileEntity(world), capability, side);

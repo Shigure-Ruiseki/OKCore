@@ -47,7 +47,7 @@ public abstract class MixinGuiScreen {
             target = "Lnet/minecraft/client/gui/GuiScreen;handleMouseInput()V",
             shift = At.Shift.AFTER))
     private void okcore$postMouseInput(CallbackInfo ci) {
-        if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcore$mouseHandled) {
+        if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcoregui$isMouseHandled()) {
             MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Post(okcore$getThis()));
         }
     }
@@ -70,7 +70,7 @@ public abstract class MixinGuiScreen {
             target = "Lnet/minecraft/client/gui/GuiScreen;handleKeyboardInput()V",
             shift = At.Shift.AFTER))
     private void okcore$postKeyInput(CallbackInfo ci) {
-        if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcore$keyHandled) {
+        if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcoregui$isKeyHandled()) {
             MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(okcore$getThis()));
         }
     }

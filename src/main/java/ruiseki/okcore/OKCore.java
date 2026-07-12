@@ -3,7 +3,6 @@ package ruiseki.okcore;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.oredict.RecipeSorter;
 
 import org.apache.logging.log4j.Level;
 
@@ -26,12 +25,11 @@ import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.capabilities.light.CapabilityLight;
 import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
-import ruiseki.okcore.command.CommandComponent;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ModConfig;
-import ruiseki.okcore.core.ModItems;
+import ruiseki.okcore.core.OKCoreBlocks;
+import ruiseki.okcore.core.OKCoreItems;
 import ruiseki.okcore.data.DatapackLoader;
-import ruiseki.okcore.datacomponent.init.DataComponents;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
@@ -41,8 +39,6 @@ import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
-import ruiseki.okcore.recipe.NBTShapedOreRecipe;
-import ruiseki.okcore.recipe.NBTShapelessOreRecipe;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -71,7 +67,6 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityRedstone());
         addInitListeners(new CapabilityGuide());
 
-        addInitListeners(new DataComponents());
         addInitListeners(new GuideRegistry());
     }
 
@@ -86,7 +81,6 @@ public class OKCore extends ModBase {
     @Override
     protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
         LiteralArgumentBuilder<ICommandSender> root = super.constructBaseCommand(server);
-        root.then(new CommandComponent(this).make());
         root.then(new CommandDatapack(this, server).make());
         return root;
     }
@@ -96,7 +90,8 @@ public class OKCore extends ModBase {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
 
-        ModItems.preInit();
+        OKCoreItems.register();
+        OKCoreBlocks.register();
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
         }
@@ -108,17 +103,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         super.init(event);
-
-        RecipeSorter.register(
-            Reference.PREFIX_MOD + "nbtshaped",
-            NBTShapedOreRecipe.class,
-            RecipeSorter.Category.SHAPED,
-            "after:minecraft:shaped");
-        RecipeSorter.register(
-            Reference.PREFIX_MOD + "nbtshapeless",
-            NBTShapelessOreRecipe.class,
-            RecipeSorter.Category.SHAPELESS,
-            "after:minecraft:shapeless");
     }
 
     @Override

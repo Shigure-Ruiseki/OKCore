@@ -13,9 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.collect.MapMaker;
 
 import ruiseki.okcore.network.ExtendedBuffer;
-import ruiseki.okcore.network.INetworkMaterial;
 
-public class ResourceKey<T> implements Comparable<ResourceKey<?>>, INetworkMaterial {
+public class ResourceKey<T> implements Comparable<ResourceKey<T>> {
 
     private static final ConcurrentMap<ResourceKey.InternKey, ResourceKey<?>> VALUES = new MapMaker().weakValues()
         .makeMap();
@@ -32,7 +31,7 @@ public class ResourceKey<T> implements Comparable<ResourceKey<?>>, INetworkMater
         return create(parentRegistry.location(), location);
     }
 
-    public static <T> ResourceKey<ResourceKey<T>> createRegistryKey(ResourceLocation registryName) {
+    public static <T> ResourceKey<T> createRegistryKey(ResourceLocation registryName) {
         return create(ROOT_REGISTRY_NAME, registryName);
     }
 
@@ -60,16 +59,12 @@ public class ResourceKey<T> implements Comparable<ResourceKey<?>>, INetworkMater
         return this.registryName;
     }
 
-    @Override
     public void toNetwork(ExtendedBuffer buffer) throws IOException {
         buffer.writeResourceLocation(this.registryName);
         buffer.writeResourceLocation(this.location);
     }
 
-    @Override
-    public void fromNetwork(ExtendedBuffer buffer) throws IOException {}
-
-    public static <T> ResourceKey<T> read(ExtendedBuffer buffer) throws IOException {
+    public static <T> ResourceKey<T> fromNetwork(ExtendedBuffer buffer) throws IOException {
         ResourceLocation regName = buffer.readResourceLocation();
         ResourceLocation loc = buffer.readResourceLocation();
         return create(regName, loc);
@@ -91,7 +86,7 @@ public class ResourceKey<T> implements Comparable<ResourceKey<?>>, INetworkMater
     }
 
     @Override
-    public int compareTo(@NotNull ResourceKey<?> o) {
+    public int compareTo(@NotNull ResourceKey<T> o) {
         int ret = this.registry()
             .toString()
             .compareTo(

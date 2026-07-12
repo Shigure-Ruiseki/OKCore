@@ -1,15 +1,14 @@
 package ruiseki.okcore.fluid.capability.wrapper;
 
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidBlock;
-import net.minecraftforge.fluids.IFluidHandler;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.fluid.FluidTankProperties;
+import ruiseki.okcore.fluid.IFluidHandler;
+import ruiseki.okcore.fluid.IFluidTankProperties;
 
 public class FluidBlockWrapper implements IFluidHandler {
 
@@ -24,7 +23,18 @@ public class FluidBlockWrapper implements IFluidHandler {
     }
 
     @Override
-    public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+    public IFluidTankProperties[] getTankProperties() {
+        float percentFilled = fluidBlock.getFilledPercentage(world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        if (percentFilled < 0) {
+            percentFilled *= -1;
+        }
+        int amountFilled = Math.round(FluidHelpers.BUCKET_VOLUME * percentFilled);
+        FluidStack fluid = amountFilled > 0 ? new FluidStack(fluidBlock.getFluid(), amountFilled) : null;
+        return new FluidTankProperties[] { new FluidTankProperties(fluid, FluidHelpers.BUCKET_VOLUME, false, true) };
+    }
+
+    @Override
+    public int fill(FluidStack resource, boolean doFill) {
         if (resource == null) {
             return 0;
         }
@@ -57,39 +67,36 @@ public class FluidBlockWrapper implements IFluidHandler {
     }
 
     @Override
-    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
-        if (resource == null || resource.getFluid() != fluidBlock.getFluid()) {
+    public FluidStack drain(FluidStack resource, boolean doDrain) {
+        if (resource == null || !fluidBlock.canDrain(world, blockPos.getX(), blockPos.getY(), blockPos.getZ())) {
             return null;
         }
-        return drain(from, resource.amount, doDrain);
+        FluidStack simulatedDrain = fluidBlock.drain(world, blockPos.getX(), blockPos.getY(), blockPos.getZ(), false);
+        if (resource.containsFluid(simulatedDrain)) {
+            if (doDrain) {
+                return fluidBlock.drain(world, blockPos.getX(), blockPos.getY(), blockPos.getZ(), true);
+            } else {
+                return simulatedDrain;
+            }
+        }
+
+        return null;
     }
 
     @Override
-    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
-        if (maxDrain < FluidHelpers.BUCKET_VOLUME) {
+    public FluidStack drain(int maxDrain, boolean doDrain) {
+        if (maxDrain <= 0 || !fluidBlock.canDrain(world, blockPos.getX(), blockPos.getY(), blockPos.getZ())) {
             return null;
         }
-        return fluidBlock.drain(world, blockPos.getX(), blockPos.getY(), blockPos.getZ(), doDrain);
-    }
-
-    @Override
-    public boolean canFill(ForgeDirection from, Fluid fluid) {
-        return fluid != null && fluid == fluidBlock.getFluid();
-    }
-
-    @Override
-    public boolean canDrain(ForgeDirection from, Fluid fluid) {
-        return fluid != null && fluid == fluidBlock.getFluid();
-    }
-
-    @Override
-    public FluidTankInfo[] getTankInfo(ForgeDirection from) {
-        float percentFilled = fluidBlock.getFilledPercentage(world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
-        if (percentFilled < 0) {
-            percentFilled *= -1;
+        FluidStack simulatedDrain = fluidBlock.drain(world, blockPos.getX(), blockPos.getY(), blockPos.getZ(), false);
+        if (simulatedDrain != null && simulatedDrain.amount <= maxDrain) {
+            if (doDrain) {
+                return fluidBlock.drain(world, blockPos.getX(), blockPos.getY(), blockPos.getZ(), true);
+            } else {
+                return simulatedDrain;
+            }
         }
-        int amountFilled = Math.round(FluidHelpers.BUCKET_VOLUME * percentFilled);
-        FluidStack fluid = amountFilled > 0 ? new FluidStack(fluidBlock.getFluid(), amountFilled) : null;
-        return new FluidTankInfo[] { new FluidTankInfo(fluid, FluidHelpers.BUCKET_VOLUME) };
+
+        return null;
     }
 }

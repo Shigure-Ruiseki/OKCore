@@ -5,19 +5,20 @@ import java.util.function.Consumer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.gtnewhorizon.gtnhlib.item.ItemStackPredicate;
+
 import lombok.Getter;
 import lombok.Setter;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.ItemStackHelpers;
-import ruiseki.okcore.item.capability.IItemSink;
-import ruiseki.okcore.item.capability.IItemSource;
 
 @SuppressWarnings({ "unused", "UnusedReturnValue" })
 public class ItemTransfer {
 
     @Getter
-    protected IItemSource source;
+    protected LazyOptional<IItemHandler> sourceCap = LazyOptional.empty();
     @Getter
-    protected IItemSink sink;
+    protected LazyOptional<IItemHandler> sinkCap = LazyOptional.empty();
 
     @Setter
     protected int stacksToTransfer = 1;
@@ -40,25 +41,33 @@ public class ItemTransfer {
     protected int[] sourceSlots, sinkSlots;
 
     @Setter
-    protected IItemStackPredicate filter;
+    protected ItemStackPredicate filter;
 
     @Setter
     protected Consumer<ItemStack> rejectedStacks;
 
-    public void source(IItemSource source) {
-        this.source = source;
+    public void source(IItemHandler source) {
+        this.sourceCap = source != null ? LazyOptional.of(() -> source) : LazyOptional.empty();
+    }
+
+    public void source(LazyOptional<IItemHandler> source) {
+        this.sourceCap = source != null ? source : LazyOptional.empty();
     }
 
     public void source(Object source, ForgeDirection side) {
-        this.source = ItemHelpers.getItemSource(source, side);
+        this.sourceCap = ItemHelpers.getItemHandler(source, side);
     }
 
-    public void sink(IItemSink sink) {
-        this.sink = sink;
+    public void sink(IItemHandler sink) {
+        this.sinkCap = sink != null ? LazyOptional.of(() -> sink) : LazyOptional.empty();
+    }
+
+    public void sink(LazyOptional<IItemHandler> sink) {
+        this.sinkCap = sink != null ? sink : LazyOptional.empty();
     }
 
     public void sink(Object sink, ForgeDirection side) {
-        this.sink = ItemHelpers.getItemSink(sink, side);
+        this.sinkCap = ItemHelpers.getItemHandler(sink, side);
     }
 
     public void push(Object self, ForgeDirection side, Object target) {
@@ -80,108 +89,105 @@ public class ItemTransfer {
     }
 
     public int transfer() {
-        if (source == null) return 0;
-        if (sink == null) return 0;
-        if (stacksToTransfer == 0) return 0;
-        if (maxItemsPerTransfer == 0) return 0;
+        if (!sourceCap.isPresent() || !sinkCap.isPresent()) return 0;
+        if (stacksToTransfer <= 0 || maxItemsPerTransfer <= 0) return 0;
 
-        source.resetSource();
-        sink.resetSink();
+        return sourceCap.map(sourceHandler -> sinkCap.map(sinkHandler -> {
 
-        source.setAllowedSourceSlots(sourceSlots);
-        sink.setAllowedSinkSlots(sinkSlots);
-        sink.setSlotStackLimit(maxSinkSlotStackSize);
+            int itemsTransferred = 0;
+            int stacksTransferred = 0;
 
-        IInventoryIterator iter = source.sourceIterator();
+            int[] sourceIndices = (sourceSlots != null && sourceSlots.length > 0) ? sourceSlots
+                : Utils.createSlotArray(sourceHandler.getSlots());
+            int[] sinkIndices = (sinkSlots != null && sinkSlots.length > 0) ? sinkSlots
+                : Utils.createSlotArray(sinkHandler.getSlots());
 
-        // Don't bother supporting iterator-less sources, it'll just be a performance and logic nightmare
-        if (iter == null) return 0;
+            outer: for (int srcSlot : sourceIndices) {
+                if (srcSlot < 0 || srcSlot >= sourceHandler.getSlots()) continue;
 
-        int itemsTransferred = 0, stacksTransferred = 0;
+                ItemStack available = sourceHandler.getStackInSlot(srcSlot);
+                if (ItemStackHelpers.isStackEmpty(available)) continue;
 
-        InsertionItemStack insertion = new InsertionItemStack();
+                if (filter != null && !filter.test(available)) continue;
 
-        outer: while (iter.hasNext() && stacksTransferred < stacksToTransfer
-            && itemsTransferred < maxTotalTransferred) {
-            IImmutableItemStack available = iter.next();
+                int availableCount = available.stackSize;
 
-            if (available == null || available.isEmpty()) continue;
+                while (availableCount > 0) {
+                    if (itemsTransferred >= maxTotalTransferred) break outer;
+                    if (stacksTransferred >= stacksToTransfer) break outer;
 
-            if (filter != null && !filter.test(available)) continue;
+                    int remainingAllowance = maxTotalTransferred - itemsTransferred;
+                    int toTransferThisOP = Math.min(remainingAllowance, maxItemsPerTransfer);
+                    int toExtract = Math.min(availableCount, toTransferThisOP);
 
-            int availableCount = available.getStackSize();
+                    ItemStack simulatedExtracted = sourceHandler.extractItem(srcSlot, toExtract, true);
+                    if (ItemStackHelpers.isStackEmpty(simulatedExtracted)) break;
 
-            // Loop through this slot until we've transferred everything out of it that we can
-            while (availableCount > 0) {
-                if (itemsTransferred >= maxTotalTransferred) break outer;
-                if (stacksTransferred >= stacksToTransfer) break outer;
+                    if (filter != null && !filter.test(simulatedExtracted)) break;
 
-                int remainingTransferAllowance = maxTotalTransferred - itemsTransferred;
+                    ItemStack remainder = simulatedExtracted.copy();
+                    int initialCount = remainder.stackSize;
 
-                int toTransferThisOP = Math.min(remainingTransferAllowance, maxItemsPerTransfer);
-                int toExtract = Math.min(availableCount, toTransferThisOP);
+                    for (int dstSlot : sinkIndices) {
+                        if (dstSlot < 0 || dstSlot >= sinkHandler.getSlots()) continue;
 
-                // Filters may depend on stack size. Re-check the exact amount about to be extracted.
-                if (filter != null && !filter.test(insertion.set(available, toExtract))) break;
+                        int currentSlotLimit = Math.min(sinkHandler.getSlotLimit(dstSlot), maxSinkSlotStackSize);
+                        ItemStack currentInSink = sinkHandler.getStackInSlot(dstSlot);
+                        if (!ItemStackHelpers.isStackEmpty(currentInSink)) {
+                            if (currentInSink.stackSize >= currentSlotLimit) continue;
+                        }
 
-                ItemStack extracted = iter.extract(toExtract, false);
+                        remainder = sinkHandler.insertItem(dstSlot, remainder, true);
+                        if (ItemStackHelpers.isStackEmpty(remainder)) break;
+                    }
 
-                // We couldn't extract anything, even though we should've been able to: go to the next source slot
-                if (ItemStackHelpers.isStackEmpty(extracted)) break;
+                    int acceptedCount = initialCount - (remainder == null ? 0 : remainder.stackSize);
+                    if (acceptedCount <= 0) break;
 
-                availableCount -= extracted.stackSize;
+                    ItemStack actualExtracted = sourceHandler.extractItem(srcSlot, acceptedCount, false);
+                    if (ItemStackHelpers.isStackEmpty(actualExtracted)) break;
 
-                // This should never happen, but extract() might return a stack that doesn't match the request, so check
-                // it again
-                if (filter != null && !filter.test(extracted)) {
-                    if (!ItemStackHelpers.isStackEmpty(extracted)) {
-                        availableCount += extracted.stackSize;
+                    availableCount -= actualExtracted.stackSize;
+                    ItemStack realRemainder = actualExtracted.copy();
 
-                        // Force insert the stack back into the source. This should only fail if another stack has ended
-                        // up in this slot somehow (which is a bug), in which case we just pass it to `rejectedStacks`.
-                        int rejected2 = iter.insert(insertion.set(extracted), true);
+                    for (int dstSlot : sinkIndices) {
+                        realRemainder = sinkHandler.insertItem(dstSlot, realRemainder, false);
+                        if (ItemStackHelpers.isStackEmpty(realRemainder)) break;
+                    }
 
-                        // If there isn't a rejectedStacks handler, the player is just SoL and the items are voided
-                        if (rejected2 > 0 && rejectedStacks != null) {
-                            rejectedStacks.accept(insertion.toStack(rejected2));
+                    if (!ItemStackHelpers.isStackEmpty(realRemainder)) {
+                        ItemStack leftOver = sourceHandler.insertItem(srcSlot, realRemainder, false);
+                        if (!ItemStackHelpers.isStackEmpty(leftOver) && rejectedStacks != null) {
+                            rejectedStacks.accept(leftOver);
                         }
                     }
 
-                    // Skip this slot to avoid retrying the same extraction as the previous iteration.
-                    break;
+                    int transferred = actualExtracted.stackSize - (realRemainder == null ? 0 : realRemainder.stackSize);
+                    if (transferred <= 0) break;
+
+                    itemsTransferred += transferred;
+                    stacksTransferred++;
                 }
-
-                // Try to insert the extracted stack
-                int rejected = sink.store(insertion.set(extracted));
-
-                if (rejected > 0) {
-                    availableCount += rejected;
-
-                    // Force insert the stack back into the source. This should only fail if another stack has ended up
-                    // in this slot somehow (which is a bug), in which case we just pass it to `rejectedStacks`.
-                    int rejected2 = iter.insert(insertion.set(extracted, rejected), true);
-
-                    // If there isn't a rejectedStacks handler, the player is just SoL and the items are voided
-                    if (rejected2 > 0 && rejectedStacks != null) {
-                        rejectedStacks.accept(insertion.toStack(rejected2));
-                    }
-                }
-
-                int transferred = extracted.stackSize - rejected;
-
-                if (transferred <= 0) break;
-
-                itemsTransferred += transferred;
-
-                stacksTransferred++;
             }
+
+            totalItemsTransferred += itemsTransferred;
+            totalStacksTransferred += stacksTransferred;
+            prevItemsTransferred = itemsTransferred;
+            prevStacksTransferred = stacksTransferred;
+
+            return itemsTransferred;
+
+        })
+            .orElse(0))
+            .orElse(0);
+    }
+
+    private static class Utils {
+
+        static int[] createSlotArray(int size) {
+            int[] array = new int[size];
+            for (int i = 0; i < size; i++) array[i] = i;
+            return array;
         }
-
-        totalItemsTransferred += itemsTransferred;
-        totalStacksTransferred += stacksTransferred;
-        prevItemsTransferred = itemsTransferred;
-        prevStacksTransferred = stacksTransferred;
-
-        return itemsTransferred;
     }
 }

@@ -1,8 +1,5 @@
 package ruiseki.okcore.mixins.early.capabilities;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -18,59 +15,37 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.CapabilityCache;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.item.capability.CapabilityItemHandler;
-import ruiseki.okcore.item.capability.minecraft.InventoryHandlerWrapper;
+import ruiseki.okcore.item.capability.wrapper.ChestHandlerResolver;
 
 @NotNullByDefault
 @Mixin(TileEntityChest.class)
 @Implements(@Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"))
-public abstract class MixinTileEntityChest extends MixinTileEntity implements ICapabilitySerializable {
+public abstract class MixinTileEntityChest extends MixinTileEntity {
 
     @Unique
-    private final LazyOptional<InventoryHandlerWrapper>[] okcore$itemWrappers = new LazyOptional[7];
+    private final CapabilityCache okcore$cache = new CapabilityCache();
 
-    @Unique
-    private int okcore$getDirectionIndex(@Nullable ForgeDirection facing) {
-        return facing == null ? 6 : facing.ordinal();
+    @Inject(method = "<init>*", at = @At("RETURN"))
+    private void okcore$init(CallbackInfo ci) {
+        TileEntityChest self = (TileEntityChest) (Object) this;
+        okcore$cache.addCapabilityResolver(new ChestHandlerResolver(self));
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
     public <T> LazyOptional<T> okcorecap$getCapability(Capability<T> capability, @Nullable ForgeDirection facing) {
-        TileEntityChest self = (TileEntityChest) (Object) this;
-        Block block = self.getBlockType();
-
-        if (block instanceof BlockChest chest) {
-            IInventory inventory = chest.func_149951_m(self.getWorldObj(), self.xCoord, self.yCoord, self.zCoord);
-            if (inventory != null) {
-                int idx = okcore$getDirectionIndex(facing);
-
-                if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY
-                    || capability == CapabilityItemHandler.ITEM_SINK_CAPABILITY
-                    || capability == CapabilityItemHandler.ITEM_SOURCE_CAPABILITY) {
-
-                    if (okcore$itemWrappers[idx] == null) {
-                        okcore$itemWrappers[idx] = LazyOptional
-                            .of(() -> new InventoryHandlerWrapper(inventory, facing));
-                    }
-
-                    return okcore$itemWrappers[idx].cast();
-                }
-            }
+        LazyOptional<T> result = okcore$cache.getCapability(capability, facing);
+        if (result.isPresent()) {
+            return result;
         }
-
         return super.okcorecap$getCapability(capability, facing);
     }
 
     @Inject(method = "invalidate", at = @At("RETURN"))
     private void okcore$invalidate(CallbackInfo ci) {
-        for (int i = 0; i < 7; i++) {
-            if (okcore$itemWrappers[i] != null) {
-                okcore$itemWrappers[i].invalidate();
-                okcore$itemWrappers[i] = LazyOptional.empty();
-            }
-        }
+        okcore$cache.invalidateAll();
     }
 
     public NBTTagCompound okcorecap$serializeNBT() {

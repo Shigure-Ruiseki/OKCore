@@ -5,7 +5,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,8 +71,8 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     }
 
     @Override
-    public FluidTankInfo[] getTankInfo(ForgeDirection from) {
-        return new FluidTankInfo[] { new FluidTankInfo(getFluid(), capacity) };
+    public IFluidTankProperties[] getTankProperties() {
+        return new FluidTankProperties[] { new FluidTankProperties(getFluid(), capacity) };
     }
 
     @Override
@@ -125,7 +124,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
-        if (container == null || container == null || maxDrain <= 0) return null;
+        if (container == null || maxDrain <= 0) return null;
 
         if (container.stackSize != 1) return null;
 
@@ -172,7 +171,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     @Override
     public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection facing) {
-        if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM) {
             return holder.cast();
         }
         return LazyOptional.empty();

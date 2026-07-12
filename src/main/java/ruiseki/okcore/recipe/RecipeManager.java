@@ -29,6 +29,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DataManager;
 import ruiseki.okcore.data.SimpleJsonResourceReloadListener;
+import ruiseki.okcore.data.condition.ConditionRegistry;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.Helpers;
 
@@ -63,6 +64,11 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
             try {
                 if (element.isJsonObject()) {
                     JsonObject jsonObject = element.getAsJsonObject();
+                    if (!ConditionRegistry.checkConditional(jsonObject)) {
+                        OKCore.okLog(Level.INFO, "Skipping loading recipe {} as its conditions were not met", id);
+                        continue;
+                    }
+
                     IRecipeOK<?> recipe = RecipeRegistry.deserialize(id, jsonObject);
                     if (recipe == null) {
                         OKCore.okLog(Level.INFO, "Skipping loading recipe {} as its serializer returned null", id);

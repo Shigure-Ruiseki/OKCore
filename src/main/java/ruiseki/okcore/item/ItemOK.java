@@ -6,21 +6,12 @@ import ruiseki.okcore.capabilities.IItemCapability;
 
 public class ItemOK extends Item implements IItem, IItemCapability, IItemSharedTag {
 
-    private final String name;
-
-    public ItemOK(String name) {
+    public ItemOK() {
         super();
-        this.name = name;
-        setUnlocalizedName(name);
     }
 
     @Override
-    public Item getItem() {
+    public Item get() {
         return this;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 }

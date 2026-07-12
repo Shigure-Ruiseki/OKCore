@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -15,11 +15,10 @@ import net.minecraftforge.oredict.OreDictionary;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagKey;
-import ruiseki.okcore.tag.TagManager;
-import ruiseki.okcore.tag.entry.TagEntry;
 
 public class CompoundItemMaterial extends IngredientMaterial {
 
@@ -111,16 +110,14 @@ public class CompoundItemMaterial extends IngredientMaterial {
                 if (tagStr.startsWith("#") || tagStr.contains(":")) {
                     try {
                         String tagIdentifier = tagStr.startsWith("#") ? tagStr.substring(1) : tagStr;
+
                         ResourceLocation loc = new ResourceLocation(tagIdentifier);
-                        TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
+                        TagKey<Item> tagKey = TagKey.create(Registries.ITEM, loc);
 
-                        Set<TagEntry<ItemStack>> entries = TagManager.getManager()
-                            .getEntries(tagKey);
-                        if (entries != null) {
-                            for (TagEntry<ItemStack> entry : entries) {
-                                ItemStack copy = entry.get();
-                                if (copy == null) continue;
-
+                        List<ItemStack> stacks = TagHelpers.toItemStacks(tagKey);
+                        if (!stacks.isEmpty()) {
+                            for (ItemStack stack : stacks) {
+                                ItemStack copy = stack.copy();
                                 copy.stackSize = mat.getAmount();
                                 if (mat.getNbt() != null) {
                                     copy.setTagCompound(

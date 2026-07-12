@@ -13,6 +13,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.event.input.IGuiInputHandle;
 import ruiseki.okcore.event.input.MouseInputEvent;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.network.packet.PacketItemToggle;
@@ -48,6 +49,9 @@ public class InputEventHandler {
                     if (toggle.canMouseClicked(stack, button) && shiftOK) {
                         OKCore.instance.getPacketHandler()
                             .sendToServer(new PacketItemToggle(slot.slotNumber));
+                        if (gui instanceof IGuiInputHandle handle) {
+                            handle.setMouseHandled(true);
+                        }
 
                         event.setCanceled(true);
 

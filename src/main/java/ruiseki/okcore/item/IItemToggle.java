@@ -8,7 +8,7 @@ public interface IItemToggle {
 
     String TOGGLE_TAG = "on_off";
 
-    void toggle(EntityPlayer player, ItemStack held);
+    void toggle(EntityPlayer player, ItemStack slotStack);
 
     default boolean isOn(ItemStack held) {
         if (held == null || !held.hasTagCompound()) return false;

@@ -19,25 +19,18 @@ import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
-import net.minecraftforge.fluids.IFluidHandler;
 import net.minecraftforge.fluids.IFluidTank;
 
 import org.apache.logging.log4j.Level;
-import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
-import ruiseki.okcore.fluid.capability.FluidSink;
-import ruiseki.okcore.fluid.capability.FluidSource;
-import ruiseki.okcore.fluid.capability.IFluidSink;
-import ruiseki.okcore.fluid.capability.IFluidSource;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.BlockWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.FluidBlockWrapper;
@@ -51,76 +44,6 @@ import ruiseki.okcore.item.capability.CapabilityItemHandler;
 public class FluidHelpers {
 
     public static final int BUCKET_VOLUME = FluidContainerRegistry.BUCKET_VOLUME;
-
-    private static int counter = 0;
-    public static final int WRAP_HANDLER = 0b1 << counter++;
-    public static final int FOR_INSERTS = 0b1 << counter++;
-    public static final int FOR_EXTRACTS = 0b1 << counter++;
-    public static final int DEFAULT = WRAP_HANDLER | FOR_INSERTS | FOR_EXTRACTS;
-
-    public static IFluidSource getFluidSource(Object obj, ForgeDirection side) {
-        return getFluidSource(obj, side, DEFAULT);
-    }
-
-    public static IFluidSource getFluidSource(Object obj, ForgeDirection side,
-        @MagicConstant(flagsFromClass = FluidHelpers.class) int usage) {
-        if ((usage & FOR_EXTRACTS) == 0) {
-            return null;
-        }
-
-        if (obj instanceof IFluidSource source) {
-            return source;
-        }
-
-        if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IFluidSource source = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SOURCE_CAPABILITY, side)
-                .getOrNull();
-            if (source != null) {
-                return source;
-            }
-        }
-
-        if (obj instanceof IFluidHandler handler) {
-            IFluidSource source = new FluidSource(handler, side);
-            if (source != null) {
-                return source;
-            }
-        }
-
-        return null;
-    }
-
-    public static IFluidSink getFluidSink(Object obj, ForgeDirection side) {
-        return getFluidSink(obj, side, DEFAULT);
-    }
-
-    public static IFluidSink getFluidSink(Object obj, ForgeDirection side,
-        @MagicConstant(flagsFromClass = FluidHelpers.class) int usage) {
-        if ((usage & FOR_INSERTS) == 0) {
-            return null;
-        }
-
-        if (obj instanceof IFluidSink sink) {
-            return sink;
-        }
-
-        if (obj instanceof ICapabilityProvider capabilityProvider) {
-            IFluidSink sink = capabilityProvider.getCapability(CapabilityFluidHandler.FLUID_SINK_CAPABILITY, side)
-                .getOrNull();
-            if (sink != null) {
-                return sink;
-            }
-        }
-
-        if (obj instanceof IFluidHandler handler) {
-            IFluidSink sink = new FluidSink(handler, side);
-            if (sink != null) {
-                return sink;
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Used to handle the common case of a player holding a fluid item and right-clicking on a fluid handler block.
@@ -162,7 +85,7 @@ public class FluidHelpers {
             return false;
         }
 
-        return CapabilityHelpers.getCapability(player, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        return CapabilityHelpers.getCapability(player, CapabilityItemHandler.ITEM_HANDLER)
             .map(playerInventory -> {
                 FluidActionResult actionResult = tryFillContainerAndStow(
                     heldItem,
@@ -511,7 +434,7 @@ public class FluidHelpers {
     }
 
     public static LazyOptional<IFluidHandlerItem> getFluidHandler(@NotNull ItemStack stack) {
-        return CapabilityHelpers.getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY);
+        return CapabilityHelpers.getCapability(stack, CapabilityFluidHandler.FLUID_HANDLER_ITEM);
     }
 
     @Nullable
@@ -529,8 +452,12 @@ public class FluidHelpers {
         return null;
     }
 
+    public static LazyOptional<IFluidHandler> getFluidHandler(Object object, ForgeDirection side) {
+        return object instanceof TileEntity tile ? getFluidHandler(tile, side) : LazyOptional.empty();
+    }
+
     public static LazyOptional<IFluidHandler> getFluidHandler(TileEntity tile, ForgeDirection side) {
-        return CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
+        return CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER, side);
     }
 
     public static LazyOptional<IFluidHandler> getFluidHandler(World world, BlockPos pos, ForgeDirection side) {
@@ -809,9 +736,8 @@ public class FluidHelpers {
     }
 
     public static boolean hasFluidHandler(TileEntity tile, ForgeDirection side) {
-        return tile != null
-            && CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)
-                .isPresent();
+        return tile != null && CapabilityHelpers.getCapability(tile, CapabilityFluidHandler.FLUID_HANDLER, side)
+            .isPresent();
     }
 
     public static boolean isEmptyOfFluid(ItemStack returnMe) {

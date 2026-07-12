@@ -12,7 +12,7 @@ import com.google.common.collect.Interners;
 
 import ruiseki.okcore.network.ExtendedBuffer;
 
-public record TagKey<T> (ResourceKey<?> registry, ResourceLocation location) implements Comparable<TagKey<?>> {
+public record TagKey<T> (ResourceKey<T> registry, ResourceLocation location) implements Comparable<TagKey<T>> {
 
     private static final Interner<TagKey<?>> VALUES = Interners.newWeakInterner();
 
@@ -36,13 +36,13 @@ public record TagKey<T> (ResourceKey<?> registry, ResourceLocation location) imp
     }
 
     public static <T> TagKey<T> fromNetwork(ExtendedBuffer buffer) throws IOException {
-        ResourceKey<?> regKey = ResourceKey.read(buffer);
+        ResourceKey<?> regKey = ResourceKey.fromNetwork(buffer);
         ResourceLocation loc = buffer.readResourceLocation();
         return create(regKey, loc);
     }
 
     @Override
-    public int compareTo(@NotNull TagKey<?> o) {
+    public int compareTo(@NotNull TagKey<T> o) {
         int ret = this.registry.location()
             .toString()
             .compareTo(

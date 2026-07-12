@@ -9,7 +9,13 @@ import ruiseki.okcore.event.handler.InputEventHandler;
 import ruiseki.okcore.event.handler.TileEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
-import ruiseki.okcore.network.packet.*;
+import ruiseki.okcore.network.packet.PacketCooldown;
+import ruiseki.okcore.network.packet.PacketItemToggle;
+import ruiseki.okcore.network.packet.PacketSound;
+import ruiseki.okcore.network.packet.PacketSyncCursorStack;
+import ruiseki.okcore.network.packet.PacketSyncGuidePos;
+import ruiseki.okcore.network.packet.PacketUpdateRecipes;
+import ruiseki.okcore.network.packet.PacketUpdateTags;
 import ruiseki.okcore.proxy.CommonProxyComponent;
 
 public class CommonProxy extends CommonProxyComponent {

@@ -4,16 +4,10 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 
-import ruiseki.okcore.item.IItemHandler;
-
 public abstract class SidedInventoryComponent extends InventoryComponent implements ISidedInventory {
 
-    public SidedInventoryComponent(TileEntity tile, IItemHandler handler, String name) {
-        super(tile, handler, name);
-    }
-
-    public SidedInventoryComponent(TileEntity tile, IItemHandler handler) {
-        super(tile, handler, null);
+    public SidedInventoryComponent(TileEntity tile) {
+        super(tile);
     }
 
     @Override

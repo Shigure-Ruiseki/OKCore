@@ -4,40 +4,49 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
+
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.IItemHandlerModifiable;
+import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
 public class InventoryComponent implements IInventory {
 
+    @NotNull
     private final TileEntity tile;
-    private final String name;
-    private final IItemHandler handler;
 
-    public InventoryComponent(TileEntity tile, IItemHandler handler, String name) {
+    public InventoryComponent(@NotNull TileEntity tile) {
         this.tile = tile;
-        this.name = name;
-        this.handler = handler;
     }
 
-    public InventoryComponent(TileEntity tile, IItemHandler handler) {
-        this(tile, handler, null);
+    protected IItemHandler getHandler() {
+        return CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, ForgeDirection.UNKNOWN)
+            .getOrNull();
     }
 
     @Override
     public int getSizeInventory() {
-        return handler.getSlots();
+        IItemHandler handler = getHandler();
+        return handler != null ? handler.getSlots() : 0;
     }
 
     @Override
     public ItemStack getStackInSlot(int slotIn) {
-        return handler.getStackInSlot(slotIn);
+        IItemHandler handler = getHandler();
+        return handler != null ? handler.getStackInSlot(slotIn) : null;
     }
 
     @Override
     public ItemStack decrStackSize(int index, int count) {
+        IItemHandler handler = getHandler();
+        if (handler == null) return null;
+
         ItemStack result = handler.extractItem(index, count, false);
-        if (result != null) markDirty();
+        if (result != null) this.markDirty();
+
         return result;
     }
 
@@ -48,19 +57,22 @@ public class InventoryComponent implements IInventory {
 
     @Override
     public void setInventorySlotContents(int index, ItemStack stack) {
-        if (handler instanceof IItemHandlerModifiable modifiable) modifiable.setStackInSlot(index, stack);
+        IItemHandler handler = getHandler();
+        if (handler instanceof IItemHandlerModifiable modifiable) {
+            modifiable.setStackInSlot(index, stack);
+        }
 
-        markDirty();
+        this.markDirty();
     }
 
     @Override
     public String getInventoryName() {
-        return this.name;
+        return "container.inventory";
     }
 
     @Override
     public boolean hasCustomInventoryName() {
-        return this.name != null;
+        return false;
     }
 
     @Override
@@ -70,27 +82,23 @@ public class InventoryComponent implements IInventory {
 
     @Override
     public void markDirty() {
-        this.tile.markDirty();
+
     }
 
     @Override
     public boolean isUseableByPlayer(EntityPlayer player) {
-        if (tile == null) return true;
         return player.getDistanceSq(tile.xCoord + 0.5D, tile.yCoord + 0.5D, tile.zCoord + 0.5D) <= 64.0D;
     }
 
     @Override
-    public void openInventory() {
-
-    }
+    public void openInventory() {}
 
     @Override
-    public void closeInventory() {
-
-    }
+    public void closeInventory() {}
 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
-        return handler.isItemValid(index, stack);
+        IItemHandler handler = getHandler();
+        return handler != null && handler.isItemValid(index, stack);
     }
 }

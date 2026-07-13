@@ -1,4 +1,4 @@
-package ruiseki.okcore.fluid;
+package ruiseki.okcore.fluid.handler;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.Fluid;

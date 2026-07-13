@@ -6,7 +6,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.okcore.helper.ItemHandlerHelpers;
-import ruiseki.okcore.item.IItemHandlerModifiable;
+import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
 public class InvWrapper implements IItemHandlerModifiable {
 

@@ -1,4 +1,4 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.handler;
 
 import java.util.ArrayList;
 import java.util.List;

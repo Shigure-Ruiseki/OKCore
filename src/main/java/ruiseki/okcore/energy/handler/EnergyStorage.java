@@ -1,4 +1,4 @@
-package ruiseki.okcore.energy;
+package ruiseki.okcore.energy.handler;
 
 import net.minecraft.nbt.NBTTagCompound;
 

@@ -6,9 +6,9 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
-import ruiseki.okcore.fluid.FluidTankProperties;
-import ruiseki.okcore.fluid.IFluidHandler;
-import ruiseki.okcore.fluid.IFluidTankProperties;
+import ruiseki.okcore.fluid.handler.FluidTankProperties;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 public class EmptyFluidHandler implements IFluidHandler, IFluidTank {
 

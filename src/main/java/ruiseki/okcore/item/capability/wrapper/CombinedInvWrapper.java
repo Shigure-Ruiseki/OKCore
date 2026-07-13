@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterators;
 
-import ruiseki.okcore.item.EmptyHandler;
-import ruiseki.okcore.item.IItemHandlerModifiable;
+import ruiseki.okcore.item.handler.EmptyHandler;
+import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
 public class CombinedInvWrapper implements IItemHandlerModifiable, Iterable<IItemHandlerModifiable> {
 

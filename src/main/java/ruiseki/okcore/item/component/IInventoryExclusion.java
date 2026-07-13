@@ -1,4 +1,4 @@
-package ruiseki.okcore.inventory;
+package ruiseki.okcore.item.component;
 
 public interface IInventoryExclusion {
 

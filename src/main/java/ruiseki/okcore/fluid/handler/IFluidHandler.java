@@ -1,4 +1,4 @@
-package ruiseki.okcore.fluid;
+package ruiseki.okcore.fluid.handler;
 
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;

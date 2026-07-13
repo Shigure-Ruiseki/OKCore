@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 
 import com.google.common.base.Preconditions;
 
-import ruiseki.okcore.item.IItemHandlerModifiable;
+import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
 /**
  * A wrapper that composes another IItemHandlerModifiable, exposing only a range of the composed slots. Shifting of slot

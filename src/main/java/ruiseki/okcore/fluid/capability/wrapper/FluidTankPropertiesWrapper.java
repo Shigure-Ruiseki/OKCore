@@ -4,8 +4,8 @@ import javax.annotation.Nullable;
 
 import net.minecraftforge.fluids.FluidStack;
 
-import ruiseki.okcore.fluid.FluidTank;
-import ruiseki.okcore.fluid.IFluidTankProperties;
+import ruiseki.okcore.fluid.handler.FluidTank;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 /**
  * Basic {@link IFluidTankProperties} wrapper for {@link FluidTank}.

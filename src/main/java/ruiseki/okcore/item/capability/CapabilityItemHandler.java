@@ -12,8 +12,8 @@ import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.init.IInitListener;
-import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.capability.wrapper.ItemHandlerWrapper;
+import ruiseki.okcore.item.handler.IItemHandler;
 
 public class CapabilityItemHandler implements IInitListener {
 

@@ -16,11 +16,11 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
-import ruiseki.okcore.fluid.IFluidHandler;
-import ruiseki.okcore.fluid.IFluidHandlerItem;
 import ruiseki.okcore.fluid.capability.wrapper.FluidBucketWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.FluidContainerWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.FluidHandlerWrapperProvider;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.init.IInitListener;
 
 public class CapabilityFluidHandler implements IInitListener {

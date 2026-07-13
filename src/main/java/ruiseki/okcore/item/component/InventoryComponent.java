@@ -1,4 +1,4 @@
-package ruiseki.okcore.inventory;
+package ruiseki.okcore.item.component;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -9,9 +9,9 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.item.IItemHandler;
-import ruiseki.okcore.item.IItemHandlerModifiable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
+import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
 public class InventoryComponent implements IInventory {
 

@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.ICapabilityResolver;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
 
 @NotNullByDefault
 public class ItemHandlerResolver implements ICapabilityResolver {

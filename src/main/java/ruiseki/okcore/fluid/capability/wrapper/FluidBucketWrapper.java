@@ -18,10 +18,10 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.FluidHelpers;
-import ruiseki.okcore.fluid.FluidTankProperties;
-import ruiseki.okcore.fluid.IFluidHandlerItem;
-import ruiseki.okcore.fluid.IFluidTankProperties;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.handler.FluidTankProperties;
+import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvider {
 

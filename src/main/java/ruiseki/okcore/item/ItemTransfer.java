@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.item.handler.IItemHandler;
 
 @SuppressWarnings({ "unused", "UnusedReturnValue" })
 public class ItemTransfer {

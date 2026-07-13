@@ -9,8 +9,8 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
-import ruiseki.okcore.fluid.IFluidHandler;
-import ruiseki.okcore.fluid.IFluidTankProperties;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 /**
  * VoidFluidHandler is a template fluid handler that can be filled indefinitely without ever getting full.

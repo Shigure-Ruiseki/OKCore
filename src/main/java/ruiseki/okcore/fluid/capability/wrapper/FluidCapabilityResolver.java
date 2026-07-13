@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.ICapabilityResolver;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.fluid.IFluidHandler;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
 
 @NotNullByDefault
 public class FluidCapabilityResolver implements ICapabilityResolver {

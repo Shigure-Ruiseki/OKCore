@@ -8,8 +8,8 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.item.IItemHandler;
-import ruiseki.okcore.item.PlayerMainInvWrapper;
+import ruiseki.okcore.item.capability.wrapper.PlayerMainInvWrapper;
+import ruiseki.okcore.item.handler.IItemHandler;
 
 public class ItemHandlerHelpers {
 

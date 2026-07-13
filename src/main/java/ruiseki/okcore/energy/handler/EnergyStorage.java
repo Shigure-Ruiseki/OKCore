@@ -1,0 +1,127 @@
+package ruiseki.okcore.energy.handler;
+
+import net.minecraft.nbt.NBTTagCompound;
+
+import ruiseki.okcore.energy.capability.EnergyStorageDefault;
+import ruiseki.okcore.persist.nbt.INBTSerializable;
+
+public class EnergyStorage extends EnergyStorageDefault implements INBTSerializable {
+
+    public EnergyStorage(int capacity) {
+        this(capacity, capacity, capacity, 0);
+    }
+
+    public EnergyStorage(int capacity, int maxTransfer) {
+        this(capacity, maxTransfer, maxTransfer, 0);
+    }
+
+    public EnergyStorage(int capacity, int maxReceive, int maxExtract) {
+        this(capacity, maxReceive, maxExtract, 0);
+    }
+
+    public EnergyStorage(int capacity, int maxReceive, int maxExtract, int energy) {
+        super(capacity, maxReceive, maxExtract, energy);
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+        setEnergyInternal(this.energy);
+    }
+
+    public void setEnergyStorage(int capacity, int maxReceive, int maxExtract) {
+        this.capacity = capacity;
+        this.maxReceive = maxReceive;
+        this.maxExtract = maxExtract;
+        setEnergyInternal(this.energy);
+    }
+
+    public void setEnergyStorage(int capacity, int maxTransfer) {
+        setEnergyStorage(capacity, maxTransfer, maxTransfer);
+    }
+
+    public void setEnergyStorage(int capacity) {
+        setEnergyStorage(capacity, capacity, capacity);
+    }
+
+    public void setMaxTransfer(int maxTransfer) {
+        this.maxReceive = maxTransfer;
+        this.maxExtract = maxTransfer;
+    }
+
+    public void setEnergyStored(int energy) {
+        setEnergyInternal(energy);
+    }
+
+    public void modifyEnergyStored(int delta) {
+        if (delta != 0) {
+            setEnergyInternal(this.energy + delta);
+        }
+    }
+
+    public void voidEnergy(int amount) {
+        if (amount > 0 && energy > 0) {
+            setEnergyInternal(this.energy - amount);
+        }
+    }
+
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        int energyReceived = Math.min(capacity - energy, Math.min(this.maxReceive, maxReceive));
+        if (!simulate) setEnergyInternal(energy + energyReceived);
+        return energyReceived;
+    }
+
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        int energyExtracted = Math.min(energy, Math.min(this.maxExtract, maxExtract));
+        if (!simulate) setEnergyInternal(energy - energyExtracted);
+        return energyExtracted;
+    }
+
+    public void onEnergyChanged() {}
+
+    protected int clampEnergy(int value) {
+        if (value < 0) return 0;
+        return Math.min(value, capacity);
+    }
+
+    protected void setEnergyInternal(int newEnergy) {
+        newEnergy = clampEnergy(newEnergy);
+        if (newEnergy != this.energy) {
+            this.energy = newEnergy;
+            onEnergyChanged();
+        }
+    }
+
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound nbt = new NBTTagCompound();
+        writeToNBT(nbt);
+        return nbt;
+    }
+
+    @Override
+    public void deserializeNBT(NBTTagCompound tag) {
+        readFromNBT(tag);
+    }
+
+    public void readFromNBT(NBTTagCompound nbt) {
+        readFromNBT(nbt, "energy");
+    }
+
+    public void writeToNBT(NBTTagCompound nbt) {
+        writeToNBT(nbt, "energy");
+    }
+
+    public void readFromNBT(NBTTagCompound nbt, String tag) {
+        this.energy = nbt.getInteger(tag);
+        if (this.energy > this.capacity) {
+            this.energy = this.capacity;
+        }
+    }
+
+    public void writeToNBT(NBTTagCompound nbt, String tag) {
+        nbt.setInteger(tag, getEnergyStored());
+    }
+
+}

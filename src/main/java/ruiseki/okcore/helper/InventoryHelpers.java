@@ -13,9 +13,9 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.item.IItemHandler;
-import ruiseki.okcore.item.IItemHandlerModifiable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
+import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
 /**
  * Contains helper methods involving {@link IInventory}S.

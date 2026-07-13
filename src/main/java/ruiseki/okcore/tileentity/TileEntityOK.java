@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import lombok.experimental.Delegate;
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.CapabilityCache;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
@@ -37,6 +38,8 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
 
     private BlockPos cachedPos;
     private final int randomOffset = (int) (Math.random() * 20);
+
+    protected final CapabilityCache capabilityCache = new CapabilityCache();
     private CapabilityDispatcher capabilities;
 
     public TileEntityOK() {
@@ -230,12 +233,6 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
     }
 
     @Override
-    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
-        @Nullable ForgeDirection facing) {
-        return this.capabilities == null ? LazyOptional.empty() : this.capabilities.getCapability(capability, facing);
-    }
-
-    @Override
     public void deserializeNBT(NBTTagCompound nbt) {
         this.readFromNBT(nbt);
     }
@@ -324,8 +321,21 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         return (worldObj.getTotalWorldTime() + randomOffset) % interval == 0;
     }
 
-    public boolean requiresTESR() {
-        return false;
+    @Override
+    public void invalidate() {
+        capabilityCache.invalidateAll();
+        super.invalidate();
+    }
+
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        if (capabilityCache.isCapabilityDisabled(capability, facing)) {
+            return LazyOptional.empty();
+        } else if (capabilityCache.canResolve(capability)) {
+            return capabilityCache.getCapability(capability, facing);
+        }
+        return this.capabilities == null ? LazyOptional.empty() : this.capabilities.getCapability(capability, facing);
     }
 
     public interface ITickingTile {

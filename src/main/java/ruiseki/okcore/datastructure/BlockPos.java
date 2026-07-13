@@ -162,6 +162,18 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
         return world.blockExists(x, y, z);
     }
 
+    public boolean isAirBlock(World world) {
+        if (world == null) return false;
+
+        int x = getX();
+        int y = getY();
+        int z = getZ();
+
+        if (!isLoaded(world)) return false;
+
+        return world.isAirBlock(x, y, z);
+    }
+
     @Override
     public int hashCode() {
         final int PRIME = 59;

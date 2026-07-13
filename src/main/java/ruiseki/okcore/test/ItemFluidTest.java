@@ -20,7 +20,7 @@ import net.minecraftforge.fluids.FluidStack;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.FluidHelpers;
-import ruiseki.okcore.fluid.IFluidHandlerItem;
+import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.network.packet.PacketSyncCursorStack;

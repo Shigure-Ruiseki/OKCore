@@ -34,12 +34,14 @@ import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.BlockWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.FluidBlockWrapper;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.TileHelpers;
-import ruiseki.okcore.item.IItemHandler;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
 
 public class FluidHelpers {
 

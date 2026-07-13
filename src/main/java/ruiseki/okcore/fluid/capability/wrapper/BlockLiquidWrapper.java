@@ -10,9 +10,9 @@ import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.fluid.FluidHelpers;
-import ruiseki.okcore.fluid.FluidTankProperties;
-import ruiseki.okcore.fluid.IFluidHandler;
-import ruiseki.okcore.fluid.IFluidTankProperties;
+import ruiseki.okcore.fluid.handler.FluidTankProperties;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 public class BlockLiquidWrapper implements IFluidHandler {
 

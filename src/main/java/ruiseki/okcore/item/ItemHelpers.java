@@ -8,6 +8,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
 
 public class ItemHelpers {
 

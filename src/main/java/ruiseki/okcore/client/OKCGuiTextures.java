@@ -78,4 +78,17 @@ public class OKCGuiTextures {
         .adaptable(4)
         .tiled()
         .build();
+
+    public static final UITexture VANILLA_SEARCH_BACKGROUND = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/minecraft/vanilla_search")
+        .imageSize(18, 18)
+        .adaptable(1)
+        .name("vanilla_search")
+        .build();
+
+    public static final UITexture SLIDER_BACKGROUND = UITexture.builder()
+        .location(Reference.MOD_ID, "gui/minecraft/slider")
+        .imageSize(200, 20)
+        .name("slider")
+        .build();
 }

@@ -1,4 +1,4 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.capability.wrapper;
 
 import net.minecraft.entity.player.InventoryPlayer;
 

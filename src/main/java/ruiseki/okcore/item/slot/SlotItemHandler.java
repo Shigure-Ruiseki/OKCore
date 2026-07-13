@@ -1,4 +1,4 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.slot;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -7,6 +7,9 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
+
+import ruiseki.okcore.item.IItemHandler;
+import ruiseki.okcore.item.IItemHandlerModifiable;
 
 public class SlotItemHandler extends SlotBackground {
 

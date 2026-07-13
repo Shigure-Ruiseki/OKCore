@@ -1,8 +1,10 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.capability.wrapper;
 
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import ruiseki.okcore.item.IItemHandlerModifiable;
 
 public class SidedInvWrapper implements IItemHandlerModifiable {
 

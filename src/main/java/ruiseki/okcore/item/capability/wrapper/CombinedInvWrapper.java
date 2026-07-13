@@ -1,4 +1,4 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.capability.wrapper;
 
 import java.util.Iterator;
 
@@ -8,6 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterators;
+
+import ruiseki.okcore.item.EmptyHandler;
+import ruiseki.okcore.item.IItemHandlerModifiable;
 
 public class CombinedInvWrapper implements IItemHandlerModifiable, Iterable<IItemHandlerModifiable> {
 

@@ -3,6 +3,7 @@ package ruiseki.okcore.item;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
@@ -45,6 +46,11 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         ItemStack[] array = new ItemStack[size];
         Arrays.fill(array, null);
         this.stacks = new ArrayList<>(Arrays.asList(array));
+    }
+
+    public int[] getSlotArray() {
+        return IntStream.range(0, this.getSlots())
+            .toArray();
     }
 
     @Override

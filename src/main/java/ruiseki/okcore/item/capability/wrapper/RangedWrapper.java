@@ -1,9 +1,11 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.capability.wrapper;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
 import com.google.common.base.Preconditions;
+
+import ruiseki.okcore.item.IItemHandlerModifiable;
 
 /**
  * A wrapper that composes another IItemHandlerModifiable, exposing only a range of the composed slots. Shifting of slot

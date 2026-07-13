@@ -1,4 +1,4 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.slot;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;

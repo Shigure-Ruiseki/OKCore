@@ -1,4 +1,4 @@
-package ruiseki.okcore.item;
+package ruiseki.okcore.item.capability.wrapper;
 
 import java.util.Objects;
 
@@ -6,6 +6,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.okcore.helper.ItemHandlerHelpers;
+import ruiseki.okcore.item.IItemHandlerModifiable;
 
 public class InvWrapper implements IItemHandlerModifiable {
 

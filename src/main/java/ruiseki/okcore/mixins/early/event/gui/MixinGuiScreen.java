@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import ruiseki.okcore.event.gui.BackgroundDrawnEvent;
 import ruiseki.okcore.event.input.IGuiInputHandle;
 import ruiseki.okcore.event.input.KeyboardInputEvent;
 import ruiseki.okcore.event.input.MouseInputEvent;
@@ -71,8 +72,13 @@ public abstract class MixinGuiScreen {
             shift = At.Shift.AFTER))
     private void okcore$postKeyInput(CallbackInfo ci) {
         if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcoregui$isKeyHandled()) {
-            MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(okcore$getThis()));
+            MinecraftForge.EVENT_BUS.post(new BackgroundDrawnEvent(okcore$getThis()));
         }
+    }
+
+    @Inject(method = "drawDefaultBackground", at = @At("RETURN"))
+    private void okcore$drawDefaultBackground(CallbackInfo ci) {
+        MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(okcore$getThis()));
     }
 
     public void okcoregui$setMouseHandled(boolean handled) {

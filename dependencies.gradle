@@ -55,6 +55,7 @@ dependencies {
     devOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.10.30:dev")
     devOnlyNonPublishable("com.github.GTNewHorizons:waila:1.19.30:dev") { transitive = false }
 
+    runtimeOnlyNonPublishable(rfg.deobf("curse.maven:candycraft-251118:2330488"))
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:Hodgepodge:2.7.161:dev") { transitive = false }
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:BetterCrashes:1.4.5-GTNH:dev")
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:ServerUtilities:2.3.0:dev")

@@ -72,13 +72,13 @@ public abstract class MixinGuiScreen {
             shift = At.Shift.AFTER))
     private void okcore$postKeyInput(CallbackInfo ci) {
         if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcoregui$isKeyHandled()) {
-            MinecraftForge.EVENT_BUS.post(new BackgroundDrawnEvent(okcore$getThis()));
+            MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(okcore$getThis()));
         }
     }
 
     @Inject(method = "drawDefaultBackground", at = @At("RETURN"))
     private void okcore$drawDefaultBackground(CallbackInfo ci) {
-        MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(okcore$getThis()));
+        MinecraftForge.EVENT_BUS.post(new BackgroundDrawnEvent(okcore$getThis()));
     }
 
     public void okcoregui$setMouseHandled(boolean handled) {

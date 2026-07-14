@@ -1,5 +1,6 @@
 package ruiseki.okcore.energy.capability.wrapper;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class EnergyCapabilityResolver implements ICapabilityResolver {
 
     @Override
     public List<Capability<?>> getSupportedCapabilities() {
-        return List.of(CapabilityEnergy.ENERGY);
+        return Collections.singletonList(CapabilityEnergy.ENERGY);
     }
 
     @Override

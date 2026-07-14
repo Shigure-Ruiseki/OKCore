@@ -1,5 +1,6 @@
 package ruiseki.okcore.item.capability.wrapper;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class ItemHandlerResolver implements ICapabilityResolver {
 
     @Override
     public List<Capability<?>> getSupportedCapabilities() {
-        return List.of(CapabilityItemHandler.ITEM_HANDLER);
+        return Collections.singletonList(CapabilityItemHandler.ITEM_HANDLER);
     }
 
     @Override

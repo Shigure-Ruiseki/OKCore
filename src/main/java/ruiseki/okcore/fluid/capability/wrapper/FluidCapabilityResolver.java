@@ -1,5 +1,6 @@
 package ruiseki.okcore.fluid.capability.wrapper;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class FluidCapabilityResolver implements ICapabilityResolver {
 
     @Override
     public List<Capability<?>> getSupportedCapabilities() {
-        return List.of(CapabilityFluidHandler.FLUID_HANDLER);
+        return Collections.singletonList(CapabilityFluidHandler.FLUID_HANDLER);
     }
 
     @Override

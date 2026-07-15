@@ -13,7 +13,11 @@ public enum Mixins implements IMixins {
     DATA_EVENT(new MixinBuilder("Hook Data Event").addCommonMixins("event.data.MixinServerConfigurationManager")
         .setPhase(Phase.EARLY)),
 
-    GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addClientMixins("event.gui.MixinGuiScreen")
+    GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event")
+        .addClientMixins(
+            "event.gui.MixinGuiScreen",
+            "event.gui.MixinGuiContainer",
+            "event.gui.MixinInventoryEffectRenderer")
         .setPhase(Phase.EARLY)),
 
     SLOT_BACKGROUND(new MixinBuilder("Add Slot BackGround").addClientMixins("client.gui.MixinGuiContainer")

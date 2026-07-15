@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.EnumChatFormatting;
@@ -18,11 +19,16 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.data.DatapackManager;
 import ruiseki.okcore.event.data.OnDatapackSyncEvent;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.network.packet.PacketUpdateRecipes;
+import ruiseki.okcore.network.packet.PacketUpdateTags;
+import ruiseki.okcore.recipe.RecipeManager;
+import ruiseki.okcore.tag.TagManager;
 
 public class CommandDatapack extends CommandMod {
 
@@ -87,6 +93,21 @@ public class CommandDatapack extends CommandMod {
 
             ServerConfigurationManager configManager = this.server.getConfigurationManager();
             MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
+
+            PacketUpdateRecipes packetRecipes = new PacketUpdateRecipes(
+                RecipeManager.getManager()
+                    .getRecipes());
+            PacketUpdateTags packetTags = new PacketUpdateTags(
+                TagManager.getManager()
+                    .getTags());
+            if (configManager != null && configManager.playerEntityList != null) {
+                for (EntityPlayerMP player : configManager.playerEntityList) {
+                    OKCore.instance.getPacketHandler()
+                        .sendToPlayer(packetRecipes, player);
+                    OKCore.instance.getPacketHandler()
+                        .sendToPlayer(packetTags, player);
+                }
+            }
             long endTime = System.currentTimeMillis() - startTime;
             printLineToChat(
                 sender,

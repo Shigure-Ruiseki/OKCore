@@ -6,7 +6,9 @@ import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.MinecraftForge;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -18,6 +20,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.data.DatapackManager;
+import ruiseki.okcore.event.data.OnDatapackSyncEvent;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
 
@@ -82,10 +85,14 @@ public class CommandDatapack extends CommandMod {
 
             DatapackLoader.loadAllDataAtServerStart(this.server);
 
+            ServerConfigurationManager configManager = this.server.getConfigurationManager();
+            MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
             long endTime = System.currentTimeMillis() - startTime;
             printLineToChat(
                 sender,
-                EnumChatFormatting.GREEN + "Successfully reloaded all datapacks in " + endTime + " ms!");
+                EnumChatFormatting.GREEN + "Successfully reloaded all datapacks and synced clients in "
+                    + endTime
+                    + " ms!");
         } catch (Exception e) {
             printErrorToChat(sender, "Critical error occurred during data reload! Check server logs.");
         }

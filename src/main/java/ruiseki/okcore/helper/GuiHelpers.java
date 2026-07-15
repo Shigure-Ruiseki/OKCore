@@ -17,13 +17,20 @@ import static org.lwjgl.opengl.GL11.glTranslated;
 import static org.lwjgl.opengl.GL12.GL_RESCALE_NORMAL;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
@@ -32,8 +39,11 @@ import org.lwjgl.opengl.GL11;
 
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
+import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.event.gui.RenderTooltipEvent;
 import ruiseki.okcore.event.guide.BookEvent;
 import ruiseki.okcore.guide.gui.GuiEntry;
 import ruiseki.okcore.guide.impl.Book;
@@ -266,5 +276,343 @@ public class GuiHelpers {
         }
         Minecraft.getMinecraft()
             .displayGuiScreen(new GuiEntry(book, category, entryAbstract, player));
+    }
+
+    @Nonnull
+    private static ItemStack cachedTooltipStack = null;
+
+    /**
+     * Must be called from {@code GuiScreen.renderToolTip} before {@code GuiScreen.drawHoveringText} is called.
+     *
+     * @param stack The stack for which a tooltip is about to be drawn.
+     */
+    public static void preItemToolTip(@Nonnull ItemStack stack) {
+        cachedTooltipStack = stack;
+    }
+
+    /**
+     * Must be called from {@code GuiScreen.renderToolTip} after {@code GuiScreen.drawHoveringText} is called.
+     */
+    public static void postItemToolTip() {
+        cachedTooltipStack = null;
+    }
+
+    /**
+     * Draws a tooltip box on the screen with text in it.
+     * Automatically positions the box relative to the mouse to match Mojang's implementation.
+     * Automatically wraps text when there is not enough space on the screen to display the text without wrapping.
+     * Can have a maximum width set to avoid creating very wide tooltips.
+     *
+     * @param textLines    the lines of text to be drawn in a hovering tooltip box.
+     * @param mouseX       the mouse X position
+     * @param mouseY       the mouse Y position
+     * @param screenWidth  the available screen width for the tooltip to drawn in
+     * @param screenHeight the available screen height for the tooltip to drawn in
+     * @param maxTextWidth the maximum width of the text in the tooltip box.
+     *                     Set to a negative number to have no max width.
+     * @param font         the font for drawing the text in the tooltip box
+     */
+    public static void drawHoveringText(List<String> textLines, int mouseX, int mouseY, int screenWidth,
+        int screenHeight, int maxTextWidth, FontRenderer font) {
+        drawHoveringText(cachedTooltipStack, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth, font);
+    }
+
+    /**
+     * Use this version if calling from somewhere where ItemStack context is available.
+     *
+     * @see #drawHoveringText(List, int, int, int, int, int, FontRenderer)
+     */
+    public static void drawHoveringText(@Nonnull final ItemStack stack, List<String> textLines, int mouseX, int mouseY,
+        int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font) {
+        if (!textLines.isEmpty()) {
+            RenderTooltipEvent.Pre event = new RenderTooltipEvent.Pre(
+                stack,
+                textLines,
+                mouseX,
+                mouseY,
+                screenWidth,
+                screenHeight,
+                maxTextWidth,
+                font);
+            if (MinecraftForge.EVENT_BUS.post(event)) {
+                return;
+            }
+            mouseX = event.getX();
+            mouseY = event.getY();
+            screenWidth = event.getScreenWidth();
+            screenHeight = event.getScreenHeight();
+            maxTextWidth = event.getMaxWidth();
+            font = event.getFontRenderer();
+
+            GlStateManager.disableRescaleNormal();
+            RenderHelper.disableStandardItemLighting();
+            GlStateManager.disableLighting();
+            GlStateManager.disableDepth();
+            int tooltipTextWidth = 0;
+
+            for (String textLine : textLines) {
+                int textLineWidth = font.getStringWidth(textLine);
+
+                if (textLineWidth > tooltipTextWidth) {
+                    tooltipTextWidth = textLineWidth;
+                }
+            }
+
+            boolean needsWrap = false;
+
+            int titleLinesCount = 1;
+            int tooltipX = mouseX + 12;
+            if (tooltipX + tooltipTextWidth + 4 > screenWidth) {
+                tooltipX = mouseX - 16 - tooltipTextWidth;
+                if (tooltipX < 4) // if the tooltip doesn't fit on the screen
+                {
+                    if (mouseX > screenWidth / 2) {
+                        tooltipTextWidth = mouseX - 12 - 8;
+                    } else {
+                        tooltipTextWidth = screenWidth - 16 - mouseX;
+                    }
+                    needsWrap = true;
+                }
+            }
+
+            if (maxTextWidth > 0 && tooltipTextWidth > maxTextWidth) {
+                tooltipTextWidth = maxTextWidth;
+                needsWrap = true;
+            }
+
+            if (needsWrap) {
+                int wrappedTooltipWidth = 0;
+                List<String> wrappedTextLines = new ArrayList<String>();
+                for (int i = 0; i < textLines.size(); i++) {
+                    String textLine = textLines.get(i);
+                    List<String> wrappedLine = font.listFormattedStringToWidth(textLine, tooltipTextWidth);
+                    if (i == 0) {
+                        titleLinesCount = wrappedLine.size();
+                    }
+
+                    for (String line : wrappedLine) {
+                        int lineWidth = font.getStringWidth(line);
+                        if (lineWidth > wrappedTooltipWidth) {
+                            wrappedTooltipWidth = lineWidth;
+                        }
+                        wrappedTextLines.add(line);
+                    }
+                }
+                tooltipTextWidth = wrappedTooltipWidth;
+                textLines = wrappedTextLines;
+
+                if (mouseX > screenWidth / 2) {
+                    tooltipX = mouseX - 16 - tooltipTextWidth;
+                } else {
+                    tooltipX = mouseX + 12;
+                }
+            }
+
+            int tooltipY = mouseY - 12;
+            int tooltipHeight = 8;
+
+            if (textLines.size() > 1) {
+                tooltipHeight += (textLines.size() - 1) * 10;
+                if (textLines.size() > titleLinesCount) {
+                    tooltipHeight += 2; // gap between title lines and next lines
+                }
+            }
+
+            if (tooltipY < 4) {
+                tooltipY = 4;
+            } else if (tooltipY + tooltipHeight + 4 > screenHeight) {
+                tooltipY = screenHeight - tooltipHeight - 4;
+            }
+
+            final int zLevel = 300;
+            int backgroundColor = 0xF0100010;
+            int borderColorStart = 0x505000FF;
+            int borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
+            RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(
+                stack,
+                textLines,
+                tooltipX,
+                tooltipY,
+                font,
+                backgroundColor,
+                borderColorStart,
+                borderColorEnd);
+            MinecraftForge.EVENT_BUS.post(colorEvent);
+            backgroundColor = colorEvent.getBackground();
+            borderColorStart = colorEvent.getBorderStart();
+            borderColorEnd = colorEvent.getBorderEnd();
+            drawGradientRect(
+                zLevel,
+                tooltipX - 3,
+                tooltipY - 4,
+                tooltipX + tooltipTextWidth + 3,
+                tooltipY - 3,
+                backgroundColor,
+                backgroundColor);
+            drawGradientRect(
+                zLevel,
+                tooltipX - 3,
+                tooltipY + tooltipHeight + 3,
+                tooltipX + tooltipTextWidth + 3,
+                tooltipY + tooltipHeight + 4,
+                backgroundColor,
+                backgroundColor);
+            drawGradientRect(
+                zLevel,
+                tooltipX - 3,
+                tooltipY - 3,
+                tooltipX + tooltipTextWidth + 3,
+                tooltipY + tooltipHeight + 3,
+                backgroundColor,
+                backgroundColor);
+            drawGradientRect(
+                zLevel,
+                tooltipX - 4,
+                tooltipY - 3,
+                tooltipX - 3,
+                tooltipY + tooltipHeight + 3,
+                backgroundColor,
+                backgroundColor);
+            drawGradientRect(
+                zLevel,
+                tooltipX + tooltipTextWidth + 3,
+                tooltipY - 3,
+                tooltipX + tooltipTextWidth + 4,
+                tooltipY + tooltipHeight + 3,
+                backgroundColor,
+                backgroundColor);
+            drawGradientRect(
+                zLevel,
+                tooltipX - 3,
+                tooltipY - 3 + 1,
+                tooltipX - 3 + 1,
+                tooltipY + tooltipHeight + 3 - 1,
+                borderColorStart,
+                borderColorEnd);
+            drawGradientRect(
+                zLevel,
+                tooltipX + tooltipTextWidth + 2,
+                tooltipY - 3 + 1,
+                tooltipX + tooltipTextWidth + 3,
+                tooltipY + tooltipHeight + 3 - 1,
+                borderColorStart,
+                borderColorEnd);
+            drawGradientRect(
+                zLevel,
+                tooltipX - 3,
+                tooltipY - 3,
+                tooltipX + tooltipTextWidth + 3,
+                tooltipY - 3 + 1,
+                borderColorStart,
+                borderColorStart);
+            drawGradientRect(
+                zLevel,
+                tooltipX - 3,
+                tooltipY + tooltipHeight + 2,
+                tooltipX + tooltipTextWidth + 3,
+                tooltipY + tooltipHeight + 3,
+                borderColorEnd,
+                borderColorEnd);
+
+            MinecraftForge.EVENT_BUS.post(
+                new RenderTooltipEvent.PostBackground(
+                    stack,
+                    textLines,
+                    tooltipX,
+                    tooltipY,
+                    font,
+                    tooltipTextWidth,
+                    tooltipHeight));
+            int tooltipTop = tooltipY;
+
+            for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
+                String line = textLines.get(lineNumber);
+                font.drawStringWithShadow(line, tooltipX, tooltipY, -1);
+
+                if (lineNumber + 1 == titleLinesCount) {
+                    tooltipY += 2;
+                }
+
+                tooltipY += 10;
+            }
+
+            MinecraftForge.EVENT_BUS.post(
+                new RenderTooltipEvent.PostText(
+                    stack,
+                    textLines,
+                    tooltipX,
+                    tooltipTop,
+                    font,
+                    tooltipTextWidth,
+                    tooltipHeight));
+
+            GlStateManager.enableLighting();
+            GlStateManager.enableDepth();
+            RenderHelper.enableStandardItemLighting();
+            GlStateManager.enableRescaleNormal();
+        }
+    }
+
+    public static void drawGradientRect(int zLevel, int left, int top, int right, int bottom, int startColor,
+        int endColor) {
+        float startAlpha = (float) (startColor >> 24 & 255) / 255.0F;
+        float startRed = (float) (startColor >> 16 & 255) / 255.0F;
+        float startGreen = (float) (startColor >> 8 & 255) / 255.0F;
+        float startBlue = (float) (startColor & 255) / 255.0F;
+        float endAlpha = (float) (endColor >> 24 & 255) / 255.0F;
+        float endRed = (float) (endColor >> 16 & 255) / 255.0F;
+        float endGreen = (float) (endColor >> 8 & 255) / 255.0F;
+        float endBlue = (float) (endColor & 255) / 255.0F;
+
+        GlStateManager.disableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.disableAlpha();
+        GlStateManager.tryBlendFuncSeparate(
+            GlStateManager.SourceFactor.SRC_ALPHA,
+            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+            GlStateManager.SourceFactor.ONE,
+            GlStateManager.DestFactor.ZERO);
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+
+        Tessellator tessellator = TessellatorManager.get();
+
+        tessellator.startDrawingQuads();
+
+        tessellator.setColorRGBA_F(startRed, startGreen, startBlue, startAlpha);
+        tessellator.addVertex(right, top, zLevel);
+
+        tessellator.setColorRGBA_F(startRed, startGreen, startBlue, startAlpha);
+        tessellator.addVertex(left, top, zLevel);
+
+        tessellator.setColorRGBA_F(endRed, endGreen, endBlue, endAlpha);
+        tessellator.addVertex(left, bottom, zLevel);
+
+        tessellator.setColorRGBA_F(endRed, endGreen, endBlue, endAlpha);
+        tessellator.addVertex(right, bottom, zLevel);
+
+        tessellator.draw();
+
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.disableBlend();
+        GlStateManager.enableAlpha();
+        GlStateManager.enableTexture2D();
+    }
+
+    private static Field cachedSlotField = null;
+
+    public static Slot getSlotUnderMouse(GuiContainer guiContainer) {
+        if (guiContainer == null) {
+            return null;
+        }
+
+        try {
+            if (cachedSlotField == null) {
+                cachedSlotField = ReflectionHelper.findField(GuiContainer.class, "theSlot", "field_147006_u");
+                cachedSlotField.setAccessible(true);
+            }
+            return (Slot) cachedSlotField.get(guiContainer);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

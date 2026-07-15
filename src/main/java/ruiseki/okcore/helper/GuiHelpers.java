@@ -17,17 +17,21 @@ import static org.lwjgl.opengl.GL11.glTranslated;
 import static org.lwjgl.opengl.GL12.GL_RESCALE_NORMAL;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
@@ -592,5 +596,23 @@ public class GuiHelpers {
         GlStateManager.disableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
+    }
+
+    private static Field cachedSlotField = null;
+
+    public static Slot getSlotUnderMouse(GuiContainer guiContainer) {
+        if (guiContainer == null) {
+            return null;
+        }
+
+        try {
+            if (cachedSlotField == null) {
+                cachedSlotField = ReflectionHelper.findField(GuiContainer.class, "theSlot", "field_147006_u");
+                cachedSlotField.setAccessible(true);
+            }
+            return (Slot) cachedSlotField.get(guiContainer);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

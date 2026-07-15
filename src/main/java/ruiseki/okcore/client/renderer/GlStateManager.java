@@ -88,6 +88,14 @@ public class GlStateManager {
         GL11.glDisable(GL12.GL_RESCALE_NORMAL);
     }
 
+    public static void enableColorMaterial() {
+        GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+    }
+
+    public static void disableColorMaterial() {
+        GL11.glDisable(GL11.GL_COLOR_MATERIAL);
+    }
+
     public static void viewport(int x, int y, int width, int height) {
         GL11.glViewport(x, y, width, height);
     }

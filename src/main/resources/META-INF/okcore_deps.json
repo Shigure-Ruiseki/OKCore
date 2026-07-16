@@ -9,7 +9,8 @@
       "common": [
         "it.unimi.dsi:fastutil:8.5.18",
         "org.joml:joml:1.10.8",
-        "com.mojang:brigadier:1.0.18"
+        "com.mojang:brigadier:1.0.18",
+        "com.google.guava:guava:31.1-jre"
       ],
       "client": [],
       "server": []

@@ -44,7 +44,6 @@ dependencies {
     deploader("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader") // LGPL 3.0
     shadowImplementation("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader_stub") // LGPL 3.0
 
-    compileOnlyApi("com.google.guava:guava:31.1-jre")
     compileOnlyApi("it.unimi.dsi:fastutil:8.5.18") // Apache 2.0
     compileOnlyApi("org.joml:joml:1.10.8") { transitive = false } // MIT
     compileOnlyApi("com.mojang:brigadier:1.0.18") // MIT

@@ -18,6 +18,7 @@ public enum Mods implements IMod {
     BogoSorter("bogosorter"),
     Botania("Botania"),
     BuildCraftEnergy("BuildCraft|Energy"),
+    Controlling("controlling"),
     CoFHLib("CoFHLib"),
     CoFHCore("CoFHCore"),
     CraftingTweaks("craftingtweaks"),

@@ -14,6 +14,16 @@ public class ControllingHelpers {
         return ControllingApi.setDefaultComboKeyBinding(keyBinding, comboMod);
     }
 
+    public static KeyModifier getKeyModifier(KeyBinding keyBinding) {
+        ComboModifier comboMod = ControllingApi.getComboModifier(keyBinding);
+        return toKeyModifier(comboMod);
+    }
+
+    public static KeyModifier getKeyModifierDefault(KeyBinding keyBinding) {
+        ComboModifier comboMod = ControllingApi.getDefaultComboModifier(keyBinding);
+        return toKeyModifier(comboMod);
+    }
+
     public static boolean setComboKeyBinding(KeyBinding keyBinding, KeyModifier modifier, int keyCode) {
         return ControllingApi.setComboKeyBinding(keyBinding, toComboModifier(modifier), keyCode);
     }
@@ -27,6 +37,18 @@ public class ControllingHelpers {
             case SHIFT -> ComboModifier.SHIFT;
             case ALT -> ComboModifier.ALT;
             default -> ComboModifier.NONE;
+        };
+    }
+
+    public static KeyModifier toKeyModifier(ComboModifier modifier) {
+        if (modifier == null) {
+            return KeyModifier.NONE;
+        }
+        return switch (modifier) {
+            case CONTROL -> KeyModifier.CONTROL;
+            case SHIFT -> KeyModifier.SHIFT;
+            case ALT -> KeyModifier.ALT;
+            default -> KeyModifier.NONE;
         };
     }
 }

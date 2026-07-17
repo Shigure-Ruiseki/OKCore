@@ -7,30 +7,29 @@ import ruiseki.okcore.helper.ControllingHelpers;
 
 public class KeyBindingOK extends KeyBinding {
 
-    private KeyModifier keyModifierDefault = KeyModifier.NONE;
-    private KeyModifier keyModifier = KeyModifier.NONE;
+    public KeyBindingOK(String description, int keyCode, String category) {
+        this(description, KeyModifier.NONE, keyCode, category);
+    }
 
     public KeyBindingOK(String description, KeyModifier keyModifier, int keyCode, String category) {
         super(description, keyCode, category);
-        this.keyModifier = keyModifier;
-        this.keyModifierDefault = keyModifier;
         if (Mods.Controlling.isModLoaded()) {
             ControllingHelpers.setDefaultComboKeyBinding(this, keyModifier);
         }
     }
 
     public KeyModifier getKeyModifier() {
-        return keyModifier;
+        if (!Mods.Controlling.isModLoaded()) return KeyModifier.NONE;
+        return ControllingHelpers.getKeyModifier(this);
     }
 
     public KeyModifier getKeyModifierDefault() {
-        return keyModifierDefault;
+        if (!Mods.Controlling.isModLoaded()) return KeyModifier.NONE;
+        return ControllingHelpers.getKeyModifierDefault(this);
     }
 
     public void setKeyModifierAndCode(KeyModifier keyModifier, int keyCode) {
         this.setKeyCode(keyCode);
-        if (keyModifier.matches(keyCode)) keyModifier = KeyModifier.NONE;
-        this.keyModifier = keyModifier;
         KeyBinding.resetKeyBindingArrayAndHash();
         if (Mods.Controlling.isModLoaded()) {
             ControllingHelpers.setComboKeyBinding(this, keyModifier, keyCode);

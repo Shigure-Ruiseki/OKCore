@@ -49,7 +49,7 @@ public enum KeyModifier {
         @Override
         public String getLocalizedComboName(int keyCode) {
             String keyName = GameSettings.getKeyDisplayString(keyCode);
-            return LangHelpers.localize("controlsgui.shift", keyName);
+            return LangHelpers.localize("control_gui.shift", keyName);
         }
     },
     ALT {
@@ -67,7 +67,7 @@ public enum KeyModifier {
         @Override
         public String getLocalizedComboName(int keyCode) {
             String keyName = GameSettings.getKeyDisplayString(keyCode);
-            return LangHelpers.localize("controlsgui.alt", keyName);
+            return LangHelpers.localize("control_gui.alt", keyName);
         }
     },
     NONE {

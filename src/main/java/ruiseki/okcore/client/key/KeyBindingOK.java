@@ -45,7 +45,17 @@ public class KeyBindingOK extends KeyBinding {
     }
 
     public boolean isActiveAndMatches(int keyCode) {
-        return keyCode != 0 && keyCode == this.getKeyCode() && getKeyModifier().isActive();
+        if (keyCode == 0 || keyCode != this.getKeyCode()) {
+            return false;
+        }
+
+        KeyModifier modifier = this.getKeyModifier();
+
+        if (modifier == KeyModifier.NONE) {
+            return !KeyModifier.isAnyModifierActive();
+        }
+
+        return modifier.isActive();
     }
 
     public String getDisplayName() {

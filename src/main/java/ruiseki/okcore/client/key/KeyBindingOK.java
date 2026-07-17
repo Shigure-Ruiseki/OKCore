@@ -7,12 +7,20 @@ import ruiseki.okcore.helper.ControllingHelpers;
 
 public class KeyBindingOK extends KeyBinding {
 
-    public KeyBindingOK(String description, int keyCode, String category) {
-        this(description, KeyModifier.NONE, keyCode, category);
-    }
+    private IKeyConflictContext keyConflictContext = KeyConflictContext.UNIVERSAL;
 
     public KeyBindingOK(String description, KeyModifier keyModifier, int keyCode, String category) {
+        this(description, KeyConflictContext.UNIVERSAL, keyModifier, keyCode, category);
+    }
+
+    public KeyBindingOK(String description, IKeyConflictContext keyConflictContext, int keyCode, String category) {
+        this(description, keyConflictContext, KeyModifier.NONE, keyCode, category);
+    }
+
+    public KeyBindingOK(String description, IKeyConflictContext keyConflictContext, KeyModifier keyModifier,
+        int keyCode, String category) {
         super(description, keyCode, category);
+        this.keyConflictContext = keyConflictContext;
         if (Mods.Controlling.isModLoaded()) {
             ControllingHelpers.setDefaultComboKeyBinding(this, keyModifier);
         }
@@ -36,6 +44,14 @@ public class KeyBindingOK extends KeyBinding {
         }
     }
 
+    public void setKeyConflictContext(IKeyConflictContext keyConflictContext) {
+        this.keyConflictContext = keyConflictContext;
+    }
+
+    public IKeyConflictContext getKeyConflictContext() {
+        return keyConflictContext;
+    }
+
     public void setToDefault() {
         setKeyModifierAndCode(getKeyModifierDefault(), getKeyCodeDefault());
     }
@@ -45,7 +61,9 @@ public class KeyBindingOK extends KeyBinding {
     }
 
     public boolean isActiveAndMatches(int keyCode) {
-        return keyCode != 0 && keyCode == this.getKeyCode() && getKeyModifier().isActive();
+        return keyCode != 0 && keyCode == this.getKeyCode()
+            && getKeyConflictContext().isActive()
+            && getKeyModifier().isActive(getKeyConflictContext());
     }
 
     public String getDisplayName() {

@@ -37,3 +37,8 @@ test.blocks.oak_log.text=These are logs
 test.items.ingots.text=There are many ingots in the game
 test.items.ingots=Ingots
 test.items.apple.text=Apples are healthy
+
+control_gui.shift=SHIFT + %s
+control_gui.control=CTRL + %s
+control_gui.control.mac=CMD + %s
+control_gui.alt=ALT + %s

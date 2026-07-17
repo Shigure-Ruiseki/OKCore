@@ -1,5 +1,6 @@
 package ruiseki.okcore.client.key;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 
 import org.lwjgl.input.Keyboard;
@@ -20,7 +21,8 @@ public enum KeyModifier {
         @Override
         public String getLocalizedComboName(int keyCode) {
             String keyName = GameSettings.getKeyDisplayString(keyCode);
-            return LangHelpers.localize("okcore.control.ctrl", keyName);
+            String localization = Minecraft.isRunningOnMac ? "control_gui.control.mac" : "control_gui.control";
+            return LangHelpers.localize(localization, keyName);
         }
     },
     SHIFT(Keyboard.KEY_LSHIFT, Keyboard.KEY_RSHIFT) {
@@ -28,7 +30,7 @@ public enum KeyModifier {
         @Override
         public String getLocalizedComboName(int keyCode) {
             String keyName = GameSettings.getKeyDisplayString(keyCode);
-            return LangHelpers.localize("okcore.control.shift", keyName);
+            return LangHelpers.localize("control_gui.shift", keyName);
         }
     },
     ALT(Keyboard.KEY_LMENU, Keyboard.KEY_RMENU) {
@@ -36,7 +38,7 @@ public enum KeyModifier {
         @Override
         public String getLocalizedComboName(int keyCode) {
             String keyName = GameSettings.getKeyDisplayString(keyCode);
-            return LangHelpers.localize("okcore.control.alt", keyName);
+            return LangHelpers.localize("control_gui.alt", keyName);
         }
     };
 

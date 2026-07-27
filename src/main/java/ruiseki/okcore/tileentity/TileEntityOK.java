@@ -166,26 +166,6 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         onUpdateReceived();
     }
 
-    @Override
-    public final void writeToNBT(NBTTagCompound root) {
-        super.writeToNBT(root);
-        writeCommon(root);
-    }
-
-    @Override
-    public final void readFromNBT(NBTTagCompound root) {
-        super.readFromNBT(root);
-        readCommon(root);
-    }
-
-    public void writeCommon(NBTTagCompound tag) {
-        writeGeneratedFieldsToNBT(tag);
-    }
-
-    public void readCommon(NBTTagCompound tag) {
-        readGeneratedFieldsFromNBT(tag);
-    }
-
     /**
      * This method is called when the tile entity receives
      * an update (ie a data packet) from the server.
@@ -220,6 +200,34 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         return !isInvalid() && player.getDistanceSq(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D) <= 64D;
     }
 
+    @Override
+    public final void writeToNBT(NBTTagCompound root) {
+        super.writeToNBT(root);
+        writeCommon(root);
+    }
+
+    @Override
+    public final void readFromNBT(NBTTagCompound root) {
+        super.readFromNBT(root);
+        readCommon(root);
+        onLoad();
+    }
+
+    public void writeCommon(NBTTagCompound tag) {
+        writeGeneratedFieldsToNBT(tag);
+    }
+
+    public void readCommon(NBTTagCompound tag) {
+        readGeneratedFieldsFromNBT(tag);
+    }
+
+    /**
+     * When the tile is loaded or created.
+     */
+    public void onLoad() {
+
+    }
+
     /**
      * Get the NBT tag for this tile entity.
      *
@@ -230,6 +238,42 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         NBTTagCompound tag = new NBTTagCompound();
         writeToNBT(tag);
         return tag;
+    }
+
+    @Override
+    public void invalidate() {
+        capabilityCache.invalidateAll();
+        super.invalidate();
+    }
+
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+        @Nullable ForgeDirection facing) {
+        if (capabilityCache.isCapabilityDisabled(capability, facing)) {
+            return LazyOptional.empty();
+        } else if (capabilityCache.canResolve(capability)) {
+            return capabilityCache.getCapability(capability, facing);
+        }
+        return this.capabilities == null ? LazyOptional.empty() : this.capabilities.getCapability(capability, facing);
+    }
+
+    public interface ITickingTile {
+
+        void update();
+    }
+
+    public static class TickingTileComponent implements ITickingTile {
+
+        private final TileEntityOK tile;
+
+        public TickingTileComponent(TileEntityOK tile) {
+            this.tile = tile;
+        }
+
+        @Override
+        public final void update() {
+            tile.updateTicking();
+        }
     }
 
     @Override
@@ -319,42 +363,6 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
 
     protected boolean shouldDoWorkThisTick(int interval) {
         return (worldObj.getTotalWorldTime() + randomOffset) % interval == 0;
-    }
-
-    @Override
-    public void invalidate() {
-        capabilityCache.invalidateAll();
-        super.invalidate();
-    }
-
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability,
-        @Nullable ForgeDirection facing) {
-        if (capabilityCache.isCapabilityDisabled(capability, facing)) {
-            return LazyOptional.empty();
-        } else if (capabilityCache.canResolve(capability)) {
-            return capabilityCache.getCapability(capability, facing);
-        }
-        return this.capabilities == null ? LazyOptional.empty() : this.capabilities.getCapability(capability, facing);
-    }
-
-    public interface ITickingTile {
-
-        void update();
-    }
-
-    public static class TickingTileComponent implements ITickingTile {
-
-        private final TileEntityOK tile;
-
-        public TickingTileComponent(TileEntityOK tile) {
-            this.tile = tile;
-        }
-
-        @Override
-        public final void update() {
-            tile.updateTicking();
-        }
     }
 
 }

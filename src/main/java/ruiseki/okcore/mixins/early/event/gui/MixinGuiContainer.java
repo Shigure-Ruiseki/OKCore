@@ -15,7 +15,12 @@ public abstract class MixinGuiContainer {
 
     @Inject(
         method = "drawScreen(IIF)V",
-        at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glEnable(I)V", ordinal = 3, shift = At.Shift.AFTER))
+        at = @At(
+            value = "INVOKE",
+            target = "Lorg/lwjgl/opengl/GL11;glEnable(I)V",
+            ordinal = 3,
+            shift = At.Shift.AFTER,
+            remap = false))
     private void onDrawForeground(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         GuiContainerEvent.DrawForeground event = new GuiContainerEvent.DrawForeground(
             (GuiContainer) (Object) this,

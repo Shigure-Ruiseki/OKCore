@@ -26,11 +26,15 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import lombok.Data;
+import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyRegistry;
 import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.command.CommandVersion;
+import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.LoggerHelpers;
 import ruiseki.okcore.helper.VersionHelpers;
 import ruiseki.okcore.network.PacketHandler;
@@ -61,18 +65,22 @@ public abstract class ModBase {
     public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_STATUS = EnumReferenceKey
         .create("version_check_status", String.class);
 
+    public static final EnumReferenceKey<Boolean> REFKEY_DEBUGCONFIG = EnumReferenceKey
+        .create("debug_config", Boolean.class);
+
     private final String modId, modName;
     private final LoggerHelpers loggerHelper;
     private final Set<IInitListener> initListeners;
+    private final ConfigHandler configHandler;
     private final Map<EnumReferenceKey, Object> genericReference = Maps.newHashMap();
     private final List<WorldStorage> worldStorages = Lists.newLinkedList();
-
+    private final GuiHandler guiHandler;
     private LiteralArgumentBuilder<ICommandSender> baseCommand;
-
     private final RegistryManager registryManager;
     private final IKeyRegistry keyRegistry;
     private final PacketHandler packetHandler;
     private final ModuleManager moduleManager;
+    private final Debug debug;
 
     private CreativeTabs defaultCreativeTab = null;
     private File configFolder = null;
@@ -82,16 +90,27 @@ public abstract class ModBase {
         this.modName = modName;
         this.loggerHelper = constructLoggerHelper();
         this.initListeners = Sets.newHashSet();
+        this.configHandler = constructConfigHandler();
+        this.guiHandler = constructGuiHandler();
         this.registryManager = constructRegistryManager();
         this.keyRegistry = new KeyRegistry();
         this.packetHandler = constructPacketHandler();
         this.moduleManager = constructModuleManager();
+        this.debug = new Debug(this);
 
         populateDefaultGenericReferences();
     }
 
     protected LoggerHelpers constructLoggerHelper() {
         return new LoggerHelpers(this.modName);
+    }
+
+    protected ConfigHandler constructConfigHandler() {
+        return new ConfigHandler(this);
+    }
+
+    protected GuiHandler constructGuiHandler() {
+        return new GuiHandler(this);
     }
 
     protected RegistryManager constructRegistryManager() {
@@ -130,6 +149,8 @@ public abstract class ModBase {
         putGenericReference(REFKEY_VERSION_CHECKER_LATEST, "0.0.0.0");
         putGenericReference(REFKEY_VERSION_CHECKER_STATUS, VersionHelpers.STATUS_UNKNOWN);
         putGenericReference(REFKEY_VERSION_CHECKER_DOWNLOADS, Maps.<String, String>newHashMap());
+
+        putGenericReference(REFKEY_DEBUGCONFIG, false);
     }
 
     /**
@@ -234,8 +255,33 @@ public abstract class ModBase {
         log(Level.TRACE, "preInit()");
         moduleManager.preInit(event);
 
+        if (getConfigFolder() == null) {
+            // Determine config folder.
+            String rootFolderName = event.getModConfigurationDirectory() + "/" + getModId();
+            File configFolder = new File(rootFolderName);
+            setConfigFolder(configFolder);
+        }
+
+        // Register configs and start with loading the general configs
+        onGeneralConfigsRegister(getConfigHandler());
+        getConfigHandler().handle(event);
+        onMainConfigsRegister(getConfigHandler());
+
         // Call init listeners
         callInitStepListeners(IInitListener.Step.PREINIT);
+
+        // Run debugging tools
+        if (getReferenceValue(REFKEY_DEBUGCONFIG)) {
+            getDebug().checkPreConfigurables(getConfigHandler());
+        }
+
+        // Load the rest of the configs and run the ConfigHandler to make/read the config and fill in the game registry
+        getConfigHandler().handle(event);
+
+        // Run debugging tools
+        if (getReferenceValue(REFKEY_DEBUGCONFIG)) {
+            getDebug().checkPostConfigurables();
+        }
 
         // Register events
         ICommonProxy proxy = getProxy();
@@ -252,10 +298,16 @@ public abstract class ModBase {
      */
     public void init(FMLInitializationEvent event) {
         log(Level.TRACE, "init()");
+        moduleManager.init(event);
+
+        // Gui Handlers
+        NetworkRegistry.INSTANCE.registerGuiHandler(getModId(), getGuiHandler());
 
         // Initialize the creative tab
         getDefaultCreativeTab();
-        moduleManager.init(event);
+
+        // Polish the enabled configs.
+        getConfigHandler().polishConfigs();
 
         // Call init listeners
         callInitStepListeners(IInitListener.Step.INIT);
@@ -377,6 +429,35 @@ public abstract class ModBase {
      * @return The default creative tab for items and blocks.
      */
     public abstract CreativeTabs constructDefaultCreativeTab();
+
+    /**
+     * Register a config file.
+     * The registration order is always kept.
+     * 
+     * @param extendedConfig The config to register.
+     */
+    public final void registerConfig(ExtendedConfig<?> extendedConfig) {
+        getConfigHandler().add(extendedConfig);
+    }
+
+    /**
+     * Called when the general configs should be registered.
+     * These are configs which should be available before other configs can be registered.
+     * 
+     * @param configHandler The config handler to register to.
+     */
+    public void onGeneralConfigsRegister(ConfigHandler configHandler) {
+
+    }
+
+    /**
+     * Called when the main configs should be registered.
+     * 
+     * @param configHandler The config handler to register to.
+     */
+    public void onMainConfigsRegister(ConfigHandler configHandler) {
+
+    }
 
     /**
      * @return The default creative tab for items and blocks.

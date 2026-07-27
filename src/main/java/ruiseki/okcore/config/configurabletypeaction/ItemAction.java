@@ -14,7 +14,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * The action used for {@link ItemConfig}.
- * 
+ *
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
@@ -22,7 +22,7 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
 
     /**
      * Registers an item.
-     * 
+     *
      * @param item         The item instance.
      * @param name         The unique name for this block.
      * @param creativeTabs The creative tab this block will reside in.
@@ -70,16 +70,4 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
                 .registerGUI(gui, GuiHandler.GuiType.ITEM);
         }
     }
-
-    @Override
-    public void polish(ItemConfig config) {
-        handleItemModel(
-            config.getItemInstance(),
-            config.getNamedId(),
-            config.getTargetTab(),
-            config.getMod()
-                .getModId(),
-            config);
-    }
-
 }

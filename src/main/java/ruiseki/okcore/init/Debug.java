@@ -2,13 +2,15 @@ package ruiseki.okcore.init;
 
 import java.util.Set;
 
+import org.apache.logging.log4j.Level;
+
 import com.google.common.collect.Sets;
 
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * Helps with code debugging.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -27,7 +29,7 @@ public class Debug {
 
     /**
      * Loops over the list of configs and checks their correctness.
-     * 
+     *
      * @param configs List of configs
      */
     @SuppressWarnings("rawtypes")

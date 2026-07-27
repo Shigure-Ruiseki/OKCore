@@ -23,8 +23,6 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
-import ruiseki.okcore.capabilities.light.CapabilityLight;
-import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.OKCoreBlocks;
@@ -63,8 +61,6 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());
         addInitListeners(new CapabilityEnergy());
-        addInitListeners(new CapabilityLight());
-        addInitListeners(new CapabilityRedstone());
         addInitListeners(new CapabilityGuide());
 
         addInitListeners(new GuideRegistry());

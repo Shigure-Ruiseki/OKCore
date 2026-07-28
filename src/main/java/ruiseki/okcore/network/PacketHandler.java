@@ -242,6 +242,10 @@ public class PacketHandler {
         }
     }
 
+    public static int getNewId(ModBase modId, IDType type) {
+        return getNewId(modId.getModId(), type);
+    }
+
     public static int getNewId(String modId, IDType type) {
         Pair<String, IDType> key = Pair.of(modId, type);
         return ID_COUNTERS.computeIfAbsent(key, k -> new AtomicInteger(0))

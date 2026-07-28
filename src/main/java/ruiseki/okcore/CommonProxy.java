@@ -16,6 +16,7 @@ import ruiseki.okcore.network.packet.PacketSyncCursorStack;
 import ruiseki.okcore.network.packet.PacketSyncGuidePos;
 import ruiseki.okcore.network.packet.PacketUpdateRecipes;
 import ruiseki.okcore.network.packet.PacketUpdateTags;
+import ruiseki.okcore.network.packet.ValueNotifyPacket;
 import ruiseki.okcore.proxy.CommonProxyComponent;
 
 public class CommonProxy extends CommonProxyComponent {
@@ -37,6 +38,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(PacketUpdateRecipes.class);
         packetHandler.register(PacketUpdateTags.class);
         packetHandler.register(PacketSyncCursorStack.class);
+        packetHandler.register(ValueNotifyPacket.class);
     }
 
     @Override

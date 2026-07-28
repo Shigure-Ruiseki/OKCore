@@ -118,4 +118,15 @@ public class Helpers {
                 folderName);
     }
 
+    /**
+     * Convert r, g, b and a colors to an integer representation.
+     * @param r red
+     * @param g green
+     * @param b blue
+     * @param a alpha
+     * @return integer representation of the color.
+     */
+    public static int RGBAToInt(int r, int g, int b, int a) {
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
 }

@@ -14,6 +14,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,8 +120,20 @@ public class Helpers {
     }
 
     /**
+     * Convert r, g and b colors to an integer representation.
+     *
+     * @param r red
+     * @param g green
+     * @param b blue
+     * @return integer representation of the color.
+     */
+    public static int RGBToInt(int r, int g, int b) {
+        return (int) r << 16 | (int) g << 8 | (int) b;
+    }
+
+    /**
      * Convert r, g, b and a colors to an integer representation.
-     * 
+     *
      * @param r red
      * @param g green
      * @param b blue
@@ -129,5 +142,42 @@ public class Helpers {
      */
     public static int RGBAToInt(int r, int g, int b, int a) {
         return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    /**
+     * Add the given alpha value to the given RGB color.
+     *
+     * @param color The color.
+     * @param alpha The alpha from 0-255
+     * @return The color with alpha.
+     */
+    public static int addAlphaToColor(int color, int alpha) {
+        return alpha << 24 | color;
+    }
+
+    /**
+     * Add the given alpha value to the given RGB color.
+     *
+     * @param color The color.
+     * @param alpha The alpha from 0-1
+     * @return The color with alpha.
+     */
+    public static int addAlphaToColor(int color, float alpha) {
+        return addAlphaToColor(color, Math.round(alpha * 255F));
+    }
+
+    /**
+     * Convert a color in integer representation to seperated r, g and b colors.
+     *
+     * @param color The color in integer representation.
+     * @return The separated r, g and b colors.
+     */
+    public static Triple<Float, Float, Float> intToRGB(int color) {
+        float red, green, blue;
+        red = (float) (color >> 16 & 255) / 255.0F;
+        green = (float) (color >> 8 & 255) / 255.0F;
+        blue = (float) (color & 255) / 255.0F;
+        // this.alpha = (float)(color >> 24 & 255) / 255.0F;
+        return Triple.of(red, green, blue);
     }
 }

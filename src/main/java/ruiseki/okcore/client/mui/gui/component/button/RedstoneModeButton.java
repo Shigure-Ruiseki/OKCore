@@ -1,4 +1,4 @@
-package ruiseki.okcore.client.gui.component.button;
+package ruiseki.okcore.client.mui.gui.component.button;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,11 +11,11 @@ import ruiseki.okcore.enums.RedstoneMode;
 
 public class RedstoneModeButton extends CyclicVariantButton {
 
-    private static final List<CyclicVariantButton.Variant> VARIANTS = Arrays.asList(
-        new CyclicVariantButton.Variant(IKey.lang("gui.button.redstone_mode.always_on"), OKCGuiTextures.ALWAYS_ON),
-        new CyclicVariantButton.Variant(IKey.lang("gui.button.redstone_mode.high_on"), OKCGuiTextures.HIGH_ON),
-        new CyclicVariantButton.Variant(IKey.lang("gui.button.redstone_mode.high_off"), OKCGuiTextures.HIGH_OFF),
-        new CyclicVariantButton.Variant(IKey.lang("gui.button.redstone_mode.always_off"), OKCGuiTextures.ALWAYS_OFF));
+    private static final List<Variant> VARIANTS = Arrays.asList(
+        new Variant(IKey.lang("gui.button.redstone_mode.always_on"), OKCGuiTextures.ALWAYS_ON),
+        new Variant(IKey.lang("gui.button.redstone_mode.high_on"), OKCGuiTextures.HIGH_ON),
+        new Variant(IKey.lang("gui.button.redstone_mode.high_off"), OKCGuiTextures.HIGH_OFF),
+        new Variant(IKey.lang("gui.button.redstone_mode.always_off"), OKCGuiTextures.ALWAYS_OFF));
 
     public RedstoneModeButton(EnumSyncValue<RedstoneMode, ?> syncValue) {
         super(

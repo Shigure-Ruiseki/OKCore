@@ -1,4 +1,4 @@
-package ruiseki.okcore.client.gui.component;
+package ruiseki.okcore.client.mui.gui.component;
 
 import com.cleanroommc.modularui.screen.viewport.ModularGuiContext;
 import com.cleanroommc.modularui.theme.WidgetThemeEntry;

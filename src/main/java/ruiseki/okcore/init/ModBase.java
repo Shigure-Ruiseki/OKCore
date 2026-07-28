@@ -27,8 +27,11 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import ruiseki.okcore.client.gui.GuiHandler;
+import ruiseki.okcore.client.icon.IconProvider;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyRegistry;
 import ruiseki.okcore.command.CommandMod;
@@ -39,6 +42,7 @@ import ruiseki.okcore.helper.LoggerHelpers;
 import ruiseki.okcore.helper.VersionHelpers;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.persist.world.WorldStorage;
+import ruiseki.okcore.proxy.ClientProxyComponent;
 import ruiseki.okcore.proxy.ICommonProxy;
 
 /**
@@ -134,6 +138,14 @@ public abstract class ModBase {
 
     protected ModuleManager constructModuleManager() {
         return new ModuleManager(this);
+    }
+
+    /**
+     * @return The icon provider that was constructed in {@link ClientProxyComponent}.
+     */
+    @SideOnly(Side.CLIENT)
+    public IconProvider getIconProvider() {
+        return ((ClientProxyComponent) getProxy()).getIconProvider();
     }
 
     /**

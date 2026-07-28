@@ -1,4 +1,4 @@
-package ruiseki.okcore.client.gui.component.button;
+package ruiseki.okcore.client.mui.gui.component.button;
 
 import com.cleanroommc.modularui.api.drawable.IDrawable;
 import com.cleanroommc.modularui.api.widget.Interactable;

@@ -1,4 +1,4 @@
-package ruiseki.okcore.client.gui.component.button;
+package ruiseki.okcore.client.mui.gui.component.button;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -43,7 +43,7 @@ public class BasicRecipeRenderer<T extends IRecipe> extends RecipeRendererBase<T
 
         Minecraft.getMinecraft()
             .getTextureManager()
-            .bindTexture(new ResourceLocation(Reference.PREFIX_GUI + "recipe_elements.png"));
+            .bindTexture(new ResourceLocation(Reference.PREFIX_GUI + "guide/recipe_elements.png"));
         guiBase.drawTexturedModalRect(pageLeft - 39 + 68, pageTop - 13 + 53, 0, 48, 102, 56);
         guiBase.drawCenteredString(fontRenderer, getRecipeName(), guiBase.pageXCenter(), pageTop, 0);
 

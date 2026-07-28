@@ -23,12 +23,12 @@ import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 import ruiseki.okcore.inventory.container.button.IButtonClickAcceptorClient;
-import ruiseki.okcore.item.slot.SlotExtended;
+import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.network.packet.ButtonClickPacket;
 
 /**
  * An extended GUI container.
- * 
+ *
  * @author rubensworks
  */
 public abstract class GuiContainerExtended extends GuiContainer
@@ -43,7 +43,7 @@ public abstract class GuiContainerExtended extends GuiContainer
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param container The container to make the GUI for.
      */
     public GuiContainerExtended(ExtendedInventoryContainer container) {
@@ -67,7 +67,7 @@ public abstract class GuiContainerExtended extends GuiContainer
 
     /**
      * Get the texture path of the GUI.
-     * 
+     *
      * @return The path of the GUI for this block.
      */
     public abstract String getGuiTexture();

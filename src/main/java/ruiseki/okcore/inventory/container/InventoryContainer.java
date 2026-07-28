@@ -14,14 +14,14 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.common.collect.Maps;
 
-import ic2.core.slot.SlotArmor;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.inventory.IValueNotifier;
 import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 import ruiseki.okcore.inventory.container.button.IButtonClickAcceptorServer;
-import ruiseki.okcore.item.slot.SlotExtended;
+import ruiseki.okcore.inventory.slot.SlotArmor;
+import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.network.packet.ValueNotifyPacket;
 
 /**
@@ -46,7 +46,7 @@ public abstract class InventoryContainer extends Container
 
     /**
      * Make a new TileInventoryContainer.
-     * 
+     *
      * @param inventory The player inventory.
      */
     public InventoryContainer(InventoryPlayer inventory) {
@@ -56,7 +56,7 @@ public abstract class InventoryContainer extends Container
 
     /**
      * Set the listener that will be triggered when a value in this container is updated by the server.
-     * 
+     *
      * @param listener The listener that will be triggered.
      */
     public void setGuiValueListener(IValueNotifiable listener) {
@@ -103,7 +103,7 @@ public abstract class InventoryContainer extends Container
 
     /**
      * Add player inventory and hotbar to the GUI.
-     * 
+     *
      * @param inventory Inventory of the player
      * @param offsetX   Offset to X
      * @param offsetY   Offset to Y
@@ -121,14 +121,15 @@ public abstract class InventoryContainer extends Container
 
     /**
      * Add player armor inventory to the GUI.
-     * 
+     *
      * @param inventory Inventory of the player
      * @param offsetX   Offset to X
      * @param offsetY   Offset to Y
      */
     protected void addPlayerArmorInventory(InventoryPlayer inventory, int offsetX, int offsetY) {
         for (int y = 0; y < 4; y++) {
-            addSlotToContainer(new SlotArmor(inventory, y, offsetX, offsetY + y * ITEMBOX));
+            addSlotToContainer(
+                new SlotArmor(inventory, 4 * 9 + (3 - y), offsetX, offsetY + y * ITEMBOX, inventory.player, y));
         }
     }
 
@@ -263,7 +264,7 @@ public abstract class InventoryContainer extends Container
 
     /**
      * Get the inventory of the player for which this container is instantiated.
-     * 
+     *
      * @return The player inventory.
      */
     public IInventory getPlayerIInventory() {

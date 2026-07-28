@@ -1,4 +1,4 @@
-package ruiseki.okcore.item.slot;
+package ruiseki.okcore.inventory.slot;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;

@@ -120,6 +120,7 @@ public class Helpers {
 
     /**
      * Convert r, g, b and a colors to an integer representation.
+     * 
      * @param r red
      * @param g green
      * @param b blue

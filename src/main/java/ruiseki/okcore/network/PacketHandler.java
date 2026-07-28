@@ -1,9 +1,5 @@
 package ruiseki.okcore.network;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
@@ -13,8 +9,6 @@ import net.minecraft.network.Packet;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -23,6 +17,7 @@ import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.channel.ChannelHandler.Sharable;
+import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
 
@@ -38,8 +33,6 @@ import ruiseki.okcore.init.ModBase;
 public class PacketHandler {
 
     private static final int MAX_CHANNELNAME_LENGTH = 20;
-
-    private static final Map<Pair<String, IDType>, AtomicInteger> ID_COUNTERS = new ConcurrentHashMap<>();
 
     private SimpleNetworkWrapper networkWrapper = null;
 
@@ -77,7 +70,7 @@ public class PacketHandler {
      * @param packetType The class of the packet.
      */
     public void register(Class<? extends PacketBase> packetType) {
-        int discriminator = getNewId(mod.getModId(), IDType.PACKET);
+        int discriminator = Helpers.getNewId(mod.getModId(), Helpers.IDType.PACKET);
         if (MinecraftHelpers.isClientSide()) {
             networkWrapper.registerMessage(handlerClient, packetType, discriminator, Side.CLIENT);
         }
@@ -240,30 +233,5 @@ public class PacketHandler {
             packet.actionServer(player.worldObj, player);
             return null;
         }
-    }
-
-    public static int getNewId(ModBase modId, IDType type) {
-        return getNewId(modId.getModId(), type);
-    }
-
-    public static int getNewId(String modId, IDType type) {
-        Pair<String, IDType> key = Pair.of(modId, type);
-        return ID_COUNTERS.computeIfAbsent(key, k -> new AtomicInteger(0))
-            .getAndIncrement();
-    }
-
-    public enum IDType {
-        /**
-         * Entity ID.
-         */
-        ENTITY,
-        /**
-         * GUI ID.
-         */
-        GUI,
-        /**
-         * Packet ID.
-         */
-        PACKET
     }
 }

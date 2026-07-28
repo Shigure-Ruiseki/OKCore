@@ -8,10 +8,10 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
 import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
-import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
@@ -39,7 +39,7 @@ public abstract class ConfigurableBlockContainerGui extends ConfigurableBlockCon
         super(eConfig, material, tileEntity);
         this.hasGui = true;
         if (hasGui()) {
-            this.guiID = PacketHandler.getNewId(eConfig.getMod(), PacketHandler.IDType.GUI);
+            this.guiID = Helpers.getNewId(eConfig.getMod(), Helpers.IDType.GUI);
         }
     }
 

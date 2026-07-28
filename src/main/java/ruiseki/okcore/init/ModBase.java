@@ -39,7 +39,8 @@ import ruiseki.okcore.command.CommandVersion;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.LoggerHelpers;
-import ruiseki.okcore.helper.VersionHelpers;
+import ruiseki.okcore.modcompat.IMCHandler;
+import ruiseki.okcore.modcompat.ModCompatLoader;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ClientProxyComponent;
@@ -63,20 +64,12 @@ public abstract class ModBase {
     public static final EnumReferenceKey<String> REFKEY_TEXTURE_PATH_SKINS = EnumReferenceKey
         .create("texture_path_skins", String.class);
     public static final EnumReferenceKey<Boolean> REFKEY_RETROGEN = EnumReferenceKey.create("retrogen", Boolean.class);
-
-    public static final EnumReferenceKey<Boolean> REFKEY_VERSION_CHECKER = EnumReferenceKey
-        .create("version_check_enable", Boolean.class);
-    public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_URL = EnumReferenceKey
-        .create("version_check_url", String.class);
-    public static final EnumReferenceKey<Map> REFKEY_VERSION_CHECKER_DOWNLOADS = EnumReferenceKey
-        .create("version_check_downloads", Map.class);
-    public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_LATEST = EnumReferenceKey
-        .create("version_check_latest", String.class);
-    public static final EnumReferenceKey<String> REFKEY_VERSION_CHECKER_STATUS = EnumReferenceKey
-        .create("version_check_status", String.class);
-
     public static final EnumReferenceKey<Boolean> REFKEY_DEBUGCONFIG = EnumReferenceKey
         .create("debug_config", Boolean.class);
+    public static final EnumReferenceKey<Boolean> REFKEY_CRASH_ON_INVALID_RECIPE = EnumReferenceKey
+        .create("crash_on_invalid_recipe", Boolean.class);
+    public static final EnumReferenceKey<Boolean> REFKEY_CRASH_ON_MODCOMPAT_CRASH = EnumReferenceKey
+        .create("crash_on_modcompat_crash", Boolean.class);
 
     private final String modId, modName;
     private final LoggerHelpers loggerHelper;
@@ -90,6 +83,8 @@ public abstract class ModBase {
     private final IKeyRegistry keyRegistry;
     private final PacketHandler packetHandler;
     private final ModuleManager moduleManager;
+    private final ModCompatLoader modCompatLoader;
+    private final IMCHandler imcHandler;
     private final Debug debug;
 
     private CreativeTabs defaultCreativeTab = null;
@@ -105,10 +100,14 @@ public abstract class ModBase {
         this.registryManager = constructRegistryManager();
         this.keyRegistry = new KeyRegistry();
         this.packetHandler = constructPacketHandler();
+        this.modCompatLoader = constructModCompatLoader();
+        this.imcHandler = constructIMCHandler();
         this.moduleManager = constructModuleManager();
         this.debug = new Debug(this);
 
         populateDefaultGenericReferences();
+        addInitListeners(getModCompatLoader());
+        loadModCompats(getModCompatLoader());
     }
 
     protected LoggerHelpers constructLoggerHelper() {
@@ -129,6 +128,14 @@ public abstract class ModBase {
 
     protected PacketHandler constructPacketHandler() {
         return new PacketHandler(this);
+    }
+
+    protected ModCompatLoader constructModCompatLoader() {
+        return new ModCompatLoader(this);
+    }
+
+    protected IMCHandler constructIMCHandler() {
+        return new IMCHandler(this);
     }
 
     protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
@@ -164,14 +171,18 @@ public abstract class ModBase {
         putGenericReference(REFKEY_TEXTURE_PATH_MODELS, "textures/models/");
         putGenericReference(REFKEY_TEXTURE_PATH_SKINS, "textures/skins/");
         putGenericReference(REFKEY_RETROGEN, false);
-
-        putGenericReference(REFKEY_VERSION_CHECKER, false);
-        putGenericReference(REFKEY_VERSION_CHECKER_URL, "");
-        putGenericReference(REFKEY_VERSION_CHECKER_LATEST, "0.0.0.0");
-        putGenericReference(REFKEY_VERSION_CHECKER_STATUS, VersionHelpers.STATUS_UNKNOWN);
-        putGenericReference(REFKEY_VERSION_CHECKER_DOWNLOADS, Maps.<String, String>newHashMap());
-
         putGenericReference(REFKEY_DEBUGCONFIG, false);
+        putGenericReference(REFKEY_CRASH_ON_INVALID_RECIPE, false);
+        putGenericReference(REFKEY_CRASH_ON_MODCOMPAT_CRASH, false);
+    }
+
+    /**
+     * This is called only once to let the mod compatibilities register themselves.
+     *
+     * @param modCompatLoader The loader.
+     */
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+
     }
 
     /**
@@ -356,10 +367,6 @@ public abstract class ModBase {
 
         // Call init listeners
         callInitStepListeners(IInitListener.Step.POSTINIT);
-        if (this.getReferenceValue(REFKEY_VERSION_CHECKER) && !this.getReferenceValue(REFKEY_VERSION_CHECKER_URL)
-            .isEmpty()) {
-            UpdateChecker.checkUpdates(this);
-        }
     }
 
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {

@@ -1,7 +1,10 @@
 package ruiseki.okcore.helper;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -14,14 +17,43 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.datastructure.BlockStack;
+import ruiseki.okcore.init.ModBase;
 
 public class Helpers {
+
+    private static final Map<Pair<String, IDType>, AtomicInteger> ID_COUNTERS = new ConcurrentHashMap<>();
+
+    public static int getNewId(ModBase modId, IDType type) {
+        return getNewId(modId.getModId(), type);
+    }
+
+    public static int getNewId(String modId, IDType type) {
+        Pair<String, IDType> key = Pair.of(modId, type);
+        return ID_COUNTERS.computeIfAbsent(key, k -> new AtomicInteger(0))
+            .getAndIncrement();
+    }
+
+    public enum IDType {
+        /**
+         * Entity ID.
+         */
+        ENTITY,
+        /**
+         * GUI ID.
+         */
+        GUI,
+        /**
+         * Packet ID.
+         */
+        PACKET
+    }
 
     public static final ResourceLocation AIR_ID = new ResourceLocation("minecraft:air");
 

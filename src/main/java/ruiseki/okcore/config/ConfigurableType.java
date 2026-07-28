@@ -1,12 +1,26 @@
 package ruiseki.okcore.config;
 
 import ruiseki.okcore.config.configurable.IConfigurable;
+import ruiseki.okcore.config.configurabletypeaction.BiomeAction;
 import ruiseki.okcore.config.configurabletypeaction.BlockAction;
 import ruiseki.okcore.config.configurabletypeaction.ConfigurableTypeAction;
+import ruiseki.okcore.config.configurabletypeaction.DummyAction;
+import ruiseki.okcore.config.configurabletypeaction.EnchantmentAction;
+import ruiseki.okcore.config.configurabletypeaction.EntityAction;
+import ruiseki.okcore.config.configurabletypeaction.FluidAction;
 import ruiseki.okcore.config.configurabletypeaction.ItemAction;
+import ruiseki.okcore.config.configurabletypeaction.MobAction;
+import ruiseki.okcore.config.configurabletypeaction.PotionAction;
+import ruiseki.okcore.config.extendedconfig.BiomeConfig;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.DummyConfig;
+import ruiseki.okcore.config.extendedconfig.EnchantmentConfig;
+import ruiseki.okcore.config.extendedconfig.EntityConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.FluidConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.config.extendedconfig.MobConfig;
+import ruiseki.okcore.config.extendedconfig.PotionConfig;
 
 /**
  * The different types of {@link IConfigurable}.
@@ -44,35 +58,35 @@ public class ConfigurableType {
     /**
      * Mob type.
      */
-    // public static final ConfigurableType MOB = new ConfigurableType(
-    // false,
-    // MobConfig.class,
-    // new MobAction(),
-    // ConfigurableTypeCategory.MOB);
+    public static final ConfigurableType MOB = new ConfigurableType(
+        false,
+        MobConfig.class,
+        new MobAction(),
+        ConfigurableTypeCategory.MOB);
     /**
      * Regular entity type.
      */
-    // public static final ConfigurableType ENTITY = new ConfigurableType(
-    // false,
-    // EntityConfig.class,
-    // new EntityAction(),
-    // ConfigurableTypeCategory.ENTITY);
+    public static final ConfigurableType ENTITY = new ConfigurableType(
+        false,
+        EntityConfig.class,
+        new EntityAction(),
+        ConfigurableTypeCategory.ENTITY);
     /**
      * Fluid type.
      */
-    // public static final ConfigurableType FLUID = new ConfigurableType(
-    // true,
-    // FluidConfig.class,
-    // new FluidAction(),
-    // ConfigurableTypeCategory.FLUID);
+    public static final ConfigurableType FLUID = new ConfigurableType(
+        true,
+        FluidConfig.class,
+        new FluidAction(),
+        ConfigurableTypeCategory.FLUID);
     /**
      * Enchantment type.
      */
-    // public static final ConfigurableType ENCHANTMENT = new ConfigurableType(
-    // true,
-    // EnchantmentConfig.class,
-    // new EnchantmentAction(),
-    // ConfigurableTypeCategory.ENCHANTMENT);
+    public static final ConfigurableType ENCHANTMENT = new ConfigurableType(
+        true,
+        EnchantmentConfig.class,
+        new EnchantmentAction(),
+        ConfigurableTypeCategory.ENCHANTMENT);
     /**
      * Villager type.
      */
@@ -84,28 +98,28 @@ public class ConfigurableType {
     /**
      * Biome type.
      */
-    // public static final ConfigurableType BIOME = new ConfigurableType(
-    // true,
-    // BiomeConfig.class,
-    // new BiomeAction(),
-    // ConfigurableTypeCategory.BIOME);
+    public static final ConfigurableType BIOME = new ConfigurableType(
+        true,
+        BiomeConfig.class,
+        new BiomeAction(),
+        ConfigurableTypeCategory.BIOME);
     /**
      * Potion effect type.
      */
-    // public static final ConfigurableType POTION = new ConfigurableType(
-    // true,
-    // PotionConfig.class,
-    // new PotionAction(),
-    // ConfigurableTypeCategory.POTION);
+    public static final ConfigurableType POTION = new ConfigurableType(
+        true,
+        PotionConfig.class,
+        new PotionAction(),
+        ConfigurableTypeCategory.POTION);
 
     /**
      * Dummy type, only used for configs that refer to nothing.
      */
-    // public static final ConfigurableType DUMMY = new ConfigurableType(
-    // false,
-    // DummyConfig.class,
-    // new DummyAction(),
-    // ConfigurableTypeCategory.GENERAL);
+    public static final ConfigurableType DUMMY = new ConfigurableType(
+        false,
+        DummyConfig.class,
+        new DummyAction(),
+        ConfigurableTypeCategory.GENERAL);
 
     private final boolean uniqueInstance;
     @SuppressWarnings("rawtypes")

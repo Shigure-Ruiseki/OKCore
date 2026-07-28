@@ -5,14 +5,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
-import ruiseki.okcore.network.PacketHandler;
 
 /**
  * Block without a tile entity with a GUI that can hold ExtendedConfigs.
  * The container and GUI must be set inside the constructor of the extension.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -22,7 +22,7 @@ public abstract class ConfigurableBlockGui extends ConfigurableBlock implements 
 
     /**
      * Make a new block instance.
-     * 
+     *
      * @param eConfig  Config for this blockState.
      * @param material Material of this blockState.
      */
@@ -31,7 +31,7 @@ public abstract class ConfigurableBlockGui extends ConfigurableBlock implements 
         super(eConfig, material);
         this.hasGui = true;
         if (hasGui()) {
-            this.guiID = PacketHandler.getNewId(eConfig.getMod(), PacketHandler.IDType.GUI);
+            this.guiID = Helpers.getNewId(eConfig.getMod(), Helpers.IDType.GUI);
         }
     }
 

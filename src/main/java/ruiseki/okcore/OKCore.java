@@ -24,7 +24,6 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.command.CommandDatapack;
-import ruiseki.okcore.config.ModConfig;
 import ruiseki.okcore.core.OKCoreBlocks;
 import ruiseki.okcore.core.OKCoreItems;
 import ruiseki.okcore.data.DatapackLoader;
@@ -34,17 +33,19 @@ import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
-import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.modcompat.ModCompatLoader;
+import ruiseki.okcore.modcompat.versionchecker.VersionCheckerModCompat;
 import ruiseki.okcore.proxy.ICommonProxy;
 
 @Mod(
     modid = Reference.MOD_ID,
     name = Reference.MOD_NAME,
-    version = Reference.VERSION,
-    dependencies = Reference.DEPENDENCIES,
+    version = Reference.MOD_VERSION,
+    dependencies = Reference.MOD_DEPENDENCIES,
     guiFactory = Reference.GUI_FACTORY)
-public class OKCore extends ModBase {
+public class OKCore extends ModBaseVersionable {
 
     @SidedProxy(serverSide = Reference.PROXY_COMMON, clientSide = Reference.PROXY_CLIENT)
     public static ICommonProxy proxy;
@@ -53,10 +54,8 @@ public class OKCore extends ModBase {
     public static OKCore instance;
 
     public OKCore() {
-        super(Reference.MOD_ID, Reference.MOD_NAME);
-        putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
-        putGenericReference(REFKEY_VERSION_CHECKER, ModConfig.useVersionChecker);
-        putGenericReference(REFKEY_VERSION_CHECKER_URL, Reference.UPDATE_URL);
+        super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
+        putGenericReference(REFKEY_MOD_VERSION, Reference.MOD_VERSION);
 
         addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());
@@ -64,6 +63,11 @@ public class OKCore extends ModBase {
         addInitListeners(new CapabilityGuide());
 
         addInitListeners(new GuideRegistry());
+    }
+
+    @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        modCompatLoader.addModCompat(new VersionCheckerModCompat());
     }
 
     @Mod.EventHandler

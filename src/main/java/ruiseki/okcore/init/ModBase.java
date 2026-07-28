@@ -52,6 +52,9 @@ public abstract class ModBase {
 
     public static final EnumReferenceKey<String> REFKEY_MOD_VERSION = EnumReferenceKey
         .create("mod_version", String.class);
+    public static final EnumReferenceKey<String> REFKEY_TEXTURE_PATH_GUI = EnumReferenceKey.create("texture_path_gui", String.class);
+    public static final EnumReferenceKey<String> REFKEY_TEXTURE_PATH_MODELS = EnumReferenceKey.create("texture_path_models", String.class);
+    public static final EnumReferenceKey<String> REFKEY_TEXTURE_PATH_SKINS = EnumReferenceKey.create("texture_path_skins", String.class);
     public static final EnumReferenceKey<Boolean> REFKEY_RETROGEN = EnumReferenceKey.create("retrogen", Boolean.class);
 
     public static final EnumReferenceKey<Boolean> REFKEY_VERSION_CHECKER = EnumReferenceKey
@@ -142,6 +145,9 @@ public abstract class ModBase {
     }
 
     private void populateDefaultGenericReferences() {
+        putGenericReference(REFKEY_TEXTURE_PATH_GUI, "textures/gui/");
+        putGenericReference(REFKEY_TEXTURE_PATH_MODELS, "textures/models/");
+        putGenericReference(REFKEY_TEXTURE_PATH_SKINS, "textures/skins/");
         putGenericReference(REFKEY_RETROGEN, false);
 
         putGenericReference(REFKEY_VERSION_CHECKER, false);
@@ -433,7 +439,7 @@ public abstract class ModBase {
     /**
      * Register a config file.
      * The registration order is always kept.
-     * 
+     *
      * @param extendedConfig The config to register.
      */
     public final void registerConfig(ExtendedConfig<?> extendedConfig) {
@@ -443,7 +449,7 @@ public abstract class ModBase {
     /**
      * Called when the general configs should be registered.
      * These are configs which should be available before other configs can be registered.
-     * 
+     *
      * @param configHandler The config handler to register to.
      */
     public void onGeneralConfigsRegister(ConfigHandler configHandler) {
@@ -452,7 +458,7 @@ public abstract class ModBase {
 
     /**
      * Called when the main configs should be registered.
-     * 
+     *
      * @param configHandler The config handler to register to.
      */
     public void onMainConfigsRegister(ConfigHandler configHandler) {

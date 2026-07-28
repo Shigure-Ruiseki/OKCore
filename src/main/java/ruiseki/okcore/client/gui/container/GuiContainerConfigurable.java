@@ -1,18 +1,19 @@
 package ruiseki.okcore.client.gui.container;
 
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.container.InventoryContainerConfigurable;
 
 /**
  * A gui for configurables.
- * 
+ *
  * @author rubensworks
  */
 public abstract class GuiContainerConfigurable<C extends InventoryContainerConfigurable> extends GuiContainerExtended {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param container The container to make the GUI for.
      */
     public GuiContainerConfigurable(C container) {
@@ -36,7 +37,7 @@ public abstract class GuiContainerConfigurable<C extends InventoryContainerConfi
 
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         this.fontRendererObj.drawString(
-            L10NHelpers.localize(
+            LangHelpers.localize(
                 getContainer().getGuiProvider()
                     .getConfig()
                     .getFullUnlocalizedName()),

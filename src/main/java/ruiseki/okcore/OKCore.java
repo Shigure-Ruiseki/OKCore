@@ -24,6 +24,7 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.command.CommandDatapack;
+import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.core.OKCoreBlocks;
 import ruiseki.okcore.core.OKCoreItems;
 import ruiseki.okcore.data.DatapackLoader;
@@ -145,6 +146,16 @@ public class OKCore extends ModBaseVersionable {
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
         return null;
+    }
+
+    @Override
+    public void onGeneralConfigsRegister(ConfigHandler configHandler) {
+        configHandler.add(new GeneralConfig());
+    }
+
+    @Override
+    public void onMainConfigsRegister(ConfigHandler configHandler) {
+
     }
 
     @Override

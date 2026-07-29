@@ -499,6 +499,7 @@ public abstract class PacketCodec extends PacketBase {
             e.printStackTrace();
         }
     }
+
     @Override
     public void encode(final ExtendedBuffer output) {
         System.out.println("[ENCODE] " + getClass().getName());
@@ -514,17 +515,14 @@ public abstract class PacketCodec extends PacketBase {
             System.out.printf(
                 "  -> %s (%s) = %s, writerIndex=%d%n",
                 field.getName(),
-                field.getType().getSimpleName(),
+                field.getType()
+                    .getSimpleName(),
                 object,
-                output.writerIndex()
-            );
+                output.writerIndex());
 
             action.encode(object, output);
 
-            System.out.printf(
-                "     after writerIndex=%d%n",
-                output.writerIndex()
-            );
+            System.out.printf("     after writerIndex=%d%n", output.writerIndex());
         });
     }
 
@@ -538,8 +536,7 @@ public abstract class PacketCodec extends PacketBase {
                     field.getName(),
                     input.readerIndex(),
                     input.writerIndex(),
-                    input.readableBytes()
-                );
+                    input.readableBytes());
 
                 Object object = action.decode(input);
                 field.set(PacketCodec.this, object);
@@ -550,8 +547,7 @@ public abstract class PacketCodec extends PacketBase {
                     field.getName(),
                     input.readerIndex(),
                     input.writerIndex(),
-                    input.readableBytes()
-                );
+                    input.readableBytes());
             }
         });
     }

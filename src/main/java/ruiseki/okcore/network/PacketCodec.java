@@ -499,9 +499,10 @@ public abstract class PacketCodec extends PacketBase {
             e.printStackTrace();
         }
     }
-
     @Override
     public void encode(final ExtendedBuffer output) {
+        System.out.println("[ENCODE] " + getClass().getName());
+
         loopCodecFields((field, action) -> {
             Object object = null;
             try {
@@ -509,18 +510,48 @@ public abstract class PacketCodec extends PacketBase {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 e.printStackTrace();
             }
+
+            System.out.printf(
+                "  -> %s (%s) = %s, writerIndex=%d%n",
+                field.getName(),
+                field.getType().getSimpleName(),
+                object,
+                output.writerIndex()
+            );
+
             action.encode(object, output);
+
+            System.out.printf(
+                "     after writerIndex=%d%n",
+                output.writerIndex()
+            );
         });
     }
 
     @Override
     public void decode(final ExtendedBuffer input) {
         loopCodecFields((field, action) -> {
-            Object object = action.decode(input);
             try {
+                System.out.printf(
+                    "[DECODE] %s.%s reader=%d writer=%d readable=%d%n",
+                    getClass().getSimpleName(),
+                    field.getName(),
+                    input.readerIndex(),
+                    input.writerIndex(),
+                    input.readableBytes()
+                );
+
+                Object object = action.decode(input);
                 field.set(PacketCodec.this, object);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                e.printStackTrace();
+            } catch (Throwable t) {
+                System.err.printf(
+                    "[FAILED] %s.%s reader=%d writer=%d readable=%d%n",
+                    getClass().getSimpleName(),
+                    field.getName(),
+                    input.readerIndex(),
+                    input.writerIndex(),
+                    input.readableBytes()
+                );
             }
         });
     }

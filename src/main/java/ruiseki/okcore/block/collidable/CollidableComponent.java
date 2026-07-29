@@ -38,7 +38,11 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
         AxisAlignedBB axisalignedbb, List<AxisAlignedBB> list, Entity collidingEntity) {
         for (P position : component.getPossiblePositions()) {
             if (component.isActive(getBlock(), world, x, y, z, position)) {
-                for (AxisAlignedBB bb : component.getBounds(getBlock(), world, x, y, z, position)) {
+                List<AxisAlignedBB> boundsList = component.getBounds(getBlock(), world, x, y, z, position);
+                if (boundsList == null) continue;
+
+                for (AxisAlignedBB bb : boundsList) {
+                    if (bb == null) continue; // Skip null bounding box
                     setBlockBounds(bb);
                     getBlock().addCollisionBoxesToListParent(world, x, y, z, axisalignedbb, list, collidingEntity);
                 }
@@ -50,8 +54,20 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
     public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB axisalignedbb,
         List<AxisAlignedBB> list, Entity collidingEntity) {
         try {
-            for (IComponent<P, B> component : components) {
-                addComponentCollisionBoxesToList(component, world, x, y, z, axisalignedbb, list, collidingEntity);
+            if (components != null) {
+                for (IComponent<P, B> component : components) {
+                    if (component != null) {
+                        addComponentCollisionBoxesToList(
+                            component,
+                            world,
+                            x,
+                            y,
+                            z,
+                            axisalignedbb,
+                            list,
+                            collidingEntity);
+                    }
+                }
             }
         } finally {
             getBlock().setBlockBounds(0F, 0F, 0F, 1F, 1F, 1F);
@@ -98,15 +114,24 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
         List<RayTraceResult<P>> results = new ArrayList<>();
 
         try {
-            for (IComponent<P, B> component : components) {
-                for (P position : component.getPossiblePositions()) {
-                    if (component.isActive(getBlock(), world, x, y, z, position)) {
-                        for (AxisAlignedBB bb : component.getBounds(getBlock(), world, x, y, z, position)) {
-                            setBlockBounds(bb);
-                            MovingObjectPosition mop = getBlock()
-                                .collisionRayTraceParent(world, x, y, z, origin, direction);
-                            if (mop != null) {
-                                results.add(new RayTraceResult<P>(mop, bb, position, component));
+            if (components != null) {
+                for (IComponent<P, B> component : components) {
+                    if (component == null) continue;
+
+                    for (P position : component.getPossiblePositions()) {
+                        if (component.isActive(getBlock(), world, x, y, z, position)) {
+                            List<AxisAlignedBB> boundsList = component.getBounds(getBlock(), world, x, y, z, position);
+                            if (boundsList == null) continue;
+
+                            for (AxisAlignedBB bb : boundsList) {
+                                if (bb == null) continue; // Safe null check
+
+                                setBlockBounds(bb);
+                                MovingObjectPosition mop = getBlock()
+                                    .collisionRayTraceParent(world, x, y, z, origin, direction);
+                                if (mop != null) {
+                                    results.add(new RayTraceResult<P>(mop, bb, position, component));
+                                }
                             }
                         }
                     }
@@ -121,10 +146,12 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
         double minDistance = Double.POSITIVE_INFINITY;
 
         for (RayTraceResult<P> result : results) {
-            double dist = result.getMovingObjectPosition().hitVec.squareDistanceTo(origin);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closestHit = result;
+            if (result.getMovingObjectPosition() != null && result.getMovingObjectPosition().hitVec != null) {
+                double dist = result.getMovingObjectPosition().hitVec.squareDistanceTo(origin);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestHit = result;
+                }
             }
         }
 
@@ -132,6 +159,11 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
     }
 
     private void setBlockBounds(AxisAlignedBB bounds) {
+        if (bounds == null) {
+            getBlock().setBlockBounds(0F, 0F, 0F, 1F, 1F, 1F);
+            return;
+        }
+
         getBlock().setBlockBounds(
             (float) bounds.minX,
             (float) bounds.minY,

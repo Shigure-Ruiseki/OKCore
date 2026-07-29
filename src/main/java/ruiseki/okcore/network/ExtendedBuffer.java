@@ -24,11 +24,12 @@ public class ExtendedBuffer extends PacketBuffer {
     }
 
     public String readString() {
+        if (this.readableBytes() <= 0) return "";
         return ByteBufUtils.readUTF8String(this);
     }
 
     public void writeString(String string) {
-        ByteBufUtils.writeUTF8String(this, string);
+        ByteBufUtils.writeUTF8String(this, string == null ? "" : string);
     }
 
     /**
@@ -77,7 +78,7 @@ public class ExtendedBuffer extends PacketBuffer {
      * Reads an ResourceLocation from this buffer
      */
     public ResourceLocation readResourceLocation() {
-        if (!this.readBoolean()) {
+        if (this.readableBytes() < 1 || !this.readBoolean()) {
             return null;
         }
 

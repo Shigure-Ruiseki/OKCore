@@ -32,6 +32,10 @@ public class ConfigurableItem extends Item implements IConfigurable {
     public ConfigurableItem(ExtendedConfig eConfig) {
         this.setConfig(eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
+        this.setTextureName(
+            eConfig.getMod()
+                .getModId() + ":"
+                + eConfig.getNamedId());
     }
 
     @SuppressWarnings("rawtypes")

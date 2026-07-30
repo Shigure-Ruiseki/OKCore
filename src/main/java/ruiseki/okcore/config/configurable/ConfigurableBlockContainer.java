@@ -55,6 +55,10 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
         super(material);
         this.setConfig(eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
+        this.setBlockTextureName(
+            eConfig.getMod()
+                .getModId() + ":"
+                + eConfig.getNamedId());
         this.random = new Random();
         this.tileEntity = tileEntity;
         setHardness(5F);
@@ -251,7 +255,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
     /**
      * If the NBT data of this blockState should be preserved in the item when it
      * is broken into an item.
-     * 
+     *
      * @return If it should keep NBT data.
      */
     public boolean isKeepNBTOnDrop() {

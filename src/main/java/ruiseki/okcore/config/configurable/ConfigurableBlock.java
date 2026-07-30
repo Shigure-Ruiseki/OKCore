@@ -23,6 +23,10 @@ public class ConfigurableBlock extends Block implements IConfigurableBlock {
         super(material);
         this.setConfig(eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
+        this.setBlockTextureName(
+            eConfig.getMod()
+                .getModId() + ":"
+                + eConfig.getNamedId());
     }
 
     @Override

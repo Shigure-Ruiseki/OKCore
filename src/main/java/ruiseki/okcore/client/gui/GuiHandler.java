@@ -4,12 +4,16 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+
+import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Maps;
 
@@ -20,6 +24,12 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
+/**
+ * The handler class that will map Containers to GUI's (1.7.10 Version).
+ *
+ * @author rubensworks
+ *
+ */
 public class GuiHandler implements IGuiHandler {
 
     private final ModBase mod;
@@ -41,7 +51,7 @@ public class GuiHandler implements IGuiHandler {
 
     /**
      * Register a new GUI.
-     * 
+     *
      * @param guiProvider A provider of GUI data.
      * @param type        The GUI type.
      */
@@ -56,7 +66,7 @@ public class GuiHandler implements IGuiHandler {
     /**
      * Set a temporary object for showing gui's of a certain type.
      * This temporary object will be removed once a gui/container is opened once.
-     * 
+     *
      * @param guiType The type of gui.
      * @param data    The data for this gui type.
      * @param <O>     The type of temporary data.
@@ -77,10 +87,11 @@ public class GuiHandler implements IGuiHandler {
     }
 
     @SuppressWarnings("unchecked")
+    @Nullable
     private <O> O getTemporaryData(GuiType<O> guiType) throws IllegalArgumentException {
         O data = (O) (MinecraftHelpers.isClientSide() ? tempDataHolderClient.get(guiType)
             : tempDataHolderServer.get(guiType));
-        clearTemporaryData(guiType);
+
         if (guiType.isCarriesData() && data == null) {
             throw new IllegalArgumentException("Invalid GUI data.");
         }
@@ -95,8 +106,15 @@ public class GuiHandler implements IGuiHandler {
             return null; // Possible with client-only GUI's like books.
         }
         GuiType guiType = types.get(id);
+        Object data;
+        try {
+            data = getTemporaryData(guiType);
+        } catch (IllegalArgumentException e) {
+            getMod().log(Level.WARN, "Invalid GUI data.");
+            return null;
+        }
         return guiType.getContainerConstructor()
-            .getServerGuiElement(id, player, world, x, y, z, containerClass, getTemporaryData(guiType));
+            .getServerGuiElement(id, player, world, x, y, z, containerClass, data);
     }
 
     @SuppressWarnings("unchecked")
@@ -105,14 +123,25 @@ public class GuiHandler implements IGuiHandler {
     public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
         Class<? extends GuiScreen> guiClass = guis.get(id);
         GuiType guiType = types.get(id);
-        return guiType.getGuiConstructor()
-            .getClientGuiElement(id, player, world, x, y, z, guiClass, getTemporaryData(guiType));
+        Object data;
+        try {
+            data = getTemporaryData(guiType);
+        } catch (IllegalArgumentException e) {
+            getMod().log(Level.WARN, "Invalid GUI data.");
+            return null;
+        }
+
+        Object guiElement = guiType.getGuiConstructor()
+            .getClientGuiElement(id, player, world, x, y, z, guiClass, data);
+
+        clearTemporaryData(guiType);
+
+        return guiElement;
     }
 
     /**
      * Types of GUIs.
-     * Use the {@link GuiHandler.GuiType#create(boolean)} method to create new types.
-     * 
+     *
      * @author rubensworks
      */
     public static class GuiType<O> {
@@ -136,7 +165,6 @@ public class GuiHandler implements IGuiHandler {
             this.containerConstructor = containerConstructor;
         }
 
-        @SideOnly(Side.CLIENT)
         public void setGuiConstructor(IGuiConstructor<O> guiConstructor) {
             if (this.guiConstructor != null) {
                 throw new IllegalStateException("The gui constructor was already set!");
@@ -153,18 +181,6 @@ public class GuiHandler implements IGuiHandler {
             return this.guiConstructor;
         }
 
-        /**
-         * Create a new gui type.
-         * This requires a single call to both
-         * {@link GuiHandler.GuiType#setContainerConstructor(GuiHandler.IContainerConstructor)}
-         * and
-         * {@link GuiHandler.GuiType#setGuiConstructor(GuiHandler.IGuiConstructor)}
-         * for full initialization.
-         * 
-         * @param carriesData If this type requires additional data to be passed when the gui is opened.
-         * @param <O>         The type of temporary data passed to this gui type, can be Void.
-         * @return The new unique gui type instance.
-         */
         public static <O> GuiType<O> create(boolean carriesData) {
             return new GuiType<O>(carriesData);
         }
@@ -178,11 +194,12 @@ public class GuiHandler implements IGuiHandler {
          */
         public static final GuiType<Void> TILE = GuiType.create(false);
         /**
-         * An item.
+         * An item (Integer represents item slot ID).
          */
         public static final GuiType<Integer> ITEM = GuiType.create(true);
 
         static {
+            // Container Constructors (Server & Client)
             BLOCK.setContainerConstructor(new IContainerConstructor<Void>() {
 
                 @Override
@@ -194,11 +211,19 @@ public class GuiHandler implements IGuiHandler {
                         return containerConstructor.newInstance(player.inventory);
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                         | NoSuchMethodException e) {
-                        e.printStackTrace();
+                        try {
+                            Constructor<? extends Container> containerConstructor = containerClass
+                                .getConstructor(InventoryPlayer.class, World.class, int.class, int.class, int.class);
+                            return containerConstructor.newInstance(player.inventory, world, x, y, z);
+                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                            | NoSuchMethodException e2) {
+                            e2.printStackTrace();
+                        }
                     }
                     return null;
                 }
             });
+
             TILE.setContainerConstructor(new IContainerConstructor<Void>() {
 
                 @Override
@@ -216,6 +241,7 @@ public class GuiHandler implements IGuiHandler {
                     return null;
                 }
             });
+
             ITEM.setContainerConstructor(new IContainerConstructor<Integer>() {
 
                 @Override
@@ -233,6 +259,7 @@ public class GuiHandler implements IGuiHandler {
                 }
             });
 
+            // Client GUI Constructors (Only initialized on Client Side)
             if (MinecraftHelpers.isClientSide()) {
                 BLOCK.setGuiConstructor(new IGuiConstructor<Void>() {
 
@@ -245,11 +272,23 @@ public class GuiHandler implements IGuiHandler {
                             return guiConstructor.newInstance(player.inventory);
                         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                             | NoSuchMethodException e) {
-                            e.printStackTrace();
+                            try {
+                                Constructor<? extends GuiScreen> guiConstructor = guiClass.getConstructor(
+                                    InventoryPlayer.class,
+                                    World.class,
+                                    int.class,
+                                    int.class,
+                                    int.class);
+                                return guiConstructor.newInstance(player.inventory, world, x, y, z);
+                            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                                | NoSuchMethodException e2) {
+                                e2.printStackTrace();
+                            }
                         }
                         return null;
                     }
                 });
+
                 TILE.setGuiConstructor(new IGuiConstructor<Void>() {
 
                     @Override
@@ -267,6 +306,7 @@ public class GuiHandler implements IGuiHandler {
                         return null;
                     }
                 });
+
                 ITEM.setGuiConstructor(new IGuiConstructor<Integer>() {
 
                     @Override
@@ -285,20 +325,17 @@ public class GuiHandler implements IGuiHandler {
                 });
             }
         }
-
     }
 
     public static interface IContainerConstructor<O> {
 
         public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z,
             Class<? extends Container> containerClass, O data);
-
     }
 
     public static interface IGuiConstructor<O> {
 
         public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z,
             Class<? extends GuiScreen> guiClass, O data);
-
     }
 }

@@ -1,6 +1,13 @@
-okcore.update.available=A new version of %s is available! (Current: %s, Latest: %s)
-okcore.update.link=[Check on %s]
-okcore.update.hover=Click to open the %s page in your browser
+# General
+itemGroup.okcore=OK Core
+general.okcore.dev_world=Dev World
+general.okcore.tooltip.info=<Shift for info>
+general.okcore.info.enabled=§aEnabled
+general.okcore.info.disabled=Disabled
+general.okcore.version.updateAvailable=Update available
+general.okcore.version.download=Download
+general.okcore.version.clickToDownload=Click to download
+gui.waila.okcore.logConfig=Logs
 
 item.guide_book.name=Guide Book
 
@@ -42,3 +49,45 @@ control_gui.shift=SHIFT + %s
 control_gui.control=CTRL + %s
 control_gui.control.mac=CMD + %s
 control_gui.alt=ALT + %s
+
+## Config categories
+config.okcore.item=Item settings
+config.okcore.item.tooltip=Item settings
+config.okcore.block=Block settings
+config.okcore.block.tooltip=Block settings
+config.okcore.fluid=Fluid settings
+config.okcore.fluid.tooltip=Fluid settings
+config.okcore.entity=Entity settings
+config.okcore.entity.tooltip=Entity settings
+config.okcore.general=General settings
+config.okcore.general.tooltip=General settings
+config.okcore.worldgeneration=World generation settings
+config.okcore.worldgeneration.tooltip=World generation settings
+config.okcore.enchantment=Enchantment settings
+config.okcore.enchantment.tooltip=Enchantment settings
+config.okcore.mob=Mob settings
+config.okcore.mob.tooltip=Mob settings
+config.okcore.biome=Biome generation settings
+config.okcore.biome.tooltip=Biome generation settings
+config.okcore.machine=Machine settings
+config.okcore.machine.tooltip=Machine settings
+config.okcore.potion=Potion settings
+config.okcore.potion.tooltip=Potion settings
+config.okcore.core=Core settings
+config.okcore.core.tooltip=Core settings
+config.okcore.modcompat=Mod compatibility settings
+config.okcore.modcompat.tooltip=Mod compatibility settings
+
+## General settings
+config.okcore.general.analytics=Send anonymous analytics
+config.okcore.general.anonymousAnalyticsID=Anonymous id
+config.okcore.general.crashOnInvalidRecipe=Crash on invalid Recipe
+config.okcore.general.crashOnModCompatCrash=Crash on Compatibility issue
+config.okcore.general.debug=Develop mode
+config.okcore.general.devWorldButton=Dev World Button
+config.okcore.general.minimumPotionTypesArraySize=Minimal size of potion array
+config.okcore.general.version=Version
+config.okcore.general.versionChecker=Version check
+
+## Mod compatibility settings
+config.okcore.Waila=Waila

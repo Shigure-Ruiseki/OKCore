@@ -19,7 +19,7 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * The loader for {@link IModCompat} instances.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -30,9 +30,6 @@ public class ModCompatLoader implements IInitListener {
     protected final ModBase mod;
     protected final List<IExternalCompat> compats = Lists.newLinkedList();
     protected final Set<String> crashedcompats = Sets.newHashSet();
-    // public static final Multimap<Class<? extends ICapabilityProvider>,
-    // Pair<ICapabilityCompat.ICapabilityReference<?>, ICapabilityCompat<? extends ICapabilityProvider>>>
-    // capabilityCompats = HashMultimap.create();
 
     public ModCompatLoader(ModBase mod) {
         this.mod = mod;
@@ -41,7 +38,7 @@ public class ModCompatLoader implements IInitListener {
     /**
      * Register a new mod compatibility.
      * Make sure to call this before any Forge initialization steps are called!
-     * 
+     *
      * @param modCompat The mod compatibility
      */
     public void addModCompat(IModCompat modCompat) {
@@ -51,29 +48,12 @@ public class ModCompatLoader implements IInitListener {
     /**
      * Register a new api compatibility.
      * Make sure to call this before any Forge initialization steps are called!
-     * 
+     *
      * @param apiCompat The api compatibility
      */
     public void addApiCompat(IApiCompat apiCompat) {
         this.compats.add(apiCompat);
     }
-
-    // /**
-    // * Register a new capability compatibility.
-    // * @param providerClazz The capability provider class.
-    // * @param capabilityReference A reference to the capability.
-    // * @param capabilityCompat The compatibility instance, nothing in this will be called unless the capability is
-    // present.
-    // * @param <P> The capability provider type.
-    // * @param <C> The capability.
-    // */
-    // public <P extends ICapabilityProvider, C> void addCapabilityCompat(
-    // Class<P> providerClazz, ICapabilityCompat.ICapabilityReference<C> capabilityReference,
-    // ICapabilityCompat<P> capabilityCompat) {
-    // capabilityCompats.put(providerClazz,
-    // Pair.<ICapabilityCompat.ICapabilityReference<?>, ICapabilityCompat<? extends ICapabilityProvider>>
-    // of(capabilityReference, capabilityCompat));
-    // }
 
     @Override
     public void onInit(IInitListener.Step step) {
@@ -111,7 +91,7 @@ public class ModCompatLoader implements IInitListener {
 
     /**
      * If the given compat should be loaded.
-     * 
+     *
      * @param compat The mod compat.
      * @return If it should be loaded.
      */
@@ -122,7 +102,7 @@ public class ModCompatLoader implements IInitListener {
 
     /**
      * If the given mod compat should be loaded.
-     * 
+     *
      * @param modCompat The mod compat.
      * @return If it should be loaded.
      */
@@ -133,7 +113,7 @@ public class ModCompatLoader implements IInitListener {
 
     /**
      * If the given api compat should be loaded.
-     * 
+     *
      * @param apiCompat The api compat.
      * @return If it should be loaded.
      */
@@ -162,20 +142,4 @@ public class ModCompatLoader implements IInitListener {
     private boolean isNotCrashed(String id) {
         return !crashedcompats.contains(id);
     }
-
-    // protected static void attachCapability(ICapabilityCompat<ICapabilityProvider> compat, ICapabilityProvider
-    // provider) {
-    // compat.attach(provider);
-    // }
-    //
-    // public static void attachCapability(ICapabilityProvider capabilityProvider) {
-    // for (Map.Entry<Class<? extends ICapabilityProvider>, Pair<ICapabilityCompat.ICapabilityReference<?>,
-    // ICapabilityCompat<? extends ICapabilityProvider>>> entry : capabilityCompats.entries()) {
-    // if(entry.getValue().getLeft().getCapability() != null && entry.getKey().isInstance(capabilityProvider)) {
-    // attachCapability((ICapabilityCompat<ICapabilityProvider>) entry.getValue().getRight(),
-    // capabilityProvider);
-    // }
-    // }
-    // }
-
 }

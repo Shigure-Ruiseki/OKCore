@@ -23,6 +23,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.LoaderState;
 import ruiseki.okcore.datastructure.BlockStack;
 import ruiseki.okcore.init.ModBase;
 
@@ -211,5 +213,14 @@ public class Helpers {
         blue = (float) (color & 255) / 255.0F;
         // this.alpha = (float)(color >> 24 & 255) / 255.0F;
         return Triple.of(red, green, blue);
+    }
+
+    /**
+     * @return If minecraft is past the POST-init phase.
+     */
+    public static boolean isMinecraftInitialized() {
+        return Loader.instance()
+            .getLoaderState()
+            .ordinal() > LoaderState.POSTINITIALIZATION.ordinal();
     }
 }

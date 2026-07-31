@@ -38,41 +38,41 @@ public class OKCGuiTextures {
         .build();
 
     public static final UITexture STANDARD_BUTTON = UITexture.builder()
-        .location(Reference.MOD_ID, "gui/gui_controls.png")
+        .location(Reference.MOD_ID, "gui/mui/gui_controls.png")
         .imageSize(256, 256)
         .xy(29, 0, 18, 18)
         .build();
     public static final UITexture STANDARD_BUTTON_HOVERED = UITexture.builder()
-        .location(Reference.MOD_ID, "gui/gui_controls.png")
+        .location(Reference.MOD_ID, "gui/mui/gui_controls.png")
         .imageSize(256, 256)
         .xy(47, 0, 18, 18)
         .build();
 
     public static final UITexture HIGH_OFF = UITexture.builder()
-        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .location(Reference.MOD_ID, "gui/mui/redstone_mode.png")
         .imageSize(256, 256)
         .xy(0, 0, 16, 16)
         .build();
 
     public static final UITexture HIGH_ON = UITexture.builder()
-        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .location(Reference.MOD_ID, "gui/mui/redstone_mode.png")
         .imageSize(256, 256)
         .xy(16, 0, 16, 16)
         .build();
 
     public static final UITexture ALWAYS_ON = UITexture.builder()
-        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .location(Reference.MOD_ID, "gui/mui/redstone_mode.png")
         .imageSize(256, 256)
         .xy(32, 0, 16, 16)
         .build();
     public static final UITexture ALWAYS_OFF = UITexture.builder()
-        .location(Reference.MOD_ID, "gui/redstone_mode.png")
+        .location(Reference.MOD_ID, "gui/mui/redstone_mode.png")
         .imageSize(256, 256)
         .xy(48, 0, 16, 16)
         .build();
 
     public static final AdaptableUITexture TITLE_TEXTURE = (AdaptableUITexture) UITexture.builder()
-        .location(Reference.MOD_ID, "gui/gui_controls")
+        .location(Reference.MOD_ID, "gui/mui/gui_controls.png")
         .imageSize(256, 256)
         .xy(128, 0, 128, 10)
         .adaptable(4)

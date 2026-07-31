@@ -15,6 +15,10 @@ public class GlStateManager {
         GL11.glEnable(GL11.GL_ALPHA_TEST);
     }
 
+    public static void alphaFunc(int func, float ref) {
+        GL11.glAlphaFunc(func, ref);
+    }
+
     public static void enableLighting() {
         GL11.glEnable(GL11.GL_LIGHTING);
     }
@@ -47,8 +51,8 @@ public class GlStateManager {
         GL11.glBlendFunc(srcFactor, dstFactor);
     }
 
-    public static void tryBlendFuncSeparate(SourceFactor srcFactor, GlStateManager.DestFactor dstFactor,
-        SourceFactor srcFactorAlpha, DestFactor dstFactorAlpha) {
+    public static void tryBlendFuncSeparate(SourceFactor srcFactor, DestFactor dstFactor, SourceFactor srcFactorAlpha,
+        DestFactor dstFactorAlpha) {
         tryBlendFuncSeparate(srcFactor.factor, dstFactor.factor, srcFactorAlpha.factor, dstFactorAlpha.factor);
     }
 
@@ -128,6 +132,18 @@ public class GlStateManager {
         GL11.glPopMatrix();
     }
 
+    public static void pushAttrib() {
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+    }
+
+    public static void pushAttrib(int mask) {
+        GL11.glPushAttrib(mask);
+    }
+
+    public static void popAttrib() {
+        GL11.glPopAttrib();
+    }
+
     public static void rotate(float angle, float x, float y, float z) {
         GL11.glRotatef(angle, x, y, z);
     }
@@ -154,8 +170,14 @@ public class GlStateManager {
 
     public enum DestFactor {
 
-        ONE_MINUS_SRC_ALPHA(771),
-        ZERO(0);
+        ZERO(GL11.GL_ZERO),
+        ONE(GL11.GL_ONE),
+        SRC_COLOR(GL11.GL_SRC_COLOR),
+        ONE_MINUS_SRC_COLOR(GL11.GL_ONE_MINUS_SRC_COLOR),
+        SRC_ALPHA(GL11.GL_SRC_ALPHA),
+        ONE_MINUS_SRC_ALPHA(GL11.GL_ONE_MINUS_SRC_ALPHA),
+        DST_ALPHA(GL11.GL_DST_ALPHA),
+        ONE_MINUS_DST_ALPHA(GL11.GL_ONE_MINUS_DST_ALPHA);
 
         final int factor;
 
@@ -166,8 +188,15 @@ public class GlStateManager {
 
     public enum SourceFactor {
 
-        ONE(1),
-        SRC_ALPHA(770);
+        ZERO(GL11.GL_ZERO),
+        ONE(GL11.GL_ONE),
+        DST_COLOR(GL11.GL_DST_COLOR),
+        ONE_MINUS_DST_COLOR(GL11.GL_ONE_MINUS_DST_COLOR),
+        SRC_ALPHA_SATURATE(GL11.GL_SRC_ALPHA_SATURATE),
+        SRC_ALPHA(GL11.GL_SRC_ALPHA),
+        ONE_MINUS_SRC_ALPHA(GL11.GL_ONE_MINUS_SRC_ALPHA),
+        DST_ALPHA(GL11.GL_DST_ALPHA),
+        ONE_MINUS_DST_ALPHA(GL11.GL_ONE_MINUS_DST_ALPHA);
 
         final int factor;
 

@@ -4,8 +4,9 @@ public class Reference {
 
     public static final String MOD_ID = Tags.MOD_ID;
     public static final String MOD_NAME = Tags.MOD_NAME;
-    public static final String VERSION = Tags.VERSION;
-    public static final String DEPENDENCIES = "required-after:gtnhlib@[0.11.21,);"
+    public static final String MOD_VERSION = Tags.VERSION;
+    public static final String MOD_MC_VERSION = Tags.MC_VERSION;
+    public static final String MOD_DEPENDENCIES = "required-after:gtnhlib@[0.11.21,);"
         + "required-after:modularui2@[2.3.79-1.7.10,);"
         + "after:Baubles|Expanded;"
         + "after:Baubles;"
@@ -20,9 +21,14 @@ public class Reference {
         + "after:BigReactors;"
         + "after:ActuallyAdditions;"
         + "after:DraconicEvolution;";
-    public static final String UPDATE_URL = "https://raw.githubusercontent.com/Shigure-Ruiseki/OKCore/master/version/version.json";
-    public static final String PROXY_COMMON = Tags.MOD_GROUP + ".CommonProxy";
-    public static final String PROXY_CLIENT = Tags.MOD_GROUP + ".ClientProxy";
+
+    // Mod ID's
+    public static final String MOD_VANILLA = "Minecraft";
+    public static final String MOD_VERSION_CHECKER = "VersionChecker";
+
+    public static final String VERSION_URL = "https://raw.githubusercontent.com/Shigure-Ruiseki/OKCore/master/version/version.json";
+    public static final String PROXY_COMMON = Tags.MOD_GROUP + ".proxy.CommonProxy";
+    public static final String PROXY_CLIENT = Tags.MOD_GROUP + ".proxy.ClientProxy";
     public static final String GUI_FACTORY = Tags.MOD_GROUP + ".config.GuiConfigFactory";
 
     public static final String PREFIX_MOD = MOD_ID + ":";

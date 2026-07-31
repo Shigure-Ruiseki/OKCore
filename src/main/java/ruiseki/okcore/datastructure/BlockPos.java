@@ -1,9 +1,14 @@
 package ruiseki.okcore.datastructure;
 
+import java.util.Iterator;
+
+import javax.annotation.concurrent.Immutable;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.IBlockAccess;
@@ -15,10 +20,12 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3i;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.AbstractIterator;
 
+@Immutable
 public class BlockPos extends Vector3i implements Comparable<BlockPos> {
 
-    public static final BlockPos ORIGIN = new BlockPos(0, 0, 0);
+    public static final BlockPos ORIGIN = new BlockPos();
 
     private static final int NUM_X_BITS = 26;
     private static final int NUM_Z_BITS = NUM_X_BITS;
@@ -30,7 +37,7 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
 
     public BlockPos() {
-        super();
+        super(0, 0, 0);
     }
 
     public BlockPos(int x, int y, int z) {
@@ -43,6 +50,10 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
 
     public BlockPos(ChunkPosition chunkPosition) {
         super(chunkPosition.chunkPosX, chunkPosition.chunkPosY, chunkPosition.chunkPosZ);
+    }
+
+    public BlockPos(ChunkCoordinates chunkPosition) {
+        super(chunkPosition.posX, chunkPosition.posY, chunkPosition.posZ);
     }
 
     public BlockPos(TileEntity tile) {
@@ -64,10 +75,6 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
             Strings.isNullOrEmpty(z) ? 0 : Integer.parseInt(z));
     }
 
-    public BlockPos(String x, String y, String z, World world) {
-        this(x, y, z);
-    }
-
     public int getX() {
         return x;
     }
@@ -80,24 +87,218 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
         return z;
     }
 
-    public BlockPos offset(ForgeDirection d) {
-        return new BlockPos(this.x + d.offsetX, this.y + d.offsetY, this.z + d.offsetZ);
+    /**
+     * Add the given coordinates to the coordinates of this BlockPos
+     */
+    public BlockPos add(double x, double y, double z) {
+        return x == 0.0D && y == 0.0D && z == 0.0D ? this
+            : new BlockPos((double) this.getX() + x, (double) this.getY() + y, (double) this.getZ() + z);
+    }
+
+    /**
+     * Add the given coordinates to the coordinates of this BlockPos
+     */
+    public BlockPos add(int x, int y, int z) {
+        return x == 0 && y == 0 && z == 0 ? this : new BlockPos(this.getX() + x, this.getY() + y, this.getZ() + z);
+    }
+
+    /**
+     * Add the given Vector to this BlockPos
+     */
+    public BlockPos add(Vector3i vec) {
+        return this.add(vec.x(), vec.y(), vec.z());
+    }
+
+    /**
+     * Subtract the given Vector from this BlockPos
+     */
+    public BlockPos subtract(Vector3i vec) {
+        return this.add(-vec.x(), -vec.y(), -vec.z());
+    }
+
+    /**
+     * Offset this BlockPos 1 block up
+     */
+    public BlockPos up() {
+        return this.up(1);
+    }
+
+    /**
+     * Offset this BlockPos n blocks up
+     */
+    public BlockPos up(int n) {
+        return this.offset(ForgeDirection.UP, n);
+    }
+
+    /**
+     * Offset this BlockPos 1 block down
+     */
+    public BlockPos down() {
+        return this.down(1);
+    }
+
+    /**
+     * Offset this BlockPos n blocks down
+     */
+    public BlockPos down(int n) {
+        return this.offset(ForgeDirection.DOWN, n);
+    }
+
+    /**
+     * Offset this BlockPos 1 block in northern direction
+     */
+    public BlockPos north() {
+        return this.north(1);
+    }
+
+    /**
+     * Offset this BlockPos n blocks in northern direction
+     */
+    public BlockPos north(int n) {
+        return this.offset(ForgeDirection.NORTH, n);
+    }
+
+    /**
+     * Offset this BlockPos 1 block in southern direction
+     */
+    public BlockPos south() {
+        return this.south(1);
+    }
+
+    /**
+     * Offset this BlockPos n blocks in southern direction
+     */
+    public BlockPos south(int n) {
+        return this.offset(ForgeDirection.SOUTH, n);
+    }
+
+    /**
+     * Offset this BlockPos 1 block in western direction
+     */
+    public BlockPos west() {
+        return this.west(1);
+    }
+
+    /**
+     * Offset this BlockPos n blocks in western direction
+     */
+    public BlockPos west(int n) {
+        return this.offset(ForgeDirection.WEST, n);
+    }
+
+    /**
+     * Offset this BlockPos 1 block in eastern direction
+     */
+    public BlockPos east() {
+        return this.east(1);
+    }
+
+    /**
+     * Offset this BlockPos n blocks in eastern direction
+     */
+    public BlockPos east(int n) {
+        return this.offset(ForgeDirection.EAST, n);
+    }
+
+    /**
+     * Offset this BlockPos 1 block in the given direction
+     */
+    public BlockPos offset(ForgeDirection facing) {
+        return this.offset(facing, 1);
+    }
+
+    /**
+     * Offsets this BlockPos n blocks in the given direction
+     */
+    public BlockPos offset(ForgeDirection facing, int n) {
+        return n == 0 ? this
+            : new BlockPos(
+                this.getX() + facing.offsetX * n,
+                this.getY() + facing.offsetY * n,
+                this.getZ() + facing.offsetZ * n);
     }
 
     public BlockPos offset(int x, int y, int z) {
         return new BlockPos(this.x + x, this.y + y, this.z + z);
     }
 
-    public BlockPos down() {
-        return offset(ForgeDirection.DOWN);
+    /**
+     * Calculate the cross product of this and the given Vector
+     */
+    public BlockPos crossProduct(Vector3i vec) {
+        return new BlockPos(
+            this.getY() * vec.z() - this.getZ() * vec.y(),
+            this.getZ() * vec.x() - this.getX() * vec.z(),
+            this.getX() * vec.y() - this.getY() * vec.x());
     }
 
-    public BlockPos up() {
-        return offset(ForgeDirection.UP);
+    /**
+     * Serialize this BlockPos into a long value
+     */
+    public long toLong() {
+        return ((long) this.getX() & X_MASK) << X_SHIFT | ((long) this.getY() & Y_MASK) << Y_SHIFT
+            | ((long) this.getZ() & Z_MASK) << 0;
     }
 
-    public BlockPos copy() {
-        return new BlockPos(this.x, this.y, this.z);
+    /**
+     * Create a BlockPos from a serialized long value (created by toLong)
+     */
+    public static BlockPos fromLong(long serialized) {
+        int i = (int) (serialized << 64 - X_SHIFT - NUM_X_BITS >> 64 - NUM_X_BITS);
+        int j = (int) (serialized << 64 - Y_SHIFT - NUM_Y_BITS >> 64 - NUM_Y_BITS);
+        int k = (int) (serialized << 64 - NUM_Z_BITS >> 64 - NUM_Z_BITS);
+        return new BlockPos(i, j, k);
+    }
+
+    public static Iterable<BlockPos> getAllInBox(BlockPos from, BlockPos to) {
+        return getAllInBox(
+            Math.min(from.getX(), to.getX()),
+            Math.min(from.getY(), to.getY()),
+            Math.min(from.getZ(), to.getZ()),
+            Math.max(from.getX(), to.getX()),
+            Math.max(from.getY(), to.getY()),
+            Math.max(from.getZ(), to.getZ()));
+    }
+
+    public static Iterable<BlockPos> getAllInBox(final int x1, final int y1, final int z1, final int x2, final int y2,
+        final int z2) {
+        return new Iterable<BlockPos>() {
+
+            public Iterator<BlockPos> iterator() {
+                return new AbstractIterator<BlockPos>() {
+
+                    private boolean first = true;
+                    private int lastPosX;
+                    private int lastPosY;
+                    private int lastPosZ;
+
+                    protected BlockPos computeNext() {
+                        if (this.first) {
+                            this.first = false;
+                            this.lastPosX = x1;
+                            this.lastPosY = y1;
+                            this.lastPosZ = z1;
+                            return new BlockPos(x1, y1, z1);
+                        } else if (this.lastPosX == x2 && this.lastPosY == y2 && this.lastPosZ == z2) {
+                            return (BlockPos) this.endOfData();
+                        } else {
+                            if (this.lastPosX < x2) {
+                                ++this.lastPosX;
+                            } else if (this.lastPosY < y2) {
+                                this.lastPosX = x1;
+                                ++this.lastPosY;
+                            } else if (this.lastPosZ < z2) {
+                                this.lastPosX = x1;
+                                this.lastPosY = y1;
+                                ++this.lastPosZ;
+                            }
+
+                            return new BlockPos(this.lastPosX, this.lastPosY, this.lastPosZ);
+                        }
+                    }
+                };
+            }
+        };
     }
 
     public BiomeGenBase getBiomeGen(World world) {
@@ -194,27 +395,6 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
 
     public BlockPos withZ(final int z) {
         return getZ() == z ? this : new BlockPos(getX(), getY(), z);
-    }
-
-    public BlockPos add(ForgeDirection d) {
-        add(d.offsetX, d.offsetY, d.offsetZ);
-        return this;
-    }
-
-    public BlockPos sub(ForgeDirection d) {
-        sub(d.offsetX, d.offsetY, d.offsetZ);
-        return this;
-    }
-
-    public long toLong() {
-        return (getX() & X_MASK) << X_SHIFT | (getY() & Y_MASK) << Y_SHIFT | (getZ() & Z_MASK);
-    }
-
-    public static BlockPos fromLong(long serialized) {
-        int j = (int) (serialized << 64 - X_SHIFT - NUM_X_BITS >> 64 - NUM_X_BITS);
-        int k = (int) (serialized << 64 - Y_SHIFT - NUM_Y_BITS >> 64 - NUM_Y_BITS);
-        int l = (int) (serialized << 64 - NUM_Z_BITS >> 64 - NUM_Z_BITS);
-        return new BlockPos(j, k, l);
     }
 
     public BlockPos readFromNBT(NBTTagCompound compound) {

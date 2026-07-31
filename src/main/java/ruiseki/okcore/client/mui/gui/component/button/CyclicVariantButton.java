@@ -1,0 +1,147 @@
+package ruiseki.okcore.client.mui.gui.component.button;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.IntConsumer;
+
+import com.cleanroommc.modularui.api.drawable.IDrawable;
+import com.cleanroommc.modularui.api.drawable.IKey;
+import com.cleanroommc.modularui.screen.RichTooltip;
+import com.cleanroommc.modularui.screen.viewport.ModularGuiContext;
+import com.cleanroommc.modularui.theme.WidgetThemeEntry;
+import com.cleanroommc.modularui.widgets.ButtonWidget;
+
+import ruiseki.okcore.client.OKCGuiTextures;
+
+public class CyclicVariantButton extends ButtonWidget<CyclicVariantButton> {
+
+    protected int index = 0;
+
+    protected final List<Variant> variants;
+
+    private int iconOffset = 2;
+    private int iconSize = 16;
+
+    private int buttonWidth = 20;
+    private int buttonHeight = 20;
+
+    private boolean hasCustomTexture = false;
+
+    private IDrawable notHoveredTexture = OKCGuiTextures.STANDARD_BUTTON;
+    private IDrawable hoveredTexture = OKCGuiTextures.STANDARD_BUTTON_HOVERED;
+
+    private final List<IntConsumer> mousePressedUpdaters = new ArrayList<>();
+
+    private boolean inEffect = true;
+
+    public CyclicVariantButton(List<Variant> variants, int index, int iconOffset, int iconSize,
+        IntConsumer mousePressedUpdater) {
+        this.variants = variants;
+        this.index = index;
+        this.iconOffset = iconOffset;
+        this.iconSize = iconSize;
+
+        if (mousePressedUpdater != null) {
+            this.mousePressedUpdaters.add(mousePressedUpdater);
+        }
+
+        this.size(buttonWidth, buttonHeight)
+            .onMousePressed(mouseButton -> {
+
+                if (mouseButton == 1) {
+                    this.index = (this.index - 1 + variants.size()) % variants.size();
+                } else {
+                    this.index = (this.index + 1) % variants.size();
+                }
+
+                for (IntConsumer updater : mousePressedUpdaters) {
+                    updater.accept(this.index);
+                }
+
+                markTooltipDirty();
+                return true;
+            })
+            .tooltipDynamic(tooltip -> {
+
+                tooltip.addLine(variants.get(this.index).name);
+
+                if (!inEffect) {
+                    tooltip.addLine(
+                        IKey.lang("gui.backpack.not_in_effect")
+                            .style(IKey.RED));
+                }
+
+                tooltip.pos(RichTooltip.Pos.NEXT_TO_MOUSE);
+            });
+    }
+
+    public CyclicVariantButton(List<Variant> variants, int index, IntConsumer mousePressedUpdater) {
+        this(variants, index, 2, 16, mousePressedUpdater);
+    }
+
+    public CyclicVariantButton(List<Variant> variants, IntConsumer mousePressedUpdater) {
+        this(variants, 0, 2, 16, mousePressedUpdater);
+    }
+
+    public CyclicVariantButton addMousePressedUpdater(IntConsumer updater) {
+        if (updater != null && !this.mousePressedUpdaters.contains(updater)) {
+            this.mousePressedUpdaters.add(updater);
+        }
+        return this;
+    }
+
+    public CyclicVariantButton setIndex(int index) {
+        this.index = Math.floorMod(index, variants.size());
+        markTooltipDirty();
+        return this;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setInEffect(boolean inEffect) {
+        this.inEffect = inEffect;
+    }
+
+    public boolean isInEffect() {
+        return inEffect;
+    }
+
+    @Override
+    public void draw(ModularGuiContext context, WidgetThemeEntry<?> widgetTheme) {
+
+        if (hasCustomTexture) {
+
+            if (isHovering()) {
+                hoveredTexture.draw(context, 0, 0, buttonWidth, buttonHeight, widgetTheme.getTheme());
+            } else {
+                notHoveredTexture.draw(context, 0, 0, buttonWidth, buttonHeight, widgetTheme.getTheme());
+            }
+        }
+
+        super.draw(context, widgetTheme);
+    }
+
+    @Override
+    public void drawOverlay(ModularGuiContext context, WidgetThemeEntry<?> widgetTheme) {
+        super.drawOverlay(context, widgetTheme);
+
+        IDrawable drawable = variants.get(index).drawable;
+
+        if (context != null) {
+            drawable.draw(context, iconOffset, iconOffset, iconSize, iconSize, widgetTheme.getTheme());
+        }
+    }
+
+    public static class Variant {
+
+        public final IKey name;
+        public final IDrawable drawable;
+
+        public Variant(IKey name, IDrawable drawable) {
+            this.name = name;
+            this.drawable = drawable;
+        }
+    }
+}

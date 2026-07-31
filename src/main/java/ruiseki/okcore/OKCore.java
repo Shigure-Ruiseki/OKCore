@@ -23,12 +23,8 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
-import ruiseki.okcore.capabilities.light.CapabilityLight;
-import ruiseki.okcore.capabilities.redstone.CapabilityRedstone;
 import ruiseki.okcore.command.CommandDatapack;
-import ruiseki.okcore.config.ModConfig;
-import ruiseki.okcore.core.OKCoreBlocks;
-import ruiseki.okcore.core.OKCoreItems;
+import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.enums.Mods;
@@ -36,35 +32,31 @@ import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.guide.GuideGuiHandler;
 import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
-import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
 
 @Mod(
     modid = Reference.MOD_ID,
     name = Reference.MOD_NAME,
-    version = Reference.VERSION,
-    dependencies = Reference.DEPENDENCIES,
+    version = Reference.MOD_VERSION,
+    dependencies = Reference.MOD_DEPENDENCIES,
     guiFactory = Reference.GUI_FACTORY)
-public class OKCore extends ModBase {
+public class OKCore extends ModBaseVersionable {
 
     @SidedProxy(serverSide = Reference.PROXY_COMMON, clientSide = Reference.PROXY_CLIENT)
     public static ICommonProxy proxy;
 
     @Mod.Instance(Reference.MOD_ID)
-    public static OKCore instance;
+    public static OKCore _instance;
 
     public OKCore() {
-        super(Reference.MOD_ID, Reference.MOD_NAME);
-        putGenericReference(REFKEY_MOD_VERSION, Reference.VERSION);
-        putGenericReference(REFKEY_VERSION_CHECKER, ModConfig.useVersionChecker);
-        putGenericReference(REFKEY_VERSION_CHECKER_URL, Reference.UPDATE_URL);
+        super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
+        putGenericReference(REFKEY_MOD_VERSION, Reference.MOD_VERSION);
 
         addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());
         addInitListeners(new CapabilityEnergy());
-        addInitListeners(new CapabilityLight());
-        addInitListeners(new CapabilityRedstone());
         addInitListeners(new CapabilityGuide());
 
         addInitListeners(new GuideRegistry());
@@ -89,9 +81,6 @@ public class OKCore extends ModBase {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
-
-        OKCoreItems.register();
-        OKCoreBlocks.register();
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
         }
@@ -148,6 +137,16 @@ public class OKCore extends ModBase {
     }
 
     @Override
+    public void onGeneralConfigsRegister(ConfigHandler configHandler) {
+        configHandler.add(new GeneralConfig());
+    }
+
+    @Override
+    public void onMainConfigsRegister(ConfigHandler configHandler) {
+        Configs.register(configHandler);
+    }
+
+    @Override
     public ICommonProxy getProxy() {
         return proxy;
     }
@@ -158,7 +157,7 @@ public class OKCore extends ModBase {
      * @param message The message to show.
      */
     public static void okLog(String message) {
-        OKCore.instance.log(Level.INFO, message);
+        OKCore._instance.log(Level.INFO, message);
     }
 
     /**
@@ -168,7 +167,7 @@ public class OKCore extends ModBase {
      * @param message The message to show.
      */
     public static void okLog(Level level, String message) {
-        OKCore.instance.log(level, message);
+        OKCore._instance.log(level, message);
     }
 
     /**
@@ -179,6 +178,6 @@ public class OKCore extends ModBase {
      * @param params  Parameters to replace in the message.
      */
     public static void okLog(Level level, String message, Object... params) {
-        OKCore.instance.log(level, message, params);
+        OKCore._instance.log(level, message, params);
     }
 }

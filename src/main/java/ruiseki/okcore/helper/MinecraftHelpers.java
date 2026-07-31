@@ -3,6 +3,7 @@ package ruiseki.okcore.helper;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemMonsterPlacer;
@@ -19,6 +20,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.BlockOK;
+import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
@@ -225,10 +227,18 @@ public class MinecraftHelpers {
      * @param x,      y, z The position.
      * @param saveNBT If the NBT data should be saved to the dropped item.
      */
-    public static void preDestroyBlock(BlockOK block, World world, int x, int y, int z, boolean saveNBT) {
+    public static void preDestroyBlock(Block block, World world, int x, int y, int z, boolean saveNBT) {
         TileEntity tile = world.getTileEntity(x, y, z);
 
-        if (tile != null && block.shouldDropInventory(world, x, y, z) && !world.isRemote) {
+        if (block instanceof BlockOK blockOK) {
+            if (tile != null && blockOK.shouldDropInventory(world, x, y, z) && !world.isRemote) {
+                CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, ForgeDirection.UNKNOWN)
+                    .ifPresent(handler -> {
+                        InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
+                        InventoryHelpers.clearInventory(handler);
+                    });
+            }
+        } else {
             CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, ForgeDirection.UNKNOWN)
                 .ifPresent(handler -> {
                     InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
@@ -240,7 +250,9 @@ public class MinecraftHelpers {
             // Cache
             TileEntityNBTStorage.TAG = teok.getNBTTagCompound();
             TileEntityNBTStorage.TILE = teok;
-            block.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
+            if (block instanceof BlockOK blockOK) blockOK.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
+            if (block instanceof ConfigurableBlockContainer cfgBlock)
+                cfgBlock.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
 
             teok.destroy();
         } else {

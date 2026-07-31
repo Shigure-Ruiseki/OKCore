@@ -31,13 +31,13 @@ public class MixinServerConfigurationManager {
     private void onInitializeConnectionPostHeldItem(NetworkManager netManager, EntityPlayerMP player,
         NetHandlerPlayServer nethandlerplayserver, CallbackInfo ci) {
         MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent((ServerConfigurationManager) (Object) this, player));
-        OKCore.instance.getPacketHandler()
+        OKCore._instance.getPacketHandler()
             .sendToPlayer(
                 new PacketUpdateRecipes(
                     RecipeManager.getManager()
                         .getRecipes()),
                 player);
-        OKCore.instance.getPacketHandler()
+        OKCore._instance.getPacketHandler()
             .sendToPlayer(
                 new PacketUpdateTags(
                     TagManager.getManager()

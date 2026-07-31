@@ -25,8 +25,8 @@ public class Book {
     private String itemName;
     private String author;
     private Color textColor = new Color(0, 0, 0);
-    private ResourceLocation pageTexture = new ResourceLocation(Reference.PREFIX_GUI + "book_colored.png");
-    private ResourceLocation outlineTexture = new ResourceLocation(Reference.PREFIX_GUI + "book_greyscale.png");
+    private ResourceLocation pageTexture = new ResourceLocation(Reference.PREFIX_GUI + "guide/book_colored.png");
+    private ResourceLocation outlineTexture = new ResourceLocation(Reference.PREFIX_GUI + "guide/book_greyscale.png");
     public String itemTexture;
     private Color color = new Color(171, 70, 30);
     private boolean spawnWithBook;

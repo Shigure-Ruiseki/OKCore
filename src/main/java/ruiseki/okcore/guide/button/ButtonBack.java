@@ -30,7 +30,7 @@ public class ButtonBack extends ButtonBase {
             GL11.glEnable(GL11.GL_BLEND);
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             minecraft.getTextureManager()
-                .bindTexture(new ResourceLocation(Reference.PREFIX_GUI + "book_colored.png"));
+                .bindTexture(new ResourceLocation(Reference.PREFIX_GUI + "guide/book_colored.png"));
             if (GuiHelpers.isMouseBetween(mouseX, mouseY, xPosition, yPosition, width, height)) {
                 this.drawTexturedModalRect(xPosition, yPosition + 1, 70, 201, 18, 10);
                 guiBase.drawHoveringText(getHoveringText(), mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);

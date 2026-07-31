@@ -14,6 +14,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.item.IBucketRegistry;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.network.packet.PacketSound;
 import ruiseki.okcore.world.gen.IRetroGenRegistry;
@@ -66,12 +67,11 @@ public abstract class CommonProxyComponent implements ICommonProxy {
             MinecraftForge.EVENT_BUS.register(retroGenRegistry);
         }
 
-        // TODO: add bucketRegistry
-        // IBucketRegistry bucketRegistry = getMod().getRegistryManager()
-        // .getRegistry(IBucketRegistry.class);
-        // if (bucketRegistry != null) {
-        // MinecraftForge.EVENT_BUS.register(bucketRegistry);
-        // }
+        IBucketRegistry bucketRegistry = getMod().getRegistryManager()
+            .getRegistry(IBucketRegistry.class);
+        if (bucketRegistry != null) {
+            MinecraftForge.EVENT_BUS.register(bucketRegistry);
+        }
     }
 
     @Override
@@ -108,10 +108,10 @@ public abstract class CommonProxyComponent implements ICommonProxy {
     public void sendSound(double x, double y, double z, String sound, float volume, float frequency, String mod) {
         PacketSound packet = new PacketSound(x, y, z, sound, volume, frequency, mod);
         if (!MinecraftHelpers.isClientSide()) {
-            OKCore.instance.getPacketHandler()
+            OKCore._instance.getPacketHandler()
                 .sendToAll(packet); // Yes, all sounds go through.
         } else {
-            OKCore.instance.getPacketHandler()
+            OKCore._instance.getPacketHandler()
                 .sendToServer(packet); // Yes, all sounds go through.
         }
     }

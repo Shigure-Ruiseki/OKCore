@@ -7,7 +7,6 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -20,30 +19,34 @@ import ruiseki.okcore.capabilities.CapabilityCache;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
+import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.persist.nbt.INBTProvider;
+import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 
-public abstract class TileEntityOK extends TileEntity implements ITile, INBTProvider, ICapabilitySerializable {
+public abstract class TileEntityOK extends TileEntity implements INBTProvider, ICapabilitySerializable {
 
+    private static final int UPDATE_BACKOFF_TICKS = 1;
+
+    @NBTPersist
+    private Boolean rotatable = false;
+    @NBTPersist
+    private ForgeDirection rotation = ForgeDirection.NORTH;
     @Delegate
     private final INBTProvider nbtProvider = new NBTProviderComponent(this);
 
-    private static final int UPDATE_BACKOFF_TICKS = 1;
     private boolean shouldSendUpdate = false;
     private int sendUpdateBackoff = 0;
     private final boolean ticking;
-
-    private BlockPos cachedPos;
-    private final int randomOffset = (int) (Math.random() * 20);
-
     protected final CapabilityCache capabilityCache = new CapabilityCache();
+
     private CapabilityDispatcher capabilities;
+    public BlockPos pos = BlockPos.ORIGIN;
 
     public TileEntityOK() {
-        this.sendUpdateBackoff = (int) (Math.random() * UPDATE_BACKOFF_TICKS);
+        this.sendUpdateBackoff = (int) Math.round(Math.random() * getUpdateBackoffTicks());
         this.ticking = this instanceof ITickingTile;
         if (this instanceof ICapabilityInternal internal) this.capabilities = internal.getCapabilities();
     }
@@ -107,6 +110,7 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
      */
     private void updateTicking() {
         doUpdate();
+        updateTileEntity();
         trySendActualUpdate();
     }
 
@@ -114,7 +118,16 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
      * Override this method instead of {@link TileEntityOK#updateEntity()}.
      * This method is called each tick.
      */
+    @Deprecated
     protected void doUpdate() {}
+
+    /**
+     * Override this method instead of {@link TileEntityOK#updateTicking()}.
+     * This method is called each tick.
+     */
+    protected void updateTileEntity() {
+
+    }
 
     private void trySendActualUpdate() {
         sendUpdateBackoff--;
@@ -166,26 +179,6 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         onUpdateReceived();
     }
 
-    @Override
-    public final void writeToNBT(NBTTagCompound root) {
-        super.writeToNBT(root);
-        writeCommon(root);
-    }
-
-    @Override
-    public final void readFromNBT(NBTTagCompound root) {
-        super.readFromNBT(root);
-        readCommon(root);
-    }
-
-    public void writeCommon(NBTTagCompound tag) {
-        writeGeneratedFieldsToNBT(tag);
-    }
-
-    public void readCommon(NBTTagCompound tag) {
-        readGeneratedFieldsFromNBT(tag);
-    }
-
     /**
      * This method is called when the tile entity receives
      * an update (ie a data packet) from the server.
@@ -220,6 +213,34 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         return !isInvalid() && player.getDistanceSq(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D) <= 64D;
     }
 
+    @Override
+    public void writeToNBT(NBTTagCompound tag) {
+        super.writeToNBT(tag);
+        writeGeneratedFieldsToNBT(tag);
+        writeCommon(tag);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+        readGeneratedFieldsFromNBT(tag);
+        readCommon(tag);
+        onLoad();
+    }
+
+    @Deprecated
+    public void writeCommon(NBTTagCompound tag) {}
+
+    @Deprecated
+    public void readCommon(NBTTagCompound tag) {}
+
+    /**
+     * When the tile is loaded or created.
+     */
+    public void onLoad() {
+
+    }
+
     /**
      * Get the NBT tag for this tile entity.
      *
@@ -232,93 +253,51 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         return tag;
     }
 
-    @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
-        this.readFromNBT(nbt);
+    /**
+     * If the blockState this tile entity has can be rotated.
+     *
+     * @return If it can be rotated.
+     */
+    public boolean isRotatable() {
+        return this.rotatable;
     }
 
-    @Override
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound ret = new NBTTagCompound();
-        this.writeToNBT(ret);
-        return ret;
+    /**
+     * Set whether or not the blockState that has this tile entity can be rotated.
+     *
+     * @param rotatable If it can be rotated.
+     */
+    public void setRotatable(boolean rotatable) {
+        this.rotatable = rotatable;
     }
 
-    @Override
-    public BlockPos getPos() {
-        if (cachedPos == null || cachedPos.getX() != xCoord
-            || cachedPos.getY() != yCoord
-            || cachedPos.getZ() != zCoord) {
-
-            cachedPos = new BlockPos(this);
-        }
-        return cachedPos;
+    /**
+     * Get the current rotation of this tile entity.
+     * Default is {@link net.minecraft.util.EnumFacing#NORTH}.
+     *
+     * @return The rotation.
+     */
+    public ForgeDirection getRotation() {
+        return rotation;
     }
 
-    @Override
-    public DimPos getDimPos() {
-        return DimPos.of(worldObj, getPos());
+    /**
+     * Set the rotation of this tile entity.
+     * Default is {@link net.minecraft.util.EnumFacing#NORTH}.
+     *
+     * @param rotation The new rotation.
+     */
+    public void setRotation(ForgeDirection rotation) {
+        this.rotation = rotation;
     }
 
-    @Override
-    public int getX() {
-        return xCoord;
-    }
-
-    @Override
-    public int getY() {
-        return yCoord;
-    }
-
-    @Override
-    public int getZ() {
-        return zCoord;
-    }
-
-    @Override
-    public World getWorld() {
-        return worldObj;
-    }
-
-    @Override
-    public int getWorldID() {
-        return worldObj.provider.dimensionId;
-    }
-
-    @Override
-    public Block getBlock() {
-        return getBlockType();
-    }
-
-    @Override
-    public int getMeta() {
-        return getBlockMetadata();
-    }
-
-    @Override
-    public TileEntity getTile() {
-        return this;
-    }
-
-    @Override
-    public void mark() {
-        markDirty();
-    }
-
-    @Override
-    public void updateTEState() {
-        markDirty();
-        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
-    }
-
-    @Override
-    public void updateTELight() {
-        worldObj.updateLightByType(EnumSkyBlock.Sky, xCoord, yCoord, zCoord);
-        worldObj.updateLightByType(EnumSkyBlock.Block, xCoord, yCoord, zCoord);
-    }
-
-    protected boolean shouldDoWorkThisTick(int interval) {
-        return (worldObj.getTotalWorldTime() + randomOffset) % interval == 0;
+    /**
+     * Get the blockState type this tile entity is defined for.
+     *
+     * @return The blockState instance.
+     */
+    public ConfigurableBlockContainer getBlock() {
+        return (ConfigurableBlockContainer) this.getBlockType();
     }
 
     @Override
@@ -357,4 +336,22 @@ public abstract class TileEntityOK extends TileEntity implements ITile, INBTProv
         }
     }
 
+    @Override
+    public void deserializeNBT(NBTTagCompound nbt) {
+        this.readFromNBT(nbt);
+    }
+
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound ret = new NBTTagCompound();
+        this.writeToNBT(ret);
+        return ret;
+    }
+
+    public BlockPos getPos() {
+        if (pos == null || pos.getX() != xCoord || pos.getY() != yCoord || pos.getZ() != zCoord) {
+            pos = new BlockPos(this);
+        }
+        return pos;
+    }
 }

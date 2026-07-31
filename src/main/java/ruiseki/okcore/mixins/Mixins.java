@@ -52,7 +52,10 @@ public enum Mixins implements IMixins {
     NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")
         .addCommonMixins("recipe.MixinShapedRecipeHandler", "recipe.MixinShapelessRecipeHandler")
         .addRequiredMod(TargetMods.NotEnoughItems)
-        .setPhase(Phase.LATE)),;
+        .setPhase(Phase.LATE)),
+
+    GTNHLIB(new MixinBuilder("GTNHLib Mixin").addClientMixins("gtnhlib.JSONModelAccessor")
+        .setPhase(Phase.EARLY));
 
     private final MixinBuilder builder;
 

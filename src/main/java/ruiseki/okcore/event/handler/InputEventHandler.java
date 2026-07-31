@@ -47,7 +47,7 @@ public class InputEventHandler {
                     boolean shiftOK = !toggle.needsShiftClick(stack) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 
                     if (toggle.canMouseClicked(stack, button) && shiftOK) {
-                        OKCore.instance.getPacketHandler()
+                        OKCore._instance.getPacketHandler()
                             .sendToServer(new PacketItemToggle(slot.slotNumber));
                         if (gui instanceof IGuiInputHandle handle) {
                             handle.setMouseHandled(true);

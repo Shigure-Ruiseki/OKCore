@@ -26,9 +26,8 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.okcore.client.icon.IconProvider;
 import ruiseki.okcore.client.key.IKeyRegistry;
-import ruiseki.okcore.event.handler.UpdateNotificationHandler;
-import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
 
 /**
@@ -44,11 +43,17 @@ public abstract class ClientProxyComponent extends CommonProxyComponent implemen
     protected static final String SOUND_NONE = "none";
 
     private final CommonProxyComponent commonProxyComponent;
+    private final IconProvider iconProvider;
     protected final Map<Class<? extends Entity>, Render> entityRenderers = Maps.newHashMap();
     protected final Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> tileEntityRenderers = Maps.newHashMap();
 
     public ClientProxyComponent(CommonProxyComponent commonProxyComponent) {
         this.commonProxyComponent = commonProxyComponent;
+        this.iconProvider = constructIconProvider();
+    }
+
+    protected IconProvider constructIconProvider() {
+        return new IconProvider(this);
     }
 
     @Override
@@ -106,13 +111,6 @@ public abstract class ClientProxyComponent extends CommonProxyComponent implemen
         FMLCommonHandler.instance()
             .bus()
             .register(getMod().getKeyRegistry());
-        if (!getMod().getReferenceValue(ModBase.REFKEY_VERSION_CHECKER_URL)
-            .isEmpty() && getMod().getReferenceValue(ModBase.REFKEY_VERSION_CHECKER)) {
-            UpdateNotificationHandler handler = new UpdateNotificationHandler(getMod());
-            FMLCommonHandler.instance()
-                .bus()
-                .register(handler);
-        }
     }
 
     @Override

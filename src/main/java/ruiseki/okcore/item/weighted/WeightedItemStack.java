@@ -21,6 +21,10 @@ public class WeightedItemStack extends WeightedStackBase {
         return this.stack != null && other != null && this.stack.isItemEqual(other);
     }
 
+    public ItemStack getItemStack() {
+        return getMainStack();
+    }
+
     @Override
     public ItemStack getMainStack() {
         return this.stack;

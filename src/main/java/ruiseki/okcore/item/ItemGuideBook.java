@@ -57,7 +57,7 @@ public class ItemGuideBook extends Item implements IGuideItem {
         }
 
         player.openGui(
-            OKCore.instance,
+            OKCore._instance,
             GuideHelpers.getIndexedBooks()
                 .indexOf(book),
             world,

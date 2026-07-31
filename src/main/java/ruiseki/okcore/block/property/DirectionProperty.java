@@ -15,6 +15,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 
 import ruiseki.okcore.block.IBlockDirection;
 import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.tileentity.TileEntityOK;
 
 public interface DirectionProperty extends IProperty<ForgeDirection> {
 
@@ -55,22 +56,24 @@ public interface DirectionProperty extends IProperty<ForgeDirection> {
 
     static AbstractDirectionProperty facing(ForgeDirection defaultValue) {
         return facing(defaultValue, (world, x, y, z) -> {
-            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction)
                 return direction.getDirection(world, x, y, z);
-            }
+
             IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-            if (direction != null) {
-                return direction.getDirection(world, x, y, z);
-            }
+            if (direction != null) return direction.getDirection(world, x, y, z);
+
+            TileEntityOK tileOK = TileHelpers.getSafeTile(world, x, y, z, TileEntityOK.class);
+            if (tileOK != null) return tileOK.getRotation();
+
             return null;
         }, (world, x, y, z, v) -> {
-            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
-                direction.setDirection(world, x, y, z, v);
-            }
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) direction.setDirection(world, x, y, z, v);
+
             IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
-            if (direction != null) {
-                direction.setDirection(world, x, y, z, v);
-            }
+            if (direction != null) direction.setDirection(world, x, y, z, v);
+
+            TileEntityOK tileOK = TileHelpers.getSafeTile(world, x, y, z, TileEntityOK.class);
+            if (tileOK != null) tileOK.setRotation(v);
         });
     }
 

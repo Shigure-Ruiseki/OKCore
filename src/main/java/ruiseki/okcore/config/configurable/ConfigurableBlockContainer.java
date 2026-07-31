@@ -27,6 +27,7 @@ import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -95,6 +96,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
         try {
             TileEntityOK tile = tileEntity.newInstance();
             tile.onLoad();
+            tile.setRotatable(isRotatable());
             return tile;
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
@@ -266,6 +268,44 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
      */
     public boolean isKeepNBTOnDrop() {
         return true;
+    }
+
+    /**
+     * If this blockState can be rotated.
+     * 
+     * @return Can be rotated.
+     */
+    public boolean isRotatable() {
+        return rotatable;
+    }
+
+    /**
+     * Set whether of not this container must be able to be rotated.
+     * 
+     * @param rotatable Can be rotated.
+     */
+    public void setRotatable(boolean rotatable) {
+        this.rotatable = rotatable;
+    }
+
+    /**
+     * Get the texture path of the GUI.
+     * 
+     * @return The path of the GUI for this blockState.
+     */
+    public String getGuiTexture() {
+        return getGuiTexture("");
+    }
+
+    /**
+     * Get the texture path of the GUI.
+     * 
+     * @param suffix Suffix to add to the path.
+     * @return The path of the GUI for this blockState.
+     */
+    public String getGuiTexture(String suffix) {
+        return getConfig().getMod()
+            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + eConfig.getNamedId() + "_gui" + suffix + ".png";
     }
 
     @Override

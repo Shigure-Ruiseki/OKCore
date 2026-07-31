@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -149,6 +150,25 @@ public abstract class NBTClassType<T> {
 
             @Override
             public ForgeDirection getDefaultValue() {
+                return null;
+            }
+        });
+
+        NBTYPES.put(EnumFacing.class, new NBTClassType<EnumFacing>() {
+
+            @Override
+            public void writePersistedField(String name, EnumFacing object, NBTTagCompound tag) {
+                tag.setInteger(name, object.ordinal());
+            }
+
+            @Override
+            public EnumFacing readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return null;
+                return EnumFacing.values()[tag.getInteger(name)];
+            }
+
+            @Override
+            public EnumFacing getDefaultValue() {
                 return null;
             }
         });

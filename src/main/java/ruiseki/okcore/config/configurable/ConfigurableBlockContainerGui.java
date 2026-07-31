@@ -7,6 +7,9 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import lombok.experimental.Delegate;
+import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
+import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
@@ -22,9 +25,12 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  */
 public abstract class ConfigurableBlockContainerGui extends ConfigurableBlockContainer
-    implements IGuiContainerProviderConfigurable {
+    implements IGuiContainerProviderConfigurable, IBlockPropertyProvider {
 
     private int guiID;
+
+    @Delegate
+    protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     /**
      * Make a new blockState instance.

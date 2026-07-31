@@ -19,6 +19,9 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
+import lombok.experimental.Delegate;
+import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
+import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
@@ -27,7 +30,7 @@ import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class ConfigurableBlockContainer extends BlockContainer implements IConfigurableBlock {
+public class ConfigurableBlockContainer extends BlockContainer implements IConfigurableBlock, IBlockPropertyProvider {
 
     @SuppressWarnings("rawtypes")
     protected BlockConfig eConfig = null;
@@ -41,6 +44,9 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
 
     protected int pass = 0;
     protected boolean isInventoryBlock = false;
+
+    @Delegate
+    protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     /**
      * Make a new blockState instance.

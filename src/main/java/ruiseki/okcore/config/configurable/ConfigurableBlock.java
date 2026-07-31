@@ -3,14 +3,20 @@ package ruiseki.okcore.config.configurable;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 
+import lombok.experimental.Delegate;
+import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
+import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
-public class ConfigurableBlock extends Block implements IConfigurableBlock {
+public class ConfigurableBlock extends Block implements IConfigurableBlock, IBlockPropertyProvider {
 
     @SuppressWarnings("rawtypes")
     protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
+
+    @Delegate
+    protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     /**
      * Make a new blockState instance.

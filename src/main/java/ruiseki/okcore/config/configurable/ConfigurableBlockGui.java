@@ -4,6 +4,9 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
+import lombok.experimental.Delegate;
+import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
+import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
@@ -16,9 +19,13 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  *
  */
-public abstract class ConfigurableBlockGui extends ConfigurableBlock implements IGuiContainerProvider {
+public abstract class ConfigurableBlockGui extends ConfigurableBlock
+    implements IGuiContainerProvider, IBlockPropertyProvider {
 
     private int guiID;
+
+    @Delegate
+    protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     /**
      * Make a new block instance.

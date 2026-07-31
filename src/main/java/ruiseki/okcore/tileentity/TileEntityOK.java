@@ -46,7 +46,7 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
     public BlockPos pos = BlockPos.ORIGIN;
 
     public TileEntityOK() {
-        this.sendUpdateBackoff = (int) (Math.random() * UPDATE_BACKOFF_TICKS);
+        this.sendUpdateBackoff = (int) Math.round(Math.random() * getUpdateBackoffTicks());
         this.ticking = this instanceof ITickingTile;
         if (this instanceof ICapabilityInternal internal) this.capabilities = internal.getCapabilities();
     }

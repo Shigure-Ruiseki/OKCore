@@ -39,6 +39,10 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
     public ConfigurableBlockSapling(ExtendedConfig eConfig, Material material, WorldGeneratorTree treeGenerator) {
         this.setConfig(eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
+        this.setBlockTextureName(
+            eConfig.getMod()
+                .getModId() + ":"
+                + eConfig.getNamedId());
         this.treeGenerator = treeGenerator;
         setStepSound(soundTypeGrass);
     }

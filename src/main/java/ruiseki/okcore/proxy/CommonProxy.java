@@ -1,8 +1,9 @@
-package ruiseki.okcore;
+package ruiseki.okcore.proxy;
 
 import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.event.handler.CooldownEventHandler;
 import ruiseki.okcore.event.handler.DataEventHandler;
 import ruiseki.okcore.event.handler.InputEventHandler;
@@ -18,7 +19,6 @@ import ruiseki.okcore.network.packet.PacketSyncGuidePos;
 import ruiseki.okcore.network.packet.PacketUpdateRecipes;
 import ruiseki.okcore.network.packet.PacketUpdateTags;
 import ruiseki.okcore.network.packet.ValueNotifyPacket;
-import ruiseki.okcore.proxy.CommonProxyComponent;
 
 public class CommonProxy extends CommonProxyComponent {
 
@@ -26,7 +26,7 @@ public class CommonProxy extends CommonProxyComponent {
 
     @Override
     public ModBase getMod() {
-        return OKCore.instance;
+        return OKCore._instance;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package ruiseki.okcore.test;
+package ruiseki.okcore.core;
 
 import java.util.List;
 import java.util.Set;
@@ -18,21 +18,33 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.config.configurable.ConfigurableItem;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.item.IItemToggle;
-import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.network.packet.PacketSyncCursorStack;
 import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
-public class ItemFluidTest extends ItemOK implements IItemToggle {
+public class ItemFluidTest extends ConfigurableItem implements IItemToggle {
 
-    public ItemFluidTest() {
-        super();
+    private static ItemFluidTest _instance = null;
+
+    /**
+     * Get the unique instance.
+     *
+     * @return The instance.
+     */
+    public static ItemFluidTest getInstance() {
+        return _instance;
+    }
+
+    public ItemFluidTest(ExtendedConfig eConfig) {
+        super(eConfig);
         setTextureName("stick");
     }
 
@@ -57,7 +69,7 @@ public class ItemFluidTest extends ItemOK implements IItemToggle {
                 })
                 .orElse(false);
         }
-        return false;
+        return super.onItemUse(stack, player, world, x, y, z, side, hitX, hitY, hitZ);
     }
 
     @Override
@@ -96,7 +108,7 @@ public class ItemFluidTest extends ItemOK implements IItemToggle {
 
                 if (player instanceof EntityPlayerMP playerMP) {
                     playerMP.inventory.setItemStack(cursorStack);
-                    OKCore.instance.getPacketHandler()
+                    OKCore._instance.getPacketHandler()
                         .sendToPlayer(new PacketSyncCursorStack(cursorStack), playerMP);
                 }
             });
@@ -110,6 +122,7 @@ public class ItemFluidTest extends ItemOK implements IItemToggle {
 
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
+        super.addInformation(stack, player, list, flag);
         TagKey<Item> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "dusts"));
 
         Set<TagEntry> entries = TagManager.getManager()

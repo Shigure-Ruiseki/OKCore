@@ -1,9 +1,9 @@
-package ruiseki.okcore;
+package ruiseki.okcore.proxy;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.proxy.ClientProxyComponent;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends ClientProxyComponent {
@@ -14,7 +14,7 @@ public class ClientProxy extends ClientProxyComponent {
 
     @Override
     public ModBase getMod() {
-        return OKCore.instance;
+        return OKCore._instance;
     }
 
     @Override

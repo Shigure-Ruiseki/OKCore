@@ -11,7 +11,7 @@ import ruiseki.okcore.tracking.IModVersion;
 
 /**
  * Mod compat for the Version Checker mod.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -22,7 +22,7 @@ public class VersionCheckerModCompat implements IModCompat {
     @Override
     public void onInit(Step initStep) {
         if (initStep == Step.PREINIT) {
-            canBeUsed = OKCore.instance.getModCompatLoader()
+            canBeUsed = OKCore._instance.getModCompatLoader()
                 .shouldLoadModCompat(this);
         }
     }
@@ -46,7 +46,7 @@ public class VersionCheckerModCompat implements IModCompat {
      * Send a message to the Version Checker mod with the update info.
      * This is an integration with Dynious Version Checker See
      * http://www.minecraftforum.net/topic/2721902-
-     * 
+     *
      * @param mod        The mod.
      * @param modVersion The mod version holder.
      */

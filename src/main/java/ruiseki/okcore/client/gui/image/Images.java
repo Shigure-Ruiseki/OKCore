@@ -7,22 +7,22 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * Default images provided by this mod.
- * 
+ *
  * @author rubensworks
  */
 public class Images {
 
     public static final ResourceLocation ICONS = new ResourceLocation(
-        OKCore.instance.getModId(),
-        OKCore.instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "icons.png");
+        OKCore._instance.getModId(),
+        OKCore._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "icons.png");
 
     public static final ResourceLocation BUTTONS = new ResourceLocation(
-        OKCore.instance.getModId(),
-        OKCore.instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "buttons.png");
+        OKCore._instance.getModId(),
+        OKCore._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "buttons.png");
 
     public static final ResourceLocation WIDGETS = new ResourceLocation(
-        OKCore.instance.getModId(),
-        OKCore.instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "widgets.png");
+        OKCore._instance.getModId(),
+        OKCore._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "widgets.png");
 
     public static final Image ARROW_DOWN = new Image(ICONS, 18, 0, 18, 18);
     public static final Image ARROW_UP = new Image(ICONS, 36, 0, 18, 18);

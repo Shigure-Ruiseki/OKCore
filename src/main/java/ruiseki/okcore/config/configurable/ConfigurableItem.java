@@ -8,9 +8,11 @@ import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.capabilities.IItemCapability;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.item.IItemSharedTag;
 
 /**
  * Item that can hold ExtendedConfigs
@@ -18,7 +20,7 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author rubensworks
  *
  */
-public class ConfigurableItem extends Item implements IConfigurable {
+public class ConfigurableItem extends Item implements IConfigurable, IItemCapability, IItemSharedTag {
 
     @SuppressWarnings("rawtypes")
     protected ItemConfig eConfig = null;

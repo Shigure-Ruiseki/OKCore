@@ -1,4 +1,4 @@
-package ruiseki.okcore.test;
+package ruiseki.okcore.core;
 
 import java.util.List;
 import java.util.Set;
@@ -13,10 +13,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import ruiseki.okcore.config.configurable.ConfigurableItem;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
-import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.item.UseCooldown;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tag.Registries;
@@ -24,10 +25,21 @@ import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
-public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
+public class ItemInventoryTest extends ConfigurableItem implements IItemCooldown, IItemToggle {
 
-    public ItemItemTest() {
-        super();
+    private static ItemInventoryTest _instance = null;
+
+    /**
+     * Get the unique instance.
+     *
+     * @return The instance.
+     */
+    public static ItemInventoryTest getInstance() {
+        return _instance;
+    }
+
+    public ItemInventoryTest(ExtendedConfig eConfig) {
+        super(eConfig);
         setTextureName("stick");
     }
 
@@ -67,7 +79,7 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
                 })
                 .orElse(false);
         }
-        return false;
+        return super.onItemUse(stack, player, world, x, y, z, side, hitX, hitY, hitZ);
     }
 
     @Override
@@ -88,6 +100,7 @@ public class ItemItemTest extends ItemOK implements IItemCooldown, IItemToggle {
 
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
+        super.addInformation(stack, player, list, flag);
         TagKey<Item> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
 
         Set<TagEntry> entries = TagManager.getManager()

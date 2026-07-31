@@ -17,14 +17,14 @@ public class ItemCooldownsServer extends ItemCooldowns {
     @Override
     protected void onCooldownStarted(ResourceLocation group, int duration) {
         super.onCooldownStarted(group, duration);
-        OKCore.instance.getPacketHandler()
+        OKCore._instance.getPacketHandler()
             .sendToPlayer(new PacketCooldown(group, duration), this.player);
     }
 
     @Override
     protected void onCooldownEnded(ResourceLocation group) {
         super.onCooldownEnded(group);
-        OKCore.instance.getPacketHandler()
+        OKCore._instance.getPacketHandler()
             .sendToPlayer(new PacketCooldown(group, 0), this.player);
     }
 }

@@ -25,8 +25,6 @@ import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ConfigHandler;
-import ruiseki.okcore.core.OKCoreBlocks;
-import ruiseki.okcore.core.OKCoreItems;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.enums.Mods;
@@ -52,7 +50,7 @@ public class OKCore extends ModBaseVersionable {
     public static ICommonProxy proxy;
 
     @Mod.Instance(Reference.MOD_ID)
-    public static OKCore instance;
+    public static OKCore _instance;
 
     public OKCore() {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
@@ -90,9 +88,6 @@ public class OKCore extends ModBaseVersionable {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
-
-        OKCoreItems.register();
-        OKCoreBlocks.register();
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
         }
@@ -155,7 +150,7 @@ public class OKCore extends ModBaseVersionable {
 
     @Override
     public void onMainConfigsRegister(ConfigHandler configHandler) {
-
+        Configs.register(configHandler);
     }
 
     @Override
@@ -169,7 +164,7 @@ public class OKCore extends ModBaseVersionable {
      * @param message The message to show.
      */
     public static void okLog(String message) {
-        OKCore.instance.log(Level.INFO, message);
+        OKCore._instance.log(Level.INFO, message);
     }
 
     /**
@@ -179,7 +174,7 @@ public class OKCore extends ModBaseVersionable {
      * @param message The message to show.
      */
     public static void okLog(Level level, String message) {
-        OKCore.instance.log(level, message);
+        OKCore._instance.log(level, message);
     }
 
     /**
@@ -190,6 +185,6 @@ public class OKCore extends ModBaseVersionable {
      * @param params  Parameters to replace in the message.
      */
     public static void okLog(Level level, String message, Object... params) {
-        OKCore.instance.log(level, message, params);
+        OKCore._instance.log(level, message, params);
     }
 }

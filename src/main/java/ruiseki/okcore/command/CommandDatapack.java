@@ -102,9 +102,9 @@ public class CommandDatapack extends CommandMod {
                     .getTags());
             if (configManager != null && configManager.playerEntityList != null) {
                 for (EntityPlayerMP player : configManager.playerEntityList) {
-                    OKCore.instance.getPacketHandler()
+                    OKCore._instance.getPacketHandler()
                         .sendToPlayer(packetRecipes, player);
-                    OKCore.instance.getPacketHandler()
+                    OKCore._instance.getPacketHandler()
                         .sendToPlayer(packetTags, player);
                 }
             }

@@ -383,10 +383,10 @@ public abstract class InventoryContainer extends Container
         if (!values.containsKey(valueId) || !values.get(valueId)
             .equals(value)) {
             if (!MinecraftHelpers.isClientSide()) { // server -> client
-                OKCore.instance.getPacketHandler()
+                OKCore._instance.getPacketHandler()
                     .sendToPlayer(new ValueNotifyPacket(valueId, value), (EntityPlayerMP) player);
             } else { // client -> server
-                OKCore.instance.getPacketHandler()
+                OKCore._instance.getPacketHandler()
                     .sendToServer(new ValueNotifyPacket(valueId, value));
             }
             values.put(valueId, value);

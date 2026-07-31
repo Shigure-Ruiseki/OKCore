@@ -1,4 +1,4 @@
-package ruiseki.okcore.test;
+package ruiseki.okcore.core;
 
 import java.util.List;
 
@@ -8,16 +8,28 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import ruiseki.okcore.config.configurable.ConfigurableItem;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.TagHelpers;
-import ruiseki.okcore.item.ItemOK;
 import ruiseki.okcore.tag.TagKey;
 
-public class ItemEnergyTest extends ItemOK {
+public class ItemEnergyTest extends ConfigurableItem {
 
-    public ItemEnergyTest() {
-        super();
+    private static ItemEnergyTest _instance = null;
+
+    /**
+     * Get the unique instance.
+     *
+     * @return The instance.
+     */
+    public static ItemEnergyTest getInstance() {
+        return _instance;
+    }
+
+    public ItemEnergyTest(ExtendedConfig eConfig) {
+        super(eConfig);
         setTextureName("stick");
     }
 
@@ -37,11 +49,12 @@ public class ItemEnergyTest extends ItemOK {
                 })
                 .orElse(false);
         }
-        return false;
+        return super.onItemUse(stack, player, world, x, y, z, side, hitX, hitY, hitZ);
     }
 
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
+        super.addInformation(stack, player, list, flag);
         for (TagKey<?> key : TagHelpers.getTags(stack)) {
             list.add(key.toString());
         }

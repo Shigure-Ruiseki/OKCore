@@ -123,7 +123,7 @@ public class GuiCategory extends GuiBase {
     public void onGuiClosed() {
         super.onGuiClosed();
 
-        OKCore.instance.getPacketHandler()
+        OKCore._instance.getPacketHandler()
             .sendToServer(
                 new PacketSyncGuidePos(
                     "",

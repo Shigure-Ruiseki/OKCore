@@ -236,7 +236,7 @@ public abstract class GuiContainerExtended extends GuiContainer
         }
         if (getContainer().requiresAction(button.id)) {
             getContainer().onButtonClick(button.id);
-            OKCore.instance.getPacketHandler()
+            OKCore._instance.getPacketHandler()
                 .sendToServer(new ButtonClickPacket(button.id));
         }
     }

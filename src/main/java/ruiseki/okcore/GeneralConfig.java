@@ -13,7 +13,7 @@ import ruiseki.okcore.tracking.Versions;
 
 /**
  * A config with general options for this mod.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -90,7 +90,7 @@ public class GeneralConfig extends DummyConfig {
      * Create a new instance.
      */
     public GeneralConfig() {
-        super(OKCore.instance, true, "general", null, GeneralConfig.class);
+        super(OKCore._instance, true, "general", null, GeneralConfig.class);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class GeneralConfig extends DummyConfig {
         getMod().putGenericReference(ModBase.REFKEY_CRASH_ON_MODCOMPAT_CRASH, GeneralConfig.crashOnModCompatCrash);
 
         if (versionChecker) {
-            Versions.registerMod(getMod(), OKCore.instance, Reference.VERSION_URL);
+            Versions.registerMod(getMod(), OKCore._instance, Reference.VERSION_URL);
         }
     }
 

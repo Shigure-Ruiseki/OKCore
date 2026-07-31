@@ -1,4 +1,4 @@
-package ruiseki.okcore.item.component;
+package ruiseki.okcore.inventory.component;
 
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;

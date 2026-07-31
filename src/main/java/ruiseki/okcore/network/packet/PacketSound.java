@@ -95,13 +95,13 @@ public class PacketSound extends PacketCodec {
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        OKCore.instance.getProxy()
+        OKCore._instance.getProxy()
             .playSound(x, y, z, sound, volume, frequency, mod);
     }
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        OKCore.instance.getPacketHandler()
+        OKCore._instance.getPacketHandler()
             .sendToAllAround(
                 new PacketSound(x, y, z, sound, volume, frequency, mod),
                 new NetworkRegistry.TargetPoint(world.provider.dimensionId, x, y, z, RANGE));

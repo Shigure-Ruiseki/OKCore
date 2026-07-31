@@ -108,10 +108,10 @@ public abstract class CommonProxyComponent implements ICommonProxy {
     public void sendSound(double x, double y, double z, String sound, float volume, float frequency, String mod) {
         PacketSound packet = new PacketSound(x, y, z, sound, volume, frequency, mod);
         if (!MinecraftHelpers.isClientSide()) {
-            OKCore.instance.getPacketHandler()
+            OKCore._instance.getPacketHandler()
                 .sendToAll(packet); // Yes, all sounds go through.
         } else {
-            OKCore.instance.getPacketHandler()
+            OKCore._instance.getPacketHandler()
                 .sendToServer(packet); // Yes, all sounds go through.
         }
     }

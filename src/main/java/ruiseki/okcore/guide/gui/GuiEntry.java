@@ -125,7 +125,7 @@ public class GuiEntry extends GuiBase {
             }
         }
 
-        if (key != null) OKCore.instance.getPacketHandler()
+        if (key != null) OKCore._instance.getPacketHandler()
             .sendToServer(
                 new PacketSyncGuidePos(
                     key.toString(),

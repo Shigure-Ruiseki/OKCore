@@ -123,7 +123,6 @@ public class QuadBuilderHelpers {
                 setVertex(quad, 3, minX, maxY, maxZ, uMax, vMin);
             }
             case EAST -> {
-                // Sửa lỗi trùng đỉnh 2 và 3 ở case cũ
                 setVertex(quad, 0, maxX, maxY, maxZ, uMin, vMin);
                 setVertex(quad, 1, maxX, minY, maxZ, uMin, vMax);
                 setVertex(quad, 2, maxX, minY, minZ, uMax, vMax);

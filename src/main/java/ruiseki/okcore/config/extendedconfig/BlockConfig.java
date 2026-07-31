@@ -10,7 +10,7 @@ import ruiseki.okcore.item.ItemBlockOK;
 
 /**
  * Config for blocks.
- * 
+ *
  * @author rubensworks
  * @see ExtendedConfig
  */
@@ -18,7 +18,7 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param mod     The mod instance.
      * @param enabled If this should is enabled.
      * @param namedId The unique name ID for the configurable.
@@ -46,7 +46,7 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
 
     /**
      * If hasSubTypes() returns true this method can be overwritten to define another ItemBlock class
-     * 
+     *
      * @return the ItemBlock class to use for the target blockState.
      */
     public Class<? extends ItemBlock> getItemBlockClass() {
@@ -55,7 +55,7 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
 
     /**
      * If the IConfigurable is registered in the OreDictionary, use this name to identify it.
-     * 
+     *
      * @return the name this IConfigurable is registered with in the OreDictionary.
      */
     public String getOreDictionaryId() {
@@ -64,7 +64,7 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
 
     /**
      * If this blockState should enable Forge Multiparts and BC facades.
-     * 
+     *
      * @return If that should be enabled for this blockState.
      */
     public boolean isMultipartEnabled() {
@@ -73,7 +73,7 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
 
     /**
      * Get the casted instance of the blockState.
-     * 
+     *
      * @return The blockState.
      */
     public Block getBlockInstance() {
@@ -82,7 +82,7 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
 
     /**
      * Get the creative tab for this item.
-     * 
+     *
      * @return The creative tab, by default the value in {@link ModBase#getDefaultCreativeTab()}.
      */
     public CreativeTabs getTargetTab() {

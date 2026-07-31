@@ -11,6 +11,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameRegistry;
+import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
@@ -106,6 +107,10 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
             eConfig.getMod()
                 .getGuiHandler()
                 .registerGUI(gui, guiType);
+        }
+
+        if (block instanceof IBlockPropertyProvider provider) {
+            provider.registerProperties();
         }
 
         // Register optional ore dictionary ID

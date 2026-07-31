@@ -1,10 +1,12 @@
 package ruiseki.okcore.init;
 
+import ruiseki.okcore.modcompat.ModCompatLoader;
+import ruiseki.okcore.modcompat.versionchecker.VersionCheckerModCompat;
 import ruiseki.okcore.tracking.IModVersion;
 
 /**
  * A {@link ModBase} which is also a {@link IModVersion}.
- * 
+ *
  * @author rubensworks
  */
 public abstract class ModBaseVersionable extends ModBase implements IModVersion {
@@ -56,4 +58,8 @@ public abstract class ModBaseVersionable extends ModBase implements IModVersion 
         return getVersion() != null && !getReferenceValue(REFKEY_MOD_VERSION).equals(getVersion());
     }
 
+    @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        modCompatLoader.addModCompat(new VersionCheckerModCompat());
+    }
 }

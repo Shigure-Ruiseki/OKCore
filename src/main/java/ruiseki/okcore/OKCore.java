@@ -34,8 +34,6 @@ import ruiseki.okcore.guide.GuideRegistry;
 import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
-import ruiseki.okcore.modcompat.ModCompatLoader;
-import ruiseki.okcore.modcompat.versionchecker.VersionCheckerModCompat;
 import ruiseki.okcore.proxy.ICommonProxy;
 
 @Mod(
@@ -62,11 +60,6 @@ public class OKCore extends ModBaseVersionable {
         addInitListeners(new CapabilityGuide());
 
         addInitListeners(new GuideRegistry());
-    }
-
-    @Override
-    protected void loadModCompats(ModCompatLoader modCompatLoader) {
-        modCompatLoader.addModCompat(new VersionCheckerModCompat());
     }
 
     @Mod.EventHandler

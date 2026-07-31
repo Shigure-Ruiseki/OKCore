@@ -211,8 +211,10 @@ public abstract class GuiContainerExtended extends GuiContainer
             yStart += 10;
         }
 
-        GlStateManager.popMatrix();
+        GlStateManager.enableLighting();
+        GlStateManager.enableRescaleNormal();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GlStateManager.popMatrix();
 
         this.zLevel = 0.0F;
         itemRender.zLevel = 0.0F;

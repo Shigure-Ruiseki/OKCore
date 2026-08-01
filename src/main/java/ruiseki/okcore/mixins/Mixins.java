@@ -55,7 +55,7 @@ public enum Mixins implements IMixins {
         .setPhase(Phase.LATE)),
 
     GTNHLIB(new MixinBuilder("GTNHLib Mixin").addClientMixins("gtnhlib.JSONModelAccessor")
-        .setPhase(Phase.EARLY));
+        .setPhase(Phase.EARLY)),;
 
     private final MixinBuilder builder;
 

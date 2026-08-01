@@ -9,6 +9,7 @@ import ruiseki.okcore.enums.Mods;
 
 public enum TargetMods implements ITargetMod {
 
+    JFMUY(Mods.JFMUY),
     NotEnoughItems(Mods.NotEnoughItems);
 
     private final TargetModBuilder builder;

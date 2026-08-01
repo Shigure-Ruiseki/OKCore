@@ -36,6 +36,7 @@ public enum Mods implements IMod {
     ThaumicEnergistics("thaumicenergistics"),
     TConstruct("TConstruct"),
     ThermalFoundation("ThermalFoundation"),
+    JFMUY("jfmuy"),
     Waila("Waila"),;
 
     public final String modid;

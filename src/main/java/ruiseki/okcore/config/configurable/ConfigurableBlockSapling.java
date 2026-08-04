@@ -5,12 +5,16 @@ import java.util.Random;
 
 import net.minecraft.block.BlockSapling;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
@@ -25,6 +29,9 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
     @SuppressWarnings("rawtypes")
     protected ExtendedConfig eConfig = null;
     protected boolean hasGui = false;
+
+    @SideOnly(Side.CLIENT)
+    private IIcon blockIcon;
 
     private WorldGeneratorTree treeGenerator;
 
@@ -85,5 +92,17 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
     @Override
     public int damageDropped(int meta) {
         return 0;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerBlockIcons(IIconRegister reg) {
+        this.blockIcon = reg.registerIcon(this.getTextureName());
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(int side, int meta) {
+        return this.blockIcon;
     }
 }

@@ -13,7 +13,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Item food that can hold ExtendedConfigs
- * 
+ *
  * @author rubensworks
  *
  */
@@ -24,7 +24,7 @@ public class ConfigurableItemFood extends ItemFood implements IConfigurable {
 
     /**
      * Make a new blockState instance.
-     * 
+     *
      * @param eConfig             Config for this blockState.
      * @param healAmount          Amount of health to regen.
      * @param saturationModifier  The modifier for the saturation.
@@ -36,6 +36,10 @@ public class ConfigurableItemFood extends ItemFood implements IConfigurable {
         super(healAmount, saturationModifier, isWolfsFavoriteMeat);
         this.setConfig(eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
+        this.setTextureName(
+            eConfig.getMod()
+                .getModId() + ":"
+                + eConfig.getNamedId());
     }
 
     @SuppressWarnings("rawtypes")

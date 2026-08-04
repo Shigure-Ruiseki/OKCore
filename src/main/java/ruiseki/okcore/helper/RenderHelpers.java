@@ -1,10 +1,13 @@
 package ruiseki.okcore.helper;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.particle.EntityDiggingFX;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -223,8 +226,51 @@ public class RenderHelpers {
             255);
     }
 
+    /**
+     * Check if a point is inside a region.
+     * @param left Left-top corner x
+     * @param top Left-top corner y
+     * @param width The width
+     * @param height The height
+     * @param pointX The point x
+     * @param pointY The point y
+     * @return If the point is inside the region.
+     */
+    public static boolean isPointInRegion(int left, int top, int width, int height, int pointX, int pointY) {
+        return pointX >= left && pointX < left + width && pointY >= top && pointY < top + height;
+    }
+
+    /**
+     * Check if a point is inside a region.
+     * @param region The region.
+     * @param point The point.
+     * @return If the point is inside the region.
+     */
+    public static boolean isPointInRegion(Rectangle region, Point point) {
+        return isPointInRegion(region.x, region.y, region.width, region.height, point.x, point.y);
+    }
+
+    /**
+     * Check if a point is inside a button's region.
+     * @param button The button.
+     * @param pointX The point x
+     * @param pointY The point y
+     * @return If the point is inside the button's region.
+     */
+    public static boolean isPointInButton(GuiButton button, int pointX, int pointY) {
+        return isPointInRegion(button.xPosition, button.yPosition, button.width, button.height, pointX, pointY);
+    }
+
+    /**
+     * Runnable for {@link RenderHelpers#renderFluidContext(FluidStack, double, double, double, IFluidContextRender)}.
+     * @author rubensworks
+     */
     public static interface IFluidContextRender {
 
+        /**
+         * Render the fluid.
+         * @param fluid The fluid stack.
+         */
         public void renderFluid(FluidStack fluid);
     }
 }

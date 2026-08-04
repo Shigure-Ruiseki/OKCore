@@ -228,9 +228,10 @@ public class RenderHelpers {
 
     /**
      * Check if a point is inside a region.
-     * @param left Left-top corner x
-     * @param top Left-top corner y
-     * @param width The width
+     * 
+     * @param left   Left-top corner x
+     * @param top    Left-top corner y
+     * @param width  The width
      * @param height The height
      * @param pointX The point x
      * @param pointY The point y
@@ -242,8 +243,9 @@ public class RenderHelpers {
 
     /**
      * Check if a point is inside a region.
+     * 
      * @param region The region.
-     * @param point The point.
+     * @param point  The point.
      * @return If the point is inside the region.
      */
     public static boolean isPointInRegion(Rectangle region, Point point) {
@@ -252,6 +254,7 @@ public class RenderHelpers {
 
     /**
      * Check if a point is inside a button's region.
+     * 
      * @param button The button.
      * @param pointX The point x
      * @param pointY The point y
@@ -263,12 +266,14 @@ public class RenderHelpers {
 
     /**
      * Runnable for {@link RenderHelpers#renderFluidContext(FluidStack, double, double, double, IFluidContextRender)}.
+     * 
      * @author rubensworks
      */
     public static interface IFluidContextRender {
 
         /**
          * Render the fluid.
+         * 
          * @param fluid The fluid stack.
          */
         public void renderFluid(FluidStack fluid);

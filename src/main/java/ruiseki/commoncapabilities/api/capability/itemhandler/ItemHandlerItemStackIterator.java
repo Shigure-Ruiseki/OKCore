@@ -1,0 +1,44 @@
+package ruiseki.commoncapabilities.api.capability.itemhandler;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import net.minecraft.item.ItemStack;
+
+import ruiseki.okcore.item.handler.IItemHandler;
+
+/**
+ * An iterator over all slots in an item handler.
+ *
+ * @author rubensworks
+ */
+public class ItemHandlerItemStackIterator implements Iterator<ItemStack> {
+
+    private final IItemHandler itemHandler;
+    private final int maxSlots;
+    private int slot;
+
+    public ItemHandlerItemStackIterator(IItemHandler itemHandler, int offset) {
+        this.itemHandler = itemHandler;
+        // Cache the total slot count, since it can be an expensive operation on composite inventories
+        this.maxSlots = itemHandler.getSlots();
+        this.slot = offset;
+    }
+
+    public ItemHandlerItemStackIterator(IItemHandler itemHandler) {
+        this(itemHandler, 0);
+    }
+
+    @Override
+    public boolean hasNext() {
+        return slot < maxSlots;
+    }
+
+    @Override
+    public ItemStack next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException("Slot out of bounds");
+        }
+        return itemHandler.getStackInSlot(slot++);
+    }
+}

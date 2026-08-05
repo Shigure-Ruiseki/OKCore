@@ -7,7 +7,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,14 +14,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.minecraft.server.MinecraftServer;
@@ -148,7 +145,7 @@ public class DatapackLoader {
     private static CompletableFuture<Void> scanModJars(DatapackManager datapackManager,
         ConcurrentLinkedQueue<FileSystem> openedFileSystems, Executor ioExecutor) {
 
-        Set<File> uniqueJarFiles = Loader.instance()
+        List<File> modSources = Loader.instance()
             .getModList()
             .stream()
             .map(ModContainer::getSource)
@@ -157,15 +154,16 @@ public class DatapackLoader {
             .filter(
                 file -> file.getName()
                     .endsWith(".jar"))
-            .collect(Collectors.toSet());
+            .distinct()
+            .toList();
 
-        if (uniqueJarFiles.isEmpty()) {
+        if (modSources.isEmpty()) {
             return CompletableFuture.completedFuture(null);
         }
 
-        List<CompletableFuture<SimpleDataManager>> futures = new ArrayList<>(uniqueJarFiles.size());
+        List<CompletableFuture<SimpleDataManager>> futures = new ArrayList<>(modSources.size());
 
-        for (File modSource : uniqueJarFiles) {
+        for (File modSource : modSources) {
             futures.add(CompletableFuture.supplyAsync(() -> scanModJar(modSource, openedFileSystems), ioExecutor));
         }
 
@@ -180,9 +178,11 @@ public class DatapackLoader {
                         continue;
                     }
 
-                    File modSource = uniqueJarFiles.toArray(new File[0])[i];
-
-                    datapackManager.registerDatapack(modSource.getName(), dataManager, true);
+                    datapackManager.registerDatapack(
+                        modSources.get(i)
+                            .getName(),
+                        dataManager,
+                        true);
                 }
             }, ioExecutor);
     }
@@ -219,7 +219,7 @@ public class DatapackLoader {
 
             SimpleDataManager dataManager = new SimpleDataManager();
 
-            try (Stream<Path> stream = Files.walk(dataPath, FileVisitOption.FOLLOW_LINKS)) {
+            try (Stream<Path> stream = Files.walk(dataPath)) {
 
                 stream.filter(path -> !Files.isDirectory(path))
                     .forEach(path -> processStream(path, rootPath, dataManager));
@@ -337,7 +337,7 @@ public class DatapackLoader {
 
             Path rootPath = packDir.toPath();
 
-            try (Stream<Path> stream = Files.walk(dataDir.toPath(), FileVisitOption.FOLLOW_LINKS)) {
+            try (Stream<Path> stream = Files.walk(dataDir.toPath())) {
 
                 stream.filter(path -> !Files.isDirectory(path))
                     .forEach(path -> processStream(path, rootPath, dataManager));
@@ -359,31 +359,20 @@ public class DatapackLoader {
                 .toString()
                 .replace('\\', '/');
 
-            int dataIndex = relativePath.indexOf("data/");
-
-            if (dataIndex < 0) {
+            if (!relativePath.startsWith("data/")) {
                 return;
             }
 
-            int namespaceStart = dataIndex + 5;
+            String dataRelative = relativePath.substring(5);
 
-            int namespaceEnd = relativePath.indexOf('/', namespaceStart);
+            int namespaceEnd = dataRelative.indexOf('/');
 
-            if (namespaceEnd < 0) {
+            if (namespaceEnd <= 0 || namespaceEnd == dataRelative.length() - 1) {
                 return;
             }
 
-            String namespace = relativePath.substring(namespaceStart, namespaceEnd);
-
-            if (namespace.isEmpty()) {
-                return;
-            }
-
-            String resourcePath = relativePath.substring(namespaceEnd + 1);
-
-            if (resourcePath.isEmpty()) {
-                return;
-            }
+            String namespace = dataRelative.substring(0, namespaceEnd);
+            String resourcePath = dataRelative.substring(namespaceEnd + 1);
 
             ResourceLocation location = new ResourceLocation(namespace, resourcePath);
 

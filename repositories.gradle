@@ -2,4 +2,12 @@
 
 repositories {
     maven {url = uri("https://jitpack.io")}
+    maven {
+        name = "GTNH Maven"
+        url = "https://nexus.gtnewhorizons.com/repository/releases/"
+    }
+    maven {
+        name = "SpongePowered"
+        url = "https://repo.spongepowered.org/repository/maven-public/"
+    }
 }

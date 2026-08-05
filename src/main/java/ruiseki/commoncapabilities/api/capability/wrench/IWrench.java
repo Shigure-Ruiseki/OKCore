@@ -1,4 +1,4 @@
-package ruiseki.commoncapabilities.api.capability;
+package ruiseki.commoncapabilities.api.capability.wrench;
 
 import net.minecraft.entity.player.EntityPlayer;
 
@@ -10,14 +10,14 @@ import net.minecraft.entity.player.EntityPlayer;
  * If it can be used, the target must first call {@link IWrench#beforeUse(EntityPlayer, WrenchTarget)}.
  * After that the target can call its own logic.
  * Finally, the target must call {@link IWrench#afterUse(EntityPlayer, WrenchTarget)}.
- * 
+ *
  * @author rubensworks
  */
 public interface IWrench {
 
     /**
      * Check if this wrench can be used.
-     * 
+     *
      * @param player The player.
      * @param target The target that is being wrenched.
      * @return If it can be used.
@@ -27,7 +27,7 @@ public interface IWrench {
     /**
      * Called before the wrench is being used after the canUse check if done.
      * Useful for preparing some things for the wrench-action.
-     * 
+     *
      * @param player The player.
      * @param target The target that is being wrenched.
      */
@@ -36,7 +36,7 @@ public interface IWrench {
     /**
      * Called after the wrench is used.
      * Useful for doing cleanup work, or consuming energy.
-     * 
+     *
      * @param player The player.
      * @param target The target that is being wrenched.
      */

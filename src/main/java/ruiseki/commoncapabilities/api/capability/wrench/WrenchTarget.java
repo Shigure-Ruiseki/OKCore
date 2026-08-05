@@ -1,4 +1,4 @@
-package ruiseki.commoncapabilities.api.capability;
+package ruiseki.commoncapabilities.api.capability.wrench;
 
 import javax.annotation.Nullable;
 
@@ -11,7 +11,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * An indicator for what is being targeted by a wrench.
- * 
+ *
  * @author rubensworks
  */
 public class WrenchTarget {

@@ -1,11 +1,11 @@
-package ruiseki.commoncapabilities.api.capability;
+package ruiseki.commoncapabilities.api.capability.wrench;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovingObjectPosition;
 
 /**
  * Default implementation of a {@link IWrench} that only applies to blocks.
- * 
+ *
  * @author rubensworks
  */
 public class DefaultWrench implements IWrench {

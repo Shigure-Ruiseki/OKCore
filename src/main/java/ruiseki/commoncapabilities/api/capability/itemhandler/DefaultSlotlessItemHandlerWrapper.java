@@ -1,13 +1,15 @@
 package ruiseki.commoncapabilities.api.capability.itemhandler;
 
-import net.minecraft.item.ItemStack;
-import ruiseki.okcore.item.handler.IItemHandler;
-
 import javax.annotation.Nonnull;
+
+import net.minecraft.item.ItemStack;
+
+import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
  * An naive {@link ISlotlessItemHandler} wrapper around an {@link IItemHandler}.
  * This will perform a LIFO item algorithm.
+ * 
  * @author rubensworks
  */
 public class DefaultSlotlessItemHandlerWrapper implements ISlotlessItemHandler {
@@ -44,7 +46,8 @@ public class DefaultSlotlessItemHandlerWrapper implements ISlotlessItemHandler {
     public ItemStack extractItem(@Nonnull ItemStack matchStack, int matchFlags, boolean simulate) {
         boolean compareStackSize = (matchFlags & ItemMatch.STACKSIZE) > 0;
         for (int i = 0; i < itemHandler.getSlots(); i++) {
-            ItemStack itemStack = itemHandler.extractItem(i, compareStackSize ? matchStack.stackSize : matchStack.getMaxStackSize(), simulate);
+            ItemStack itemStack = itemHandler
+                .extractItem(i, compareStackSize ? matchStack.stackSize : matchStack.getMaxStackSize(), simulate);
             if (itemStack != null && ItemMatch.areItemStacksEqual(matchStack, itemStack, matchFlags)) {
                 return itemStack;
             }

@@ -47,9 +47,9 @@ public class DatapackLoader {
         String folderName = server.getFolderName();
         File realWorldDir = server.isDedicatedServer() ? new File(folderName)
             : new File(
-            FMLCommonHandler.instance()
-                .getSavesDirectory(),
-            folderName);
+                FMLCommonHandler.instance()
+                    .getSavesDirectory(),
+                folderName);
 
         DatapackManager datapackManager = DatapackManager.INSTANCE;
         datapackManager.clear();
@@ -74,7 +74,8 @@ public class DatapackLoader {
                 CompletableFuture<Void> scanDatapacksFuture = CompletableFuture
                     .runAsync(() -> scanWorldDatapacks(realWorldDir, datapackManager), ioExecutor);
 
-                CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture).join();
+                CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
+                    .join();
 
                 CompletableFuture<List<PreparableReloadListener>> listenersFuture = new CompletableFuture<>();
                 ServerThreadUtil.addScheduledTask(() -> {
@@ -102,7 +103,8 @@ public class DatapackLoader {
                     listenerFutures.add(listener.reload(barrier, datapackManager, ioExecutor, startupAppExecutor));
                 }
 
-                CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0])).join();
+                CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0]))
+                    .join();
                 OKCore.okLog(
                     Level.INFO,
                     "DataLoader: All data successfully reloaded in Total: {} ms.",
@@ -124,7 +126,7 @@ public class DatapackLoader {
     }
 
     private static void scanModJars(DatapackManager datapackManager,
-                                    ConcurrentLinkedQueue<FileSystem> openedFileSystems) {
+        ConcurrentLinkedQueue<FileSystem> openedFileSystems) {
         java.util.Set<File> uniqueJarFiles = Loader.instance()
             .getModList()
             .stream()

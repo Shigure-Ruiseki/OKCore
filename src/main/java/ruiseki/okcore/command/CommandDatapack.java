@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -12,6 +11,9 @@ import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.apache.logging.log4j.Level;
+
+import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -20,7 +22,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
-import org.apache.logging.log4j.Level;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.data.DatapackManager;
@@ -82,6 +83,7 @@ public class CommandDatapack extends CommandMod {
                             .suggests(this::suggestEnabledPacks)
                             .executes(this::disablePack)));
     }
+
     private int reloadDatapacks(CommandContext<ICommandSender> context) {
         ICommandSender sender = context.getSource();
 
@@ -89,32 +91,39 @@ public class CommandDatapack extends CommandMod {
 
         long startTime = System.currentTimeMillis();
 
-        DatapackLoader.loadAllDataAtServerStart(this.server).thenAcceptAsync(v -> {
-            ServerConfigurationManager configManager = this.server.getConfigurationManager();
-            MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
+        DatapackLoader.loadAllDataAtServerStart(this.server)
+            .thenAcceptAsync(v -> {
+                ServerConfigurationManager configManager = this.server.getConfigurationManager();
+                MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
 
-            PacketUpdateRecipes packetRecipes = new PacketUpdateRecipes(
-                RecipeManager.getManager().getRecipes());
-            PacketUpdateTags packetTags = new PacketUpdateTags(
-                TagManager.getManager().getTags());
+                PacketUpdateRecipes packetRecipes = new PacketUpdateRecipes(
+                    RecipeManager.getManager()
+                        .getRecipes());
+                PacketUpdateTags packetTags = new PacketUpdateTags(
+                    TagManager.getManager()
+                        .getTags());
 
-            if (configManager != null && configManager.playerEntityList != null) {
-                for (EntityPlayerMP player : configManager.playerEntityList) {
-                    OKCore._instance.getPacketHandler().sendToPlayer(packetRecipes, player);
-                    OKCore._instance.getPacketHandler().sendToPlayer(packetTags, player);
+                if (configManager != null && configManager.playerEntityList != null) {
+                    for (EntityPlayerMP player : configManager.playerEntityList) {
+                        OKCore._instance.getPacketHandler()
+                            .sendToPlayer(packetRecipes, player);
+                        OKCore._instance.getPacketHandler()
+                            .sendToPlayer(packetTags, player);
+                    }
                 }
-            }
 
-            long endTime = System.currentTimeMillis() - startTime;
-            printLineToChat(
-                sender,
-                EnumChatFormatting.GREEN + "Successfully reloaded all datapacks and synced clients in "
-                    + endTime + " ms!");
-        }, ServerThreadUtil::addScheduledTask).exceptionally(ex -> {
-            printErrorToChat(sender, "Critical error occurred during data reload! Check server logs.");
-            OKCore.okLog(Level.ERROR, "Error executing reload command", ex);
-            return null;
-        });
+                long endTime = System.currentTimeMillis() - startTime;
+                printLineToChat(
+                    sender,
+                    EnumChatFormatting.GREEN + "Successfully reloaded all datapacks and synced clients in "
+                        + endTime
+                        + " ms!");
+            }, ServerThreadUtil::addScheduledTask)
+            .exceptionally(ex -> {
+                printErrorToChat(sender, "Critical error occurred during data reload! Check server logs.");
+                OKCore.okLog(Level.ERROR, "Error executing reload command", ex);
+                return null;
+            });
 
         return Command.SINGLE_SUCCESS;
     }

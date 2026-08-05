@@ -1,6 +1,7 @@
 package ruiseki.commoncapabilities.modcompat.vanilla;
 
 import net.minecraftforge.common.MinecraftForge;
+
 import ruiseki.commoncapabilities.Reference;
 import ruiseki.okcore.modcompat.IModCompat;
 

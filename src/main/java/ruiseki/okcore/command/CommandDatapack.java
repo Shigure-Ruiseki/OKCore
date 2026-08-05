@@ -91,14 +91,16 @@ public class CommandDatapack extends CommandMod {
 
         long startTime = System.currentTimeMillis();
 
-        DatapackLoader.loadAllDataAtServerStart(this.server)
-            .thenAcceptAsync(v -> {
+        DatapackLoader.loadAllData(this.server)
+            .thenRunAsync(() -> {
                 ServerConfigurationManager configManager = this.server.getConfigurationManager();
+
                 MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
 
                 PacketUpdateRecipes packetRecipes = new PacketUpdateRecipes(
                     RecipeManager.getManager()
                         .getRecipes());
+
                 PacketUpdateTags packetTags = new PacketUpdateTags(
                     TagManager.getManager()
                         .getTags());

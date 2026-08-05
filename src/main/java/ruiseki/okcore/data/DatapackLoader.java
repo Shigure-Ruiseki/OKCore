@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
@@ -14,10 +15,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.minecraft.server.MinecraftServer;
@@ -25,8 +28,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Level;
-
-import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -39,7 +40,7 @@ public class DatapackLoader {
 
     private static final Map<String, ?> EMPTY_ENV = Collections.emptyMap();
 
-    public static CompletableFuture<Void> loadAllDataAtServerStart(MinecraftServer server) {
+    public static CompletableFuture<Void> loadAllData(MinecraftServer server) {
         if (server == null) return CompletableFuture.completedFuture(null);
         long startTime = System.currentTimeMillis();
         OKCore.okLog(Level.INFO, "DataLoader: Starting parallel data reload pipeline...");
@@ -58,13 +59,8 @@ public class DatapackLoader {
         ConcurrentLinkedQueue<FileSystem> openedFileSystems = new ConcurrentLinkedQueue<>();
         Executor ioExecutor = ForkJoinPool.commonPool();
 
-        Executor startupAppExecutor = runnable -> {
-            try {
-                ServerThreadUtil.addScheduledTask(runnable);
-            } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "Failed to schedule task on server main thread", e);
-            }
-        };
+        ConcurrentLinkedQueue<Runnable> startupTaskQueue = new ConcurrentLinkedQueue<>();
+        Executor startupAppExecutor = startupTaskQueue::add;
 
         return CompletableFuture.runAsync(() -> {
             try {
@@ -74,45 +70,71 @@ public class DatapackLoader {
                 CompletableFuture<Void> scanDatapacksFuture = CompletableFuture
                     .runAsync(() -> scanWorldDatapacks(realWorldDir, datapackManager), ioExecutor);
 
-                CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
-                    .join();
+                CompletableFuture<Void> scanPhaseFuture = CompletableFuture
+                    .allOf(scanModJarsFuture, scanDatapacksFuture);
 
-                CompletableFuture<List<PreparableReloadListener>> listenersFuture = new CompletableFuture<>();
-                ServerThreadUtil.addScheduledTask(() -> {
-                    try {
-                        AddReloadListenerEvent event = new AddReloadListenerEvent();
-                        MinecraftForge.EVENT_BUS.post(event);
-                        listenersFuture.complete(event.getListeners());
-                    } catch (Throwable t) {
-                        listenersFuture.completeExceptionally(t);
-                    }
-                });
+                scanPhaseFuture.join();
 
-                List<PreparableReloadListener> listeners = listenersFuture.join();
+                AddReloadListenerEvent event = new AddReloadListenerEvent();
+                MinecraftForge.EVENT_BUS.post(event);
+
+                List<PreparableReloadListener> listeners = event.getListeners();
 
                 OKCore.okLog(
                     Level.INFO,
-                    "DataLoader: Core Scan done in {} ms. Initiating parallel preparation for {} listeners...",
+                    "DataLoader: Core Scan done in {} ms. " + "Initiating parallel preparation for {} listeners...",
                     (System.currentTimeMillis() - startTime),
                     listeners.size());
 
                 SimplePreparationBarrier barrier = new SimplePreparationBarrier();
-                List<CompletableFuture<Void>> listenerFutures = new ArrayList<>();
+
+                List<CompletableFuture<Void>> listenerFutures = new ArrayList<>(listeners.size());
 
                 for (PreparableReloadListener listener : listeners) {
                     listenerFutures.add(listener.reload(barrier, datapackManager, ioExecutor, startupAppExecutor));
                 }
 
-                CompletableFuture.allOf(listenerFutures.toArray(new CompletableFuture[0]))
-                    .join();
+                CompletableFuture<Void> allPreparationsFuture = CompletableFuture
+                    .allOf(listenerFutures.toArray(new CompletableFuture[0]));
+
+                while (!allPreparationsFuture.isDone() || !startupTaskQueue.isEmpty()) {
+
+                    Runnable task = startupTaskQueue.poll();
+
+                    if (task != null) {
+                        try {
+                            task.run();
+                        } catch (Throwable t) {
+                            OKCore.okLog(Level.ERROR, "DataLoader: Error while executing startup task", t);
+                        }
+                    } else {
+                        Thread.yield();
+                    }
+                }
+
+                allPreparationsFuture.join();
+
+                Runnable task;
+
+                while ((task = startupTaskQueue.poll()) != null) {
+                    try {
+                        task.run();
+                    } catch (Throwable t) {
+                        OKCore.okLog(Level.ERROR, "DataLoader: Error while executing final startup task", t);
+                    }
+                }
+
                 OKCore.okLog(
                     Level.INFO,
-                    "DataLoader: All data successfully reloaded in Total: {} ms.",
+                    "DataLoader: All data successfully reloaded " + "in Total: {} ms.",
                     (System.currentTimeMillis() - startTime));
 
-            } catch (Exception e) {
-                OKCore.okLog(Level.ERROR, "DataLoader: Critical error occurred during resource reload pipeline!", e);
-                throw new RuntimeException(e);
+            } catch (Throwable t) {
+                OKCore
+                    .okLog(Level.ERROR, "DataLoader: Critical error occurred during " + "resource reload pipeline!", t);
+
+                throw new RuntimeException("Data reload failed", t);
+
             } finally {
                 for (FileSystem fs : openedFileSystems) {
                     try {
@@ -127,7 +149,7 @@ public class DatapackLoader {
 
     private static void scanModJars(DatapackManager datapackManager,
         ConcurrentLinkedQueue<FileSystem> openedFileSystems) {
-        java.util.Set<File> uniqueJarFiles = Loader.instance()
+        Set<File> uniqueJarFiles = Loader.instance()
             .getModList()
             .stream()
             .map(ModContainer::getSource)
@@ -136,7 +158,7 @@ public class DatapackLoader {
             .filter(
                 file -> file.getName()
                     .endsWith(".jar"))
-            .collect(java.util.stream.Collectors.toSet());
+            .collect(Collectors.toSet());
 
         uniqueJarFiles.parallelStream()
             .forEach(modSource -> {
@@ -145,16 +167,22 @@ public class DatapackLoader {
 
                 try {
                     fileSystem = obtainFileSystem(uri, openedFileSystems);
-                    if (fileSystem == null) return;
+
+                    if (fileSystem == null) {
+                        return;
+                    }
 
                     Path dataPath = fileSystem.getPath("/data");
-                    if (!Files.exists(dataPath)) return;
+
+                    if (!Files.exists(dataPath)) {
+                        return;
+                    }
 
                     Path packMcMeta = fileSystem.getPath("/pack.mcmeta");
                     if (!Files.exists(packMcMeta)) {
                         OKCore.okLog(
                             Level.WARN,
-                            "JAR '{}' contains a 'data' folder but is missing 'pack.mcmeta'. Skipping.",
+                            "JAR '{}' contains a 'data' folder " + "but is missing 'pack.mcmeta'. Skipping.",
                             modSource.getName());
                         return;
                     }
@@ -179,19 +207,20 @@ public class DatapackLoader {
         try {
             return FileSystems.getFileSystem(uri);
         } catch (FileSystemNotFoundException e) {
-            synchronized (DatapackLoader.class) {
+            try {
+                FileSystem fs = FileSystems.newFileSystem(uri, EMPTY_ENV);
+                openedFileSystems.add(fs);
+                return fs;
+            } catch (FileSystemAlreadyExistsException ex) {
                 try {
                     return FileSystems.getFileSystem(uri);
-                } catch (FileSystemNotFoundException ex) {
-                    try {
-                        FileSystem fs = FileSystems.newFileSystem(uri, EMPTY_ENV);
-                        openedFileSystems.add(fs);
-                        return fs;
-                    } catch (IOException ioEx) {
-                        OKCore.okLog(Level.ERROR, "Failed to create FileSystem for URI: " + uri, ioEx);
-                        return null;
-                    }
+                } catch (Exception innerEx) {
+                    OKCore.okLog(Level.ERROR, "Failed to obtain existing FileSystem for URI: " + uri, innerEx);
+                    return null;
                 }
+            } catch (IOException ioEx) {
+                OKCore.okLog(Level.ERROR, "Failed to create FileSystem for URI: " + uri, ioEx);
+                return null;
             }
         }
     }

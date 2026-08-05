@@ -2,8 +2,4 @@
 
 repositories {
     maven {url = uri("https://jitpack.io")}
-    maven {
-        name = "SpongePowered"
-        url = "https://repo.spongepowered.org/repository/maven-public/"
-    }
 }

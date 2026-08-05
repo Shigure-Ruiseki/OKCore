@@ -69,17 +69,16 @@ public class RecipeRegistry {
         return registerType(key, IRecipeType.simple(key));
     }
 
-    public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(ResourceLocation key,
-        IRecipeType<T> recipeType) {
-        if (recipeType == null || key == null) return null;
+    public static <S extends IRecipeType<T>, T extends IRecipeOK<?>> S registerType(ResourceLocation key, S type) {
+        if (type == null || key == null) return null;
         if (TYPE_MAPPING != null) {
-            TYPE_MAPPING.put(key, recipeType);
+            TYPE_MAPPING.put(key, type);
         }
-        return recipeType;
+        return type;
     }
 
-    public static <T extends IRecipeOK<?>> IRecipeSerializer<T> registerSerializer(ResourceLocation key,
-        IRecipeSerializer<T> recipeSerializer) {
+    public static <S extends IRecipeSerializer<T>, T extends IRecipeOK<?>> S registerSerializer(ResourceLocation key,
+        S recipeSerializer) {
         if (recipeSerializer == null || key == null) return null;
         if (SERIALIZER_MAPPING != null) {
             SERIALIZER_MAPPING.put(key, recipeSerializer);
@@ -190,7 +189,7 @@ public class RecipeRegistry {
                     .toStacks();
                 if (matchingStacks == null || matchingStacks.isEmpty()) continue;
 
-                ItemStack representInput = matchingStacks.getFirst();
+                ItemStack representInput = matchingStacks.get(0);
                 if (representInput == null) continue;
 
                 mcSmeltingList.put(representInput, customOutput);

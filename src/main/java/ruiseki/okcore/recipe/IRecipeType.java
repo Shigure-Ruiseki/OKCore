@@ -1,16 +1,8 @@
 package ruiseki.okcore.recipe;
 
-import java.util.Optional;
-
-import net.minecraft.inventory.IInventory;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 
 public interface IRecipeType<T extends IRecipeOK<?>> {
-
-    default <C extends IInventory> Optional<T> tryMatch(IRecipeOK<C> recipeOK, World world, C inventory) {
-        return recipeOK.matchesOK(inventory, world) ? Optional.of((T) recipeOK) : Optional.empty();
-    }
 
     public static <T extends IRecipeOK<?>> IRecipeType<T> simple(final ResourceLocation name) {
         return new IRecipeType<T>() {
@@ -20,5 +12,9 @@ public interface IRecipeType<T extends IRecipeOK<?>> {
                 return name.toString();
             }
         };
+    }
+
+    public static <S extends IRecipeType<T>, T extends IRecipeOK<?>> S register(String key, S type) {
+        return RecipeRegistry.registerType(new ResourceLocation(key), type);
     }
 }

@@ -9,6 +9,8 @@ import net.minecraft.network.Packet;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 
+import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
+
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -230,7 +232,11 @@ public class PacketHandler {
             }
 
             EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-            packet.actionServer(player.worldObj, player);
+            if (packet.isAsync()) {
+                packet.actionServer(player.worldObj, player);
+            } else {
+                ServerThreadUtil.addScheduledTask(() -> packet.actionServer(player.worldObj, player));
+            }
             return null;
         }
     }

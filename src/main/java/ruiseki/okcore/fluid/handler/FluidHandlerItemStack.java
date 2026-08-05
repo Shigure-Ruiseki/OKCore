@@ -21,7 +21,7 @@ import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
  * Additional examples are provided to enable consumable fluid containers (see {@link Consumable}),
  * fluid containers with different empty and full items (see {@link SwapEmpty},
  */
-public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider {
+public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProvider {
 
     public static final String FLUID_NBT_KEY = "Fluid";
 
@@ -34,7 +34,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
      * @param container The container itemStack, data is stored on it directly as NBT.
      * @param capacity  The maximum capacity of this fluid tank.
      */
-    public FluidHandlerItem(@NotNull ItemStack container, int capacity) {
+    public FluidHandlerItemStack(@NotNull ItemStack container, int capacity) {
         this.container = container;
         this.capacity = capacity;
     }
@@ -180,7 +180,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     /**
      * Destroys the container item when it's emptied.
      */
-    public static class Consumable extends FluidHandlerItem {
+    public static class Consumable extends FluidHandlerItemStack {
 
         public Consumable(ItemStack container, int capacity) {
             super(container, capacity);
@@ -199,7 +199,7 @@ public class FluidHandlerItem implements IFluidHandlerItem, ICapabilityProvider 
     /**
      * Swaps the container item for a different one when it's emptied.
      */
-    public static class SwapEmpty extends FluidHandlerItem {
+    public static class SwapEmpty extends FluidHandlerItemStack {
 
         private final ItemStack emptyContainer;
 

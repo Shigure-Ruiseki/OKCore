@@ -36,8 +36,12 @@ public class ConditionRegistry {
         return serializer;
     }
 
-    public static boolean checkConditional(JsonObject json) {
+    public static boolean processConditions(JsonObject json) {
         return processConditions(json, CONDITION_KEY, ICondition.IContext.EMPTY);
+    }
+
+    public static boolean processConditions(JsonObject json, ICondition.IContext context) {
+        return processConditions(json, CONDITION_KEY, context);
     }
 
     public static boolean processConditions(JsonObject json, String memberName, ICondition.IContext context) {

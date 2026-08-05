@@ -216,6 +216,35 @@ public class Helpers {
     }
 
     /**
+     * Take the sum of these two values capped at {@link Integer#MAX_VALUE}.
+     * 
+     * @param a Integer
+     * @param b Integer
+     * @return The safe sum.
+     */
+    public static int addSafe(int a, int b) {
+        int sum = a + b;
+        if (sum < a || sum < b) return Integer.MAX_VALUE;
+        return sum;
+    }
+
+    /**
+     * Cast a long value safely to an int.
+     * If the casting would result in an overflow,
+     * return the {@link Integer#MAX_VALUE}.
+     * 
+     * @param value A value to cast.
+     * @return The casted value.
+     */
+    public static int castSafe(long value) {
+        int casted = (int) value;
+        if (casted != value) {
+            return Integer.MAX_VALUE;
+        }
+        return casted;
+    }
+
+    /**
      * @return If minecraft is past the POST-init phase.
      */
     public static boolean isMinecraftInitialized() {

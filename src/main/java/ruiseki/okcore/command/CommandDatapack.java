@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -19,6 +20,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
+import org.apache.logging.log4j.Level;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.data.DatapackManager;
@@ -80,43 +82,39 @@ public class CommandDatapack extends CommandMod {
                             .suggests(this::suggestEnabledPacks)
                             .executes(this::disablePack)));
     }
-
     private int reloadDatapacks(CommandContext<ICommandSender> context) {
         ICommandSender sender = context.getSource();
 
         printLineToChat(sender, EnumChatFormatting.YELLOW + "Reloading datapacks, please wait...");
 
-        try {
-            long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
-            DatapackLoader.loadAllDataAtServerStart(this.server);
-
+        DatapackLoader.loadAllDataAtServerStart(this.server).thenAcceptAsync(v -> {
             ServerConfigurationManager configManager = this.server.getConfigurationManager();
             MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
 
             PacketUpdateRecipes packetRecipes = new PacketUpdateRecipes(
-                RecipeManager.getManager()
-                    .getRecipes());
+                RecipeManager.getManager().getRecipes());
             PacketUpdateTags packetTags = new PacketUpdateTags(
-                TagManager.getManager()
-                    .getTags());
+                TagManager.getManager().getTags());
+
             if (configManager != null && configManager.playerEntityList != null) {
                 for (EntityPlayerMP player : configManager.playerEntityList) {
-                    OKCore._instance.getPacketHandler()
-                        .sendToPlayer(packetRecipes, player);
-                    OKCore._instance.getPacketHandler()
-                        .sendToPlayer(packetTags, player);
+                    OKCore._instance.getPacketHandler().sendToPlayer(packetRecipes, player);
+                    OKCore._instance.getPacketHandler().sendToPlayer(packetTags, player);
                 }
             }
+
             long endTime = System.currentTimeMillis() - startTime;
             printLineToChat(
                 sender,
                 EnumChatFormatting.GREEN + "Successfully reloaded all datapacks and synced clients in "
-                    + endTime
-                    + " ms!");
-        } catch (Exception e) {
+                    + endTime + " ms!");
+        }, ServerThreadUtil::addScheduledTask).exceptionally(ex -> {
             printErrorToChat(sender, "Critical error occurred during data reload! Check server logs.");
-        }
+            OKCore.okLog(Level.ERROR, "Error executing reload command", ex);
+            return null;
+        });
 
         return Command.SINGLE_SUCCESS;
     }

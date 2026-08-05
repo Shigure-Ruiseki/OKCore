@@ -26,8 +26,9 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
 
         for (int i = 0; i < nonnulllist.size(); ++i) {
             ItemStack item = inventory.getStackInSlot(i);
-            if (item.getItem() != null && item.getItem()
-                .hasContainerItem(item)) {
+            if (item != null && item.getItem() != null
+                && item.getItem()
+                    .hasContainerItem(item)) {
                 nonnulllist.set(
                     i,
                     item.getItem()

@@ -31,20 +31,6 @@ public class ItemStackHelpers {
     private static final Random RANDOM = new Random();
 
     /**
-     * Get the tag compound from an item safely.
-     * If it does not exist yet, it will create and save a new tag compound.
-     *
-     * @param itemStack The item to get the tag compound from.
-     * @return The tag compound.
-     */
-    public static NBTTagCompound getSafeTagCompound(ItemStack itemStack) {
-        if (!itemStack.hasTagCompound()) {
-            itemStack.setTagCompound(new NBTTagCompound());
-        }
-        return itemStack.getTagCompound();
-    }
-
-    /**
      * Spawn an itemstack into the world.
      *
      * @param world     The world
@@ -355,5 +341,28 @@ public class ItemStackHelpers {
     public static int getSpace(ItemStack stack) {
         if (stack == null) return 64;
         return stack.getMaxStackSize() - stack.stackSize;
+    }
+
+    /**
+     * Get a hash code that would satisfy the requirements of {@link Object#hashCode}
+     * if {@link ItemStack#areItemStacksEqual} stood in for {@link Object#equals}.
+     *
+     * @param stack The itemstack.
+     * @return The hash code.
+     */
+    public static int getItemStackHashCode(ItemStack stack) {
+        if (stack == null || stack.getItem() == null) {
+            return 0;
+        }
+        int result = 1;
+        result = 37 * result + stack.stackSize;
+        result = 37 * result + stack.getItem()
+            .hashCode();
+        result = 37 * result + stack.getItemDamage();
+
+        // Tags can be very large, and expensive to calculate, which is not needed for hashCodes.
+        // NBTTagCompound tagCompound = stack.getTagCompound();
+        // result = 37 * result + (tagCompound != null ? tagCompound.hashCode() : 0);
+        return result;
     }
 }

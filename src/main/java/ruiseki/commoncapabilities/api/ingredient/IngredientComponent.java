@@ -96,9 +96,6 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
         this(new ResourceLocation(name), matcher, serializer, categoryTypes);
     }
 
-    /**
-     * Phương thức đăng ký thay thế cho Forge Registry trong 1.7.10.
-     */
     public IngredientComponent<T, M> register() {
         REGISTRY.put(this.name, this);
         return this;

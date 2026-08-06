@@ -41,17 +41,11 @@ public class ImmutableAxisAlignedBB extends AxisAlignedBB {
 
     @Override
     public AxisAlignedBB setBounds(double x1, double y1, double z1, double x2, double y2, double z2) {
-        throw new UnsupportedOperationException("ImmutableAxisAlignedBB cannot be modified!");
+        return this;
     }
 
     @Override
-    public void setBB(AxisAlignedBB other) {
-        throw new UnsupportedOperationException("ImmutableAxisAlignedBB cannot be modified!");
-    }
-
-    // ==========================================
-    // Updated & Added Transformations
-    // ==========================================
+    public void setBB(AxisAlignedBB other) {}
 
     public ImmutableAxisAlignedBB setMaxY(double y2) {
         return new ImmutableAxisAlignedBB(this.minX, this.minY, this.minZ, this.maxX, y2, this.maxZ);
@@ -162,7 +156,6 @@ public class ImmutableAxisAlignedBB extends AxisAlignedBB {
         return this.offset(vec.xCoord, vec.yCoord, vec.zCoord);
     }
 
-    // Legacy method back-compatibility
     @Override
     public ImmutableAxisAlignedBB func_111270_a(AxisAlignedBB other) {
         return this.union(other);

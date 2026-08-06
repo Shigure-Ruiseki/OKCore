@@ -1,6 +1,5 @@
 package ruiseki.okcore.datastructure;
 
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -79,9 +78,5 @@ public class EnumFacingMap<V> extends EnumMap<ForgeDirection, V> {
         map.put(ForgeDirection.WEST, west);
         map.put(ForgeDirection.EAST, east);
         return map;
-    }
-
-    public static <V> Map<ForgeDirection, V> unmodifiableMap(V down, V up, V north, V south, V west, V east) {
-        return Collections.unmodifiableMap(forAllValues(down, up, north, south, west, east));
     }
 }

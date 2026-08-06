@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -35,13 +34,13 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
     }
 
     private void addComponentCollisionBoxesToList(IComponent<P, B> component, World world, int x, int y, int z,
-        AxisAlignedBB axisalignedbb, List<AxisAlignedBB> list, Entity collidingEntity) {
+        ImmutableAxisAlignedBB axisalignedbb, List<ImmutableAxisAlignedBB> list, Entity collidingEntity) {
         for (P position : component.getPossiblePositions()) {
             if (component.isActive(getBlock(), world, x, y, z, position)) {
-                List<AxisAlignedBB> boundsList = component.getBounds(getBlock(), world, x, y, z, position);
+                List<ImmutableAxisAlignedBB> boundsList = component.getBounds(getBlock(), world, x, y, z, position);
                 if (boundsList == null) continue;
 
-                for (AxisAlignedBB bb : boundsList) {
+                for (ImmutableAxisAlignedBB bb : boundsList) {
                     if (bb == null) continue;
                     setBlockBounds(bb);
                     getBlock().addCollisionBoxesToListParent(world, x, y, z, axisalignedbb, list, collidingEntity);
@@ -51,8 +50,8 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
     }
 
     @Override
-    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB axisalignedbb,
-        List<AxisAlignedBB> list, Entity collidingEntity) {
+    public void addCollisionBoxesToList(World world, int x, int y, int z, ImmutableAxisAlignedBB axisalignedbb,
+        List<ImmutableAxisAlignedBB> list, Entity collidingEntity) {
         try {
             if (components != null) {
                 for (IComponent<P, B> component : components) {
@@ -76,19 +75,19 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
 
     @SideOnly(Side.CLIENT)
     @Override
-    public AxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z) {
+    public ImmutableAxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z) {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (player == null) {
-            return ((ICollidableParent) getBlock()).getSelectedBoundingBoxFromPoolParent(world, x, y, z);
+            return getBlock().getSelectedBoundingBoxFromPoolParent(world, x, y, z);
         }
 
         RayTraceResult<P> rayTraceResult = doRayTrace(world, x, y, z, player);
         if (rayTraceResult != null && rayTraceResult.getBoundingBox() != null) {
-            AxisAlignedBB box = rayTraceResult.getBoundingBox();
+            ImmutableAxisAlignedBB box = rayTraceResult.getBoundingBox();
             return box.offset(x, y, z);
         }
 
-        return ((ICollidableParent) getBlock()).getSelectedBoundingBoxFromPoolParent(world, x, y, z);
+        return getBlock().getSelectedBoundingBoxFromPoolParent(world, x, y, z);
     }
 
     @Override
@@ -97,6 +96,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
         return raytraceResult == null ? null : raytraceResult.getMovingObjectPosition();
     }
 
+    @Override
     public RayTraceResult<P> doRayTrace(World world, int x, int y, int z, EntityPlayer player) {
         double reachDistance = (player instanceof EntityPlayerMP)
             ? ((EntityPlayerMP) player).theItemInWorldManager.getBlockReachDistance()
@@ -120,10 +120,11 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
 
                     for (P position : component.getPossiblePositions()) {
                         if (component.isActive(getBlock(), world, x, y, z, position)) {
-                            List<AxisAlignedBB> boundsList = component.getBounds(getBlock(), world, x, y, z, position);
+                            List<ImmutableAxisAlignedBB> boundsList = component
+                                .getBounds(getBlock(), world, x, y, z, position);
                             if (boundsList == null) continue;
 
-                            for (AxisAlignedBB bb : boundsList) {
+                            for (ImmutableAxisAlignedBB bb : boundsList) {
                                 if (bb == null) continue;
 
                                 setBlockBounds(bb);
@@ -158,7 +159,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
         return closestHit;
     }
 
-    private void setBlockBounds(AxisAlignedBB bounds) {
+    private void setBlockBounds(ImmutableAxisAlignedBB bounds) {
         if (bounds == null) {
             getBlock().setBlockBounds(0F, 0F, 0F, 0F, 0F, 0F);
             return;

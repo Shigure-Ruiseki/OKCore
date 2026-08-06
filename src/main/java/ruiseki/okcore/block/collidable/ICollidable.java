@@ -7,7 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -39,18 +38,18 @@ public interface ICollidable<P> {
      * @param list            The list to add to
      * @param collidingEntity The entity that is colliding
      */
-    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB mask, List<AxisAlignedBB> list,
-        Entity collidingEntity);
+    public void addCollisionBoxesToList(World world, int x, int y, int z, ImmutableAxisAlignedBB mask,
+        List<ImmutableAxisAlignedBB> list, Entity collidingEntity);
 
     /**
-     * The the selected bounding box.
+     * The selected bounding box.
      *
      * @param world The world
      * @param x,    y, z The position
      * @return The selected bounding box
      */
     @SideOnly(Side.CLIENT)
-    public AxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z);
+    public ImmutableAxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z);
 
     /**
      * Do a ray trace for the current look direction of the player.
@@ -82,7 +81,7 @@ public interface ICollidable<P> {
     public static class RayTraceResult<P> {
 
         private final MovingObjectPosition movingObjectPosition;
-        private final AxisAlignedBB boundingBox;
+        private final ImmutableAxisAlignedBB boundingBox;
         private final P positionHit;
         private final IComponent<P, ?> collisionType;
 
@@ -106,7 +105,7 @@ public interface ICollidable<P> {
 
         public boolean isActive(B block, World world, int x, int y, int z, P position);
 
-        public List<AxisAlignedBB> getBounds(B block, World world, int x, int y, int z, P position);
+        public List<ImmutableAxisAlignedBB> getBounds(B block, World world, int x, int y, int z, P position);
 
         public ItemStack getPickBlock(World world, int x, int y, int z, P position);
 
@@ -121,5 +120,4 @@ public interface ICollidable<P> {
          */
         public boolean destroy(World world, int x, int y, int z, P position, EntityPlayer player);
     }
-
 }

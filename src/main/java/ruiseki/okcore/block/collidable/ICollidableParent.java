@@ -3,7 +3,6 @@ package ruiseki.okcore.block.collidable;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -27,8 +26,8 @@ public interface ICollidableParent {
      * @param list            The list to add to
      * @param collidingEntity The entity that is colliding
      */
-    public void addCollisionBoxesToListParent(World worldIn, int x, int y, int z, AxisAlignedBB mask,
-        List<AxisAlignedBB> list, Entity collidingEntity);
+    public void addCollisionBoxesToListParent(World worldIn, int x, int y, int z, ImmutableAxisAlignedBB mask,
+        List<ImmutableAxisAlignedBB> list, Entity collidingEntity);
 
     /**
      * Simply forward this call to the super.
@@ -38,7 +37,7 @@ public interface ICollidableParent {
      * @return The selected bounding box
      */
     @SideOnly(Side.CLIENT)
-    public AxisAlignedBB getSelectedBoundingBoxFromPoolParent(World worldIn, int x, int y, int z);
+    public ImmutableAxisAlignedBB getSelectedBoundingBoxFromPoolParent(World worldIn, int x, int y, int z);
 
     /**
      * Simply forward this call to the super.
@@ -50,5 +49,4 @@ public interface ICollidableParent {
      * @return The position object holder
      */
     public MovingObjectPosition collisionRayTraceParent(World world, int x, int y, int z, Vec3 origin, Vec3 direction);
-
 }

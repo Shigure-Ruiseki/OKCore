@@ -13,6 +13,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import ruiseki.commoncapabilities.api.capability.block.BlockCapabilities;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngredientAlternatives;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
@@ -23,6 +24,7 @@ import ruiseki.commoncapabilities.capability.recipehandler.RecipeHandlerConfig;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
 import ruiseki.commoncapabilities.capability.wrench.WrenchConfig;
+import ruiseki.commoncapabilities.modcompat.vanilla.VanillaModCompat;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.modcompat.ModCompatLoader;
@@ -53,6 +55,7 @@ public class CommonCapabilities extends ModBase {
     @Override
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         super.loadModCompats(modCompatLoader);
+        modCompatLoader.addModCompat(new VanillaModCompat());
     }
 
     @Mod.EventHandler
@@ -82,6 +85,8 @@ public class CommonCapabilities extends ModBase {
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+        BlockCapabilities.getInstance()
+            .initConstructors();
     }
 
     @Mod.EventHandler

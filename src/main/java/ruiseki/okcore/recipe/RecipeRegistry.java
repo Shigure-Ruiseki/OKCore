@@ -59,11 +59,14 @@ public class RecipeRegistry {
 
     static {
         SHAPED_RECIPE = registerSerializer(
-            new ResourceLocation("minecraft:crafting_shaped"), new ShapedRecipeSerializer());
+            new ResourceLocation("minecraft:crafting_shaped"),
+            new ShapedRecipeSerializer());
         SHAPELESS_RECIPE = registerSerializer(
-            new ResourceLocation("minecraft:crafting_shapeless"), new ShapelessRecipeSerializer());
+            new ResourceLocation("minecraft:crafting_shapeless"),
+            new ShapelessRecipeSerializer());
         SMELTING_RECIPE = registerSerializer(
-            new ResourceLocation("minecraft:smelting"), new CookingRecipeSerializer<>(FurnaceRecipe::new, 200));
+            new ResourceLocation("minecraft:smelting"),
+            new CookingRecipeSerializer<>(FurnaceRecipe::new, 200));
 
         CRAFTING = RecipeRegistry.registerType(new ResourceLocation("crafting"));
         SMELTING = RecipeRegistry.registerType(new ResourceLocation("smelting"));
@@ -84,7 +87,7 @@ public class RecipeRegistry {
     }
 
     public static <S extends IRecipeSerializer<T>, T extends IRecipeOK<?>> S registerSerializer(ResourceLocation key,
-                                                                                                S recipeSerializer) {
+        S recipeSerializer) {
         if (recipeSerializer == null || key == null) return null;
         SERIALIZER_MAPPING.put(key, recipeSerializer);
         return recipeSerializer;
@@ -127,7 +130,7 @@ public class RecipeRegistry {
     }
 
     public static <T extends Ingredient> IIngredientSerializer<T> register(ResourceLocation key,
-                                                                           IIngredientSerializer<T> serializer) {
+        IIngredientSerializer<T> serializer) {
         if (ingredients.containsKey(key))
             throw new IllegalStateException("Duplicate recipe ingredient serializer: " + key);
         if (ingredients.containsValue(serializer))
@@ -138,7 +141,8 @@ public class RecipeRegistry {
 
     @Nullable
     public static ResourceLocation getID(IIngredientSerializer<?> serializer) {
-        return ingredients.inverse().get(serializer);
+        return ingredients.inverse()
+            .get(serializer);
     }
 
     public static <T extends Ingredient> void toNetwork(ExtendedBuffer buffer, T ingredient) {
@@ -167,13 +171,13 @@ public class RecipeRegistry {
         if (json.isJsonArray()) {
             List<Ingredient> ingredientsList = Lists.newArrayList();
             List<Ingredient> vanilla = Lists.newArrayList();
-            json.getAsJsonArray().forEach((ele) -> {
-                Ingredient ing = RecipeRegistry.getIngredient(ele, allowEmpty);
+            json.getAsJsonArray()
+                .forEach((ele) -> {
+                    Ingredient ing = RecipeRegistry.getIngredient(ele, allowEmpty);
 
-                if (ing.getClass() == Ingredient.class)
-                    vanilla.add(ing);
-                else ingredientsList.add(ing);
-            });
+                    if (ing.getClass() == Ingredient.class) vanilla.add(ing);
+                    else ingredientsList.add(ing);
+                });
 
             if (!vanilla.isEmpty()) ingredientsList.add(Ingredient.merge(vanilla));
 
@@ -206,7 +210,8 @@ public class RecipeRegistry {
     public static ItemStack getItemStack(JsonObject json, boolean readNBT) {
         String itemName = GsonHelpers.getAsString(json, "item");
 
-        Item item = GameData.getItemRegistry().getObject(itemName);
+        Item item = GameData.getItemRegistry()
+            .getObject(itemName);
 
         if (item == null) {
             throw new JsonSyntaxException("Unknown item '" + itemName + "'");
@@ -237,12 +242,13 @@ public class RecipeRegistry {
 
                 if (element.isJsonObject()) {
                     nbt = GsonHelpers.jsonToNBT(element.getAsJsonObject());
-                } else if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
-                    nbt = (NBTTagCompound) JsonToNBT.func_150315_a(element.getAsString());
-                } else {
-                    throw new JsonSyntaxException(
-                        "Expected 'nbt' to be a JsonObject or NBT String, was " + GsonHelpers.getType(element));
-                }
+                } else if (element.isJsonPrimitive() && element.getAsJsonPrimitive()
+                    .isString()) {
+                        nbt = (NBTTagCompound) JsonToNBT.func_150315_a(element.getAsString());
+                    } else {
+                        throw new JsonSyntaxException(
+                            "Expected 'nbt' to be a JsonObject or NBT String, was " + GsonHelpers.getType(element));
+                    }
                 stack.setTagCompound(nbt);
             } catch (NBTException e) {
                 throw new JsonSyntaxException("Invalid NBT Entry: " + e.getMessage(), e);
@@ -256,8 +262,10 @@ public class RecipeRegistry {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void syncMCCraftingManager() {
-        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager().getRecipes();
-        List mcRecipeList = CraftingManager.getInstance().getRecipeList();
+        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
+            .getRecipes();
+        List mcRecipeList = CraftingManager.getInstance()
+            .getRecipeList();
         if (mcRecipeList == null) return;
 
         mcRecipeList.removeIf(obj -> obj instanceof IRecipeOK);
@@ -272,7 +280,8 @@ public class RecipeRegistry {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void syncMCFurnaceRecipes() {
-        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager().getRecipes();
+        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
+            .getRecipes();
         FurnaceRecipes furnaceInstance = FurnaceRecipes.smelting();
         Map mcSmeltingList = furnaceInstance.getSmeltingList();
         Map mcExperienceList = furnaceInstance.experienceList;
@@ -282,7 +291,8 @@ public class RecipeRegistry {
             ItemStack oldOutput = oldRecipe.getResultItem();
             if (oldOutput == null) continue;
 
-            Iterator<Map.Entry> smeltingIterator = mcSmeltingList.entrySet().iterator();
+            Iterator<Map.Entry> smeltingIterator = mcSmeltingList.entrySet()
+                .iterator();
             while (smeltingIterator.hasNext()) {
                 Map.Entry entry = smeltingIterator.next();
                 ItemStack valueStack = (ItemStack) entry.getValue();
@@ -292,7 +302,8 @@ public class RecipeRegistry {
             }
 
             if (mcExperienceList != null) {
-                Iterator<Map.Entry> expIterator = mcExperienceList.entrySet().iterator();
+                Iterator<Map.Entry> expIterator = mcExperienceList.entrySet()
+                    .iterator();
                 while (expIterator.hasNext()) {
                     Map.Entry entry = expIterator.next();
                     if (ItemStack.areItemStacksEqual((ItemStack) entry.getKey(), oldOutput)) {
@@ -312,7 +323,9 @@ public class RecipeRegistry {
                 ItemStack customOutput = customRecipe.getResultItem();
                 float customExp = customRecipe.getExperience();
                 if (customRecipe.getIngredient() == null || customOutput == null || recipeId == null) continue;
-                List<ItemStack> matchingStacks = List.of(customRecipe.getIngredient().getItems());
+                List<ItemStack> matchingStacks = List.of(
+                    customRecipe.getIngredient()
+                        .getItems());
                 if (matchingStacks.isEmpty()) continue;
 
                 ItemStack representInput = matchingStacks.getFirst();

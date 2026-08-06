@@ -1,6 +1,8 @@
 package ruiseki.commoncapabilities.modcompat.vanilla;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -16,17 +18,26 @@ import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import cofh.api.energy.IEnergyStorage;
 import ruiseki.commoncapabilities.CommonCapabilities;
 import ruiseki.commoncapabilities.Reference;
 import ruiseki.commoncapabilities.api.capability.block.BlockCapabilities;
 import ruiseki.commoncapabilities.api.capability.block.IBlockCapabilityConstructor;
 import ruiseki.commoncapabilities.api.capability.block.IBlockCapabilityProvider;
+import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeHandler;
 import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
 import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.commoncapabilities.capability.recipehandler.RecipeHandlerConfig;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.energystorage.VanillaEntityItemEnergyStorage;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.energystorage.VanillaEntityItemFrameEnergyStorage;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.fluidhandler.VanillaEntityItemFluidHandler;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.fluidhandler.VanillaEntityItemFrameFluidHandler;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.itemhandler.VanillaEntityItemFrameItemHandler;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.itemhandler.VanillaEntityItemItemHandler;
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.recipehandler.VanillaCraftingTableRecipeHandler;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.recipehandler.VanillaFurnaceRecipeHandler;
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.temperature.VanillaFurnaceTemperature;
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.temperature.VanillaUniversalBucketTemperature;
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.work.VanillaBrewingStandWorker;
@@ -35,6 +46,12 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.modcompat.IModCompat;
 import ruiseki.okcore.modcompat.capabilities.CapabilityConstructorRegistry;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
@@ -124,6 +141,182 @@ public class VanillaModCompat implements IModCompat {
                 }
             });
 
+            // ItemHandler
+            registry
+                .registerEntity(EntityItem.class, new ICapabilityConstructor<IItemHandler, EntityItem, EntityItem>() {
+
+                    @Override
+                    public Capability<IItemHandler> getCapability() {
+                        return CapabilityItemHandler.ITEM_HANDLER;
+                    }
+
+                    @Override
+                    public ICapabilityProvider createProvider(EntityItem hostType, final EntityItem host) {
+                        return new ICapabilityProvider() {
+
+                            @Override
+                            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                                @Nullable ForgeDirection facing) {
+                                return capability == CapabilityItemHandler.ITEM_HANDLER
+                                    && CapabilityHelpers.getCapability(host.getEntityItem(), capability, facing)
+                                        .isPresent()
+                                            ? LazyOptional.of(() -> new VanillaEntityItemItemHandler(host, facing))
+                                                .cast()
+                                            : LazyOptional.empty();
+                            }
+                        };
+                    }
+                });
+            registry.registerEntity(
+                EntityItemFrame.class,
+                new ICapabilityConstructor<IItemHandler, EntityItemFrame, EntityItemFrame>() {
+
+                    @Override
+                    public Capability<IItemHandler> getCapability() {
+                        return CapabilityItemHandler.ITEM_HANDLER;
+                    }
+
+                    @Override
+                    public ICapabilityProvider createProvider(EntityItemFrame hostType, final EntityItemFrame host) {
+                        return new ICapabilityProvider() {
+
+                            @Override
+                            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                                @Nullable ForgeDirection facing) {
+                                return capability == CapabilityItemHandler.ITEM_HANDLER
+                                    && CapabilityHelpers.getCapability(host.getDisplayedItem(), capability, facing)
+                                        .isPresent()
+                                            ? LazyOptional.of(() -> new VanillaEntityItemFrameItemHandler(host, facing))
+                                                .cast()
+                                            : LazyOptional.empty();
+                            }
+                        };
+                    }
+                });
+
+            // FluidHandler
+            registry
+                .registerEntity(EntityItem.class, new ICapabilityConstructor<IFluidHandler, EntityItem, EntityItem>() {
+
+                    @Override
+                    public Capability<IFluidHandler> getCapability() {
+                        return CapabilityFluidHandler.FLUID_HANDLER;
+                    }
+
+                    @Override
+                    public ICapabilityProvider createProvider(EntityItem hostType, final EntityItem host) {
+                        return new ICapabilityProvider() {
+
+                            @Override
+                            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                                @Nullable ForgeDirection facing) {
+                                return capability == CapabilityFluidHandler.FLUID_HANDLER
+                                    && CapabilityHelpers.getCapability(host.getEntityItem(), capability, facing)
+                                        .isPresent()
+                                            ? LazyOptional.of(() -> new VanillaEntityItemFluidHandler(host, facing))
+                                                .cast()
+                                            : LazyOptional.empty();
+                            }
+                        };
+                    }
+                });
+            registry.registerEntity(
+                EntityItemFrame.class,
+                new ICapabilityConstructor<IFluidHandler, EntityItemFrame, EntityItemFrame>() {
+
+                    @Override
+                    public Capability<IFluidHandler> getCapability() {
+                        return CapabilityFluidHandler.FLUID_HANDLER;
+                    }
+
+                    @Override
+                    public ICapabilityProvider createProvider(EntityItemFrame hostType, final EntityItemFrame host) {
+                        return new ICapabilityProvider() {
+
+                            @Override
+                            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                                @Nullable ForgeDirection facing) {
+                                return capability == CapabilityFluidHandler.FLUID_HANDLER
+                                    && CapabilityHelpers.getCapability(host.getDisplayedItem(), capability, facing)
+                                        .isPresent()
+                                            ? LazyOptional
+                                                .of(() -> new VanillaEntityItemFrameFluidHandler(host, facing))
+                                                .cast()
+                                            : LazyOptional.empty();
+                            }
+                        };
+                    }
+                });
+
+            // EnergyStorage
+            registry
+                .registerEntity(EntityItem.class, new ICapabilityConstructor<IEnergyStorage, EntityItem, EntityItem>() {
+
+                    @Override
+                    public Capability<IEnergyStorage> getCapability() {
+                        return CapabilityEnergy.ENERGY;
+                    }
+
+                    @Override
+                    public ICapabilityProvider createProvider(EntityItem hostType, final EntityItem host) {
+                        return new ICapabilityProvider() {
+
+                            @Override
+                            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                                @Nullable ForgeDirection facing) {
+                                return capability == CapabilityEnergy.ENERGY
+                                    && CapabilityHelpers.getCapability(host.getEntityItem(), capability, facing)
+                                        .isPresent()
+                                            ? LazyOptional.of(() -> new VanillaEntityItemEnergyStorage(host, facing))
+                                                .cast()
+                                            : LazyOptional.empty();
+                            }
+                        };
+                    }
+                });
+            registry.registerEntity(
+                EntityItemFrame.class,
+                new ICapabilityConstructor<IEnergyStorage, EntityItemFrame, EntityItemFrame>() {
+
+                    @Override
+                    public Capability<IEnergyStorage> getCapability() {
+                        return CapabilityEnergy.ENERGY;
+                    }
+
+                    @Override
+                    public ICapabilityProvider createProvider(EntityItemFrame hostType, final EntityItemFrame host) {
+                        return new ICapabilityProvider() {
+
+                            @Override
+                            public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+                                @Nullable ForgeDirection facing) {
+                                return capability == CapabilityEnergy.ENERGY
+                                    && CapabilityHelpers.getCapability(host.getDisplayedItem(), capability, facing)
+                                        .isPresent()
+                                            ? LazyOptional
+                                                .of(() -> new VanillaEntityItemFrameEnergyStorage(host, facing))
+                                                .cast()
+                                            : LazyOptional.empty();
+                            }
+                        };
+                    }
+                });
+
+            // RecipeHandler
+            registry.registerTile(
+                TileEntityFurnace.class,
+                new ICapabilityConstructor<IRecipeHandler, TileEntityFurnace, TileEntityFurnace>() {
+
+                    @Override
+                    public Capability<IRecipeHandler> getCapability() {
+                        return RecipeHandlerConfig.CAPABILITY;
+                    }
+
+                    @Override
+                    public ICapabilityProvider createProvider(TileEntityFurnace hostType, TileEntityFurnace host) {
+                        return new DefaultCapabilityProvider<>(this, VanillaFurnaceRecipeHandler.getInstance());
+                    }
+                });
             BlockCapabilities.getInstance()
                 .register(new IBlockCapabilityConstructor() {
 

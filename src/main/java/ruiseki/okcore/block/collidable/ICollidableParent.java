@@ -1,5 +1,8 @@
 package ruiseki.okcore.block.collidable;
 
+import java.util.List;
+
+import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -15,6 +18,18 @@ import ruiseki.okcore.datastructure.BlockPos;
  * @author rubensworks
  */
 public interface ICollidableParent {
+
+    /**
+     * Add the current block bounding box to the given list.
+     *
+     * @param world           The world
+     * @param x,              y, z The position
+     * @param mask            The bounding boxes mask
+     * @param list            The list to add to
+     * @param collidingEntity The entity that is colliding
+     */
+    public void addCollisionBoxesToListParent(World world, int x, int y, int z, AxisAlignedBB mask,
+        List<AxisAlignedBB> list, Entity collidingEntity);
 
     /**
      * Simply forward this call to the super.

@@ -16,7 +16,6 @@ import net.minecraft.world.World;
 
 import lombok.Data;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.BlockHelpers;
 
 /**
  * Component for blocks that require complex multi-part collision and ray-trace detection.
@@ -50,7 +49,15 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
         for (P position : component.getPossiblePositions()) {
             if (component.isActive(getBlock(), world, pos, position)) {
                 for (AxisAlignedBB bb : component.getBounds(getBlock(), world, pos, position)) {
-                    BlockHelpers.addCollisionBoxToList(pos, axisalignedbb, list, bb);
+                    setBlockBounds(bb);
+                    getBlock().addCollisionBoxesToListParent(
+                        world,
+                        pos.getX(),
+                        pos.getY(),
+                        pos.getZ(),
+                        axisalignedbb,
+                        list,
+                        collidingEntity);
                 }
             }
         }
@@ -179,5 +186,15 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
                 componentsOutput.get(minIndex));
         }
         return null;
+    }
+
+    private void setBlockBounds(AxisAlignedBB bounds) {
+        getBlock().setBlockBounds(
+            (float) bounds.minX,
+            (float) bounds.minY,
+            (float) bounds.minZ,
+            (float) bounds.maxX,
+            (float) bounds.maxY,
+            (float) bounds.maxZ);
     }
 }

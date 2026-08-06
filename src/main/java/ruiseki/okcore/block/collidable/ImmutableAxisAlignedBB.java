@@ -39,6 +39,18 @@ public class ImmutableAxisAlignedBB extends AxisAlignedBB {
         return new ImmutableAxisAlignedBB(x1, y1, z1, x2, y2, z2);
     }
 
+    public static ImmutableAxisAlignedBB fromBoundingBox(AxisAlignedBB box) {
+        if (box == null) return null;
+        if (box instanceof ImmutableAxisAlignedBB) {
+            return (ImmutableAxisAlignedBB) box;
+        }
+        return new ImmutableAxisAlignedBB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+    }
+
+    public AxisAlignedBB toBoundingBox() {
+        return AxisAlignedBB.getBoundingBox(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+    }
+
     @Override
     public AxisAlignedBB setBounds(double x1, double y1, double z1, double x2, double y2, double z2) {
         return this;

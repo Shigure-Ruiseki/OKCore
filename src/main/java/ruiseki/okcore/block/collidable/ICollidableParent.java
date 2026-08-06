@@ -29,13 +29,11 @@ public interface ICollidableParent {
     /**
      * Simply forward this call to the super.
      *
-     * @param world       The world
      * @param pos         The position
      * @param start       The start vector
      * @param end         The end vector
      * @param boundingBox The bounding box to ray trace with.
      * @return The position object holder
      */
-    public MovingObjectPosition rayTraceParent(World world, BlockPos pos, Vec3 start, Vec3 end,
-        AxisAlignedBB boundingBox);
+    public MovingObjectPosition rayTraceParent(BlockPos pos, Vec3 start, Vec3 end, AxisAlignedBB boundingBox);
 }

@@ -124,7 +124,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
                 int offset = 0;
                 for (AxisAlignedBB bb : component.getBounds(getBlock(), world, pos, position)) {
                     boxes[i + offset] = bb;
-                    hits[i + offset] = getBlock().rayTraceParent(world, pos, origin, direction, bb);
+                    hits[i + offset] = getBlock().rayTraceParent(pos, origin, direction, bb);
                     sideHit.set(i + offset, position);
                     components.set(i + offset, component);
                     offset++;

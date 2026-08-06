@@ -19,7 +19,7 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     private final V valueObject;
     private final ICapabilityConstructor<?, K, V> constructor;
 
-    private LazyOptional<?> cachedOptional = null;
+    private LazyOptional<?> cachedOptional = LazyOptional.empty();
 
     public ConstructorCapabilityResolver(Capability<?> capability, K keyObject, V valueObject,
         ICapabilityConstructor<?, K, V> constructor) {
@@ -55,7 +55,7 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     public void invalidate(Capability<?> capability, @Nullable ForgeDirection side) {
         if (this.capability == capability && cachedOptional != null) {
             cachedOptional.invalidate();
-            cachedOptional = null;
+            cachedOptional = LazyOptional.empty();
         }
     }
 
@@ -63,7 +63,7 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     public void invalidateAll() {
         if (cachedOptional != null) {
             cachedOptional.invalidate();
-            cachedOptional = null;
+            cachedOptional = LazyOptional.empty();
         }
     }
 }

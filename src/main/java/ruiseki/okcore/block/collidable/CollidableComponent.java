@@ -11,11 +11,13 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.BlockHelpers;
 
 /**
  * Component for blocks that require complex multi-part collision and ray-trace detection.
@@ -49,31 +51,27 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
         for (P position : component.getPossiblePositions()) {
             if (component.isActive(getBlock(), world, pos, position)) {
                 for (AxisAlignedBB bb : component.getBounds(getBlock(), world, pos, position)) {
-                    setBlockBounds(bb);
-                    getBlock().addCollisionBoxesToListParent(
-                        world,
-                        pos.getX(),
-                        pos.getY(),
-                        pos.getZ(),
-                        axisalignedbb,
-                        list,
-                        collidingEntity);
+                    BlockHelpers.addCollisionBoxToList(pos, axisalignedbb, list, bb);
                 }
             }
         }
     }
 
     @Override
-    public void addCollisionBoxToList(World world, BlockPos pos, AxisAlignedBB axisalignedbb, List<AxisAlignedBB> list,
-        Entity collidingEntity, boolean useProvidedState) {
+    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB mask, List<AxisAlignedBB> list,
+        Entity collidingEntity) {
+        BlockPos pos = new BlockPos(x, y, z);
         // Add bounding boxes for all active components.
         for (IComponent<P, B> component : components) {
-            addComponentCollisionBoxesToList(component, world, pos, axisalignedbb, list, collidingEntity);
+            addComponentCollisionBoxesToList(component, world, pos, mask, list, collidingEntity);
         }
+        // Reset block bounds back to full cube
+        getBlock().setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
-    public MovingObjectPosition collisionRayTrace(World world, BlockPos pos, Vec3 origin, Vec3 direction) {
+    public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 origin, Vec3 direction) {
+        BlockPos pos = new BlockPos(x, y, z);
         RayTraceResult<P> raytraceResult = doRayTrace(world, pos, origin, direction);
         if (raytraceResult == null) {
             return null;
@@ -84,13 +82,9 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
     }
 
     @Override
-    public AxisAlignedBB getSelectedBoundingBox(World world, BlockPos pos) {
-        return lastBounds.getOffsetBoundingBox(pos.getX(), pos.getY(), pos.getZ());
-    }
-
-    @Override
-    public AxisAlignedBB getBoundingBox(IBlockAccess world, BlockPos pos) {
-        return lastBounds;
+    @SideOnly(Side.CLIENT)
+    public AxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z) {
+        return lastBounds.getOffsetBoundingBox(x, y, z);
     }
 
     /**
@@ -101,6 +95,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
      * @param player The player.
      * @return A holder object with information on the ray tracing.
      */
+    @Override
     public RayTraceResult<P> doRayTrace(World world, BlockPos pos, EntityPlayer player) {
         if (player == null) {
             return null;
@@ -112,8 +107,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
             reachDistance = 5;
         }
 
-        double eyeHeight = world.isRemote ? player.getEyeHeight() : player.getEyeHeight(); // Client removed : -
-                                                                                           // player.getDefaultEyeHeight()
+        double eyeHeight = player.getEyeHeight();
         Vec3 lookVec = player.getLookVec();
         Vec3 origin = Vec3.createVectorHelper(player.posX, player.posY + eyeHeight, player.posZ);
         Vec3 direction = origin

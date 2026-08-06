@@ -114,12 +114,14 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
         Vec3 vecStart = start.addVector(-pos.getX(), -pos.getY(), -pos.getZ());
         Vec3 vecEnd = end.addVector(-pos.getX(), -pos.getY(), -pos.getZ());
         MovingObjectPosition intercept = boundingBox.calculateIntercept(vecStart, vecEnd);
-        return intercept != null ? new MovingObjectPosition(
-            pos.getX(),
-            pos.getY(),
-            pos.getZ(),
-            intercept.sideHit,
-            intercept.hitVec.addVector(pos.getX(), pos.getY(), pos.getZ())) : null;
+        return intercept != null
+            ? new MovingObjectPosition(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ(),
+                intercept.sideHit,
+                intercept.hitVec.addVector(pos.getX(), pos.getY(), pos.getZ()))
+            : null;
     }
 
     @Override

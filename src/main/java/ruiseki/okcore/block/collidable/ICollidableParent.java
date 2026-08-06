@@ -1,8 +1,5 @@
 package ruiseki.okcore.block.collidable;
 
-import java.util.List;
-
-import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;

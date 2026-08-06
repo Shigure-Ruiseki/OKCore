@@ -70,7 +70,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
                 }
             }
         } finally {
-            getBlock().setBlockBounds(0F, 0F, 0F, 0F, 0F, 0F);
+            getBlock().setBlockBounds(0F, 0F, 0F, 1F, 1F, 1F);
         }
     }
 
@@ -138,7 +138,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
                 }
             }
         } finally {
-            getBlock().setBlockBounds(0F, 0F, 0F, 0F, 0F, 0F);
+            getBlock().setBlockBounds(0F, 0F, 0F, 1F, 1F, 1F);
         }
 
         // Find the closest hit distance from camera origin
@@ -160,7 +160,7 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
 
     private void setBlockBounds(AxisAlignedBB bounds) {
         if (bounds == null) {
-            getBlock().setBlockBounds(0F, 0F, 0F, 0F, 0F, 0F);
+            getBlock().setBlockBounds(0F, 0F, 0F, 1F, 1F, 1F);
             return;
         }
 

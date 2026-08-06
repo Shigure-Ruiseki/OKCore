@@ -1,20 +1,22 @@
 package ruiseki.okcore.block.collidable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.BlockHelpers;
 
 /**
  * Component for blocks that require complex multi-part collision and ray-trace detection.
@@ -27,150 +29,155 @@ public class CollidableComponent<P, B extends Block & ICollidableParent> impleme
 
     private final B block;
     private final List<IComponent<P, B>> components;
+    private final int totalComponents;
+
+    private AxisAlignedBB lastBounds = ImmutableAxisAlignedBB.fromBounds(0, 0, 0, 1, 1, 1);
 
     public CollidableComponent(B block, List<IComponent<P, B>> components) {
         this.block = block;
         this.components = components;
+        int count = 0;
+        for (IComponent<P, B> component : components) {
+            for (P position : component.getPossiblePositions()) {
+                count += component.getBoundsCount(position);
+            }
+        }
+        this.totalComponents = count;
     }
 
-    private void addComponentCollisionBoxesToList(IComponent<P, B> component, World world, int x, int y, int z,
-        ImmutableAxisAlignedBB axisalignedbb, List<ImmutableAxisAlignedBB> list, Entity collidingEntity) {
+    private void addComponentCollisionBoxesToList(IComponent<P, B> component, World world, BlockPos pos,
+        AxisAlignedBB axisalignedbb, List<AxisAlignedBB> list, Entity collidingEntity) {
         for (P position : component.getPossiblePositions()) {
-            if (component.isActive(getBlock(), world, x, y, z, position)) {
-                List<ImmutableAxisAlignedBB> boundsList = component.getBounds(getBlock(), world, x, y, z, position);
-                if (boundsList == null) continue;
-
-                for (ImmutableAxisAlignedBB bb : boundsList) {
-                    if (bb == null) continue;
-                    setBlockBounds(bb);
-                    getBlock().addCollisionBoxesToListParent(world, x, y, z, axisalignedbb, list, collidingEntity);
+            if (component.isActive(getBlock(), world, pos, position)) {
+                for (AxisAlignedBB bb : component.getBounds(getBlock(), world, pos, position)) {
+                    BlockHelpers.addCollisionBoxToList(pos, axisalignedbb, list, bb);
                 }
             }
         }
     }
 
     @Override
-    public void addCollisionBoxesToList(World world, int x, int y, int z, ImmutableAxisAlignedBB axisalignedbb,
-        List<ImmutableAxisAlignedBB> list, Entity collidingEntity) {
-        try {
-            if (components != null) {
-                for (IComponent<P, B> component : components) {
-                    if (component != null) {
-                        addComponentCollisionBoxesToList(
-                            component,
-                            world,
-                            x,
-                            y,
-                            z,
-                            axisalignedbb,
-                            list,
-                            collidingEntity);
-                    }
-                }
-            }
-        } finally {
-            getBlock().setBlockBounds(0F, 0F, 0F, 0F, 0F, 0F);
+    public void addCollisionBoxToList(World world, BlockPos pos, AxisAlignedBB axisalignedbb, List<AxisAlignedBB> list,
+        Entity collidingEntity, boolean useProvidedState) {
+        // Add bounding boxes for all active components.
+        for (IComponent<P, B> component : components) {
+            addComponentCollisionBoxesToList(component, world, pos, axisalignedbb, list, collidingEntity);
         }
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
-    public ImmutableAxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z) {
-        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+    public MovingObjectPosition collisionRayTrace(World world, BlockPos pos, Vec3 origin, Vec3 direction) {
+        RayTraceResult<P> raytraceResult = doRayTrace(world, pos, origin, direction);
+        if (raytraceResult == null) {
+            return null;
+        } else {
+            this.lastBounds = raytraceResult.getBoundingBox();
+            return raytraceResult.getMovingObjectPosition();
+        }
+    }
+
+    @Override
+    public AxisAlignedBB getSelectedBoundingBox(World world, BlockPos pos) {
+        return lastBounds.getOffsetBoundingBox(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockAccess world, BlockPos pos) {
+        return lastBounds;
+    }
+
+    /**
+     * Do a ray trace for the current look direction of the player.
+     *
+     * @param world  The world.
+     * @param pos    The block position to perform a ray trace for.
+     * @param player The player.
+     * @return A holder object with information on the ray tracing.
+     */
+    public RayTraceResult<P> doRayTrace(World world, BlockPos pos, EntityPlayer player) {
         if (player == null) {
-            return getBlock().getSelectedBoundingBoxFromPoolParent(world, x, y, z);
+            return null;
+        }
+        double reachDistance;
+        if (player instanceof EntityPlayerMP) {
+            reachDistance = ((EntityPlayerMP) player).theItemInWorldManager.getBlockReachDistance();
+        } else {
+            reachDistance = 5;
         }
 
-        RayTraceResult<P> rayTraceResult = doRayTrace(world, x, y, z, player);
-        if (rayTraceResult != null && rayTraceResult.getBoundingBox() != null) {
-            ImmutableAxisAlignedBB box = rayTraceResult.getBoundingBox();
-            return box.offset(x, y, z);
-        }
-
-        return getBlock().getSelectedBoundingBoxFromPoolParent(world, x, y, z);
-    }
-
-    @Override
-    public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 origin, Vec3 direction) {
-        RayTraceResult<P> raytraceResult = doRayTrace(world, x, y, z, origin, direction);
-        return raytraceResult == null ? null : raytraceResult.getMovingObjectPosition();
-    }
-
-    @Override
-    public RayTraceResult<P> doRayTrace(World world, int x, int y, int z, EntityPlayer player) {
-        double reachDistance = (player instanceof EntityPlayerMP)
-            ? ((EntityPlayerMP) player).theItemInWorldManager.getBlockReachDistance()
-            : 5.0D;
-
+        double eyeHeight = world.isRemote ? player.getEyeHeight() : player.getEyeHeight(); // Client removed : -
+                                                                                           // player.getDefaultEyeHeight()
         Vec3 lookVec = player.getLookVec();
-        Vec3 origin = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+        Vec3 origin = Vec3.createVectorHelper(player.posX, player.posY + eyeHeight, player.posZ);
         Vec3 direction = origin
             .addVector(lookVec.xCoord * reachDistance, lookVec.yCoord * reachDistance, lookVec.zCoord * reachDistance);
 
-        return doRayTrace(world, x, y, z, origin, direction);
+        return doRayTrace(world, pos, origin, direction);
     }
 
-    private RayTraceResult<P> doRayTrace(World world, int x, int y, int z, Vec3 origin, Vec3 direction) {
-        List<RayTraceResult<P>> results = new ArrayList<>();
-
-        try {
-            if (components != null) {
-                for (IComponent<P, B> component : components) {
-                    if (component == null) continue;
-
-                    for (P position : component.getPossiblePositions()) {
-                        if (component.isActive(getBlock(), world, x, y, z, position)) {
-                            List<ImmutableAxisAlignedBB> boundsList = component
-                                .getBounds(getBlock(), world, x, y, z, position);
-                            if (boundsList == null) continue;
-
-                            for (ImmutableAxisAlignedBB bb : boundsList) {
-                                if (bb == null) continue;
-
-                                setBlockBounds(bb);
-                                MovingObjectPosition mop = getBlock()
-                                    .collisionRayTraceParent(world, x, y, z, origin, direction);
-                                if (mop != null) {
-                                    results.add(new RayTraceResult<P>(mop, bb, position, component));
-                                }
-                            }
-                        }
-                    }
+    private int doRayTraceComponent(IComponent<P, B> component, int countStart, World world, BlockPos pos, Vec3 origin,
+        Vec3 direction, MovingObjectPosition[] hits, AxisAlignedBB[] boxes, List<P> sideHit,
+        List<IComponent<P, B>> components) {
+        int i = countStart;
+        for (P position : component.getPossiblePositions()) {
+            if (component.isActive(getBlock(), world, pos, position)) {
+                int offset = 0;
+                for (AxisAlignedBB bb : component.getBounds(getBlock(), world, pos, position)) {
+                    boxes[i + offset] = bb;
+                    hits[i + offset] = getBlock().rayTraceParent(world, pos, origin, direction, bb);
+                    sideHit.set(i + offset, position);
+                    components.set(i + offset, component);
+                    offset++;
                 }
             }
-        } finally {
-            getBlock().setBlockBounds(0F, 0F, 0F, 0F, 0F, 0F);
+            i += component.getBoundsCount(position);
+        }
+        return i;
+    }
+
+    private RayTraceResult<P> doRayTrace(World world, BlockPos pos, Vec3 origin, Vec3 direction) {
+        // Perform a ray trace for all six sides.
+        MovingObjectPosition[] hits = new MovingObjectPosition[totalComponents];
+        AxisAlignedBB[] boxes = new AxisAlignedBB[totalComponents];
+        List<P> sideHit = new ArrayList<>(Collections.nCopies(totalComponents, null));
+        List<IComponent<P, B>> componentsOutput = new ArrayList<>(Collections.nCopies(totalComponents, null));
+
+        // Ray trace for all active components.
+        int count = 0;
+        for (IComponent<P, B> component : components) {
+            count = doRayTraceComponent(
+                component,
+                count,
+                world,
+                pos,
+                origin,
+                direction,
+                hits,
+                boxes,
+                sideHit,
+                componentsOutput);
         }
 
-        // Find the closest hit distance from camera origin
-        RayTraceResult<P> closestHit = null;
+        // Find the closest hit
         double minDistance = Double.POSITIVE_INFINITY;
-
-        for (RayTraceResult<P> result : results) {
-            if (result.getMovingObjectPosition() != null && result.getMovingObjectPosition().hitVec != null) {
-                double dist = result.getMovingObjectPosition().hitVec.squareDistanceTo(origin);
-                if (dist < minDistance) {
-                    minDistance = dist;
-                    closestHit = result;
+        int minIndex = -1;
+        for (int i = 0; i < hits.length; i++) {
+            if (hits[i] != null) {
+                double d = hits[i].hitVec.squareDistanceTo(origin);
+                if (d < minDistance) {
+                    minDistance = d;
+                    minIndex = i;
                 }
             }
         }
 
-        return closestHit;
-    }
-
-    private void setBlockBounds(ImmutableAxisAlignedBB bounds) {
-        if (bounds == null) {
-            getBlock().setBlockBounds(0F, 0F, 0F, 0F, 0F, 0F);
-            return;
+        if (minIndex != -1) {
+            return new RayTraceResult<P>(
+                hits[minIndex],
+                boxes[minIndex],
+                sideHit.get(minIndex),
+                componentsOutput.get(minIndex));
         }
-
-        getBlock().setBlockBounds(
-            (float) bounds.minX,
-            (float) bounds.minY,
-            (float) bounds.minZ,
-            (float) bounds.maxX,
-            (float) bounds.maxY,
-            (float) bounds.maxZ);
+        return null;
     }
 }

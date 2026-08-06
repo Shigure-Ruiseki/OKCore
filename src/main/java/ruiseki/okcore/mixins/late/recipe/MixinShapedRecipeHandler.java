@@ -1,7 +1,6 @@
 package ruiseki.okcore.mixins.late.recipe;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -17,7 +16,8 @@ import codechicken.nei.NEIClientConfig;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.recipe.ShapedRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import ruiseki.okcore.json.item.CompoundItemMaterial;
+import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
 
 @Mixin(value = ShapedRecipeHandler.class, remap = false)
@@ -101,26 +101,24 @@ public abstract class MixinShapedRecipeHandler extends TemplateRecipeHandler {
         try {
             int width = recipe.getRecipeWidth();
             int height = recipe.getRecipeHeight();
-            String[] pattern = recipe.getPattern();
-            Map<Character, CompoundItemMaterial> keyMap = recipe.getKeyMap();
+            NonNullList<Ingredient> ingredients = recipe.getIngredients();
 
-            Object[] rawItems = new Object[width * height];
+            Object[] rawItems = new Object[ingredients.size()];
 
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < pattern[i].length(); j++) {
-                    char chr = pattern[i].charAt(j);
-                    CompoundItemMaterial materials = keyMap.get(chr);
-                    if (materials == null || materials.isEmpty()) {
-                        rawItems[j + i * width] = null;
-                        continue;
-                    }
+            for (int i = 0; i < ingredients.size(); i++) {
+                Ingredient ingredient = ingredients.get(i);
+                if (ingredient.isEmpty()) {
+                    rawItems[i] = null;
+                    continue;
+                }
 
-                    List<ItemStack> displayStacks = materials.toStacks();
-                    if (displayStacks.isEmpty()) {
-                        return null;
-                    }
-
-                    rawItems[j + i * width] = (displayStacks.size() == 1) ? displayStacks.getFirst() : displayStacks;
+                ItemStack[] matchingStacks = ingredient.getItems();
+                if (matchingStacks.length == 0) {
+                    rawItems[i] = null;
+                } else if (matchingStacks.length == 1) {
+                    rawItems[i] = matchingStacks[0];
+                } else {
+                    rawItems[i] = Arrays.asList(matchingStacks);
                 }
             }
 

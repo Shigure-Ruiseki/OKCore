@@ -1,104 +1,76 @@
 package ruiseki.okcore.recipe.type.crafting.shapless;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
-import ruiseki.okcore.OKCore;
-import ruiseki.okcore.json.item.CompoundItemMaterial;
-import ruiseki.okcore.json.item.ItemMaterial;
+import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.helper.GsonHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.IRecipeSerializer;
+import ruiseki.okcore.recipe.ingredient.Ingredient;
+import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
 
 public class ShapelessRecipeSerializer implements IRecipeSerializer<ShapelessRecipe> {
 
-    public final static ShapelessRecipeSerializer INSTANCE = new ShapelessRecipeSerializer();
-
     @Override
     public ShapelessRecipe fromJson(ResourceLocation id, JsonObject json) {
-        ItemStack outputStack = null;
-
-        if (json.has("result") && json.get("result")
-            .isJsonObject()) {
-            ItemMaterial mat = new ItemMaterial();
-            mat.read(json.getAsJsonObject("result"));
-            outputStack = mat.toStack();
-        }
-
-        if (outputStack == null) {
-            OKCore.okLog(
-                Level.ERROR,
-                "Shapeless Recipe [{}] failed to generate: 'result' is missing, invalid, or the output item is not yet registered.",
-                id);
-            return null;
-        }
-
-        List<CompoundItemMaterial> ingredientsList = new ArrayList<>();
-        if (json.has("ingredients") && json.get("ingredients")
-            .isJsonArray()) {
-            for (JsonElement element : json.getAsJsonArray("ingredients")) {
-                CompoundItemMaterial compMaterial = new CompoundItemMaterial();
-                compMaterial.read(element);
-
-                if (compMaterial.validate()) {
-                    ingredientsList.add(compMaterial);
-                } else {
-                    OKCore
-                        .okLog(Level.ERROR, "Shapeless Recipe [{}] contains an invalid or unparseable ingredient.", id);
-                    return null;
-                }
-            }
+        NonNullList<Ingredient> nonnulllist = itemsFromJson(GsonHelpers.getAsJsonArray(json, "ingredients"));
+        if (nonnulllist.isEmpty()) {
+            throw new JsonParseException("No ingredients for shapeless recipe");
+        } else if (nonnulllist.size() > ShapedRecipe.MAX_WIDTH * ShapedRecipe.MAX_HEIGHT) {
+            throw new JsonParseException(
+                "Too many ingredients for shapeless recipe the max is "
+                    + (ShapedRecipe.MAX_WIDTH * ShapedRecipe.MAX_HEIGHT));
         } else {
-            OKCore.okLog(Level.ERROR, "Shapeless Recipe [{}] is missing a valid 'ingredients' array.", id);
-            return null;
+            ItemStack itemstack = ShapedRecipe.itemFromJson(GsonHelpers.getAsJsonObject(json, "result"));
+            return new ShapelessRecipe(id, itemstack, nonnulllist);
+        }
+    }
+
+    private static NonNullList<Ingredient> itemsFromJson(JsonArray p_199568_0_) {
+        NonNullList<Ingredient> nonnulllist = NonNullList.create();
+
+        for (int i = 0; i < p_199568_0_.size(); ++i) {
+            Ingredient ingredient = Ingredient.fromJson(p_199568_0_.get(i));
+            if (!ingredient.isEmpty()) {
+                nonnulllist.add(ingredient);
+            }
         }
 
-        if (ingredientsList.isEmpty() || ingredientsList.size() > 9) {
-            OKCore.okLog(
-                Level.ERROR,
-                "Shapeless Recipe [{}] must have between 1 and 9 ingredients. Parsed count: {}",
-                id,
-                ingredientsList.size());
-            return null;
-        }
-
-        return new ShapelessRecipe(id, outputStack, ingredientsList);
+        return nonnulllist;
     }
 
     @Override
     public void toNetwork(ExtendedBuffer buffer, ShapelessRecipe recipe) throws IOException {
-        buffer.writeItemStackToBuffer(recipe.getRecipeOutput());
+        buffer.writeVarIntToBuffer(
+            recipe.getIngredients()
+                .size());
 
-        List<CompoundItemMaterial> inputs = recipe.getIngredients();
-        buffer.writeInt(inputs.size());
-
-        for (CompoundItemMaterial ingredient : inputs) {
+        for (Ingredient ingredient : recipe.getIngredients()) {
             ingredient.toNetwork(buffer);
         }
+
+        buffer.writeItemStackToBuffer(recipe.getResultItem());
     }
 
     @Override
     public @Nullable ShapelessRecipe fromNetwork(ResourceLocation id, ExtendedBuffer buffer) throws IOException {
-        ItemStack output = buffer.readItemStackFromBuffer();
+        int i = buffer.readVarIntFromBuffer();
+        NonNullList<Ingredient> nonnulllist = NonNullList.withSize(i, Ingredient.EMPTY);
 
-        int slotsSize = buffer.readInt();
-        List<CompoundItemMaterial> inputs = new ArrayList<>();
-
-        for (int i = 0; i < slotsSize; i++) {
-            CompoundItemMaterial compMaterial = new CompoundItemMaterial();
-            compMaterial.fromNetwork(buffer);
-            inputs.add(compMaterial);
+        for (int j = 0; j < nonnulllist.size(); ++j) {
+            nonnulllist.set(j, Ingredient.fromNetwork(buffer));
         }
 
-        return new ShapelessRecipe(id, output, inputs);
+        ItemStack itemstack = buffer.readItemStackFromBuffer();
+        return new ShapelessRecipe(id, itemstack, nonnulllist);
     }
 }

@@ -13,6 +13,7 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.discovery.ASMDataTable;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLModIdMappingEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
@@ -35,6 +36,7 @@ import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
+import ruiseki.okcore.recipe.ingredient.Ingredient;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -68,6 +70,11 @@ public class OKCore extends ModBaseVersionable {
 
         CapabilityManager.INSTANCE.injectCapabilities(asmData);
         GuideRegistry.loadFromASM(asmData);
+    }
+
+    @Mod.EventHandler
+    public void mappingChanged(FMLModIdMappingEvent event) {
+        Ingredient.invalidateAll();
     }
 
     @Override

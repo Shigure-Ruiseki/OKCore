@@ -35,7 +35,7 @@ public abstract class RecipeDataBase implements IRecipeOK<IInventory> {
     }
 
     @Override
-    public ItemStack getCraftingResultOK(IInventory crafting) {
+    public ItemStack assemble(IInventory crafting) {
         return null;
     }
 

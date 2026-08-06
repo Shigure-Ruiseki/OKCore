@@ -41,6 +41,7 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.LoggerHelpers;
 import ruiseki.okcore.modcompat.IMCHandler;
 import ruiseki.okcore.modcompat.ModCompatLoader;
+import ruiseki.okcore.modcompat.capabilities.CapabilityConstructorRegistry;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.persist.world.WorldStorage;
 import ruiseki.okcore.proxy.ClientProxyComponent;
@@ -84,6 +85,7 @@ public abstract class ModBase {
     private final PacketHandler packetHandler;
     private final ModuleManager moduleManager;
     private final ModCompatLoader modCompatLoader;
+    private final CapabilityConstructorRegistry capabilityConstructorRegistry;
     private final IMCHandler imcHandler;
     private final Debug debug;
 
@@ -101,6 +103,7 @@ public abstract class ModBase {
         this.keyRegistry = new KeyRegistry();
         this.packetHandler = constructPacketHandler();
         this.modCompatLoader = constructModCompatLoader();
+        this.capabilityConstructorRegistry = constructCapabilityConstructorRegistry();
         this.imcHandler = constructIMCHandler();
         this.moduleManager = constructModuleManager();
         this.debug = new Debug(this);
@@ -132,6 +135,10 @@ public abstract class ModBase {
 
     protected ModCompatLoader constructModCompatLoader() {
         return new ModCompatLoader(this);
+    }
+
+    protected CapabilityConstructorRegistry constructCapabilityConstructorRegistry() {
+        return new CapabilityConstructorRegistry(this);
     }
 
     protected IMCHandler constructIMCHandler() {

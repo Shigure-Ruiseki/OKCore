@@ -14,6 +14,11 @@ public interface IRecipeType<T extends IRecipeOK<?>> {
         };
     }
 
+    public static <T extends IRecipeOK<?>> IRecipeType<T> register(String key) {
+        ResourceLocation location = new ResourceLocation(key);
+        return RecipeRegistry.registerType(location, simple(location));
+    }
+
     public static <S extends IRecipeType<T>, T extends IRecipeOK<?>> S register(String key, S type) {
         return RecipeRegistry.registerType(new ResourceLocation(key), type);
     }

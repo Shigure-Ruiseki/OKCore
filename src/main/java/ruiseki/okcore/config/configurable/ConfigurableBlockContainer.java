@@ -331,12 +331,12 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
         Vec3 vecStart = start.addVector(-pos.getX(), -pos.getY(), -pos.getZ());
         Vec3 vecEnd = end.addVector(-pos.getX(), -pos.getY(), -pos.getZ());
         MovingObjectPosition intercept = boundingBox.calculateIntercept(vecStart, vecEnd);
-        return new MovingObjectPosition(
+        return intercept != null ? new MovingObjectPosition(
             pos.getX(),
             pos.getY(),
             pos.getZ(),
             intercept.sideHit,
-            intercept.hitVec.addVector(pos.getX(), pos.getY(), pos.getZ()));
+            intercept.hitVec.addVector(pos.getX(), pos.getY(), pos.getZ())) : null;
     }
 
     @Override

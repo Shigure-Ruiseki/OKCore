@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
@@ -30,15 +31,14 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     }
 
     @Override
-    public List<Capability<?>> getSupportedCapabilities() {
+    public @NotNull List<Capability<?>> getSupportedCapabilities() {
         return Collections.singletonList(capability);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> LazyOptional<T> resolve(Capability<T> capability, @Nullable ForgeDirection side) {
+    public <T> @NotNull LazyOptional<T> resolve(@NotNull Capability<T> capability, @Nullable ForgeDirection side) {
         if (this.capability == capability) {
-            if (cachedOptional == null) {
+            if (!cachedOptional.isPresent()) {
                 ICapabilityProvider provider = constructor.createProvider(keyObject, valueObject);
                 if (provider != null) {
                     cachedOptional = provider.getCapability(capability, side);
@@ -46,7 +46,7 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
                     cachedOptional = LazyOptional.empty();
                 }
             }
-            return (LazyOptional<T>) cachedOptional;
+            return cachedOptional.cast();
         }
         return LazyOptional.empty();
     }

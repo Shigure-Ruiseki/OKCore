@@ -73,7 +73,7 @@ public interface IntegerProperty extends IProperty<Integer> {
      * @param maxMeta      Maximum allowed metadata value (typically between 1 and 15, default is 15)
      * @return A property backed by block metadata
      */
-    static AbstractIntegerProperty createMeta(String name, int defaultValue, int maxMeta) {
+    static MetaIntegerProperty createMeta(String name, int defaultValue, int maxMeta) {
         return new MetaIntegerProperty(name, defaultValue, maxMeta);
     }
 
@@ -85,7 +85,7 @@ public interface IntegerProperty extends IProperty<Integer> {
      * @param defaultValue The default value if metadata is out of bounds or invalid
      * @return A property backed by block metadata
      */
-    static AbstractIntegerProperty createMeta(String name, int defaultValue) {
+    static MetaIntegerProperty createMeta(String name, int defaultValue) {
         return createMeta(name, defaultValue, 15);
     }
 

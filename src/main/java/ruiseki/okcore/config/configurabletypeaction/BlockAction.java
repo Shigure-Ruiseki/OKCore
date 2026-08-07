@@ -1,7 +1,11 @@
 package ruiseki.okcore.config.configurabletypeaction;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.Configuration;
@@ -41,17 +45,28 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
     /**
      * Registers a block.
      *
-     * @param block          The block instance.
-     * @param itemBlockClass The optional item block class.
-     * @param name           The unique name for this block.
-     * @param creativeTabs   The creative tab this block will reside in.
+     * @param block        The block instance.
+     * @param itemclass    The optional item block class.
+     * @param name         The unique name for this block.
+     * @param creativeTabs The creative tab this block will reside in.
      */
-    public static void register(Block block, @Nullable Class<? extends ItemBlock> itemBlockClass, String name,
+    @SuppressWarnings("unchecked")
+    public static void register(Block block, @Nullable Class<? extends Item> itemclass, String name,
         @Nullable CreativeTabs creativeTabs) {
-        if (itemBlockClass == null) {
+        if (itemclass == null) {
             GameRegistry.registerBlock(block, name);
+        } else if (ItemBlock.class.isAssignableFrom(itemclass)) {
+            GameRegistry.registerBlock(block, (Class<? extends ItemBlock>) itemclass, name);
         } else {
-            GameRegistry.registerBlock(block, itemBlockClass, name);
+            GameRegistry.registerBlock(block, name);
+            try {
+                Constructor<? extends Item> itemConstructor = itemclass.getConstructor(Block.class);
+                Item item = itemConstructor.newInstance(block);
+                GameRegistry.registerItem(item, name);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
         }
 
         if (creativeTabs != null) {
@@ -61,7 +76,6 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
 
     @Override
     public void preRun(BlockConfig eConfig, Configuration config, boolean startup) {
-        // Get property in config file and set comment
         Property property = config.get(
             eConfig.getHolderType()
                 .getCategory(),
@@ -71,27 +85,22 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
         property.comment = eConfig.getComment();
 
         if (startup) {
-            // Update the ID, it could've changed
             eConfig.setEnabled(property.getBoolean(true));
         }
     }
 
     @Override
     public void postRun(BlockConfig eConfig, Configuration config) {
-        // Save the config inside the correct element
         eConfig.save();
 
         Block block = (Block) eConfig.getSubInstance();
 
-        // Register block and set creative tab.
         register(block, eConfig.getItemBlockClass(), eConfig.getSubUniqueName(), eConfig.getTargetTab());
 
-        // Also register tile entity
         GuiHandler.GuiType guiType = GuiHandler.GuiType.BLOCK;
         if (eConfig.getHolderType()
             .equals(ConfigurableType.BLOCKCONTAINER)) {
             ConfigurableBlockContainer container = (ConfigurableBlockContainer) block;
-            // This alternative registration is required to remain compatible with old worlds.
             GameRegistry.registerTileEntityWithAlternatives(
                 container.getTileEntity(),
                 eConfig.getMod()
@@ -101,8 +110,7 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
             guiType = GuiHandler.GuiType.TILE;
         }
 
-        // If the block has a GUI, go ahead and register that.
-        if (block instanceof IConfigurableBlock && ((IConfigurableBlock) block).hasGui()) {
+        if (block instanceof IConfigurableBlock configurableBlock && configurableBlock.hasGui()) {
             IGuiContainerProvider gui = (IGuiContainerProvider) block;
             eConfig.getMod()
                 .getGuiHandler()
@@ -113,10 +121,8 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
             provider.registerProperties();
         }
 
-        // Register optional ore dictionary ID
         if (eConfig.getOreDictionaryId() != null) {
-            OreDictionary.registerOre(eConfig.getOreDictionaryId(), new ItemStack((Block) eConfig.getSubInstance()));
+            OreDictionary.registerOre(eConfig.getOreDictionaryId(), new ItemStack(block));
         }
     }
-
 }

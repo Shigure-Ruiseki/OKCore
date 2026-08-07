@@ -91,28 +91,32 @@ public interface IntegerProperty extends IProperty<Integer> {
 
     class MetaIntegerProperty extends AbstractIntegerProperty {
 
-        private final int maxMeta;
+        private final int allowedValues;
 
-        public MetaIntegerProperty(String name, int defaultValue, int maxMeta) {
+        public MetaIntegerProperty(String name, int defaultValue, int allowedValues) {
             super(name, defaultValue);
-            this.maxMeta = maxMeta;
+            this.allowedValues = allowedValues;
+        }
+
+        public int getAllowedValues() {
+            return allowedValues;
         }
 
         @Override
         public Integer getValue(ItemStack stack) {
             int meta = stack.getItemDamage();
-            return meta <= maxMeta ? meta : getDefaultValue();
+            return meta <= allowedValues ? meta : getDefaultValue();
         }
 
         @Override
         public Integer getValue(IBlockAccess world, int x, int y, int z) {
             int meta = world.getBlockMetadata(x, y, z);
-            return meta <= maxMeta ? meta : getDefaultValue();
+            return meta <= allowedValues ? meta : getDefaultValue();
         }
 
         @Override
         public void setValue(World world, int x, int y, int z, Integer value) {
-            int meta = (value != null) ? Math.min(value, maxMeta) : getDefaultValue();
+            int meta = (value != null) ? Math.min(value, allowedValues) : getDefaultValue();
             world.setBlockMetadataWithNotify(x, y, z, meta, 3);
         }
     }

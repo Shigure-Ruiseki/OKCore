@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -73,7 +72,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
         NonNullList<ItemStack> output = NonNullList.create();
         if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
             itemStack.getItem()
-                .getSubItems(itemStack.getItem(), CreativeTabs.tabAllSearch, output);
+                .getSubItems(itemStack.getItem(), null, output);
         } else {
             output.add(itemStack);
         }

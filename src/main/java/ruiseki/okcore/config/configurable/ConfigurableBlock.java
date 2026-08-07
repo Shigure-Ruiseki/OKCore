@@ -4,12 +4,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 
 import lombok.experimental.Delegate;
+import ruiseki.okcore.block.IBlockTooltipProvider;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
-public class ConfigurableBlock extends Block implements IConfigurableBlock, IBlockPropertyProvider {
+public class ConfigurableBlock extends Block
+    implements IConfigurableBlock, IBlockPropertyProvider, IBlockTooltipProvider {
 
     @SuppressWarnings("rawtypes")
     protected BlockConfig eConfig = null;

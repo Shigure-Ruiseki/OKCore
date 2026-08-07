@@ -1,12 +1,14 @@
 package ruiseki.okcore.config.extendedconfig;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.item.Item;
 
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.item.ItemBlockOK;
+import ruiseki.okcore.item.ItemBlockMetadata;
 
 /**
  * Config for blocks.
@@ -49,8 +51,8 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
      *
      * @return the ItemBlock class to use for the target blockState.
      */
-    public Class<? extends ItemBlock> getItemBlockClass() {
-        return ItemBlockOK.class;
+    public Class<? extends Item> getItemBlockClass() {
+        return ItemBlockMetadata.class;
     }
 
     /**
@@ -78,6 +80,17 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
      */
     public Block getBlockInstance() {
         return (Block) super.getSubInstance();
+    }
+
+    /**
+     * Get the item corresponding to the block.
+     * Will return Items.AIR rather than null if there isn't one.
+     *
+     * @return The item.
+     */
+    @Nonnull
+    public Item getItemInstance() {
+        return Item.getItemFromBlock(getBlockInstance());
     }
 
     /**

@@ -31,6 +31,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
@@ -567,7 +568,8 @@ public abstract class NBTClassType<T> {
                 int dim = dimPos.getInteger("dim");
                 World world;
                 if (!MinecraftHelpers.isClientSide()) {
-                    if (MinecraftServer.getServer().worldServers.length >= dim) {
+                    if (dim >= FMLCommonHandler.instance()
+                        .getMinecraftServerInstance().worldServers.length) {
                         dim = 0;
                     }
                     world = MinecraftServer.getServer().worldServers[dim];
@@ -705,12 +707,7 @@ public abstract class NBTClassType<T> {
     }
 
     private static boolean isImplementsInterface(Class<?> clazz, Class<?> interfaceClazz) {
-        try {
-            clazz.asSubclass(interfaceClazz);
-        } catch (ClassCastException e) {
-            return false;
-        }
-        return true;
+        return interfaceClazz.isAssignableFrom(clazz);
     }
 
     private static NBTClassType getTypeSilent(Class<?> type) {
@@ -841,16 +838,18 @@ public abstract class NBTClassType<T> {
         Class<?> type = field.getType();
         String fieldName = field.getName();
 
-        // Make editable, will set back to the original at the end of this call.
+        // Make editable if it was not editable before.
         boolean wasAccessible = field.isAccessible();
-        try {
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            OKCore.okLog(Level.ERROR, e.getMessage());
+        if (!wasAccessible) {
+            try {
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            field.setAccessible(true);
         }
-        field.setAccessible(true);
 
         // Get a non-null action
         NBTClassType<?> action = getType(type, provider);
@@ -859,8 +858,6 @@ public abstract class NBTClassType<T> {
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Could not access field " + fieldName + " in " + provider.getClass());
         }
-
-        field.setAccessible(wasAccessible);
     }
 
     /**

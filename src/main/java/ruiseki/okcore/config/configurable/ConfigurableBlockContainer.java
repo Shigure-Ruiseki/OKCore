@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import lombok.experimental.Delegate;
+import ruiseki.okcore.block.IBlockTooltipProvider;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
@@ -31,7 +32,8 @@ import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class ConfigurableBlockContainer extends BlockContainer implements IConfigurableBlock, IBlockPropertyProvider {
+public class ConfigurableBlockContainer extends BlockContainer
+    implements IConfigurableBlock, IBlockPropertyProvider, IBlockTooltipProvider {
 
     @SuppressWarnings("rawtypes")
     protected BlockConfig eConfig = null;

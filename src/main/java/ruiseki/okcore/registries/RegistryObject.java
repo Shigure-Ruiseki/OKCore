@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.tag.ResourceKey;
 
+@Deprecated
 public final class RegistryObject<T> implements Supplier<T> {
 
     @Nullable

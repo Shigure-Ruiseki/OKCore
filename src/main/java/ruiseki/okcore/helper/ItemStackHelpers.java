@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -13,10 +14,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 import ruiseki.okcore.item.IItemSharedTag;
 import ruiseki.okcore.item.weighted.WeightedStackBase;
@@ -204,6 +208,76 @@ public class ItemStackHelpers {
             && ((a == null && b == null) || (a != null && a.stackSize == b.stackSize));
     }
 
+    /**
+     * Get a hash code that would satisfy the requirements of {@link Object#hashCode}
+     * if {@link ItemStack#areItemStacksEqual} stood in for {@link Object#equals}.
+     *
+     * @param stack The itemstack.
+     * @return The hash code.
+     */
+    public static int getItemStackHashCode(ItemStack stack) {
+        if (stack == null || stack.getItem() == null) {
+            return 0;
+        }
+        int result = 1;
+        result = 37 * result + stack.stackSize;
+        result = 37 * result + stack.getItem()
+            .hashCode();
+        result = 37 * result + stack.getItemDamage();
+
+        // Tags can be very large, and expensive to calculate, which is not needed for hashCodes.
+        // NBTTagCompound tagCompound = stack.getTagCompound();
+        // result = 37 * result + (tagCompound != null ? tagCompound.hashCode() : 0);
+        return result;
+    }
+
+    /**
+     * If the given item can be displayed in the given creative tab.
+     *
+     * @param item        The item.
+     * @param creativeTab The creative tab.
+     * @return If it can be displayed.
+     */
+    public static boolean isValidCreativeTab(Item item, @Nullable CreativeTabs creativeTab) {
+        for (CreativeTabs itemTab : item.getCreativeTabs()) {
+            if (itemTab == creativeTab) {
+                return true;
+            }
+        }
+        return creativeTab == null;
+    }
+
+    /**
+     * Get all subitems of an item.
+     * This is based on {@link Item#getSubItems(Item, CreativeTabs, List)}.
+     *
+     * @param itemStack The given item.
+     * @return The sub items.
+     */
+    public static List<ItemStack> getSubItems(ItemStack itemStack) {
+        NonNullList<ItemStack> subItems = NonNullList.create();
+        if (itemStack.getItem() == null) return subItems;
+        itemStack.getItem()
+            .getSubItems(itemStack.getItem(), null, subItems);
+        return subItems;
+    }
+
+    /**
+     * If the given stack has a wildcard meta value,
+     * return a list of all its subitems,
+     * otherwise return a list with as single element itself.
+     * 
+     * @param itemStack The given item.
+     * @return The sub items.
+     */
+    public static List<ItemStack> getSubItemsIfWildcardMeta(ItemStack itemStack) {
+        if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+            return getSubItems(itemStack);
+        } else {
+            return NonNullList.withSize(1, itemStack);
+        }
+    }
+
     public static void copyWSList(List<WeightedStackBase> dest, List<WeightedStackBase> src) {
         if (dest == null) {
             dest = new ArrayList<>();
@@ -341,28 +415,5 @@ public class ItemStackHelpers {
     public static int getSpace(ItemStack stack) {
         if (stack == null) return 64;
         return stack.getMaxStackSize() - stack.stackSize;
-    }
-
-    /**
-     * Get a hash code that would satisfy the requirements of {@link Object#hashCode}
-     * if {@link ItemStack#areItemStacksEqual} stood in for {@link Object#equals}.
-     *
-     * @param stack The itemstack.
-     * @return The hash code.
-     */
-    public static int getItemStackHashCode(ItemStack stack) {
-        if (stack == null || stack.getItem() == null) {
-            return 0;
-        }
-        int result = 1;
-        result = 37 * result + stack.stackSize;
-        result = 37 * result + stack.getItem()
-            .hashCode();
-        result = 37 * result + stack.getItemDamage();
-
-        // Tags can be very large, and expensive to calculate, which is not needed for hashCodes.
-        // NBTTagCompound tagCompound = stack.getTagCompound();
-        // result = 37 * result + (tagCompound != null ? tagCompound.hashCode() : 0);
-        return result;
     }
 }

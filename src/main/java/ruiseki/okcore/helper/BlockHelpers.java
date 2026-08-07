@@ -76,13 +76,12 @@ public class BlockHelpers {
      * @return If it can be displayed.
      */
     public static boolean isValidCreativeTab(Block block, @Nullable CreativeTabs creativeTab) {
-        return creativeTab == null || creativeTab == CreativeTabs.tabAllSearch
-            || block.getCreativeTabToDisplayOn() == creativeTab;
+        return creativeTab == null || block.getCreativeTabToDisplayOn() == creativeTab;
     }
 
     /**
      * Convert the given blockstate to a pair of blockname string and meta value.
-     * 
+     *
      * @param blockState The blockstate to serialize.
      * @return The pair of the blockname and meta value.
      */
@@ -95,7 +94,7 @@ public class BlockHelpers {
 
     /**
      * Convert the given serialized blockstate to a blockstate instance.
-     * 
+     *
      * @param serializedBlockState The pair of the blockname and meta value.
      * @return The resulting blockstate. Can be null if the referred block does not exist.
      */
@@ -111,7 +110,7 @@ public class BlockHelpers {
 
     /**
      * Get the blockstate from the given stack
-     * 
+     *
      * @param stack The stack
      * @return The blockstate
      */
@@ -121,7 +120,7 @@ public class BlockHelpers {
 
     /**
      * Get the itemstack from the given blockstate
-     * 
+     *
      * @param blockState The blockstate
      * @return The itemstack
      */

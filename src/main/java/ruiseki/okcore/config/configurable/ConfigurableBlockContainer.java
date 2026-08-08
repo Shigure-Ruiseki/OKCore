@@ -241,7 +241,7 @@ public class ConfigurableBlockContainer extends BlockContainer
     }
 
     @Override
-    public final ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
+    public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
         ArrayList<ItemStack> drops = new ArrayList<>();
 
         Item item = getItemDropped(meta, world.rand, fortune);

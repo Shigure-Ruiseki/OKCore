@@ -22,6 +22,10 @@ import ruiseki.okcore.network.PacketCodec;
 public class ValueNotifyPacket extends PacketCodec {
 
     @CodecField
+    private String guiModId;
+    @CodecField
+    private int guiId;
+    @CodecField
     private int valueId;
     @CodecField
     private NBTTagCompound value;
@@ -30,7 +34,9 @@ public class ValueNotifyPacket extends PacketCodec {
 
     }
 
-    public ValueNotifyPacket(int valueId, NBTTagCompound value) {
+    public ValueNotifyPacket(String guiModId, int guiId, int valueId, NBTTagCompound value) {
+        this.guiModId = guiModId;
+        this.guiId = guiId;
         this.valueId = valueId;
         this.value = value;
     }
@@ -40,18 +46,29 @@ public class ValueNotifyPacket extends PacketCodec {
         return false;
     }
 
+    protected boolean isContainerValid(IValueNotifiable container) {
+        return container.getGuiId() == guiId && container.getGuiModId()
+            .equals(guiModId);
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
         if (player.openContainer instanceof IValueNotifiable) {
-            ((IValueNotifiable) player.openContainer).onUpdate(valueId, value);
+            IValueNotifiable container = ((IValueNotifiable) player.openContainer);
+            if (isContainerValid(container)) {
+                container.onUpdate(valueId, value);
+            }
         }
     }
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
         if (player.openContainer instanceof IValueNotifiable) {
-            ((IValueNotifiable) player.openContainer).onUpdate(valueId, value);
+            IValueNotifiable container = ((IValueNotifiable) player.openContainer);
+            if (isContainerValid(container)) {
+                container.onUpdate(valueId, value);
+            }
         }
     }
 

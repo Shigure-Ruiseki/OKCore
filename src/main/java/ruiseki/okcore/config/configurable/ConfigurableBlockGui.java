@@ -48,7 +48,7 @@ public abstract class ConfigurableBlockGui extends ConfigurableBlock
     }
 
     @Override
-    public ModBase getMod() {
+    public ModBase getModGui() {
         return getConfig().getMod();
     }
 

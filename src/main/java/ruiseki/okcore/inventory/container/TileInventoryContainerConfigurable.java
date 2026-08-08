@@ -8,7 +8,7 @@ import ruiseki.okcore.tileentity.InventoryTileEntity;
 
 /**
  * A container for a tile entity with inventory.
- *
+ * 
  * @author rubensworks
  *
  * @param <T> The type of tile.
@@ -19,7 +19,7 @@ public class TileInventoryContainerConfigurable<T extends InventoryTileEntity> e
 
     /**
      * Make a new TileInventoryContainer.
-     *
+     * 
      * @param inventory The player inventory.
      * @param tile      The TileEntity for this container.
      */
@@ -45,4 +45,14 @@ public class TileInventoryContainerConfigurable<T extends InventoryTileEntity> e
         return getTile().getSizeInventory();
     }
 
+    @Override
+    public String getGuiModId() {
+        return getGuiProvider().getModGui()
+            .getModId();
+    }
+
+    @Override
+    public int getGuiId() {
+        return getGuiProvider().getGuiID();
+    }
 }

@@ -27,7 +27,7 @@ public abstract class GuiContainerConfigurable<C extends InventoryContainerConfi
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
-            .getMod()
+            .getModGui()
             .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
             + getContainer().getGuiProvider()
                 .getConfig()

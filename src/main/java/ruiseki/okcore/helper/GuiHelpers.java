@@ -29,7 +29,6 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
@@ -40,15 +39,8 @@ import org.lwjgl.opengl.GL11;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.event.gui.RenderTooltipEvent;
-import ruiseki.okcore.event.guide.BookEvent;
-import ruiseki.okcore.guide.gui.GuiEntry;
-import ruiseki.okcore.guide.impl.Book;
-import ruiseki.okcore.guide.impl.abstraction.CategoryAbstract;
-import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
 
 public class GuiHelpers {
 
@@ -264,18 +256,6 @@ public class GuiHelpers {
         }
 
         return list;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static void openBookClient(Book book, CategoryAbstract category, EntryAbstract entryAbstract,
-        EntityPlayer player) {
-        BookEvent.Open event = new BookEvent.Open(book, player);
-        if (MinecraftForge.EVENT_BUS.post(event)) {
-            player.addChatComponentMessage(event.getCanceledText());
-            return;
-        }
-        Minecraft.getMinecraft()
-            .displayGuiScreen(new GuiEntry(book, category, entryAbstract, player));
     }
 
     @Nonnull

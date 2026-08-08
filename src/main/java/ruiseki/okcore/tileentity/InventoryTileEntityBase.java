@@ -129,15 +129,15 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
     }
 
     @Override
-    public void readCommon(NBTTagCompound tag) {
-        super.readCommon(tag);
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
         INBTInventory inventory = getInventory();
         inventory.readFromNBT(tag);
     }
 
     @Override
-    public void writeCommon(NBTTagCompound tag) {
-        super.writeCommon(tag);
+    public void writeToNBT(NBTTagCompound tag) {
+        super.writeToNBT(tag);
         INBTInventory inventory = getInventory();
         inventory.writeToNBT(tag);
     }

@@ -20,7 +20,7 @@ public class DimPos implements Comparable<DimPos> {
 
     private final int dimensionId;
     private final BlockPos blockPos;
-    private WeakReference<World> worldReference;
+    private @Nullable WeakReference<World> worldReference;
 
     private DimPos(int dimensionId, BlockPos blockPos, @Nullable World world) {
         this.dimensionId = dimensionId;
@@ -48,7 +48,7 @@ public class DimPos implements Comparable<DimPos> {
     public World getWorld() {
         if (worldReference != null) {
             World world = worldReference.get();
-            if (world != null) {
+            if (world != null && world.provider.dimensionId == dimensionId) {
                 return world;
             }
         }
@@ -56,6 +56,8 @@ public class DimPos implements Comparable<DimPos> {
         World world = DimensionManager.getWorld(dimensionId);
         if (world != null) {
             worldReference = new WeakReference<>(world);
+        } else {
+            worldReference = null;
         }
         return world;
     }
@@ -76,8 +78,8 @@ public class DimPos implements Comparable<DimPos> {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof DimPos)) return false;
-        return compareTo((DimPos) obj) == 0;
+        if (!(obj instanceof DimPos other)) return false;
+        return this.dimensionId == other.dimensionId && this.blockPos.equals(other.blockPos);
     }
 
     @Override

@@ -79,8 +79,6 @@ public class ParticleBlur extends EntityFX {
 
         particleScale = originalScale * agescale;
 
-        tessellator.draw();
-
         GL11.glPushMatrix();
         GL11.glDepthMask(false);
         GL11.glEnable(GL11.GL_BLEND);
@@ -129,9 +127,6 @@ public class ParticleBlur extends EntityFX {
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glDepthMask(true);
         GL11.glPopMatrix();
-
-        Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation("textures/particle/particles.png"));
-        tessellator.startDrawingQuads();
     }
 
     @Override
@@ -156,7 +151,7 @@ public class ParticleBlur extends EntityFX {
 
     /**
      * Set the gravity for this particle.
-     * 
+     *
      * @param particleGravity The new gravity
      */
     public void setGravity(float particleGravity) {

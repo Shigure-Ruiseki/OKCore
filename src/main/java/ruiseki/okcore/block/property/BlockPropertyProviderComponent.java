@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.item.Item;
 
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
@@ -64,6 +65,10 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
     }
 
     private void register(IProperty<?> property) {
-        BlockPropertyRegistry.registerBlockItemProperty(block, property);
+        BlockPropertyRegistry.registerProperty(block, property);
+        Item item = Item.getItemFromBlock(block);
+        if (item != null) {
+            BlockPropertyRegistry.registerProperty(item, property);
+        }
     }
 }

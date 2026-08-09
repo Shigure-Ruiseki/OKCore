@@ -54,11 +54,11 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
     public static void register(Block block, @Nullable Class<? extends Item> itemclass, String name,
         @Nullable CreativeTabs creativeTabs) {
         if (itemclass == null) {
-            GameRegistry.registerBlock(block, name);
+            GameRegistry.registerBlock(block, null, name);
         } else if (ItemBlock.class.isAssignableFrom(itemclass)) {
             GameRegistry.registerBlock(block, (Class<? extends ItemBlock>) itemclass, name);
         } else {
-            GameRegistry.registerBlock(block, name);
+            GameRegistry.registerBlock(block, null, name);
             try {
                 Constructor<? extends Item> itemConstructor = itemclass.getConstructor(Block.class);
                 Item item = itemConstructor.newInstance(block);

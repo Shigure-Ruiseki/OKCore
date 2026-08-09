@@ -1,15 +1,17 @@
 package ruiseki.okcore.client.particle;
 
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+
 import org.lwjgl.opengl.GL11;
+
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.Reference;
 
 /**
@@ -19,15 +21,15 @@ import ruiseki.okcore.Reference;
 public class ParticleBlur extends EntityFX {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(
-        Reference.MOD_ID, Reference.TEXTURE_PATH_PARTICLES + "particle_blur.png");
+        Reference.MOD_ID,
+        Reference.TEXTURE_PATH_PARTICLES + "particle_blur.png");
     private static final int MAX_VIEW_DISTANCE = 30;
 
     private int scaleLife;
     private float originalScale;
 
-    public ParticleBlur(World world, double x, double y, double z, float scale,
-                        double motionX, double motionY, double motionZ,
-                        float red, float green, float blue, float ageMultiplier) {
+    public ParticleBlur(World world, double x, double y, double z, float scale, double motionX, double motionY,
+        double motionZ, float red, float green, float blue, float ageMultiplier) {
         super(world, x, y, z, 0, 0, 0);
         this.motionX = motionX;
         this.motionY = motionY;
@@ -53,10 +55,12 @@ public class ParticleBlur extends EntityFX {
     }
 
     private void validateDistance() {
-        EntityLivingBase renderentity = FMLClientHandler.instance().getClient().thePlayer;
+        EntityLivingBase renderentity = FMLClientHandler.instance()
+            .getClient().thePlayer;
         int visibleDistance = MAX_VIEW_DISTANCE;
 
-        if (!FMLClientHandler.instance().getClient().gameSettings.fancyGraphics) {
+        if (!FMLClientHandler.instance()
+            .getClient().gameSettings.fancyGraphics) {
             visibleDistance = visibleDistance / 2;
         }
 
@@ -66,7 +70,8 @@ public class ParticleBlur extends EntityFX {
     }
 
     @Override
-    public void renderParticle(Tessellator tessellator, float partialTicks, float rotationX, float rotationXZ, float rotationZ, float rotationYZ, float rotationXY) {
+    public void renderParticle(Tessellator tessellator, float partialTicks, float rotationX, float rotationXZ,
+        float rotationZ, float rotationYZ, float rotationXY) {
         float agescale = (float) particleAge / (float) scaleLife;
         if (agescale > 1F) {
             agescale = 2 - agescale;
@@ -94,10 +99,30 @@ public class ParticleBlur extends EntityFX {
         tessellator.setBrightness(getBrightnessForRender(partialTicks));
         tessellator.setColorRGBA_F(particleRed, particleGreen, particleBlue, 0.9F);
 
-        tessellator.addVertexWithUV(f11 - rotationX * f10 - rotationYZ * f10, f12 - rotationXZ * f10, f13 - rotationZ * f10 - rotationXY * f10, 0, 1);
-        tessellator.addVertexWithUV(f11 - rotationX * f10 + rotationYZ * f10, f12 + rotationXZ * f10, f13 - rotationZ * f10 + rotationXY * f10, 1, 1);
-        tessellator.addVertexWithUV(f11 + rotationX * f10 + rotationYZ * f10, f12 + rotationXZ * f10, f13 + rotationZ * f10 + rotationXY * f10, 1, 0);
-        tessellator.addVertexWithUV(f11 + rotationX * f10 - rotationYZ * f10, f12 - rotationXZ * f10, f13 + rotationZ * f10 - rotationXY * f10, 0, 0);
+        tessellator.addVertexWithUV(
+            f11 - rotationX * f10 - rotationYZ * f10,
+            f12 - rotationXZ * f10,
+            f13 - rotationZ * f10 - rotationXY * f10,
+            0,
+            1);
+        tessellator.addVertexWithUV(
+            f11 - rotationX * f10 + rotationYZ * f10,
+            f12 + rotationXZ * f10,
+            f13 - rotationZ * f10 + rotationXY * f10,
+            1,
+            1);
+        tessellator.addVertexWithUV(
+            f11 + rotationX * f10 + rotationYZ * f10,
+            f12 + rotationXZ * f10,
+            f13 + rotationZ * f10 + rotationXY * f10,
+            1,
+            0);
+        tessellator.addVertexWithUV(
+            f11 + rotationX * f10 - rotationYZ * f10,
+            f12 - rotationXZ * f10,
+            f13 + rotationZ * f10 - rotationXY * f10,
+            0,
+            0);
 
         tessellator.draw();
 
@@ -131,6 +156,7 @@ public class ParticleBlur extends EntityFX {
 
     /**
      * Set the gravity for this particle.
+     * 
      * @param particleGravity The new gravity
      */
     public void setGravity(float particleGravity) {

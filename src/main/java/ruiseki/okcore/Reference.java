@@ -35,6 +35,7 @@ public class Reference {
     public static final String PREFIX_GUI = PREFIX_MOD + "textures/gui/";
     public static final String PREFIX_BLOCK = PREFIX_MOD + "textures/blocks/";
     public static final String PREFIX_ITEM = PREFIX_MOD + "textures/items/";
+    public static final String TEXTURE_PATH_PARTICLES = "textures/particles/";
     public static final String PREFIX_MODEL = PREFIX_MOD + "models/";
     public static final String GUI_NEI_BLANK = PREFIX_GUI + "nei/neiBlank.png";
     public static final String GUI_SLOT = PREFIX_GUI + "nei/slot.png";

@@ -1,10 +1,10 @@
 package ruiseki.okcore.ingredient.collection.diff;
 
+import java.util.Iterator;
+
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
-
-import java.util.Iterator;
 
 /**
  * Observes an {@link IIngredientCollection} to calculate diffs
@@ -36,7 +36,8 @@ public class IngredientCollectionDiffManager<T, M> {
      */
     public IngredientCollectionDiff<T, M> onChange(Iterator<T> newInstances) {
         IngredientCollectionPrototypeMap<T, M> newInstancesCache = new IngredientCollectionPrototypeMap<>(
-            ingredientComponent, true);
+            ingredientComponent,
+            true);
         IngredientCollectionDiff<T, M> diff = IngredientCollectionDiffHelpers
             .getDiff(ingredientComponent, instancesCache, newInstancesCache, newInstances);
         this.instancesCache = newInstancesCache;

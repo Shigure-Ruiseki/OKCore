@@ -1,10 +1,12 @@
 package ruiseki.okcore.ingredient.collection.diff;
 
 import org.jetbrains.annotations.Nullable;
+
 import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 
 /**
  * Data class for a collection of additions and deletions.
+ * 
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  */
@@ -17,7 +19,7 @@ public class IngredientCollectionDiff<T, M> {
     private final boolean completelyEmpty;
 
     public IngredientCollectionDiff(@Nullable IIngredientCollection<T, M> additions,
-                                    @Nullable IIngredientCollection<T, M> deletions, boolean completelyEmpty) {
+        @Nullable IIngredientCollection<T, M> deletions, boolean completelyEmpty) {
         this.additions = additions;
         this.deletions = deletions;
         this.completelyEmpty = completelyEmpty;

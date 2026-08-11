@@ -1,6 +1,10 @@
 package ruiseki.okcore.ingredient.collection.diff;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.jetbrains.annotations.Nullable;
+
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.okcore.ingredient.collection.IIngredientCollapsedCollectionMutable;
@@ -8,11 +12,9 @@ import ruiseki.okcore.ingredient.collection.IIngredientCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
 import ruiseki.okcore.ingredient.collection.IngredientLinkedList;
 
-import java.util.Iterator;
-import java.util.Map;
-
 /**
  * Helper methods for ingredient collection diffs.
+ * 
  * @see IngredientCollectionDiffManager
  * @author rubensworks
  */
@@ -24,21 +26,20 @@ public class IngredientCollectionDiffHelpers {
      * Additionally, this will populate <var>newInstancesCache</var>
      * with all instances from <var>newInstances</var>.
      *
-     * @param ingredientComponent   The ingredient component type.
-     * @param oldInstancesCache     The collection of instances to take the difference from.
-     * @param newInstancesCache     An empty collection to store our new instances from <var>newInstances</var>.
-     *                              This should be used as <var>oldInstancesCache</var> parameter on the next call.
-     *                              This map MUST accept negative instances.
-     *                              of this method.
-     * @param newInstances          The new instances to calculate the difference with.
-     * @param <T>                   The instance type.
-     * @param <M>                   The matching condition parameter.
+     * @param ingredientComponent The ingredient component type.
+     * @param oldInstancesCache   The collection of instances to take the difference from.
+     * @param newInstancesCache   An empty collection to store our new instances from <var>newInstances</var>.
+     *                            This should be used as <var>oldInstancesCache</var> parameter on the next call.
+     *                            This map MUST accept negative instances.
+     *                            of this method.
+     * @param newInstances        The new instances to calculate the difference with.
+     * @param <T>                 The instance type.
+     * @param <M>                 The matching condition parameter.
      * @return The resulting diff between <var>oldInstancesCache</var> and <var>newInstances</var>.
      */
     public static <T, M> IngredientCollectionDiff<T, M> getDiff(IngredientComponent<T, M> ingredientComponent,
-                                                                @Nullable IngredientCollectionPrototypeMap<T, M> oldInstancesCache,
-                                                                IngredientCollectionPrototypeMap<T, M> newInstancesCache,
-                                                                Iterator<T> newInstances) {
+        @Nullable IngredientCollectionPrototypeMap<T, M> oldInstancesCache,
+        IngredientCollectionPrototypeMap<T, M> newInstancesCache, Iterator<T> newInstances) {
         // Remove new instances from last instance collection
         // In the meantime, also construct the instance collection for next iteration
         IIngredientMatcher<T, M> matcher = ingredientComponent.getMatcher();
@@ -63,9 +64,13 @@ public class IngredientCollectionDiffHelpers {
                 Map.Entry<T, Long> entry = quantitativeIterator.next();
                 long count = entry.getValue() == null ? 0 : entry.getValue();
                 if (count < 0) {
-                    additions.add(ingredientComponent.getMatcher().withQuantity(entry.getKey(), -count));
+                    additions.add(
+                        ingredientComponent.getMatcher()
+                            .withQuantity(entry.getKey(), -count));
                 } else if (count > 0) {
-                    deletions.add(ingredientComponent.getMatcher().withQuantity(entry.getKey(), count));
+                    deletions.add(
+                        ingredientComponent.getMatcher()
+                            .withQuantity(entry.getKey(), count));
                 }
             }
         } else {
@@ -77,15 +82,15 @@ public class IngredientCollectionDiffHelpers {
 
     /**
      * Apply the given diff to the given collection.
-     * @param ingredientComponent   The ingredient component type.
-     * @param diff                  The diff to apply.
-     * @param collection            The collection to apply the diff to.
-     * @param <T>                   The instance type.
-     * @param <M>                   The matching condition parameter.
+     * 
+     * @param ingredientComponent The ingredient component type.
+     * @param diff                The diff to apply.
+     * @param collection          The collection to apply the diff to.
+     * @param <T>                 The instance type.
+     * @param <M>                 The matching condition parameter.
      */
     public static <T, M> void applyDiff(IngredientComponent<T, M> ingredientComponent,
-                                        IngredientCollectionDiff<T, M> diff,
-                                        IIngredientCollectionMutable<T, M> collection) {
+        IngredientCollectionDiff<T, M> diff, IIngredientCollectionMutable<T, M> collection) {
         boolean applyDirectly = collection instanceof IIngredientCollapsedCollectionMutable;
         IIngredientCollapsedCollectionMutable<T, M> prototypedIngredients;
 
@@ -101,7 +106,7 @@ public class IngredientCollectionDiffHelpers {
         if (diff.hasAdditions()) {
             prototypedIngredients.addAll(diff.getAdditions());
         }
-        if (diff.hasDeletions()){
+        if (diff.hasDeletions()) {
             prototypedIngredients.removeAll(diff.getDeletions());
         }
 

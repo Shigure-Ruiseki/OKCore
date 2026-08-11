@@ -440,13 +440,13 @@ public class GuiHelpers {
                 backgroundColor,
                 zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 3,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
                 tooltipX - 4,
                 tooltipY - 3,
@@ -456,13 +456,13 @@ public class GuiHelpers {
                 backgroundColor,
                 zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY - 3,
                 tooltipX + tooltipTextWidth + 4,
                 tooltipY + tooltipHeight + 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
                 tooltipX - 3,
                 tooltipY - 3 + 1,

@@ -28,8 +28,8 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
         this.arrows = arrows;
 
         if (this.arrows) {
-            arrowLeft = new GuiButtonArrow(0, x, y, GuiButtonArrow.Direction.WEST);
-            arrowRight = new GuiButtonArrow(1, x + width, y, GuiButtonArrow.Direction.EAST);
+            arrowLeft = new GuiButtonArrow(0, x, y - 1, GuiButtonArrow.Direction.WEST);
+            arrowRight = new GuiButtonArrow(1, x + width, y - 1, GuiButtonArrow.Direction.EAST);
             arrowRight.xPosition -= arrowRight.width;
         }
         setEnableBackgroundDrawing(true);
@@ -52,9 +52,22 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
             setText("");
         } else {
             this.activeElement = index;
-            setText(getActiveElement().toString());
+            setText(activeElementToString(getActiveElement()));
         }
         if (listener != null) listener.onChanged();
+    }
+
+    public boolean setActiveElement(E element) {
+        int index = this.elements.indexOf(element);
+        if (index < 0) {
+            return false;
+        }
+        setActiveElement(index);
+        return true;
+    }
+
+    protected String activeElementToString(E element) {
+        return element.toString();
     }
 
     public E getActiveElement() throws NumberFormatException {
@@ -71,12 +84,12 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
             arrowLeft.drawButton(minecraft, mouseX, mouseY);
             arrowRight.drawButton(minecraft, mouseX, mouseY);
             offsetX = arrowLeft.width;
-            xPosition += offsetX;
+            xPosition += offsetX + 1;
             width -= offsetX * 2;
         }
         super.drawTextBox(minecraft, mouseX, mouseY);
         if (arrows) {
-            xPosition -= offsetX;
+            xPosition -= offsetX + 1;
             width += offsetX * 2;
         }
     }

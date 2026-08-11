@@ -15,6 +15,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -25,7 +27,10 @@ import org.jetbrains.annotations.Nullable;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.LoaderState;
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.init.ModBase;
 
 public class Helpers {
@@ -217,7 +222,7 @@ public class Helpers {
 
     /**
      * Take the sum of these two values capped at {@link Integer#MAX_VALUE}.
-     * 
+     *
      * @param a Integer
      * @param b Integer
      * @return The safe sum.
@@ -232,7 +237,7 @@ public class Helpers {
      * Cast a long value safely to an int.
      * If the casting would result in an overflow,
      * return the {@link Integer#MAX_VALUE}.
-     * 
+     *
      * @param value A value to cast.
      * @return The casted value.
      */
@@ -251,5 +256,26 @@ public class Helpers {
         return Loader.instance()
             .getLoaderState()
             .ordinal() > LoaderState.POSTINITIALIZATION.ordinal();
+    }
+
+    /**
+     * Safely get a capability from a tile or block.
+     * The capability of the tile will be checked first,
+     * only if it was not found, the block will be checked.
+     * 
+     * @param world      The world.
+     * @param pos        The position of the tile or block providing the capability.
+     * @param side       The side to get the capability from.
+     * @param capability The capability.
+     * @param <C>        The capability instance.
+     * @return The capability or null.
+     */
+    public static <C> LazyOptional<C> getTileOrBlockCapability(IBlockAccess world, BlockPos pos,
+        Capability<C> capability, ForgeDirection side) {
+        LazyOptional<C> instance = CapabilityHelpers.getCapability(world, pos, capability, side);
+        if (instance.isPresent()) {
+            return BlockHelpers.getCapability(world, pos, capability, side);
+        }
+        return instance;
     }
 }

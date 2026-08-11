@@ -9,13 +9,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import ruiseki.commoncapabilities.api.capability.block.BlockCapabilities;
+import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * Contains helper methods for various block specific things.
@@ -127,5 +132,80 @@ public class BlockHelpers {
         if (item == null) return null;
         int meta = blockState.getBlockMeta(0);
         return new ItemStack(item, 1, meta);
+    }
+
+    /**
+     * Safely get a capability from a block.
+     * 
+     * @param dimPos     The dimensional position of the block.
+     * @param capability The capability.
+     * @param <C>        The capability instance.
+     * @return The capability or null.
+     */
+    public static <C> LazyOptional<C> getCapability(DimPos dimPos, Capability<C> capability) {
+        World world = dimPos.getWorld();
+        return getCapability(world, dimPos.getBlockPos(), capability, null);
+    }
+
+    /**
+     * Safely get a capability from a block.
+     * 
+     * @param dimPos     The dimensional position of the block.
+     * @param capability The capability.
+     * @param side       The side to get the capability from.
+     * @param <C>        The capability instance.
+     * @return The capability or null.
+     */
+    public static <C> LazyOptional<C> getCapability(DimPos dimPos, Capability<C> capability, ForgeDirection side) {
+        World world = dimPos.getWorld();
+        if (world == null) {
+            return null;
+        }
+        return getCapability(world, dimPos.getBlockPos(), capability, side);
+    }
+
+    /**
+     * Safely get a capability from a block.
+     * 
+     * @param world      The world.
+     * @param pos        The position of the block providing the capability.
+     * @param side       The side to get the capability from.
+     * @param capability The capability.
+     * @param <C>        The capability instance.
+     * @return The capability or null.
+     */
+    public static <C> LazyOptional<C> getCapability(World world, BlockPos pos, Capability<C> capability,
+        ForgeDirection side) {
+        return getCapability((IBlockAccess) world, pos, capability, side);
+    }
+
+    /**
+     * Safely get a capability from a block.
+     * 
+     * @param world      The world.
+     * @param pos        The position of the block providing the capability.
+     * @param capability The capability.
+     * @param <C>        The capability instance.
+     * @return The capability or null.
+     */
+    public static <C> LazyOptional<C> getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability) {
+        return getCapability(world, pos, capability, null);
+    }
+
+    /**
+     * Safely get a capability from a block.
+     * 
+     * @param world      The world.
+     * @param pos        The position of the block providing the capability.
+     * @param side       The side to get the capability from.
+     * @param capability The capability.
+     * @param <C>        The capability instance.
+     * @return The capability or null.
+     */
+    public static <C> LazyOptional<C> getCapability(IBlockAccess world, BlockPos pos, Capability<C> capability,
+        ForgeDirection side) {
+        BlockState blockState = BlockStateHelpers.getState(world, pos);
+        return BlockCapabilities.getInstance()
+            .getCapability(blockState, capability, world, pos, side);
     }
 }

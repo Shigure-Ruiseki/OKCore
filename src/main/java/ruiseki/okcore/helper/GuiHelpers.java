@@ -20,6 +20,8 @@ import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
@@ -422,21 +424,21 @@ public class GuiHelpers {
             borderColorStart = colorEvent.getBorderStart();
             borderColorEnd = colorEvent.getBorderEnd();
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 4,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY - 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY + tooltipHeight + 3,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 4,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
                 zLevel,
                 tooltipX - 3,
@@ -446,13 +448,13 @@ public class GuiHelpers {
                 backgroundColor,
                 backgroundColor);
             drawGradientRect(
-                zLevel,
                 tooltipX - 4,
                 tooltipY - 3,
                 tooltipX - 3,
                 tooltipY + tooltipHeight + 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
                 zLevel,
                 tooltipX + tooltipTextWidth + 3,
@@ -462,37 +464,37 @@ public class GuiHelpers {
                 backgroundColor,
                 backgroundColor);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 3 + 1,
                 tooltipX - 3 + 1,
                 tooltipY + tooltipHeight + 3 - 1,
                 borderColorStart,
-                borderColorEnd);
+                borderColorEnd,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX + tooltipTextWidth + 2,
                 tooltipY - 3 + 1,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 3 - 1,
                 borderColorStart,
-                borderColorEnd);
+                borderColorEnd,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 3,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY - 3 + 1,
                 borderColorStart,
-                borderColorStart);
+                borderColorStart,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY + tooltipHeight + 2,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 3,
                 borderColorEnd,
-                borderColorEnd);
+                borderColorEnd,
+                zLevel);
 
             MinecraftForge.EVENT_BUS.post(
                 new RenderTooltipEvent.PostBackground(
@@ -533,8 +535,8 @@ public class GuiHelpers {
         }
     }
 
-    public static void drawGradientRect(int zLevel, int left, int top, int right, int bottom, int startColor,
-        int endColor) {
+    public static void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor,
+        int zLevel) {
         float startAlpha = (float) (startColor >> 24 & 255) / 255.0F;
         float startRed = (float) (startColor >> 16 & 255) / 255.0F;
         float startGreen = (float) (startColor >> 8 & 255) / 255.0F;
@@ -598,7 +600,7 @@ public class GuiHelpers {
 
     /**
      * Draw a tooltip.
-     * 
+     *
      * @param gui   The gui to draw in.
      * @param lines A list of lines.
      * @param x     Tooltip X.
@@ -648,60 +650,60 @@ public class GuiHelpers {
         render.zLevel = 300.0F;
 
         int color1 = 0xF0100010; // -267386864 in HEX
-        drawGradientRect(zLevel, xStart - 3, yStart - 4, xStart + tooltipWidth + 3, yStart - 3, color1, color1);
+        drawGradientRect(xStart - 3, yStart - 4, xStart + tooltipWidth + 3, yStart - 3, color1, color1, zLevel);
         drawGradientRect(
-            zLevel,
             xStart - 3,
             yStart + tooltipHeight + 3,
             xStart + tooltipWidth + 3,
             yStart + tooltipHeight + 4,
             color1,
-            color1);
+            color1,
+            zLevel);
         drawGradientRect(
-            zLevel,
             xStart - 3,
             yStart - 3,
             xStart + tooltipWidth + 3,
             yStart + tooltipHeight + 3,
             color1,
-            color1);
-        drawGradientRect(zLevel, xStart - 4, yStart - 3, xStart - 3, yStart + tooltipHeight + 3, color1, color1);
+            color1,
+            zLevel);
+        drawGradientRect(xStart - 4, yStart - 3, xStart - 3, yStart + tooltipHeight + 3, color1, color1, zLevel);
         drawGradientRect(
-            zLevel,
             xStart + tooltipWidth + 3,
             yStart - 3,
             xStart + tooltipWidth + 4,
             yStart + tooltipHeight + 3,
             color1,
-            color1);
+            color1,
+            zLevel);
 
         int color2 = 0x505000FF; // 1347420415 in HEX
         int color3 = (color2 & 0xFEFEFE) >> 1 | color2 & 0xFF000000;
         drawGradientRect(
-            zLevel,
             xStart - 3,
             yStart - 3 + 1,
             xStart - 3 + 1,
             yStart + tooltipHeight + 3 - 1,
             color2,
-            color3);
+            color3,
+            zLevel);
         drawGradientRect(
-            zLevel,
             xStart + tooltipWidth + 2,
             yStart - 3 + 1,
             xStart + tooltipWidth + 3,
             yStart + tooltipHeight + 3 - 1,
             color2,
-            color3);
-        drawGradientRect(zLevel, xStart - 3, yStart - 3, xStart + tooltipWidth + 3, yStart - 3 + 1, color2, color2);
+            color3,
+            zLevel);
+        drawGradientRect(xStart - 3, yStart - 3, xStart + tooltipWidth + 3, yStart - 3 + 1, color2, color2, zLevel);
         drawGradientRect(
-            zLevel,
             xStart - 3,
             yStart + tooltipHeight + 2,
             xStart + tooltipWidth + 3,
             yStart + tooltipHeight + 3,
             color3,
-            color3);
+            color3,
+            zLevel);
 
         for (int stringIndex = 0; stringIndex < lines.size(); ++stringIndex) {
             String line = lines.get(stringIndex);
@@ -725,5 +727,46 @@ public class GuiHelpers {
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
         render.zLevel = 0.0F;
+    }
+
+    /**
+     * Render a tooltip if the mouse if in the bounding box defined by the given position, width and height.
+     * The tooltip lines supplier can return an optional list.
+     *
+     * @param gui           The gui to render in.
+     * @param x             The gui x position, excluding gui left.
+     * @param y             The gui y position, excluding gui top.
+     * @param width         The area width.
+     * @param height        The area height.
+     * @param mouseX        The mouse x position.
+     * @param mouseY        The mouse y position.
+     * @param linesSupplier A supplier for the optional tooltip lines to render.
+     *                      No tooltip will be rendered when the optional value is absent.
+     *                      This will only be called when needed.
+     */
+    public static void renderTooltipOptional(GuiContainer gui, int x, int y, int width, int height, int mouseX,
+        int mouseY, Supplier<Optional<List<String>>> linesSupplier) {
+        if (RenderHelpers.isPointInRegion(x, y, width, height, mouseX - gui.guiLeft, mouseY - gui.guiTop)) {
+            linesSupplier.get()
+                .ifPresent(lines -> drawTooltip(gui, lines, mouseX - gui.guiLeft, mouseY - gui.guiTop));
+        }
+    }
+
+    /**
+     * Render a tooltip if the mouse if in the bounding box defined by the given position, width and height.
+     *
+     * @param gui           The gui to render in.
+     * @param x             The gui x position, excluding gui left.
+     * @param y             The gui y position, excluding gui top.
+     * @param width         The area width.
+     * @param height        The area height.
+     * @param mouseX        The mouse x position.
+     * @param mouseY        The mouse y position.
+     * @param linesSupplier A supplier for the tooltip lines to render.
+     *                      This will only be called when needed.
+     */
+    public static void renderTooltip(GuiContainer gui, int x, int y, int width, int height, int mouseX, int mouseY,
+        Supplier<List<String>> linesSupplier) {
+        renderTooltipOptional(gui, x, y, width, height, mouseX, mouseY, () -> Optional.of(linesSupplier.get()));
     }
 }

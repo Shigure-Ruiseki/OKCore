@@ -70,9 +70,7 @@ public class CommonCapabilities extends ModBase {
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER.getId(),
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER);
 
-        if (IngredientComponents.ITEMSTACK != null) IngredientComponents.ITEMSTACK.register();
-        if (IngredientComponents.FLUIDSTACK != null) IngredientComponents.FLUIDSTACK.register();
-        if (IngredientComponents.ENERGY != null) IngredientComponents.ENERGY.register();
+        IngredientComponents.register();
     }
 
     @Mod.EventHandler

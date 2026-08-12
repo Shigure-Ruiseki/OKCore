@@ -54,7 +54,7 @@ public interface IMixedIngredients extends Comparable<IMixedIngredients> {
     /**
      * Check if at least all ingredients from the supplied mixed ingredients are contained in this mixed ingredients.
      * This mixed ingredients could contain more ingredients.
-     * 
+     *
      * @param that The ingredients to look for.
      * @return If at least all ingredients in that are contained in this.
      */
@@ -104,53 +104,74 @@ public interface IMixedIngredients extends Comparable<IMixedIngredients> {
     }
 
     /**
-     * Deserialize ingredients to NBT.
+     * Serialize ingredients to NBT using NBTTagList.
      *
      * @param ingredients Ingredients.
      * @return An NBT representation of the given ingredients.
      */
     public static NBTTagCompound serialize(IMixedIngredients ingredients) {
         NBTTagCompound tag = new NBTTagCompound();
+        NBTTagList ingredientsList = new NBTTagList();
+
         for (IngredientComponent<?, ?> component : ingredients.getComponents()) {
+            NBTTagCompound componentEntry = new NBTTagCompound();
+
+            componentEntry.setString(
+                "component",
+                component.getName()
+                    .toString());
+
             NBTTagList instances = new NBTTagList();
             IIngredientSerializer serializer = component.getSerializer();
             for (Object instance : ingredients.getInstances(component)) {
                 instances.appendTag(serializer.serializeInstance(instance));
             }
-            tag.setTag(
-                component.getName()
-                    .toString(),
-                instances);
+
+            componentEntry.setTag("instances", instances);
+            ingredientsList.appendTag(componentEntry);
         }
+
+        tag.setTag("ingredients", ingredientsList);
         return tag;
     }
 
     /**
-     * Deserialize ingredients from NBT
+     * Deserialize ingredients from NBT using NBTTagList.
      *
      * @param tag An NBT tag.
      * @return A new mixed ingredients instance.
      * @throws IllegalArgumentException If the given tag is invalid or does not contain data on the given ingredients.
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static MixedIngredients deserialize(NBTTagCompound tag) throws IllegalArgumentException {
         Map<IngredientComponent<?, ?>, List<?>> ingredients = Maps.newIdentityHashMap();
-        for (String componentName : tag.func_150296_c()) {
-            IngredientComponent<?, ?> component = IngredientComponent.REGISTRY.get(new ResourceLocation(componentName));
-            if (component == null) {
-                throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
+        if (tag.hasKey("ingredients") && tag.getTag("ingredients") instanceof NBTTagList ingredientsList) {
+            for (Object entryObj : ingredientsList.tagList) {
+                if (!(entryObj instanceof NBTTagCompound componentEntry)) continue;
+
+                String componentName = componentEntry.getString("component");
+                IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
+                    .get(new ResourceLocation(componentName));
+                if (component == null) {
+                    throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
+                }
+
+                NBTBase subTag = componentEntry.getTag("instances");
+                if (!(subTag instanceof NBTTagList)) {
+                    throw new IllegalArgumentException(
+                        "The ingredient component type " + componentName
+                            + " did not contain a valid list of instances");
+                }
+
+                NBTTagList instancesTag = (NBTTagList) subTag;
+                IIngredientSerializer serializer = component.getSerializer();
+                List instances = Lists.newArrayList();
+                for (Object instanceTag : instancesTag.tagList) {
+                    instances.add(serializer.deserializeInstance((NBTBase) instanceTag));
+                }
+
+                ingredients.put(component, instances);
             }
-            NBTBase subTag = tag.getTag(componentName);
-            if (!(subTag instanceof NBTTagList)) {
-                throw new IllegalArgumentException(
-                    "The ingredient component type " + componentName + " did not contain a valid list of instances");
-            }
-            NBTTagList instancesTag = (NBTTagList) subTag;
-            IIngredientSerializer serializer = component.getSerializer();
-            List instances = Lists.newArrayList();
-            for (Object instanceTag : instancesTag.tagList) {
-                instances.add(serializer.deserializeInstance((NBTBase) instanceTag));
-            }
-            ingredients.put(component, instances);
         }
         return new MixedIngredients(ingredients);
     }

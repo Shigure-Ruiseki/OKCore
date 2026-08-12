@@ -1,6 +1,7 @@
 package ruiseki.okcore.helper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -20,7 +21,6 @@ import com.google.common.collect.Lists;
 
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 import ruiseki.okcore.item.IItemSharedTag;
 import ruiseki.okcore.item.weighted.WeightedStackBase;
@@ -151,9 +151,10 @@ public class ItemStackHelpers {
      */
     public static List<ItemStack> getVariants(ItemStack itemStack) {
         List<ItemStack> output = Lists.newLinkedList();
+        if (itemStack == null || itemStack.getItem() == null) return output;
+        Item item = itemStack.getItem();
         if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-            itemStack.getItem()
-                .getSubItems(itemStack.getItem(), null, output);
+            item.getSubItems(item, null, output);
         } else {
             output.add(itemStack);
         }
@@ -255,7 +256,7 @@ public class ItemStackHelpers {
      * @return The sub items.
      */
     public static List<ItemStack> getSubItems(ItemStack itemStack) {
-        NonNullList<ItemStack> subItems = NonNullList.create();
+        List<ItemStack> subItems = new ArrayList<>();
         if (itemStack.getItem() == null) return subItems;
         itemStack.getItem()
             .getSubItems(itemStack.getItem(), null, subItems);
@@ -266,7 +267,7 @@ public class ItemStackHelpers {
      * If the given stack has a wildcard meta value,
      * return a list of all its subitems,
      * otherwise return a list with as single element itself.
-     * 
+     *
      * @param itemStack The given item.
      * @return The sub items.
      */
@@ -274,7 +275,7 @@ public class ItemStackHelpers {
         if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
             return getSubItems(itemStack);
         } else {
-            return NonNullList.withSize(1, itemStack);
+            return Collections.singletonList(itemStack);
         }
     }
 

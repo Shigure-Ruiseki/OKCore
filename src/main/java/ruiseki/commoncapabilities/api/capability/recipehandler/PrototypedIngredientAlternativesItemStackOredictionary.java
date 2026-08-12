@@ -1,5 +1,6 @@
 package ruiseki.commoncapabilities.api.capability.recipehandler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -8,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,7 +27,6 @@ import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
-import ruiseki.okcore.datastructure.NonNullList;
 
 /**
  * An oredictionary-based {@link IPrototypedIngredientAlternatives} implementation.
@@ -69,10 +70,11 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
      * @return The list of variants.
      */
     public static List<ItemStack> getItemStackVariants(ItemStack itemStack) {
-        NonNullList<ItemStack> output = NonNullList.create();
+        List<ItemStack> output = new ArrayList<>();
+        if (itemStack == null || itemStack.getItem() == null) return output;
+        Item item = itemStack.getItem();
         if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-            itemStack.getItem()
-                .getSubItems(itemStack.getItem(), null, output);
+            item.getSubItems(item, null, output);
         } else {
             output.add(itemStack);
         }

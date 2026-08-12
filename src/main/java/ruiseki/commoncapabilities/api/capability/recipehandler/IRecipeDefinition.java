@@ -70,7 +70,9 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
                 subTag.setByte("type", serializer.getId());
                 instances.appendTag(subTag);
             }
-            String safeKey = component.getName().toString().replace(":", "--");
+            String safeKey = component.getName()
+                .toString()
+                .replace(":", "--");
             inputTag.setTag(safeKey, instances);
         }
         tag.setTag("input", inputTag);
@@ -94,7 +96,8 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
         if (!tag.hasKey("output")) {
             throw new IllegalArgumentException("A recipe tag did not contain a valid output tag");
         }
-        NBTTagCompound inputTag = tag.getCompoundTag("input");for (String rawKey : inputTag.func_150296_c()) {
+        NBTTagCompound inputTag = tag.getCompoundTag("input");
+        for (String rawKey : inputTag.func_150296_c()) {
             String componentName = rawKey.replace("--", ":");
             IngredientComponent<?, ?> component = IngredientComponent.REGISTRY.get(new ResourceLocation(componentName));
             if (component == null) {

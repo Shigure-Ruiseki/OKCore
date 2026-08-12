@@ -9,7 +9,7 @@ import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
 
 /**
  * A number field which by default only accepts positive numbers.
- * 
+ *
  * @param <E> The element type
  * @author rubensworks
  */
@@ -47,7 +47,7 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     }
 
     public void setActiveElement(int index) {
-        if (index >= elements.size()) {
+        if (elements == null || elements.isEmpty() || index < 0 || index >= elements.size()) {
             this.activeElement = -1;
             setText("");
         } else {
@@ -95,18 +95,22 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     }
 
     protected void increase() {
-        setActiveElement((activeElement + 1) % elements.size());
+        if (elements == null || elements.isEmpty()) return;
+        int nextIndex = (activeElement < 0) ? 0 : (activeElement + 1) % elements.size();
+        setActiveElement(nextIndex);
     }
 
     protected void decrease() {
-        setActiveElement((activeElement - 1 + elements.size()) % elements.size());
+        if (elements == null || elements.isEmpty()) return;
+        int prevIndex = (activeElement <= 0) ? elements.size() - 1 : activeElement - 1;
+        setActiveElement(prevIndex);
     }
 
     @Override
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (arrowRight.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
+        if (arrows && arrowRight != null && arrowRight.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
             increase();
-        } else if (arrowLeft.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
+        } else if (arrows && arrowLeft != null && arrowLeft.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
             decrease();
         } else {
             super.mouseClicked(mouseX, mouseY, mouseButton);

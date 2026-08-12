@@ -25,7 +25,7 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * Create config file and register items and blocks from the given ExtendedConfigs.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -50,7 +50,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
     /**
      * Iterate over the given ExtendedConfigs to read/write the config and register the given elements
      * This also sets the config of this instance.
-     * 
+     *
      * @param event the event from the init methods
      */
     public void handle(FMLPreInitializationEvent event) {
@@ -70,7 +70,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
 
     /**
      * Add a config category.
-     * 
+     *
      * @param category The category to add.
      */
     public void addCategory(String category) {
@@ -171,7 +171,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
 
     /**
      * Get the map of config nameid to config.
-     * 
+     *
      * @return The dictionary.
      */
     public Map<String, ExtendedConfig> getDictionary() {
@@ -180,7 +180,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
 
     /**
      * Init listener for configs.
-     * 
+     *
      * @author rubensworks
      *
      */
@@ -190,7 +190,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
 
         /**
          * Make a new instance.
-         * 
+         *
          * @param config The config.
          */
         public ConfigInitListener(ExtendedConfig<?> config) {
@@ -215,7 +215,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
 
     /**
      * A safe way to check if a {@link IConfigurable} is enabled. @see ExtendedConfig#isEnabled()
-     * 
+     *
      * @param config The config to check.
      * @return If the given config is enabled.
      */
@@ -240,7 +240,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
     /**
      * Get the config from a given item.
      * It will internally also try to get the blockState from the item if it exists to get the config from.
-     * 
+     *
      * @param item The item, possibly IConfigurable.
      * @return The config or null.
      */

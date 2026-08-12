@@ -1,13 +1,13 @@
 package ruiseki.commoncapabilities.api.capability.recipehandler;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
@@ -37,10 +37,14 @@ public class RecipeDefinition implements IRecipeDefinition {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T, M> List<IPrototypedIngredientAlternatives<T, M>> getInputs(
         IngredientComponent<T, M> ingredientComponent) {
-        return (List<IPrototypedIngredientAlternatives<T, M>>) (List) inputs
-            .getOrDefault(ingredientComponent, Collections.emptyList());
+        List<IPrototypedIngredientAlternatives<?, ?>> list = inputs.get(ingredientComponent);
+        if (list == null) {
+            return Collections.emptyList();
+        }
+        return (List<IPrototypedIngredientAlternatives<T, M>>) (List<?>) list;
     }
 
     @Override
@@ -93,11 +97,11 @@ public class RecipeDefinition implements IRecipeDefinition {
      * @param <M>          The matching condition parameter, may be Void.
      * @return A new recipe definition.
      */
+    @SuppressWarnings("unchecked")
     public static <T, R, M> RecipeDefinition ofAlternatives(IngredientComponent<T, M> component,
         List<IPrototypedIngredientAlternatives<T, M>> alternatives, IMixedIngredients output) {
-        Map<IngredientComponent<?, ?>, List<IPrototypedIngredientAlternatives<?, ?>>> inputs = Maps
-            .newIdentityHashMap();
-        inputs.put(component, (List) alternatives);
+        Map<IngredientComponent<?, ?>, List<IPrototypedIngredientAlternatives<?, ?>>> inputs = new HashMap<>();
+        inputs.put(component, (List<IPrototypedIngredientAlternatives<?, ?>>) (List<?>) alternatives);
         return new RecipeDefinition(inputs, output);
     }
 
@@ -123,7 +127,7 @@ public class RecipeDefinition implements IRecipeDefinition {
     }
 
     /**
-     * Create a new recipe definittion for a single component type input and a single instance.
+     * Create a new recipe definition for a single component type input and a single instance.
      *
      * @param component  A component type.
      * @param ingredient An ingredient for the given component type.
@@ -141,6 +145,7 @@ public class RecipeDefinition implements IRecipeDefinition {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public int compareTo(IRecipeDefinition that) {
         // Compare output
         int compOutput = this.getOutput()

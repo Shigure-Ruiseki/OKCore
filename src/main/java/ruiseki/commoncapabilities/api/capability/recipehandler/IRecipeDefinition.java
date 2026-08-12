@@ -1,5 +1,6 @@
 package ruiseki.commoncapabilities.api.capability.recipehandler;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,7 +11,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -57,6 +57,7 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
      * @param recipe A recipe.
      * @return An NBT representation of the given recipe.
      */
+    @SuppressWarnings("unchecked")
     public static NBTTagCompound serialize(IRecipeDefinition recipe) {
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagCompound inputTag = new NBTTagCompound();
@@ -86,9 +87,9 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
      * @return A new mixed recipe instance.
      * @throws IllegalArgumentException If the given tag is invalid or does not contain data on the given recipe.
      */
+    @SuppressWarnings("unchecked")
     public static RecipeDefinition deserialize(NBTTagCompound tag) throws IllegalArgumentException {
-        Map<IngredientComponent<?, ?>, List<IPrototypedIngredientAlternatives<?, ?>>> inputs = Maps
-            .newIdentityHashMap();
+        Map<IngredientComponent<?, ?>, List<IPrototypedIngredientAlternatives<?, ?>>> inputs = new HashMap<>();
         if (!tag.hasKey("input")) {
             throw new IllegalArgumentException("A recipe tag did not contain a valid input tag");
         }

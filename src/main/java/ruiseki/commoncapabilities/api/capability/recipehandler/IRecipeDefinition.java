@@ -52,7 +52,7 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
     public IMixedIngredients getOutput();
 
     /**
-     * Deserialize a recipe to NBT.
+     * Serialize a recipe to NBT using NBTTagList for inputs.
      *
      * @param recipe A recipe.
      * @return An NBT representation of the given recipe.
@@ -60,8 +60,15 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
     @SuppressWarnings("unchecked")
     public static NBTTagCompound serialize(IRecipeDefinition recipe) {
         NBTTagCompound tag = new NBTTagCompound();
-        NBTTagCompound inputTag = new NBTTagCompound();
+        NBTTagList inputList = new NBTTagList();
+
         for (IngredientComponent<?, ?> component : recipe.getInputComponents()) {
+            NBTTagCompound componentEntry = new NBTTagCompound();
+
+            componentEntry.setString(
+                "component",
+                component.getName()
+                    .toString());
             NBTTagList instances = new NBTTagList();
             for (IPrototypedIngredientAlternatives ingredient : recipe.getInputs(component)) {
                 NBTTagCompound subTag = new NBTTagCompound();
@@ -70,69 +77,75 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
                 subTag.setByte("type", serializer.getId());
                 instances.appendTag(subTag);
             }
-            String safeKey = component.getName().toString().replace(":", "--");
-            inputTag.setTag(safeKey, instances);
+
+            componentEntry.setTag("instances", instances);
+            inputList.appendTag(componentEntry);
         }
-        tag.setTag("input", inputTag);
+
+        tag.setTag("input", inputList);
         tag.setTag("output", IMixedIngredients.serialize(recipe.getOutput()));
         return tag;
     }
 
     /**
-     * Deserialize a recipe from NBT
+     * Deserialize a recipe from NBT using NBTTagList.
      *
      * @param tag An NBT tag.
      * @return A new mixed recipe instance.
      * @throws IllegalArgumentException If the given tag is invalid or does not contain data on the given recipe.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static RecipeDefinition deserialize(NBTTagCompound tag) throws IllegalArgumentException {
         Map<IngredientComponent<?, ?>, List<IPrototypedIngredientAlternatives<?, ?>>> inputs = new HashMap<>();
+
         if (!tag.hasKey("input")) {
             throw new IllegalArgumentException("A recipe tag did not contain a valid input tag");
         }
         if (!tag.hasKey("output")) {
             throw new IllegalArgumentException("A recipe tag did not contain a valid output tag");
         }
-        NBTTagCompound inputTag = tag.getCompoundTag("input");for (String rawKey : inputTag.func_150296_c()) {
-            String componentName = rawKey.replace("--", ":");
-            IngredientComponent<?, ?> component = IngredientComponent.REGISTRY.get(new ResourceLocation(componentName));
-            if (component == null) {
-                throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
-            }
-            NBTBase subTag = inputTag.getTag(componentName);
-            if (!(subTag instanceof NBTTagList)) {
-                throw new IllegalArgumentException(
-                    "The ingredient component type " + componentName + " did not contain a valid list of instances");
-            }
-            NBTTagList instancesTag = (NBTTagList) subTag;
-            List<IPrototypedIngredientAlternatives<?, ?>> instances = Lists.newArrayList();
-            for (Object instanceTag : instancesTag.tagList) {
-                IPrototypedIngredientAlternatives.ISerializer alternativeSerializer;
-                NBTBase deserializeTag;
-                if (instanceTag instanceof NBTTagList) {
-                    // TODO: remove backwards compat in 1.13
-                    alternativeSerializer = PrototypedIngredientAlternativesList.SERIALIZER;
-                    deserializeTag = (NBTBase) instanceTag;
-                } else if (instanceTag instanceof NBTTagCompound) {
-                    NBTTagCompound instanceTagCompound = (NBTTagCompound) instanceTag;
-                    byte type = instanceTagCompound.getByte("type");
-                    alternativeSerializer = IPrototypedIngredientAlternatives.SERIALIZERS.get(type);
-                    if (alternativeSerializer == null) {
-                        throw new IllegalArgumentException(
-                            "Could not find a prototyped ingredient alternative serializer for id " + type);
-                    }
-                    deserializeTag = ((NBTTagCompound) instanceTag).getTag("val");
-                } else {
-                    throw new IllegalArgumentException(
-                        "The ingredient component type " + componentName
-                            + " did not contain a valid reference to instances");
+
+        NBTBase inputRawTag = tag.getTag("input");
+
+        if (inputRawTag instanceof NBTTagList inputList) {
+            for (Object entryObj : inputList.tagList) {
+                if (!(entryObj instanceof NBTTagCompound componentEntry)) continue;
+                String componentName = componentEntry.getString("component");
+                IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
+                    .get(new ResourceLocation(componentName));
+                if (component == null) {
+                    throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
                 }
-                IPrototypedIngredientAlternatives alternatives = alternativeSerializer
-                    .deserialize(component, deserializeTag);
-                instances.add(alternatives);
+
+                NBTTagList instancesTag = (NBTTagList) componentEntry.getTag("instances");
+                List<IPrototypedIngredientAlternatives<?, ?>> instances = Lists.newArrayList();
+                if (instancesTag != null) {
+                    for (Object instanceTag : instancesTag.tagList) {
+                        IPrototypedIngredientAlternatives.ISerializer alternativeSerializer;
+                        NBTBase deserializeTag;
+                        if (instanceTag instanceof NBTTagList) {
+                            alternativeSerializer = PrototypedIngredientAlternativesList.SERIALIZER;
+                            deserializeTag = (NBTBase) instanceTag;
+                        } else if (instanceTag instanceof NBTTagCompound instanceTagCompound) {
+                            byte type = instanceTagCompound.getByte("type");
+                            alternativeSerializer = IPrototypedIngredientAlternatives.SERIALIZERS.get(type);
+                            if (alternativeSerializer == null) {
+                                throw new IllegalArgumentException(
+                                    "Could not find a prototyped ingredient alternative serializer for id " + type);
+                            }
+                            deserializeTag = instanceTagCompound.getTag("val");
+                        } else {
+                            throw new IllegalArgumentException(
+                                "The ingredient component type " + componentName
+                                    + " did not contain a valid reference to instances");
+                        }
+                        IPrototypedIngredientAlternatives alternatives = alternativeSerializer
+                            .deserialize(component, deserializeTag);
+                        instances.add(alternatives);
+                    }
+                }
+                inputs.put(component, instances);
             }
-            inputs.put(component, instances);
         }
         IMixedIngredients output = IMixedIngredients.deserialize(tag.getCompoundTag("output"));
         return new RecipeDefinition(inputs, output);

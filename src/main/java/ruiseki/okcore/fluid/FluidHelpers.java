@@ -60,6 +60,15 @@ public class FluidHelpers {
         return fluidStack != null ? fluidStack.amount : 0;
     }
 
+    public static String getModId(Fluid fluid) {
+        String fullName = FluidRegistry.masterFluidReference.inverse()
+            .get(fluid);
+        if (fullName != null && fullName.contains(":")) {
+            return fullName.split(":")[0];
+        }
+        return null;
+    }
+
     /**
      * Copy the given fluid stack
      *

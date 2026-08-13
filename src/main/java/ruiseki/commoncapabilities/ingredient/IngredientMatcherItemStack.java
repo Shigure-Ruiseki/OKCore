@@ -10,7 +10,7 @@ import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**
  * Matcher for ItemStacks.
- * 
+ *
  * @author rubensworks
  */
 public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack, Integer> {
@@ -62,7 +62,7 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public boolean isEmpty(ItemStack instance) {
-        return instance == null;
+        return instance == null || instance.getItem() == null || instance.stackSize <= 0;
     }
 
     @Override
@@ -72,16 +72,22 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public ItemStack copy(ItemStack instance) {
-        return instance.copy();
+        return instance == null ? null : instance.copy();
     }
 
     @Override
     public long getQuantity(ItemStack instance) {
+        if (instance == null || instance.getItem() == null) {
+            return 0;
+        }
         return instance.stackSize;
     }
 
     @Override
     public ItemStack withQuantity(ItemStack instance, long quantity) {
+        if (instance == null || instance.getItem() == null || quantity <= 0) {
+            return null;
+        }
         if (instance.stackSize == quantity) {
             return instance;
         }
@@ -102,18 +108,20 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public String localize(ItemStack instance) {
+        if (instance == null || instance.getItem() == null) {
+            return "";
+        }
         return instance.getDisplayName();
     }
 
     @Override
     public int compare(ItemStack o1, ItemStack o2) {
-        if (o1 == null) {
-            if (o2 == null) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else if (o2 == null) {
+        boolean empty1 = isEmpty(o1);
+        boolean empty2 = isEmpty(o2);
+
+        if (empty1) {
+            return empty2 ? 0 : -1;
+        } else if (empty2) {
             return 1;
         } else if (o1.getItem() == o2.getItem()) {
             int m1 = o1.getItemDamage();

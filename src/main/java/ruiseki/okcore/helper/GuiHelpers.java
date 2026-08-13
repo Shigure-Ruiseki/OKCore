@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -36,8 +37,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
+import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
@@ -599,6 +602,51 @@ public class GuiHelpers {
     }
 
     /**
+     * Render a progress bar in a certain direction.
+     * The currently bound texture will be used to render the progress bar.
+     *
+     * @param gui The gui to render in.
+     * @param x The gui x position, including gui left.
+     * @param y The gui y position, including gui top.
+     * @param width The progress bar width.
+     * @param height The progress bar height.
+     * @param textureX The texture x position.
+     * @param textureY The texture y position.
+     * @param direction The direction to progress in.
+     * @param progress The current progress.
+     * @param progressMax The maximum progress.
+     */
+    public static void renderProgressBar(Gui gui, int x, int y, int width, int height, int textureX, int textureY,
+                                         ProgressDirection direction, int progress, int progressMax) {
+        if (progressMax > 0 && progress > 0) {
+            int scaledWidth = width;
+            int scaledHeight = height;
+
+            // Scale the width and/or height
+            if (direction.getIncrementX() != 0) {
+                scaledWidth = (int) (scaledWidth * (((double) progress) / progressMax));
+            }
+            if (direction.getIncrementY() != 0) {
+                scaledHeight = (int) (scaledHeight * (((double) progress) / progressMax));
+            }
+
+            // If increments happen inversely, make sure we start incrementing from the other end of the progress bar
+            if (direction.getIncrementX() < 0) {
+                int offset = width - scaledWidth;
+                x += offset;
+                textureX += offset;
+            }
+            if (direction.getIncrementY() < 0) {
+                int offset = height - scaledHeight;
+                y += offset;
+                textureY += offset;
+            }
+
+            gui.drawTexturedModalRect(x, y, textureX, textureY, scaledWidth, scaledHeight);
+        }
+    }
+
+    /**
      * Draw a tooltip.
      *
      * @param gui   The gui to draw in.
@@ -768,5 +816,81 @@ public class GuiHelpers {
     public static void renderTooltip(GuiContainer gui, int x, int y, int width, int height, int mouseX, int mouseY,
         Supplier<List<String>> linesSupplier) {
         renderTooltipOptional(gui, x, y, width, height, mouseX, mouseY, () -> Optional.of(linesSupplier.get()));
+    }
+
+    private static final List<Pair<Long, String>> COUNT_SCALES = Lists.newArrayList(
+        Pair.of(1000000000000000000L, "E"),
+        Pair.of(1000000000000000L, "P"),
+        Pair.of(1000000000000L, "T"),
+        Pair.of(1000000000L, "G"),
+        Pair.of(1000000L, "M"),
+        Pair.of(1000L, "K"));
+
+    /**
+     * Stringify a (potentially large) quantity to a scaled string.
+     *
+     * For example, 123765 will be converted as 1.23M.
+     *
+     * @param quantity A quantity.
+     * @return A scaled quantity string.
+     */
+    public static String quantityToScaledString(long quantity) {
+        for (Pair<Long, String> countScale : COUNT_SCALES) {
+            long scale = countScale.getLeft();
+            if (quantity >= scale) {
+                long division = quantity / scale;
+                String divisionString = String.valueOf(division);
+
+                // Add digits if string is short
+                if (division < 10) {
+                    long mod = quantity % scale;
+                    if (mod > 0) {
+                        long digits = mod * 100 / scale;
+                        divisionString += "." + (digits < 10 ? "0" : "") + String.valueOf(digits);
+                    }
+                } else if (division < 100) {
+                    long mod = quantity % scale;
+                    if (mod > 0) {
+                        long digits = mod * 10 / scale;
+                        divisionString += "." + String.valueOf(digits);
+                    }
+                }
+
+                return divisionString + countScale.getRight();
+            }
+        }
+        return String.valueOf(quantity);
+    }
+
+    /**
+     * Represents the direction of a progress bar.
+     */
+    public static enum ProgressDirection {
+
+        UP(0, -1),
+        DOWN(0, 1),
+        LEFT(-1, 0),
+        RIGHT(1, 0),
+
+        UP_LEFT(-1, -1),
+        UP_RIGHT(1, -1),
+        DOWN_LEFT(-1, 1),
+        DOWN_RIGHT(1, 1);
+
+        private final int incrementX;
+        private final int incrementY;
+
+        private ProgressDirection(int incrementX, int incrementY) {
+            this.incrementX = incrementX;
+            this.incrementY = incrementY;
+        }
+
+        public int getIncrementX() {
+            return incrementX;
+        }
+
+        public int getIncrementY() {
+            return incrementY;
+        }
     }
 }

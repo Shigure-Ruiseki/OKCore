@@ -419,6 +419,10 @@ public class ItemStackHelpers {
         return stack.getMaxStackSize() - stack.stackSize;
     }
 
+    public static NBTTagCompound saveAllItems(NBTTagCompound tag, List<ItemStack> list) {
+        return saveAllItems(tag, list, true);
+    }
+
     public static NBTTagCompound saveAllItems(NBTTagCompound tag, List<ItemStack> list, boolean saveEmpty) {
         NBTTagList nbttaglist = new NBTTagList();
 

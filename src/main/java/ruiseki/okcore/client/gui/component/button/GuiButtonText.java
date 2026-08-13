@@ -5,7 +5,7 @@ import net.minecraft.client.gui.FontRenderer;
 
 /**
  * An button with text.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -13,7 +13,7 @@ public class GuiButtonText extends GuiButtonExtended {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param id     The ID.
      * @param x      X
      * @param y      Y
@@ -25,7 +25,7 @@ public class GuiButtonText extends GuiButtonExtended {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param id         The ID.
      * @param x          X
      * @param y          Y

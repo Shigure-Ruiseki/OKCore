@@ -29,6 +29,7 @@ import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
  * A helper for rendering.
@@ -50,11 +51,54 @@ public class RenderHelpers {
             .bindTexture(texture);
     }
 
+    /**
+     * Draw the given text with the given scale.
+     *
+     * @param fontRenderer The font renderer
+     * @param string       The string to draw
+     * @param x            The center X
+     * @param y            The center Y
+     * @param scale        The scale to render the string by.
+     * @param color        The color to draw
+     * @param dropShadow   If a shadow should be rendered.
+     */
+    public static void drawScaledString(FontRenderer fontRenderer, String string, int x, int y, float scale, int color,
+        boolean dropShadow) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(x, y, 0);
+        GlStateManager.scale(scale, scale, 1.0f);
+        fontRenderer.drawString(string, 0, 0, color, dropShadow);
+        GlStateManager.popMatrix();
+    }
+
+    /**
+     * Draw the given text and scale it to the max width.
+     *
+     * @param fontRenderer The font renderer
+     * @param string       The string to draw
+     * @param x            The center X
+     * @param y            The center Y
+     * @param maxWidth     The maximum width to scale to
+     * @param color        The color to draw
+     */
     public static void drawScaledCenteredString(FontRenderer fontRenderer, String string, int x, int y, int maxWidth,
         int color) {
         drawScaledCenteredString(fontRenderer, string, x, y, maxWidth, 1.0F, maxWidth, color);
     }
 
+    /**
+     * Draw the given text and scale it to the max width.
+     * The given string may already be scaled and its width must be passed in that case.
+     *
+     * @param fontRenderer  The font renderer
+     * @param string        The string to draw
+     * @param x             The center X
+     * @param y             The center Y
+     * @param width         The scaled width
+     * @param originalScale The original scale
+     * @param maxWidth      The maximum width to scale to
+     * @param color         The color to draw
+     */
     public static void drawScaledCenteredString(FontRenderer fontRenderer, String string, int x, int y, int width,
         float originalScale, int maxWidth, int color) {
         float originalWidth = fontRenderer.getStringWidth(string) * originalScale;
@@ -62,10 +106,21 @@ public class RenderHelpers {
         drawScaledCenteredString(fontRenderer, string, x, y, width, scale, color);
     }
 
+    /**
+     * Draw the given text with the given width and desired scale.
+     * 
+     * @param fontRenderer The font renderer
+     * @param string       The string to draw
+     * @param x            The center X
+     * @param y            The center Y
+     * @param width        The scaled width
+     * @param scale        The desired scale
+     * @param color        The color to draw
+     */
     public static void drawScaledCenteredString(FontRenderer fontRenderer, String string, int x, int y, int width,
         float scale, int color) {
-        GL11.glPushMatrix();
-        GL11.glScalef(scale, scale, 1.0f);
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(scale, scale, 1.0f);
         int titleLength = fontRenderer.getStringWidth(string);
         int titleHeight = fontRenderer.FONT_HEIGHT;
         fontRenderer.drawString(
@@ -73,7 +128,7 @@ public class RenderHelpers {
             Math.round((x + width / 2) / scale - titleLength / 2),
             Math.round(y / scale - titleHeight / 2),
             color);
-        GL11.glPopMatrix();
+        GlStateManager.popMatrix();
     }
 
     /**
@@ -228,7 +283,7 @@ public class RenderHelpers {
 
     /**
      * Check if a point is inside a region.
-     * 
+     *
      * @param left   Left-top corner x
      * @param top    Left-top corner y
      * @param width  The width
@@ -243,7 +298,7 @@ public class RenderHelpers {
 
     /**
      * Check if a point is inside a region.
-     * 
+     *
      * @param region The region.
      * @param point  The point.
      * @return If the point is inside the region.
@@ -254,7 +309,7 @@ public class RenderHelpers {
 
     /**
      * Check if a point is inside a button's region.
-     * 
+     *
      * @param button The button.
      * @param pointX The point x
      * @param pointY The point y
@@ -266,14 +321,14 @@ public class RenderHelpers {
 
     /**
      * Runnable for {@link RenderHelpers#renderFluidContext(FluidStack, double, double, double, IFluidContextRender)}.
-     * 
+     *
      * @author rubensworks
      */
     public static interface IFluidContextRender {
 
         /**
          * Render the fluid.
-         * 
+         *
          * @param fluid The fluid stack.
          */
         public void renderFluid(FluidStack fluid);

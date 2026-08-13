@@ -49,7 +49,16 @@ import ruiseki.okcore.event.gui.RenderTooltipEvent;
 
 public class GuiHelpers {
 
-    private static final RenderItem render = new RenderItem();
+    private static final RenderItem render = RenderItem.getInstance();
+
+    /**
+     * The default item slot size. Width and height are equal.
+     */
+    public static int SLOT_SIZE = 18;
+    /**
+     * The default inner item slot size. Width and height are equal.
+     */
+    public static int SLOT_SIZE_INNER = 16;
 
     /**
      * @param mouseX - Position of the mouse on the x-axiq
@@ -605,19 +614,19 @@ public class GuiHelpers {
      * Render a progress bar in a certain direction.
      * The currently bound texture will be used to render the progress bar.
      *
-     * @param gui The gui to render in.
-     * @param x The gui x position, including gui left.
-     * @param y The gui y position, including gui top.
-     * @param width The progress bar width.
-     * @param height The progress bar height.
-     * @param textureX The texture x position.
-     * @param textureY The texture y position.
-     * @param direction The direction to progress in.
-     * @param progress The current progress.
+     * @param gui         The gui to render in.
+     * @param x           The gui x position, including gui left.
+     * @param y           The gui y position, including gui top.
+     * @param width       The progress bar width.
+     * @param height      The progress bar height.
+     * @param textureX    The texture x position.
+     * @param textureY    The texture y position.
+     * @param direction   The direction to progress in.
+     * @param progress    The current progress.
      * @param progressMax The maximum progress.
      */
     public static void renderProgressBar(Gui gui, int x, int y, int width, int height, int textureX, int textureY,
-                                         ProgressDirection direction, int progress, int progressMax) {
+        ProgressDirection direction, int progress, int progressMax) {
         if (progressMax > 0 && progress > 0) {
             int scaledWidth = width;
             int scaledHeight = height;

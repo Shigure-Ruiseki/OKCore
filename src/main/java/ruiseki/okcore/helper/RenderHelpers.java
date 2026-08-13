@@ -108,7 +108,7 @@ public class RenderHelpers {
 
     /**
      * Draw the given text with the given width and desired scale.
-     * 
+     *
      * @param fontRenderer The font renderer
      * @param string       The string to draw
      * @param x            The center X
@@ -198,7 +198,7 @@ public class RenderHelpers {
      * Get the icon of a fluid.
      */
     public static IIcon getFluidIcon(FluidStack fluid, ForgeDirection side) {
-        if (fluid == null || fluid.getFluid() == null) return Blocks.water.getIcon(0, 0);
+        if (fluid == null || fluid.getFluid() == null) return Blocks.water.getIcon(side.ordinal(), 0);
 
         IIcon icon = fluid.getFluid()
             .getIcon(fluid);

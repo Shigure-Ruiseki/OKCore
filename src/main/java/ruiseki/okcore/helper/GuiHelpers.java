@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -32,13 +33,20 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -607,6 +615,123 @@ public class GuiHelpers {
             return (Slot) cachedSlotField.get(guiContainer);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public static void drawIcon(int x, int y, IIcon icon, int width, int height) {
+        if (icon == null) return;
+
+        double minU = icon.getMinU();
+        double maxU = icon.getMaxU();
+        double minV = icon.getMinV();
+        double maxV = icon.getMaxV();
+
+        maxV = minV + (maxV - minV) * ((double) height / 16.0D);
+
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(x, y + height, 0, minU, maxV);
+        tessellator.addVertexWithUV(x + width, y + height, 0, maxU, maxV);
+        tessellator.addVertexWithUV(x + width, y, 0, maxU, minV);
+        tessellator.addVertexWithUV(x, y, 0, minU, minV);
+        tessellator.draw();
+    }
+
+    /**
+     * Render a fluid tank in a gui.
+     *
+     * @param gui        The gui to render in.
+     * @param fluidStack The fluid to render.
+     * @param capacity   The tank capacity.
+     * @param x          The gui x position, including gui left.
+     * @param y          The gui y position, including gui top.
+     * @param width      The tank width.
+     * @param height     The tank height.
+     */
+    public static void renderFluidTank(Gui gui, FluidStack fluidStack, int capacity, int x, int y, int width,
+        int height) {
+        if (fluidStack != null && fluidStack.getFluid() != null && capacity > 0) {
+            GL11.glPushMatrix();
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            RenderHelper.enableGUIStandardItemLighting();
+            GL11.glEnable(GL12.GL_ALIASED_LINE_WIDTH_RANGE);
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+            int level = (int) (height * (((double) fluidStack.amount) / capacity));
+            IIcon icon = RenderHelpers.getFluidIcon(fluidStack, ForgeDirection.UP);
+            int verticalOffset = 0;
+
+            // Bind Texture Terrain (Blocks & Liquids)
+            Minecraft.getMinecraft()
+                .getTextureManager()
+                .bindTexture(TextureMap.locationBlocksTexture);
+
+            // Fluids can have a custom overlay color
+            Triple<Float, Float, Float> colorParts = Helpers.intToRGB(
+                fluidStack.getFluid()
+                    .getColor(fluidStack));
+            GL11.glColor4f(colorParts.getLeft(), colorParts.getMiddle(), colorParts.getRight(), 1.0F);
+
+            while (level > 0) {
+                int textureHeight;
+                if (level > 16) {
+                    textureHeight = 16;
+                    level -= 16;
+                } else {
+                    textureHeight = level;
+                    level = 0;
+                }
+
+                drawIcon(x, y - textureHeight - verticalOffset + height, icon, width, textureHeight);
+                verticalOffset += 16;
+            }
+
+            // Reset color when done
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+
+            RenderHelper.disableStandardItemLighting();
+            GL11.glDisable(GL11.GL_DEPTH_TEST);
+            GL11.glPopMatrix();
+        }
+    }
+
+    /**
+     * Render the given fluid in a standard slot.
+     *
+     * @param gui        The gui to render in.
+     * @param fluidStack The fluid to render.
+     * @param x          The slot X position.
+     * @param y          The slot Y position.
+     */
+    public static void renderFluidSlot(Gui gui, @Nullable FluidStack fluidStack, int x, int y) {
+        if (fluidStack != null) {
+            GuiHelpers.renderFluidTank(gui, fluidStack, fluidStack.amount, x, y, SLOT_SIZE_INNER, SLOT_SIZE_INNER);
+        }
+    }
+
+    /**
+     * Render a fluid tank in a gui with a tank overlay.
+     * This assumes that the tank overlay has the provided width and height.
+     *
+     * @param gui             The gui to render in.
+     * @param fluidStack      The fluid to render.
+     * @param capacity        The tank capacity.
+     * @param x               The gui x position, including gui left.
+     * @param y               The gui y position, including gui top.
+     * @param width           The tank width.
+     * @param height          The tank height.
+     * @param textureOverlay  The texture of the tank overlay.
+     * @param overlayTextureX The overlay x texture position.
+     * @param overlayTextureY The overlay y texture position.
+     */
+    public static void renderOverlayedFluidTank(Gui gui, @Nullable FluidStack fluidStack, int capacity, int x, int y,
+        int width, int height, ResourceLocation textureOverlay, int overlayTextureX, int overlayTextureY) {
+        renderFluidTank(gui, fluidStack, capacity, x, y, width, height);
+        if (fluidStack != null && capacity > 0) {
+            GlStateManager.enableBlend();
+            RenderHelpers.bindTexture(textureOverlay);
+            gui.drawTexturedModalRect(x, y, overlayTextureX, overlayTextureY, width, height);
         }
     }
 

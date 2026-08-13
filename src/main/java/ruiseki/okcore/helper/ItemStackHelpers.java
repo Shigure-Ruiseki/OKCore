@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
 
@@ -416,5 +417,39 @@ public class ItemStackHelpers {
     public static int getSpace(ItemStack stack) {
         if (stack == null) return 64;
         return stack.getMaxStackSize() - stack.stackSize;
+    }
+
+    public static NBTTagCompound saveAllItems(NBTTagCompound tag, List<ItemStack> list, boolean saveEmpty) {
+        NBTTagList nbttaglist = new NBTTagList();
+
+        for (int i = 0; i < list.size(); ++i) {
+            ItemStack itemstack = list.get(i);
+
+            if (itemstack != null && itemstack.getItem() != null) {
+                NBTTagCompound nbttagcompound = new NBTTagCompound();
+                nbttagcompound.setByte("Slot", (byte) i);
+                itemstack.writeToNBT(nbttagcompound);
+                nbttaglist.appendTag(nbttagcompound);
+            }
+        }
+
+        if (nbttaglist.tagCount() > 0 || saveEmpty) {
+            tag.setTag("Items", nbttaglist);
+        }
+
+        return tag;
+    }
+
+    public static void loadAllItems(NBTTagCompound tag, List<ItemStack> list) {
+        NBTTagList nbttaglist = tag.getTagList("Items", 10);
+
+        for (int i = 0; i < nbttaglist.tagCount(); ++i) {
+            NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
+            int j = nbttagcompound.getByte("Slot") & 255;
+
+            if (j >= 0 && j < list.size()) {
+                list.set(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
+            }
+        }
     }
 }

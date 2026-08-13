@@ -13,7 +13,7 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
  * A wrapper that contains a reference to a {@link net.minecraft.util.ResourceLocation} and its sheet position.
- * 
+ *
  * @author rubensworks
  */
 @Data
@@ -91,5 +91,15 @@ public class Image implements IImage {
     @Override
     public void drawWorldWithAlpha(TextureManager textureManager, float x2, float y2, float alpha) {
         this.drawWorldWithAlpha(textureManager, 0, x2, 0, y2, alpha);
+    }
+
+    @Override
+    public int getWidth() {
+        return this.sheetWidth;
+    }
+
+    @Override
+    public int getHeight() {
+        return this.sheetHeight;
     }
 }

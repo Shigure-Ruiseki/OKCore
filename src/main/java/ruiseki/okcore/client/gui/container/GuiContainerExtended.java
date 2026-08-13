@@ -297,4 +297,8 @@ public abstract class GuiContainerExtended extends GuiContainer
     public int getGuiId() {
         return getContainer().getGuiId();
     }
+
+    protected boolean hasClickedOutside(int mouseX, int mouseY, int guiLeft, int guiTop) {
+        return mouseX < guiLeft || mouseY < guiTop || mouseX >= guiLeft + this.xSize || mouseY >= guiTop + this.ySize;
+    }
 }

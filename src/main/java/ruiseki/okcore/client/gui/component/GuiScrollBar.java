@@ -14,7 +14,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * The using gui must call the following methods from its respective method:
  * * {@link #handleMouseInput()}
- * * {@link #drawCurrentScreen(int, int, float)}
+ * * {@link #drawScreen(int, int, float)}
  * * {@link #drawGuiContainerBackgroundLayer(float, int, int)}
  *
  * @author rubensworks
@@ -68,7 +68,7 @@ public class GuiScrollBar extends Gui {
         }
     }
 
-    public void drawCurrentScreen(int mouseX, int mouseY, float partialTicks) {
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         boolean flag = Mouse.isButtonDown(0);
         int i1 = x;
         int j1 = y;

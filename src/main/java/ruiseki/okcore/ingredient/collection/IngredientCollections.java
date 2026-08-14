@@ -27,7 +27,7 @@ public final class IngredientCollections {
 
     /**
      * Create a new immutable empty collection.
-     * 
+     *
      * @param ingredientComponent The ingredient component the collection should be made for.
      * @param <T>                 The instance type.
      * @param <M>                 The matching condition parameter.
@@ -39,7 +39,7 @@ public final class IngredientCollections {
 
     /**
      * Check if the two collection are equal by order.
-     * 
+     *
      * @param c1 A first collection.
      * @param c2 A second collection.
      * @return If the two collection are equal by order.
@@ -50,7 +50,7 @@ public final class IngredientCollections {
 
     /**
      * Check if the two collection are equal by order using safe types.
-     * 
+     *
      * @param c1  A first collection.
      * @param c2  A second collection.
      * @param <T> The instance type.
@@ -78,7 +78,7 @@ public final class IngredientCollections {
 
     /**
      * Check if the two maps are equal.
-     * 
+     *
      * @param c1 A first map.
      * @param c2 A second map.
      * @return If the two maps are equal.
@@ -95,7 +95,7 @@ public final class IngredientCollections {
 
     /**
      * Check if the two maps are equal using safe types.
-     * 
+     *
      * @param c1  A first map.
      * @param c2  A second map.
      * @param <T> The instance type.
@@ -222,7 +222,7 @@ public final class IngredientCollections {
 
     /**
      * Created a sorted collection using the given comparator and all instances from the given collection.
-     * 
+     *
      * @param collection A collection to create a sorted copy of.
      * @param comparator A compatator.
      * @param <T>        The instance type.
@@ -252,7 +252,7 @@ public final class IngredientCollections {
         IngredientComponent<T, M> component = collection.getComponent();
         tag.setString(
             "component",
-            component.getName()
+            component.getRegistryName()
                 .toString());
 
         NBTTagList list = new NBTTagList();
@@ -287,7 +287,8 @@ public final class IngredientCollections {
 
         // Validate component
         String componentTypeName = tag.getString("component");
-        IngredientComponent<?, ?> component = IngredientComponent.REGISTRY.get(new ResourceLocation(componentTypeName));
+        IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
+            .getValue(new ResourceLocation(componentTypeName));
         if (component == null) {
             throw new IllegalArgumentException("No ingredient component with the given name was found: " + component);
         }
@@ -317,7 +318,7 @@ public final class IngredientCollections {
 
     /**
      * Helper interface for constructing an {@link IIngredientCollection} based on an {@link IngredientComponent}.
-     * 
+     *
      * @param <C> The storage type.
      */
     public static interface IIngredientCollectionConstructor<C extends IIngredientCollection<?, ?>> {

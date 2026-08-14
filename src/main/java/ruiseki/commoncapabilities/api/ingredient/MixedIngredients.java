@@ -34,7 +34,7 @@ public class MixedIngredients extends MixedIngredientsAdapter {
                     String.format(
                         "Invalid MixedIngredients input, empty list for %s",
                         entry.getKey()
-                            .getName()));
+                            .getRegistryName()));
             }
         }
     }

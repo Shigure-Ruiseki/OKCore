@@ -28,10 +28,21 @@ import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
+/**
+ * The ingredient components that will be registered by this mod.
+ *
+ * These should not be used directly, get their instances via the registry instead!
+ *
+ * @author rubensworks
+ */
 public class IngredientComponents {
 
+    public static IngredientComponent<ItemStack, Integer> ITEMSTACK;
+    public static IngredientComponent<FluidStack, Integer> FLUIDSTACK;
+    public static IngredientComponent<Integer, Boolean> ENERGY;
+
     public static void register() {
-        IngredientComponent.ITEMSTACK = new IngredientComponent<>(
+        ITEMSTACK = new IngredientComponent<>(
             "minecraft:itemstack",
             new IngredientMatcherItemStack(),
             new IngredientSerializerItemStack(),
@@ -63,10 +74,9 @@ public class IngredientComponents {
                     false,
                     ItemStack::getTagCompound,
                     ItemMatch.NBT,
-                    false))).setTranslationKey("recipecomponent.minecraft.itemstack")
-                        .register();
+                    false))).setTranslationKey("recipecomponent.minecraft.itemstack");
 
-        IngredientComponent.FLUIDSTACK = new IngredientComponent<>(
+        FLUIDSTACK = new IngredientComponent<>(
             "minecraft:fluidstack",
             new IngredientMatcherFluidStack(),
             new IngredientSerializerFluidStack(),
@@ -91,10 +101,9 @@ public class IngredientComponents {
                     false,
                     fluidStack -> fluidStack.tag,
                     FluidMatch.NBT,
-                    false))).setTranslationKey("recipecomponent.minecraft.fluidstack")
-                        .register();
+                    false))).setTranslationKey("recipecomponent.minecraft.fluidstack");
 
-        IngredientComponent.ENERGY = new IngredientComponent<>(
+        ENERGY = new IngredientComponent<>(
             "minecraft:energy",
             new IngredientMatcherEnergy(),
             new IngredientSerializerEnergy(),
@@ -105,24 +114,20 @@ public class IngredientComponents {
                     false,
                     amount -> amount,
                     true,
-                    true))).setTranslationKey("recipecomponent.minecraft.energy")
-                        .register();
+                    true))).setTranslationKey("recipecomponent.minecraft.energy");
 
-        IngredientComponent.ENERGY.setStorageWrapperHandler(
+        ENERGY.setStorageWrapperHandler(
             CapabilityEnergy.ENERGY,
-            new IngredientComponentStorageWrapperHandlerEnergyStorage(IngredientComponent.ENERGY));
-
-        IngredientComponent.ITEMSTACK.setStorageWrapperHandler(
+            new IngredientComponentStorageWrapperHandlerEnergyStorage(ENERGY));
+        ITEMSTACK.setStorageWrapperHandler(
             CapabilityItemHandler.ITEM_HANDLER,
-            new IngredientComponentStorageWrapperHandlerItemStack(IngredientComponent.ITEMSTACK));
-        IngredientComponent.ITEMSTACK.setStorageWrapperHandler(
+            new IngredientComponentStorageWrapperHandlerItemStack(ITEMSTACK));
+        ITEMSTACK.setStorageWrapperHandler(
             SlotlessItemHandlerConfig.CAPABILITY,
-            new IngredientComponentStorageWrapperHandlerItemStackSlotless(IngredientComponent.ITEMSTACK));
-
+            new IngredientComponentStorageWrapperHandlerItemStackSlotless(ITEMSTACK));
         IngredientComponentStorageWrapperHandlerFluidStack fluidWrapper = new IngredientComponentStorageWrapperHandlerFluidStack(
-            IngredientComponent.FLUIDSTACK);
-        IngredientComponent.FLUIDSTACK.setStorageWrapperHandler(CapabilityFluidHandler.FLUID_HANDLER, fluidWrapper);
-        IngredientComponent.FLUIDSTACK
-            .setStorageWrapperHandler(CapabilityFluidHandler.FLUID_HANDLER_ITEM, fluidWrapper);
+            FLUIDSTACK);
+        FLUIDSTACK.setStorageWrapperHandler(CapabilityFluidHandler.FLUID_HANDLER, fluidWrapper);
+        FLUIDSTACK.setStorageWrapperHandler(CapabilityFluidHandler.FLUID_HANDLER_ITEM, fluidWrapper);
     }
 }

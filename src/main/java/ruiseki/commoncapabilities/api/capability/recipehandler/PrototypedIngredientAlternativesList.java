@@ -85,7 +85,7 @@ public class PrototypedIngredientAlternativesList<T, M> implements IPrototypedIn
         @Override
         public <T, M> PrototypedIngredientAlternativesList<?, ?> deserialize(
             IngredientComponent<T, M> ingredientComponent, NBTBase tag) {
-            String componentName = ingredientComponent.getName()
+            String componentName = ingredientComponent.getRegistryName()
                 .toString();
             NBTTagList instancesTag = (NBTTagList) tag;
             List<IPrototypedIngredient<T, M>> instances = Lists.newArrayList();

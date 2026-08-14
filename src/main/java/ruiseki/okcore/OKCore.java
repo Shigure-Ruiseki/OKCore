@@ -10,8 +10,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLModIdMappingEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -33,6 +31,7 @@ import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
+import ruiseki.okcore.registries.ForgeRegistryManager;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -58,13 +57,6 @@ public class OKCore extends ModBaseVersionable {
     }
 
     @Mod.EventHandler
-    public void onConstruction(FMLConstructionEvent event) {
-        ASMDataTable asmData = event.getASMHarvestedData();
-
-        CapabilityManager.INSTANCE.injectCapabilities(asmData);
-    }
-
-    @Mod.EventHandler
     public void mappingChanged(FMLModIdMappingEvent event) {
         Ingredient.invalidateAll();
     }
@@ -79,6 +71,8 @@ public class OKCore extends ModBaseVersionable {
     @Override
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        ForgeRegistryManager.fireCreateRegistryEvents();
+        CapabilityManager.INSTANCE.injectCapabilities(event.getAsmData());
         super.preInit(event);
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
@@ -88,6 +82,7 @@ public class OKCore extends ModBaseVersionable {
     @Override
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
+        ForgeRegistryManager.fireRegistryEvents();
         super.init(event);
     }
 

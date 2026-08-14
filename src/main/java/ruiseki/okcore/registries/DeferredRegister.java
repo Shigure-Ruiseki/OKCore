@@ -24,7 +24,6 @@ import ruiseki.okcore.tag.ResourceKey;
  * @param <T> Typically Item or Block in 1.7.10
  *            use {@link ruiseki.okcore.config.extendedconfig.ExtendedConfig}
  */
-@Deprecated
 public class DeferredRegister<T> {
 
     private final ResourceKey<T> registryKey;

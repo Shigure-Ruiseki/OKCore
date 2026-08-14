@@ -118,7 +118,7 @@ public interface IMixedIngredients extends Comparable<IMixedIngredients> {
 
             componentEntry.setString(
                 "component",
-                component.getName()
+                component.getRegistryName()
                     .toString());
 
             NBTTagList instances = new NBTTagList();
@@ -151,7 +151,7 @@ public interface IMixedIngredients extends Comparable<IMixedIngredients> {
 
                 String componentName = componentEntry.getString("component");
                 IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
-                    .get(new ResourceLocation(componentName));
+                    .getValue(new ResourceLocation(componentName));
                 if (component == null) {
                     throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
                 }

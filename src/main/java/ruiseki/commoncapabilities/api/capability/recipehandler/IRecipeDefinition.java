@@ -67,7 +67,7 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
 
             componentEntry.setString(
                 "component",
-                component.getName()
+                component.getRegistryName()
                     .toString());
             NBTTagList instances = new NBTTagList();
             for (IPrototypedIngredientAlternatives ingredient : recipe.getInputs(component)) {
@@ -112,7 +112,7 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
                 if (!(entryObj instanceof NBTTagCompound componentEntry)) continue;
                 String componentName = componentEntry.getString("component");
                 IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
-                    .get(new ResourceLocation(componentName));
+                    .getValue(new ResourceLocation(componentName));
                 if (component == null) {
                     throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
                 }

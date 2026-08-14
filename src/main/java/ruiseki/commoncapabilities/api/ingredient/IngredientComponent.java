@@ -1,7 +1,6 @@
 package ruiseki.commoncapabilities.api.ingredient;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -16,7 +15,10 @@ import net.minecraftforge.fluids.FluidStack;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+import com.gtnewhorizon.gtnhlib.eventbus.Phase;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.commoncapabilities.api.ingredient.capability.AttachCapabilitiesEventIngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageHandler;
@@ -26,22 +28,35 @@ import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.registries.IForgeRegistry;
+import ruiseki.okcore.registries.IForgeRegistryEntry;
+import ruiseki.okcore.registries.RegistryBuilder;
+import ruiseki.okcore.registries.RegistryEvent;
 
 /**
  * A IngredientComponent is a type of component that can be used as ingredients inside recipes.
- * 1.7.10 Backport Version.
  *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
  */
-public final class IngredientComponent<T, M> implements Comparable<IngredientComponent<?, ?>> {
+@EventBusSubscriber(phase = Phase.CONSTRUCT)
+public final class IngredientComponent<T, M>
+    implements IForgeRegistryEntry<IngredientComponent<?, ?>>, Comparable<IngredientComponent<?, ?>> {
 
-    public static final Map<ResourceLocation, IngredientComponent<?, ?>> REGISTRY = new HashMap<>();
+    public static IForgeRegistry<IngredientComponent<?, ?>> REGISTRY;
 
-    public static IngredientComponent<ItemStack, Integer> ITEMSTACK;
-    public static IngredientComponent<FluidStack, Integer> FLUIDSTACK;
-    public static IngredientComponent<Integer, Boolean> ENERGY;
+    @SubscribeEvent
+    public static void onRegistriesCreate(RegistryEvent.NewRegistry event) {
+        REGISTRY = new RegistryBuilder<IngredientComponent<?, ?>>()
+            .setName(new ResourceLocation("commoncapabilities", "registry:ingredientcomponents"))
+            .setType((Class<IngredientComponent<?, ?>>) (Class) IngredientComponent.class)
+            .create();
+    }
+
+    public static IngredientComponent<ItemStack, Integer> ITEMSTACK = null;
+    public static IngredientComponent<FluidStack, Integer> FLUIDSTACK = null;
+    public static IngredientComponent<Integer, Boolean> ENERGY = null;
 
     @CapabilityInject(IIngredientComponentStorageHandler.class)
     private static Capability<IIngredientComponentStorageHandler> CAPABILITY_INGREDIENT_COMPONENT_STORAGE_HANDLER = null;
@@ -61,12 +76,13 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
 
     public IngredientComponent(ResourceLocation name, IIngredientMatcher<T, M> matcher,
         IIngredientSerializer<T, M> serializer, List<IngredientComponentCategoryType<T, M, ?>> categoryTypes) {
-        this.name = name;
+        this.setRegistryName(name);
         this.matcher = matcher;
         this.serializer = serializer;
         this.categoryTypes = Lists.newArrayList(categoryTypes);
         this.storageWrapperCapabilities = Lists.newArrayList();
         this.storageWrapperHandler = Maps.newIdentityHashMap();
+        this.capabilityDispatcher = gatherCapabilities();
 
         // Validate if the combination of all match conditions equals the exact match condition.
         M matchCondition = this.matcher.getAnyMatchCondition();
@@ -96,11 +112,6 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
         this(new ResourceLocation(name), matcher, serializer, categoryTypes);
     }
 
-    public IngredientComponent<T, M> register() {
-        REGISTRY.put(this.name, this);
-        return this;
-    }
-
     public ResourceLocation getName() {
         return name;
     }
@@ -108,6 +119,22 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
     @Override
     public String toString() {
         return "[IngredientComponent " + this.name + " " + hashCode() + "]";
+    }
+
+    @Override
+    public IngredientComponent<?, ?> setRegistryName(ResourceLocation name) {
+        this.name = name;
+        return this;
+    }
+
+    @Override
+    public ResourceLocation getRegistryName() {
+        return name;
+    }
+
+    @Override
+    public Class<IngredientComponent<?, ?>> getRegistryType() {
+        return (Class) IngredientComponent.class;
     }
 
     protected CapabilityDispatcher gatherCapabilities() {
@@ -279,10 +306,10 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
 
     @Override
     public int compareTo(IngredientComponent<?, ?> that) {
-        return this.getName()
+        return this.getRegistryName()
             .toString()
             .compareTo(
-                that.getName()
+                that.getRegistryName()
                     .toString());
     }
 }

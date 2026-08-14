@@ -1,7 +1,10 @@
 package ruiseki.commoncapabilities;
 
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.logging.log4j.Level;
 
@@ -13,10 +16,12 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.commoncapabilities.api.capability.block.BlockCapabilities;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngredientAlternatives;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
+import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.capability.ingredient.storage.IngredientComponentStorageHandlerConfig;
 import ruiseki.commoncapabilities.capability.inventorystate.InventoryStateConfig;
 import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
@@ -29,6 +34,7 @@ import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.modcompat.ModCompatLoader;
 import ruiseki.okcore.proxy.ICommonProxy;
+import ruiseki.okcore.registries.RegistryEvent;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -69,8 +75,6 @@ public class CommonCapabilities extends ModBase {
         IPrototypedIngredientAlternatives.SERIALIZERS.put(
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER.getId(),
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER);
-
-        IngredientComponents.register();
     }
 
     @Mod.EventHandler
@@ -130,6 +134,32 @@ public class CommonCapabilities extends ModBase {
     @Override
     public ICommonProxy getProxy() {
         return proxy;
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings("unchecked")
+    public void onRegister(RegistryEvent.Register event) {
+        if (event.getRegistry() == IngredientComponent.REGISTRY) {
+            IPrototypedIngredientAlternatives.SERIALIZERS.put(
+                PrototypedIngredientAlternativesList.SERIALIZER.getId(),
+                PrototypedIngredientAlternativesList.SERIALIZER);
+            IPrototypedIngredientAlternatives.SERIALIZERS.put(
+                PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER.getId(),
+                PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER);
+
+            IngredientComponents.register();
+            event.getRegistry()
+                .registerAll(
+                    IngredientComponents.ITEMSTACK,
+                    IngredientComponents.FLUIDSTACK,
+                    IngredientComponents.ENERGY);
+            IngredientComponent.ITEMSTACK = (IngredientComponent<ItemStack, Integer>) IngredientComponent.REGISTRY
+                .getValue(new ResourceLocation("minecraft", "itemstack"));
+            IngredientComponent.FLUIDSTACK = (IngredientComponent<FluidStack, Integer>) IngredientComponent.REGISTRY
+                .getValue(new ResourceLocation("minecraft", "fluidstack"));
+            IngredientComponent.ENERGY = (IngredientComponent<Integer, Boolean>) IngredientComponent.REGISTRY
+                .getValue(new ResourceLocation("minecraft", "energy"));
+        }
     }
 
     public static void clog(String message) {

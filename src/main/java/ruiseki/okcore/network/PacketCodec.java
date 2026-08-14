@@ -78,6 +78,19 @@ public abstract class PacketCodec extends PacketBase {
             }
         });
 
+        codecActions.put(Double.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeDouble((Double) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readDouble();
+            }
+        });
+
         codecActions.put(int.class, new ICodecAction() {
 
             @Override
@@ -91,7 +104,33 @@ public abstract class PacketCodec extends PacketBase {
             }
         });
 
+        codecActions.put(Integer.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeInt((Integer) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readInt();
+            }
+        });
+
         codecActions.put(short.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeShort((Short) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readShort();
+            }
+        });
+
+        codecActions.put(Short.class, new ICodecAction() {
 
             @Override
             public void encode(Object object, ExtendedBuffer output) {
@@ -117,6 +156,19 @@ public abstract class PacketCodec extends PacketBase {
             }
         });
 
+        codecActions.put(Boolean.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeBoolean((Boolean) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readBoolean();
+            }
+        });
+
         codecActions.put(float.class, new ICodecAction() {
 
             @Override
@@ -127,6 +179,96 @@ public abstract class PacketCodec extends PacketBase {
             @Override
             public Object decode(ExtendedBuffer input) {
                 return input.readFloat();
+            }
+        });
+
+        codecActions.put(Float.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeFloat((Float) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readFloat();
+            }
+        });
+
+        codecActions.put(long.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeLong((Long) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readLong();
+            }
+        });
+
+        codecActions.put(Long.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeLong((Long) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readLong();
+            }
+        });
+        codecActions.put(byte.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeByte((byte) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readByte();
+            }
+        });
+
+        codecActions.put(Byte.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeByte((Byte) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readByte();
+            }
+        });
+
+        codecActions.put(char.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeChar((char) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readChar();
+            }
+        });
+
+        codecActions.put(Character.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                output.writeChar((Character) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return input.readChar();
             }
         });
 

@@ -67,7 +67,6 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
         this.categoryTypes = Lists.newArrayList(categoryTypes);
         this.storageWrapperCapabilities = Lists.newArrayList();
         this.storageWrapperHandler = Maps.newIdentityHashMap();
-        this.capabilityDispatcher = gatherCapabilities();
 
         // Validate if the combination of all match conditions equals the exact match condition.
         M matchCondition = this.matcher.getAnyMatchCondition();

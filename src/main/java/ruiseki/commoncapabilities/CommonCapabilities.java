@@ -70,14 +70,13 @@ public class CommonCapabilities extends ModBase {
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER.getId(),
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER);
 
+        IngredientComponents.register();
     }
 
     @Mod.EventHandler
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
-        // Call after other mod register event
-        IngredientComponents.register();
     }
 
     @Mod.EventHandler

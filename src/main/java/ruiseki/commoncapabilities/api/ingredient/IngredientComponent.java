@@ -25,6 +25,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * A IngredientComponent is a type of component that can be used as ingredients inside recipes.
@@ -54,7 +55,7 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
     private final List<Capability<?>> storageWrapperCapabilities;
     private final Map<Capability<?>, IIngredientComponentStorageWrapperHandler<T, M, ?>> storageWrapperHandler;
     private final IngredientComponentCategoryType<T, M, ?> primaryQuantifier;
-    private final CapabilityDispatcher capabilityDispatcher;
+    private CapabilityDispatcher capabilityDispatcher;
     private ResourceLocation name;
     private String translationKey;
 
@@ -118,27 +119,16 @@ public final class IngredientComponent<T, M> implements Comparable<IngredientCom
     }
 
     /**
-     * If this component has the given capability.
-     *
-     * @param capability The capability to check.
-     * @return If this has the given capability/
-     */
-    public boolean hasCapability(Capability<?> capability) {
-        return capabilityDispatcher != null && capabilityDispatcher.getCapability(capability, null)
-            .isPresent();
-    }
-
-    /**
      * Get the given capability.
      *
      * @param capability The capability to get.
      * @param <TC>       The capability type.
      * @return The capability instance.
      */
-    public <TC> TC getCapability(Capability<TC> capability) {
-        return capabilityDispatcher == null ? null
-            : capabilityDispatcher.getCapability(capability, null)
-                .getOrNull();
+    public <TC> LazyOptional<TC> getCapability(Capability<TC> capability) {
+        if (this.capabilityDispatcher == null) capabilityDispatcher = this.gatherCapabilities();
+        return capabilityDispatcher == null ? LazyOptional.empty()
+            : capabilityDispatcher.getCapability(capability, null);
     }
 
     public IngredientComponent<T, M> setTranslationKey(String translationKey) {

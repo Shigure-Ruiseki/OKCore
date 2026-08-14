@@ -1,5 +1,6 @@
 package ruiseki.okcore.helper;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -23,52 +24,59 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import cpw.mods.fml.common.Loader;
-import ruiseki.okcore.recipe.IRecipeOK;
-import ruiseki.okcore.recipe.IRecipeType;
-import ruiseki.okcore.recipe.RecipeManager;
-import ruiseki.okcore.recipe.RecipeRegistry;
 
 /**
- * Several convenience functions for crafting.
+ * Several convenience functions for crafting using Minecraft standard CraftingManager.
  *
  * @author rubensworks
  */
 public class CraftingHelpers {
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static final RecipeManager.CachedCheck<InventoryCrafting, IRecipeOK<InventoryCrafting>> CRAFTING_CHECK = RecipeManager
-        .createCheck((IRecipeType) RecipeRegistry.CRAFTING);
-
-    private static final LoadingCache<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipeOK<?>>> CACHE_RECIPES = CacheBuilder
+    private static final LoadingCache<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>> CACHE_RECIPES = CacheBuilder
         .newBuilder()
         .expireAfterWrite(1, TimeUnit.MINUTES)
-        .build(new CacheLoader<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipeOK<?>>>() {
+        .build(new CacheLoader<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>>() {
 
             @Override
-            public Optional<IRecipeOK<?>> load(Pair<CacheableInventoryCrafting, Integer> key) throws Exception {
+            public Optional<IRecipe> load(Pair<CacheableInventoryCrafting, Integer> key) throws Exception {
                 World world = DimensionManager.getWorld(key.getRight());
                 if (world == null) return Optional.empty();
 
-                return CRAFTING_CHECK.getRecipeFor(
-                    key.getLeft()
-                        .getInventoryCrafting(),
-                    world)
-                    .map(recipe -> (IRecipeOK<?>) recipe);
+                InventoryCrafting inv = key.getLeft()
+                    .getInventoryCrafting();
+
+                IRecipe matchedRecipe = findRecipeFromCraftingManager(inv, world);
+                return Optional.ofNullable(matchedRecipe);
             }
         });
 
-    public static IRecipeOK<?> findCraftingRecipe(ItemStack itemStack, int index) throws IllegalArgumentException {
+    public static IRecipe findRecipeFromCraftingManager(InventoryCrafting inv, World world) {
+        List<IRecipe> recipeList = CraftingManager.getInstance()
+            .getRecipeList();
+        for (IRecipe recipe : recipeList) {
+            if (recipe != null && recipe.matches(inv, world)) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+
+    public static IRecipe findCraftingRecipe(ItemStack itemStack, int index) throws IllegalArgumentException {
         int indexAttempt = index;
-        for (IRecipeOK<?> recipe : RecipeManager.getManager()
-            .getRecipes()) {
-            if (itemStacksEqual(recipe.getRecipeOutput(), itemStack) && indexAttempt-- == 0) {
+        List<IRecipe> recipeList = CraftingManager.getInstance()
+            .getRecipeList();
+
+        for (IRecipe recipe : recipeList) {
+            if (recipe != null && recipe.getRecipeOutput() != null
+                && itemStacksEqual(recipe.getRecipeOutput(), itemStack)
+                && indexAttempt-- == 0) {
                 return recipe;
             }
         }
         throw new IllegalArgumentException("Could not find crafting recipe for " + itemStack + " with index " + index);
     }
 
-    public static IRecipeOK<?> findMatchingRecipeCached(InventoryCrafting inventoryCrafting, World world,
+    public static IRecipe findMatchingRecipeCached(InventoryCrafting inventoryCrafting, World world,
         boolean uniqueInventory) {
         if (world == null || world.provider == null) return null;
         return CACHE_RECIPES.getUnchecked(
@@ -76,7 +84,6 @@ public class CraftingHelpers {
             .orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
     public static Map.Entry<ItemStack, ItemStack> findFurnaceRecipe(ItemStack itemStack, int index)
         throws IllegalArgumentException {
         int indexAttempt = index;

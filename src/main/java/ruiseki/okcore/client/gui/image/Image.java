@@ -32,8 +32,12 @@ public class Image implements IImage {
 
     @Override
     public void draw(Gui gui, int x, int y) {
+        GlStateManager.enableBlend();
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().renderEngine.bindTexture(resourceLocation);
         gui.drawTexturedModalRect(x, y, sheetX, sheetY, sheetWidth, sheetHeight);
+        GlStateManager.disableBlend();
     }
 
     @Override

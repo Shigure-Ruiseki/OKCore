@@ -46,7 +46,6 @@ import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
@@ -655,7 +654,7 @@ public class GuiHelpers {
             GL11.glEnable(GL11.GL_BLEND);
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             RenderHelper.enableGUIStandardItemLighting();
-            GL11.glEnable(GL12.GL_ALIASED_LINE_WIDTH_RANGE);
+
             GL11.glEnable(GL11.GL_DEPTH_TEST);
 
             int level = (int) (height * (((double) fluidStack.amount) / capacity));
@@ -687,11 +686,11 @@ public class GuiHelpers {
                 verticalOffset += 16;
             }
 
-            // Reset color when done
+            // Reset color & GL States when done
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-
             RenderHelper.disableStandardItemLighting();
             GL11.glDisable(GL11.GL_DEPTH_TEST);
+            GL11.glDisable(GL11.GL_BLEND);
             GL11.glPopMatrix();
         }
     }

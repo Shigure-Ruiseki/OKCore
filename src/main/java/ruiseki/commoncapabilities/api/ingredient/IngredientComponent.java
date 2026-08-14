@@ -152,7 +152,6 @@ public final class IngredientComponent<T, M>
      * @return The capability instance.
      */
     public <TC> LazyOptional<TC> getCapability(Capability<TC> capability) {
-        if (this.capabilityDispatcher == null) capabilityDispatcher = this.gatherCapabilities();
         return capabilityDispatcher == null ? LazyOptional.empty()
             : capabilityDispatcher.getCapability(capability, null);
     }

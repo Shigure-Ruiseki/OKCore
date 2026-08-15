@@ -73,16 +73,20 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
     @Override
     public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
         float hitX, float hitY, float hitZ, int metadata) {
-        boolean placed = super.placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata);
-        if (placed && !world.isRemote && this.field_150939_a instanceof IConfigurableBlock configurableBlock) {
-            BlockPos pos = new BlockPos(x, y, z);
-            ForgeDirection facing = ForgeDirection.getOrientation(side);
-            BlockState state = configurableBlock
-                .getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, metadata, player);
+        if (this.field_150939_a instanceof IConfigurableBlock configurableBlock) {
+            BlockState state = configurableBlock.getStateForPlacement(
+                world,
+                new BlockPos(x, y, z),
+                ForgeDirection.getOrientation(side),
+                hitX,
+                hitY,
+                hitZ,
+                metadata,
+                player);
             if (state != null) {
-                state.place(world, x, y, z, 3);
+                if (!state.place(world, x, y, z, 3)) return false;
             }
         }
-        return placed;
+        return super.placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata);
     }
 }

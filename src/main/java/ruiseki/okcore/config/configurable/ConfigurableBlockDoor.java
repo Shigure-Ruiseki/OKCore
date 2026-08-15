@@ -10,7 +10,9 @@ import net.minecraft.world.World;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.BlockDoorConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * Door block that can hold ExtendedConfigs.
@@ -31,9 +33,9 @@ public class ConfigurableBlockDoor extends BlockDoor implements IConfigurableBlo
      * @param config   Config for this block.
      * @param material The door material.
      */
-    public ConfigurableBlockDoor(BlockDoorConfig config, Material material) {
+    public ConfigurableBlockDoor(ExtendedConfig<BlockConfig> config, Material material) {
         super(material);
-        setConfig(config);
+        setConfig((BlockDoorConfig) config);
         setBlockName(config.getUnlocalizedName());
         disableStats();
     }

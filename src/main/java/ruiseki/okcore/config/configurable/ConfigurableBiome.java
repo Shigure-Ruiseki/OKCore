@@ -3,6 +3,7 @@ package ruiseki.okcore.config.configurable;
 import net.minecraft.world.biome.BiomeGenBase;
 
 import ruiseki.okcore.config.extendedconfig.BiomeConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -20,9 +21,11 @@ public class ConfigurableBiome extends BiomeGenBase implements IConfigurable<Bio
      *
      * @param eConfig Config for this enchantment.
      */
-    protected ConfigurableBiome(BiomeConfig eConfig) {
-        super(eConfig.getId());
-        this.setConfig(eConfig);
+    protected ConfigurableBiome(ExtendedConfig<BiomeConfig> eConfig) {
+        super(
+            eConfig.downCast()
+                .getId());
+        this.setConfig((BiomeConfig) eConfig);
         this.setBiomeName(getLocalizedName());
 
     }

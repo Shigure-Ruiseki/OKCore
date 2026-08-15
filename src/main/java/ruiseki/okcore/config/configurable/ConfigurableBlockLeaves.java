@@ -11,6 +11,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -121,6 +122,11 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
         return Blocks.leaves.shouldSideBeRendered(worldIn, x, y, z, side);
     }
 
+    @Override
+    public IIcon getIcon(int side, int meta) {
+        return null;
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void getSubBlocks(Item itemIn, CreativeTabs tab, List list) {
@@ -142,7 +148,7 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
 
     @Override
     public ItemStack getPickBlock(net.minecraft.util.MovingObjectPosition target, World world, int x, int y, int z,
-                                  EntityPlayer player) {
+        EntityPlayer player) {
         return new ItemStack(this, 1, world.getBlockMetadata(x, y, z) & 3);
     }
 

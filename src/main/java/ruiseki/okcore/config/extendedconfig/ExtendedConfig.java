@@ -151,7 +151,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
             if (getOverriddenSubInstance() == null && this.getHolderType()
                 .hasUniqueInstance()) {
                 Constructor<?> constructor = this.getElement()
-                    .getDeclaredConstructor(ExtendedConfig.class);
+                    .getDeclaredConstructor(this.getClass());
                 if (constructor == null) {
                     throw new OKCoreConfigException(
                         String.format(

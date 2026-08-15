@@ -5,15 +5,22 @@ import java.util.List;
 import net.minecraft.block.BlockLog;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.experimental.Delegate;
+import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.block.property.IEnumProperty;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 
 public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock, IBlockPropertyProvider {
@@ -21,14 +28,30 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
+    @BlockProperty
+    public static final IEnumProperty<EnumAxis> AXIS = IEnumProperty
+        .construct("axis", EnumAxis.class, EnumAxis.Y, (world, x, y, z) -> {
+            int meta = world.getBlockMetadata(x, y, z) & 12; // 0b1100
+            return switch (meta) {
+                case 4 -> EnumAxis.X;
+                case 8 -> EnumAxis.Z;
+                case 12 -> EnumAxis.NONE;
+                default -> EnumAxis.Y;
+            };
+        }, (world, x, y, z, value) -> {
+            int meta = world.getBlockMetadata(x, y, z) & 3;
+            int axisBits = switch (value) {
+                case X -> 4;
+                case Z -> 8;
+                case NONE -> 12;
+                case Y -> 0;
+            };
+            world.setBlockMetadataWithNotify(x, y, z, meta | axisBits, 4);
+        });
+
     protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
-    /**
-     * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
-     */
     public ConfigurableBlockLog(ExtendedConfig<BlockConfig> eConfig) {
         this.setConfig((BlockConfig) eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
@@ -57,20 +80,40 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
 
     @Override
     public void registerBlockIcons(IIconRegister reg) {
-        this.field_150167_a = new IIcon[1];
-        this.field_150166_b = new IIcon[1];
-        this.field_150167_a = new IIcon[] { reg.registerIcon(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId()) };
-        this.field_150166_b = new IIcon[] { reg.registerIcon(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId()
-                + "_top") };
+
     }
 
-    public static enum EnumAxis {
+    @Override
+    public int onBlockPlaced(World worldIn, int x, int y, int z, int side, float subX, float subY, float subZ,
+        int meta) {
+        // Override to use blockstate
+        return meta;
+    }
+
+    @Override
+    public BlockState getStateForPlacement(World world, BlockPos pos, ForgeDirection facing, float hitX, float hitY,
+        float hitZ, int meta, EntityLivingBase placer) {
+        BlockState state = IConfigurableBlock.super.getStateForPlacement(
+            world,
+            pos,
+            facing,
+            hitX,
+            hitY,
+            hitZ,
+            meta,
+            placer);
+
+        EnumAxis axis = switch (facing) {
+            case EAST, WEST -> EnumAxis.X;
+            case NORTH, SOUTH -> EnumAxis.Z;
+            default -> EnumAxis.Y;
+        };
+
+        state.setPropertyValue(AXIS, axis);
+        return state;
+    }
+
+    public enum EnumAxis {
 
         X("x"),
         Y("y"),
@@ -79,15 +122,16 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
 
         private final String name;
 
-        private EnumAxis(String name) {
+        EnumAxis(String name) {
             this.name = name;
         }
 
-        public String toString() {
+        public String getName() {
             return this.name;
         }
 
-        public String getName() {
+        @Override
+        public String toString() {
             return this.name;
         }
     }

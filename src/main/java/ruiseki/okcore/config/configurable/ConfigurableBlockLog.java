@@ -5,21 +5,14 @@ import java.util.List;
 import net.minecraft.block.BlockLog;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
-
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
-import com.gtnewhorizon.gtnhlib.geometry.Axis;
 
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 
 public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock, IBlockPropertyProvider {
@@ -59,35 +52,5 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
     @Override
     public void registerBlockIcons(IIconRegister reg) {
 
-    }
-
-    @Override
-    public int onBlockPlaced(World worldIn, int x, int y, int z, int side, float subX, float subY, float subZ,
-        int meta) {
-        // Override to use blockstate
-        return meta;
-    }
-
-    @Override
-    public BlockState getStateForPlacement(World world, BlockPos pos, ForgeDirection facing, float hitX, float hitY,
-        float hitZ, int meta, EntityLivingBase placer) {
-        BlockState state = IConfigurableBlock.super.getStateForPlacement(
-            world,
-            pos,
-            facing,
-            hitX,
-            hitY,
-            hitZ,
-            meta,
-            placer);
-
-        Axis axis = switch (facing) {
-            case EAST, WEST -> Axis.X;
-            case NORTH, SOUTH -> Axis.Z;
-            default -> Axis.Y;
-        };
-
-        state.setPropertyValue("axis", axis);
-        return state;
     }
 }

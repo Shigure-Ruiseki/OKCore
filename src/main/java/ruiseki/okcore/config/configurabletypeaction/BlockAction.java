@@ -21,6 +21,7 @@ import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.config.configurable.IConfigurableBlock;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
@@ -35,11 +36,11 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
      * Registers a block.
      *
      * @param block        The block instance.
-     * @param name         The unique name for this block.
+     * @param config       The config.
      * @param creativeTabs The creative tab this block will reside in.
      */
-    public static void register(Block block, String name, @Nullable CreativeTabs creativeTabs) {
-        register(block, null, name, creativeTabs);
+    public static void register(Block block, ExtendedConfig<BlockConfig> config, @Nullable CreativeTabs creativeTabs) {
+        register(block, null, config, creativeTabs);
     }
 
     /**
@@ -47,12 +48,13 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
      *
      * @param block        The block instance.
      * @param itemclass    The optional item block class.
-     * @param name         The unique name for this block.
+     * @param config       The config.
      * @param creativeTabs The creative tab this block will reside in.
      */
     @SuppressWarnings("unchecked")
-    public static void register(Block block, @Nullable Class<? extends Item> itemclass, String name,
-        @Nullable CreativeTabs creativeTabs) {
+    public static void register(Block block, @Nullable Class<? extends Item> itemclass,
+        ExtendedConfig<BlockConfig> config, @Nullable CreativeTabs creativeTabs) {
+        String name = config.getSubUniqueName();
         if (itemclass == null) {
             GameRegistry.registerBlock(block, null, name);
         } else if (ItemBlock.class.isAssignableFrom(itemclass)) {
@@ -95,7 +97,7 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig> {
 
         Block block = (Block) eConfig.getSubInstance();
 
-        register(block, eConfig.getItemBlockClass(), eConfig.getSubUniqueName(), eConfig.getTargetTab());
+        register(block, eConfig.getItemBlockClass(), eConfig, eConfig.getTargetTab());
 
         GuiHandler.GuiType guiType = GuiHandler.GuiType.BLOCK;
         if (eConfig.getHolderType()

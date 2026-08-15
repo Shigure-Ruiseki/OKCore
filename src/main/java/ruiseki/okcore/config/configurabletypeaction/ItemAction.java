@@ -23,12 +23,12 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
 
     /**
      * Registers an item.
-     * 
+     *
      * @param item         The item instance.
      * @param config       The config.
      * @param creativeTabs The creative tab this block will reside in.
      */
-    public static void register(Item item, ExtendedConfig<?> config, @Nullable CreativeTabs creativeTabs) {
+    public static void register(Item item, ExtendedConfig<ItemConfig> config, @Nullable CreativeTabs creativeTabs) {
         GameRegistry.registerItem(item, config.getSubUniqueName());
 
         if (creativeTabs != null) {

@@ -14,10 +14,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.experimental.Delegate;
-import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.block.property.IEnumProperty;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -27,27 +25,6 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
-
-    @BlockProperty
-    public static final IEnumProperty<EnumAxis> AXIS = IEnumProperty
-        .construct("axis", EnumAxis.class, EnumAxis.Y, (world, x, y, z) -> {
-            int meta = world.getBlockMetadata(x, y, z) & 12; // 0b1100
-            return switch (meta) {
-                case 4 -> EnumAxis.X;
-                case 8 -> EnumAxis.Z;
-                case 12 -> EnumAxis.NONE;
-                default -> EnumAxis.Y;
-            };
-        }, (world, x, y, z, value) -> {
-            int meta = world.getBlockMetadata(x, y, z) & 3;
-            int axisBits = switch (value) {
-                case X -> 4;
-                case Z -> 8;
-                case NONE -> 12;
-                case Y -> 0;
-            };
-            world.setBlockMetadataWithNotify(x, y, z, meta | axisBits, 4);
-        });
 
     protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
@@ -109,7 +86,7 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
             default -> EnumAxis.Y;
         };
 
-        state.setPropertyValue(AXIS, axis);
+        state.setPropertyValue("axis", axis);
         return state;
     }
 

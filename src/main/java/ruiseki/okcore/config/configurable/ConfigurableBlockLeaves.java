@@ -6,24 +6,23 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLeaves;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
+import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
+import ruiseki.okcore.block.property.BooleanProperty;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.BlockStateHelpers;
 
 /**
  * Block that extends from BlockLeaves that can hold ExtendedConfigs
@@ -36,10 +35,36 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
+    @BlockProperty
+    public static final BooleanProperty CHECK_DECAY = BooleanProperty.construct(
+        "check_decay",
+        true,
+        (world, x, y, z) -> (world.getBlockMetadata(x, y, z) & 8) != 0,
+        (world, x, y, z, value) -> {
+            int meta = world.getBlockMetadata(x, y, z);
+            int newMeta = value ? (meta | 8) : (meta & ~8);
+            world.setBlockMetadataWithNotify(x, y, z, newMeta, 4);
+        });
+
+    @BlockProperty
+    public static final BooleanProperty DECAYABLE = BooleanProperty.construct(
+        "decayable",
+        true,
+        (world, x, y, z) -> (world.getBlockMetadata(x, y, z) & 4) == 0,
+        (world, x, y, z, value) -> {
+            int meta = world.getBlockMetadata(x, y, z);
+            int newMeta = value ? (meta & ~4) : (meta | 4);
+            world.setBlockMetadataWithNotify(x, y, z, newMeta, 4);
+        });
+
+    @BlockProperty
+    public static final BooleanProperty FANCY = BooleanProperty
+        .construct("fancy", true, (world, x, y, z) -> !Blocks.leaves.isOpaqueCube(), (world, x, y, z, value) -> {});
+
     protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
-    private int[] field_150128_a;
+    private int[] surroundings;
 
     /**
      * Make a new block instance.
@@ -62,7 +87,7 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
 
     @Override
     public BlockConfig getConfig() {
-        return (BlockConfig) eConfig;
+        return eConfig;
     }
 
     @Override
@@ -117,36 +142,13 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
 
     @Override
     public ItemStack getPickBlock(net.minecraft.util.MovingObjectPosition target, World world, int x, int y, int z,
-        EntityPlayer player) {
+                                  EntityPlayer player) {
         return new ItemStack(this, 1, world.getBlockMetadata(x, y, z) & 3);
     }
 
     @Override
     public String[] func_150125_e() {
         return new String[] { eConfig.getNamedId() };
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public IIcon getIcon(int side, int meta) {
-        return field_150129_M[field_150121_P ? 1 : 0][(meta % 4)];
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public void registerBlockIcons(IIconRegister iconRegister) {
-        this.field_150129_M[0] = new IIcon[1];
-        this.field_150129_M[1] = new IIcon[1];
-
-        this.field_150129_M[0][0] = iconRegister.registerIcon(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId());
-        this.field_150129_M[1][0] = iconRegister.registerIcon(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId()
-                + "_opaque");
     }
 
     @Override
@@ -169,14 +171,15 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
             int l = worldIn.getBlockMetadata(x, y, z);
             int decayRange = getRange(l % 4);
 
-            if ((l & 8) != 0 && (l & 4) == 0) {
+            if (BlockStateHelpers.get(worldIn, x, y, z, CHECK_DECAY)
+                && BlockStateHelpers.get(worldIn, x, y, z, DECAYABLE)) {
                 int i1 = decayRange + 1;
                 byte b1 = 32;
                 int j1 = b1 * b1;
                 int k1 = b1 / 2;
 
-                if (this.field_150128_a == null) {
-                    this.field_150128_a = new int[b1 * b1 * b1];
+                if (this.surroundings == null) {
+                    this.surroundings = new int[b1 * b1 * b1];
                 }
 
                 int l1;
@@ -193,12 +196,12 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
                                 int i = (l1 + k1) * j1 + (i2 + k1) * b1 + j2 + k1;
                                 if (!block.canSustainLeaves(worldIn, x + l1, y + i2, z + j2)) {
                                     if (block.isLeaves(worldIn, x + l1, y + i2, z + j2)) {
-                                        this.field_150128_a[i] = -2;
+                                        this.surroundings[i] = -2;
                                     } else {
-                                        this.field_150128_a[i] = -1;
+                                        this.surroundings[i] = -1;
                                     }
                                 } else {
-                                    this.field_150128_a[i] = 0;
+                                    this.surroundings[i] = 0;
                                 }
                             }
                         }
@@ -208,35 +211,35 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
                         for (i2 = -decayRange; i2 <= decayRange; ++i2) {
                             for (j2 = -decayRange; j2 <= decayRange; ++j2) {
                                 for (int k2 = -decayRange; k2 <= decayRange; ++k2) {
-                                    if (this.field_150128_a[(i2 + k1) * j1 + (j2 + k1) * b1 + k2 + k1] == l1 - 1) {
+                                    if (this.surroundings[(i2 + k1) * j1 + (j2 + k1) * b1 + k2 + k1] == l1 - 1) {
                                         int i = (i2 + k1 - 1) * j1 + (j2 + k1) * b1 + k2 + k1;
-                                        if (this.field_150128_a[i] == -2) {
-                                            this.field_150128_a[i] = l1;
+                                        if (this.surroundings[i] == -2) {
+                                            this.surroundings[i] = l1;
                                         }
 
                                         int i3 = (i2 + k1 + 1) * j1 + (j2 + k1) * b1 + k2 + k1;
-                                        if (this.field_150128_a[i3] == -2) {
-                                            this.field_150128_a[i3] = l1;
+                                        if (this.surroundings[i3] == -2) {
+                                            this.surroundings[i3] = l1;
                                         }
 
                                         int i4 = (i2 + k1) * j1 + (j2 + k1 - 1) * b1 + k2 + k1;
-                                        if (this.field_150128_a[i4] == -2) {
-                                            this.field_150128_a[i4] = l1;
+                                        if (this.surroundings[i4] == -2) {
+                                            this.surroundings[i4] = l1;
                                         }
 
                                         int i5 = (i2 + k1) * j1 + (j2 + k1 + 1) * b1 + k2 + k1;
-                                        if (this.field_150128_a[i5] == -2) {
-                                            this.field_150128_a[i5] = l1;
+                                        if (this.surroundings[i5] == -2) {
+                                            this.surroundings[i5] = l1;
                                         }
 
                                         int i6 = (i2 + k1) * j1 + (j2 + k1) * b1 + (k2 + k1 - 1);
-                                        if (this.field_150128_a[i6] == -2) {
-                                            this.field_150128_a[i6] = l1;
+                                        if (this.surroundings[i6] == -2) {
+                                            this.surroundings[i6] = l1;
                                         }
 
                                         int i7 = (i2 + k1) * j1 + (j2 + k1) * b1 + k2 + k1 + 1;
-                                        if (this.field_150128_a[i7] == -2) {
-                                            this.field_150128_a[i7] = l1;
+                                        if (this.surroundings[i7] == -2) {
+                                            this.surroundings[i7] = l1;
                                         }
                                     }
                                 }
@@ -245,10 +248,10 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
                     }
                 }
 
-                l1 = this.field_150128_a[k1 * j1 + k1 * b1 + k1];
+                l1 = this.surroundings[k1 * j1 + k1 * b1 + k1];
 
                 if (l1 >= 0) {
-                    worldIn.setBlockMetadataWithNotify(x, y, z, l & -9, 4);
+                    BlockStateHelpers.set(worldIn, x, y, z, CHECK_DECAY, false);
                 } else {
                     this.removeLeaves(worldIn, x, y, z);
                 }

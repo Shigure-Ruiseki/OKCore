@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+import com.gtnewhorizon.gtnhlib.geometry.Axis;
 
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
@@ -80,36 +81,13 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
             meta,
             placer);
 
-        EnumAxis axis = switch (facing) {
-            case EAST, WEST -> EnumAxis.X;
-            case NORTH, SOUTH -> EnumAxis.Z;
-            default -> EnumAxis.Y;
+        Axis axis = switch (facing) {
+            case EAST, WEST -> Axis.X;
+            case NORTH, SOUTH -> Axis.Z;
+            default -> Axis.Y;
         };
 
         state.setPropertyValue("axis", axis);
         return state;
-    }
-
-    public enum EnumAxis {
-
-        X("x"),
-        Y("y"),
-        Z("z"),
-        NONE("none");
-
-        private final String name;
-
-        EnumAxis(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        @Override
-        public String toString() {
-            return this.name;
-        }
     }
 }

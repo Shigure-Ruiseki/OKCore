@@ -4,10 +4,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
 public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
@@ -64,10 +67,30 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
         }
     }
 
+    private void removeExistingProperty(Block block, String propertyName) {
+        try {
+            Field field = BlockPropertyRegistry.class.getDeclaredField("BLOCK_PROPERTIES");
+            field.setAccessible(true);
+            Object propertyMapInstance = field.get(null);
+
+            if (propertyMapInstance instanceof Map) return;
+            {
+                Map<Block, Map<String, Object>> map = (Map<Block, Map<String, Object>>) propertyMapInstance;
+                Map<String, Object> blockProps = map.get(block);
+                if (blockProps != null) {
+                    blockProps.remove(propertyName);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void register(IProperty<?> property) {
+        removeExistingProperty(block, property.getName());
         BlockPropertyRegistry.registerProperty(block, property);
         Item item = Item.getItemFromBlock(block);
-        if (item != null) {
+        if (item instanceof ItemBlock && property.hasTrait(BlockPropertyTrait.SupportsStacks)) {
             BlockPropertyRegistry.registerProperty(item, property);
         }
     }

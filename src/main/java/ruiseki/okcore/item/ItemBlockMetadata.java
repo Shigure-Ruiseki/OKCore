@@ -86,13 +86,13 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
             if (!state.place(world, x, y, z, 3)) {
                 return false;
             }
-        }
 
-        if (world.getBlock(x, y, z) == field_150939_a) {
-            field_150939_a.onBlockPlacedBy(world, x, y, z, player, stack);
-            field_150939_a.onPostBlockPlaced(world, x, y, z, metadata);
+            if (world.getBlock(x, y, z) == field_150939_a) {
+                field_150939_a.onBlockPlacedBy(world, x, y, z, player, stack);
+                field_150939_a.onPostBlockPlaced(world, x, y, z, metadata);
+            }
+            return true;
         }
-
-        return true;
+        return super.placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata);
     }
 }

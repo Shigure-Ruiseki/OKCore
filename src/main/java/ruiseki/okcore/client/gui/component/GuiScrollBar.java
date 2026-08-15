@@ -1,12 +1,12 @@
 package ruiseki.okcore.client.gui.component;
 
 import net.minecraft.client.gui.Gui;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Mouse;
 
-import cofh.lib.util.helpers.MathHelper;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
@@ -92,7 +92,7 @@ public class GuiScrollBar extends Gui {
 
         if (this.isScrolling) {
             this.currentScroll = ((float) (mouseY - j1) - 7.5F) / ((float) (l1 - j1) - 15.0F);
-            this.currentScroll = MathHelper.clamp(this.currentScroll, 0.0F, 1.0F);
+            this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
             scrollTo(this.currentScroll);
         }
     }
@@ -121,7 +121,7 @@ public class GuiScrollBar extends Gui {
 
     protected void scrollRelative(int step) {
         float scroll = (float) ((double) this.currentScroll - (double) step / (double) getScrollStep());
-        scroll = MathHelper.clamp(scroll, 0.0F, 1.0F);
+        scroll = MathHelper.clamp_float(scroll, 0.0F, 1.0F);
         scrollTo(scroll);
     }
 

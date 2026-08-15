@@ -59,10 +59,6 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
             world.setBlockMetadataWithNotify(x, y, z, newMeta, 4);
         });
 
-    @BlockProperty
-    public static final BooleanProperty FANCY = BooleanProperty
-        .construct("fancy", true, (world, x, y, z) -> !Blocks.leaves.isOpaqueCube(), (world, x, y, z, value) -> {});
-
     protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 

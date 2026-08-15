@@ -19,8 +19,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  *
  */
-public abstract class ConfigurableBlockGui extends ConfigurableBlock
-    implements IGuiContainerProvider, IBlockPropertyProvider {
+public abstract class ConfigurableBlockGui extends ConfigurableBlock implements IGuiContainerProvider {
 
     private int guiID;
 

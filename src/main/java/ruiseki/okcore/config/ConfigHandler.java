@@ -1,27 +1,40 @@
 package ruiseki.okcore.config;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fluids.Fluid;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.registries.IForgeRegistry;
+import ruiseki.okcore.registries.IForgeRegistryEntry;
+import ruiseki.okcore.registries.RegistryEvent;
 
 /**
  * Create config file and register items and blocks from the given ExtendedConfigs.
@@ -30,21 +43,40 @@ import ruiseki.okcore.init.ModBase;
  *
  */
 @SuppressWarnings("rawtypes")
-@EqualsAndHashCode(callSuper = true, exclude = { "config", "mod" })
+@EqualsAndHashCode(callSuper = false)
 @Data
-public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
+public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?>> {
 
     private final ModBase mod;
     private Configuration config;
-    private final LinkedHashSet<ExtendedConfig> processedConfigs = new LinkedHashSet<ExtendedConfig>();
-    private final Map<String, ExtendedConfig> configDictionary = Maps.newHashMap();
+    private final LinkedHashSet<ExtendedConfig<?>> processedConfigs = new LinkedHashSet<ExtendedConfig<?>>();
+    private final Map<String, ExtendedConfig<?>> configDictionary = Maps.newHashMap();
     private final Set<String> categories = Sets.newHashSet();
     private final Map<String, ConfigProperty> commandableProperties = Maps.newHashMap();
+    private final Multimap<Class<?>, Pair<IForgeRegistryEntry<?>, Callable<?>>> registryEntriesHolder = Multimaps
+        .newListMultimap(Maps.newIdentityHashMap(), new Supplier<List<Pair<IForgeRegistryEntry<?>, Callable<?>>>>() {
+
+            @Override
+            public List<Pair<IForgeRegistryEntry<?>, Callable<?>>> get() {
+                return Lists.newArrayList();
+            }
+        });
+    private boolean registryEventPassed = false;
+    private final Set<Class<? extends ExtendedConfig<?>>> enabledConfigs = Sets.newIdentityHashSet();
+
+    public ConfigHandler(ModBase mod) {
+        this.mod = mod;
+        MinecraftForge.EVENT_BUS.register(this);
+    }
 
     @Override
-    public boolean add(ExtendedConfig e) {
-        configDictionary.put(e.getNamedId(), e);
+    public boolean add(ExtendedConfig<?> e) {
+        addToConfigDictionary(e);
         return super.add(e);
+    }
+
+    public void addToConfigDictionary(ExtendedConfig<?> e) {
+        configDictionary.put(e.getNamedId(), e);
     }
 
     /**
@@ -82,35 +114,42 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
      */
     @SuppressWarnings("unchecked")
     public void loadConfig() {
+        enabledConfigs.clear();
         for (ExtendedConfig<?> eConfig : this) {
-            addCategory(
-                eConfig.getHolderType()
-                    .getCategory());
-            if (!eConfig.isHardDisabled()) {
-                // Save additional properties
-                for (ConfigProperty configProperty : eConfig.configProperties) {
-                    categories.add(configProperty.getCategory());
-                    configProperty.save(config);
-                    if (configProperty.isCommandable()) {
-                        commandableProperties.put(configProperty.getName(), configProperty);
+            try {
+                addCategory(
+                    eConfig.getHolderType()
+                        .getCategory());
+                if (!eConfig.isHardDisabled()) {
+                    // Save additional properties
+                    for (ConfigProperty configProperty : eConfig.configProperties) {
+                        categories.add(configProperty.getCategory());
+                        configProperty.save(config);
+                        if (configProperty.isCommandable()) {
+                            commandableProperties.put(configProperty.getName(), configProperty);
+                        }
+                    }
+
+                    // Register the element depending on the type.
+                    eConfig.getHolderType()
+                        .getElementTypeAction()
+                        .commonRun(eConfig, config);
+
+                    if (eConfig.isEnabled()) {
+                        // Call the listener
+                        eConfig.onRegistered();
+
+                        mod.log(Level.TRACE, "Registered " + eConfig.getNamedId());
+                        processedConfigs.add(eConfig);
+
+                        // Register as init listener.
+                        mod.addInitListeners(new ConfigInitListener(eConfig));
+                        enabledConfigs.add((Class<? extends ExtendedConfig<?>>) eConfig.getClass());
                     }
                 }
-
-                // Register the element depending on the type.
-                ConfigurableType type = eConfig.getHolderType();
-                type.getElementTypeAction()
-                    .commonRun(eConfig, config);
-
-                if (eConfig.isEnabled()) {
-                    // Call the listener
-                    eConfig.onRegistered();
-
-                    mod.log(Level.TRACE, "Registered " + eConfig.getNamedId());
-                    processedConfigs.add(eConfig);
-
-                    // Register as init listener.
-                    mod.addInitListeners(new ConfigInitListener(eConfig));
-                }
+            } catch (Exception e) {
+                e.printStackTrace(); // Forge seems to silently ignore these errors, so let's print them manually.
+                throw e;
             }
         }
 
@@ -174,7 +213,7 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
      *
      * @return The dictionary.
      */
-    public Map<String, ExtendedConfig> getDictionary() {
+    public Map<String, ExtendedConfig<?>> getDictionary() {
         return configDictionary;
     }
 
@@ -214,27 +253,14 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
     }
 
     /**
-     * A safe way to check if a {@link IConfigurable} is enabled. @see ExtendedConfig#isEnabled()
+     * A safe way to check if a {@link IConfigurable} is enabled. @see
+     * ExtendedConfig#isEnabled()
      *
      * @param config The config to check.
      * @return If the given config is enabled.
      */
-    @SuppressWarnings("rawtypes")
-    public static boolean isEnabled(Class<? extends ExtendedConfig> config) {
-        try {
-            return ((ExtendedConfig) config.getField("_instance")
-                .get(null)).isEnabled();
-        } catch (NullPointerException e1) {
-            return false;
-        } catch (IllegalArgumentException e2) {
-            return false;
-        } catch (IllegalAccessException e3) {
-            return false;
-        } catch (NoSuchFieldException e3) {
-            return false;
-        } catch (SecurityException e4) {
-            return false;
-        }
+    public boolean isConfigEnabled(Class<? extends ExtendedConfig<?>> config) {
+        return enabledConfigs.contains(config);
     }
 
     /**
@@ -246,15 +272,89 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig> {
      */
     public static @Nullable ExtendedConfig<?> getConfigFromItem(Item item) {
         if (item instanceof IConfigurable) {
-            return ((IConfigurable) item).getConfig();
+            return ((IConfigurable<?>) item).getConfig();
         } else {
             Block block = Block.getBlockFromItem(item);
-            if (block != Blocks.air && block instanceof IConfigurable) {
-                return ((IConfigurable) block).getConfig();
+            if (block != Blocks.air && block instanceof IConfigurable<?>) {
+                return ((IConfigurable<?>) block).getConfig();
             } else {
                 return null;
             }
         }
+    }
+
+    /**
+     * Get the config from a given fluid.
+     *
+     * @param fluid The fluid, possibly IConfigurable.
+     * @return The config or null.
+     */
+    public static @Nullable ExtendedConfig<?> getConfigFromFluid(Fluid fluid) {
+        if (fluid instanceof IConfigurable<?>) {
+            return ((IConfigurable<?>) fluid).getConfig();
+        }
+        return null;
+    }
+
+    /**
+     * Register the given entry to the given registry.
+     * This method will safely wait until the correct registry event for registering the entry.
+     *
+     * @param registry The registry.
+     * @param entry    The entry.
+     * @param callback A callback that will be called when the entry is registered.
+     * @param <V>      The entry type.
+     */
+    public <V extends IForgeRegistryEntry<V>> void registerToRegistry(IForgeRegistry<V> registry,
+        IForgeRegistryEntry<V> entry, @Nullable Callable<?> callback) {
+        if (this.registryEventPassed) {
+            throw new IllegalStateException(
+                String.format("Tried registering %s after its registration event.", entry.getRegistryName()));
+        }
+        registryEntriesHolder.put(registry.getRegistrySuperType(), Pair.of(entry, callback));
+    }
+
+    /**
+     * Register the given entry to the given registry.
+     * This method will safely wait until the correct registry event for registering the entry.
+     *
+     * @param registry The registry.
+     * @param entry    The entry.
+     * @param <V>      The entry type.
+     */
+    public <V extends IForgeRegistryEntry<V>> void registerToRegistry(IForgeRegistry<V> registry,
+        IForgeRegistryEntry<V> entry) {
+        registerToRegistry(registry, entry, null);
+    }
+
+    @SubscribeEvent
+    public void onRegistryEvent(RegistryEvent.Register event) {
+        this.registryEventPassed = true;
+        IForgeRegistry registry = event.getRegistry();
+        registryEntriesHolder.get(registry.getRegistrySuperType())
+            .forEach((pair) -> {
+                registry.register(pair.getLeft());
+                try {
+                    if (pair.getRight() != null) {
+                        pair.getRight()
+                            .call();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ConfigHandler && ((ConfigHandler) o).getMod()
+            .equals(this.getMod());
+    }
+
+    @Override
+    public int hashCode() {
+        return 1 + this.getMod()
+            .hashCode();
     }
 
 }

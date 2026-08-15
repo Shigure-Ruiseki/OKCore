@@ -22,7 +22,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.helper.BlockHelpers;
 
 /**
@@ -31,14 +31,12 @@ import ruiseki.okcore.helper.BlockHelpers;
  * @author rubensworks
  *
  */
-public abstract class ConfigurableBlockLeaves extends BlockLeaves
-    implements IConfigurableBlock, IBlockPropertyProvider {
+public abstract class ConfigurableBlockLeaves extends BlockLeaves implements IConfigurableBlock {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
     private int[] field_150128_a;
@@ -48,8 +46,7 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves
      *
      * @param eConfig Config for this block.
      */
-    @SuppressWarnings("rawtypes")
-    public ConfigurableBlockLeaves(ExtendedConfig eConfig) {
+    public ConfigurableBlockLeaves(BlockConfig eConfig) {
         this.setConfig(eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
     }
@@ -59,13 +56,13 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves
         return hasGui;
     }
 
-    private void setConfig(@SuppressWarnings("rawtypes") ExtendedConfig eConfig) {
+    private void setConfig(BlockConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
-        return eConfig;
+    public BlockConfig getConfig() {
+        return (BlockConfig) eConfig;
     }
 
     @Override

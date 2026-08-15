@@ -10,43 +10,40 @@ import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Item food that can hold ExtendedConfigs
- * 
+ *
  * @author rubensworks
  *
  */
-public class ConfigurableItemBucket extends ItemBucket implements IConfigurable {
+public class ConfigurableItemBucket extends ItemBucket implements IConfigurableItem {
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected ItemConfig eConfig = null;
 
     protected boolean canPickUp = true;
 
     /**
      * Make a new bucket instance.
-     * 
+     *
      * @param eConfig Config for this blockState.
      * @param block   The fluid blockState it can pick up.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableItemBucket(ExtendedConfig eConfig, Block block) {
+    public ConfigurableItemBucket(ItemConfig eConfig, Block block) {
         super(block);
         this.setConfig(eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
         setContainerItem(Items.bucket);
     }
 
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
+    private void setConfig(ItemConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public ItemConfig getConfig() {
         return eConfig;
     }
 

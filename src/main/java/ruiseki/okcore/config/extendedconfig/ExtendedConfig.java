@@ -5,6 +5,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Locale;
+
+import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Level;
 
@@ -20,12 +23,13 @@ import ruiseki.okcore.config.OKCoreConfigException;
 import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.registries.IForgeRegistry;
 
 /**
  * A config that refers to a {@link IConfigurable}. Every unique {@link IConfigurable} must have one
  * unique extension of this class. This contains several configurable settings and properties
  * that can also be set in the config file.
- * 
+ *
  * @author rubensworks
  * @param <C> Class of the extension of ExtendedConfig
  *
@@ -40,11 +44,10 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     private final String namedId;
     @Getter
     private final String comment;
-    @SuppressWarnings("rawtypes")
     @Getter
-    private final Class element;
+    private final Class<?> element;
 
-    private IConfigurable overriddenSubInstance;
+    private IConfigurable<C> overriddenSubInstance;
 
     /**
      * A list of {@link ConfigProperty} that can contain additional settings for this configurable.
@@ -53,7 +56,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
 
     /**
      * Create a new config
-     * 
+     *
      * @param mod     The mod instance.
      * @param enabled If this should is enabled by default. If this is false, this can still
      *                be enabled through the config file.
@@ -64,7 +67,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     public ExtendedConfig(ModBase mod, boolean enabled, String namedId, String comment, Class<?> element) {
         this.mod = mod;
         this.enabled = enabled;
-        this.namedId = namedId;
+        this.namedId = namedId.toLowerCase(Locale.ROOT);
         this.comment = comment;
         this.element = element;
         try {
@@ -111,6 +114,9 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
                     field);
                 configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
                 configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
+                configProperty.setShowInGui(annotation.showInGui());
+                configProperty.setMinValue(annotation.minimalValue());
+                configProperty.setMaxValue(annotation.maximalValue());
                 configProperties.add(configProperty);
             }
         }
@@ -126,7 +132,6 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     /**
      * Save this config inside the correct element and inside the implementation if itself.
      */
-    @SuppressWarnings("unchecked")
     public void save() {
         try {
             // Save inside the self-implementation
@@ -145,7 +150,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
             // Save inside the unique instance this config refers to (only if such an instance exists!)
             if (getOverriddenSubInstance() == null && this.getHolderType()
                 .hasUniqueInstance()) {
-                Constructor constructor = this.getElement()
+                Constructor<?> constructor = this.getElement()
                     .getDeclaredConstructor(ExtendedConfig.class);
                 if (constructor == null) {
                     throw new OKCoreConfigException(
@@ -199,21 +204,21 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
 
     /**
      * Return the configurable type for which this config holds data
-     * 
+     *
      * @return the type of the configurable to where the config belongs
      */
     public abstract ConfigurableType getHolderType();
 
     /**
      * Get the unlocalized name (must be unique!) for this configurable.
-     * 
+     *
      * @return The unlocalized name.
      */
     public abstract String getUnlocalizedName();
 
     /**
      * Get the full unlocalized name for this configurable.
-     * 
+     *
      * @return The unlocalized name.
      */
     public String getFullUnlocalizedName() {
@@ -225,24 +230,23 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
      * If it returns something else, this config will assume that the object that is returned is the unique sub-instance
      * for the configurable.
      * This is only called once.
-     * 
+     *
      * @return A sub-instance that will become a singleton.
      */
-    protected IConfigurable initSubInstance() {
+    protected IConfigurable<C> initSubInstance() {
         return null;
     }
 
-    private IConfigurable getOverriddenSubInstance() {
+    private IConfigurable<C> getOverriddenSubInstance() {
         return this.overriddenSubInstance;
     }
 
     /**
      * Will return the instance of the object this config refers to
-     * 
+     *
      * @return instance of sub object
      */
-    @SuppressWarnings("unchecked")
-    public IConfigurable getSubInstance() {
+    public IConfigurable<C> getSubInstance() {
         if (getOverriddenSubInstance() != null) {
             return getOverriddenSubInstance();
         }
@@ -254,7 +258,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
             if (method == null) {
                 throw new OKCoreConfigException("There exists no static getInstance method for  " + this);
             }
-            return (IConfigurable) method.invoke(null);
+            return (IConfigurable<C>) method.invoke(null);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
             | InvocationTargetException e1) {
             // Only possible in development mode
@@ -266,7 +270,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
 
     /**
      * Will return the unique name of the object this config refers to
-     * 
+     *
      * @return unique name of sub object
      */
     public String getSubUniqueName() {
@@ -277,6 +281,13 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
      * Overridable method that is immediately called after the element of this config is registered.
      */
     public void onRegistered() {
+
+    }
+
+    /**
+     * Overridable method that is immediately called after this element has been registered into a Forge registry.
+     */
+    public void onForgeRegistered() {
 
     }
 
@@ -292,7 +303,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
 
     /**
      * Checks if the eConfig refers to a target that should be enabled.
-     * 
+     *
      * @return if the target should be enabled.
      */
     public boolean isEnabled() {
@@ -301,7 +312,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
 
     /**
      * Set the enabling of the target.
-     * 
+     *
      * @param enabled If the target should be enabled.
      */
     public void setEnabled(boolean enabled) {
@@ -311,7 +322,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     /**
      * If the target should be hard-disabled, this means no occurence in the config file,
      * total ignorance.
-     * 
+     *
      * @return if the target should run trough the config handler.
      */
     public boolean isHardDisabled() {
@@ -320,7 +331,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
 
     /**
      * Override this method to prevent configs to be disabled from the config file. (non-zero id's that is)
-     * 
+     *
      * @return if the target can be disabled.
      */
     public boolean isDisableable() {
@@ -339,12 +350,10 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     }
 
     /**
-     * Get the lowest castable config.
-     * 
-     * @return The downcasted config.
+     * @return The optional registry in which this should be registered.
      */
-    @SuppressWarnings("unchecked")
-    public C downCast() {
-        return (C) this;
+    @Nullable
+    public IForgeRegistry<?> getRegistry() {
+        return null;
     }
 }

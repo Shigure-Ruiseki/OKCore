@@ -12,7 +12,7 @@ import net.minecraft.util.IIcon;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.helper.BlockHelpers;
 
 public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock, IBlockPropertyProvider {
@@ -20,8 +20,7 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
     /**
@@ -29,8 +28,7 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
      *
      * @param eConfig Config for this block.
      */
-    @SuppressWarnings("rawtypes")
-    public ConfigurableBlockLog(ExtendedConfig eConfig) {
+    public ConfigurableBlockLog(BlockConfig eConfig) {
         this.setConfig(eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
     }
@@ -40,12 +38,12 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
         return hasGui;
     }
 
-    private void setConfig(@SuppressWarnings("rawtypes") ExtendedConfig eConfig) {
+    private void setConfig(BlockConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public BlockConfig getConfig() {
         return eConfig;
     }
 

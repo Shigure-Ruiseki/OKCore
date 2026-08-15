@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -17,10 +17,9 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author rubensworks
  *
  */
-public class ConfigurableItemFood extends ItemFood implements IConfigurable {
+public class ConfigurableItemFood extends ItemFood implements IConfigurableItem {
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected ItemConfig eConfig = null;
 
     /**
      * Make a new blockState instance.
@@ -30,8 +29,7 @@ public class ConfigurableItemFood extends ItemFood implements IConfigurable {
      * @param saturationModifier  The modifier for the saturation.
      * @param isWolfsFavoriteMeat If this is wolf food.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableItemFood(ExtendedConfig eConfig, int healAmount, float saturationModifier,
+    public ConfigurableItemFood(ItemConfig eConfig, int healAmount, float saturationModifier,
         boolean isWolfsFavoriteMeat) {
         super(healAmount, saturationModifier, isWolfsFavoriteMeat);
         this.setConfig(eConfig);
@@ -42,13 +40,12 @@ public class ConfigurableItemFood extends ItemFood implements IConfigurable {
                 + eConfig.getNamedId());
     }
 
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
+    private void setConfig(ItemConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public ItemConfig getConfig() {
         return eConfig;
     }
 

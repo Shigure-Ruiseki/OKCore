@@ -8,7 +8,6 @@ import net.minecraft.item.Item;
 import net.minecraft.world.World;
 
 import lombok.experimental.Delegate;
-import ruiseki.okcore.block.IBlockTooltipProvider;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockDoorConfig;
@@ -16,8 +15,7 @@ import ruiseki.okcore.config.extendedconfig.BlockDoorConfig;
 /**
  * Door block that can hold ExtendedConfigs.
  */
-public class ConfigurableBlockDoor extends BlockDoor
-    implements IConfigurableBlock, IBlockPropertyProvider, IBlockTooltipProvider {
+public class ConfigurableBlockDoor extends BlockDoor implements IConfigurableBlock {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);

@@ -25,7 +25,7 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  */
 public abstract class ConfigurableBlockContainerGui extends ConfigurableBlockContainer
-    implements IGuiContainerProviderConfigurable, IBlockPropertyProvider {
+    implements IGuiContainerProviderConfigurable {
 
     private int guiID;
 

@@ -18,7 +18,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
 
 public class ConfigurableBlockSapling extends BlockSapling implements IConfigurableBlock, IBlockPropertyProvider {
@@ -26,8 +26,7 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
     @SideOnly(Side.CLIENT)
@@ -42,8 +41,7 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
      * @param material      Material of this blockState.
      * @param treeGenerator The world generator of the tree.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableBlockSapling(ExtendedConfig eConfig, Material material, WorldGeneratorTree treeGenerator) {
+    public ConfigurableBlockSapling(BlockConfig eConfig, Material material, WorldGeneratorTree treeGenerator) {
         this.setConfig(eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
         this.setBlockTextureName(
@@ -59,13 +57,12 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
         return hasGui;
     }
 
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
+    private void setConfig(BlockConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public BlockConfig getConfig() {
         return eConfig;
     }
 

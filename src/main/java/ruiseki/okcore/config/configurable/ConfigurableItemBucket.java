@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -31,9 +32,9 @@ public class ConfigurableItemBucket extends ItemBucket implements IConfigurableI
      * @param eConfig Config for this blockState.
      * @param block   The fluid blockState it can pick up.
      */
-    public ConfigurableItemBucket(ItemConfig eConfig, Block block) {
+    public ConfigurableItemBucket(ExtendedConfig<ItemConfig> eConfig, Block block) {
         super(block);
-        this.setConfig(eConfig);
+        this.setConfig((ItemConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
         setContainerItem(Items.bucket);
     }

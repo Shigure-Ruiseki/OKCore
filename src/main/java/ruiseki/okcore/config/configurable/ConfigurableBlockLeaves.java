@@ -22,6 +22,7 @@ import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.BooleanProperty;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
@@ -72,8 +73,8 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
      *
      * @param eConfig Config for this block.
      */
-    public ConfigurableBlockLeaves(BlockConfig eConfig) {
-        this.setConfig(eConfig);
+    public ConfigurableBlockLeaves(ExtendedConfig<BlockConfig> eConfig) {
+        this.setConfig((BlockConfig) eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
     }
 

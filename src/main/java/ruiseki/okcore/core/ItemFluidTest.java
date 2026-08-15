@@ -19,7 +19,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
@@ -43,7 +43,8 @@ public class ItemFluidTest extends ConfigurableItem implements IItemToggle {
         return _instance;
     }
 
-    public ItemFluidTest(ItemConfig eConfig) {
+    @SuppressWarnings("rawtypes")
+    public ItemFluidTest(ExtendedConfig eConfig) {
         super(eConfig);
         setTextureName("stick");
     }

@@ -6,6 +6,7 @@ import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * Torch blockState that can hold ExtendedConfigs
@@ -26,8 +27,8 @@ public class ConfigurableBlockTorch extends BlockTorch implements IConfigurableB
      *
      * @param eConfig Config for this blockState.
      */
-    public ConfigurableBlockTorch(BlockConfig eConfig) {
-        this.setConfig(eConfig);
+    public ConfigurableBlockTorch(ExtendedConfig<BlockConfig> eConfig) {
+        this.setConfig((BlockConfig) eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
         this.setBlockTextureName(
             eConfig.getMod()

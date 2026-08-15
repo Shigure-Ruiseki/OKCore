@@ -19,6 +19,7 @@ import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
 
 public class ConfigurableBlockSapling extends BlockSapling implements IConfigurableBlock, IBlockPropertyProvider {
@@ -41,8 +42,9 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
      * @param material      Material of this blockState.
      * @param treeGenerator The world generator of the tree.
      */
-    public ConfigurableBlockSapling(BlockConfig eConfig, Material material, WorldGeneratorTree treeGenerator) {
-        this.setConfig(eConfig);
+    public ConfigurableBlockSapling(ExtendedConfig<BlockConfig> eConfig, Material material,
+        WorldGeneratorTree treeGenerator) {
+        this.setConfig((BlockConfig) eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
         this.setBlockTextureName(
             eConfig.getMod()

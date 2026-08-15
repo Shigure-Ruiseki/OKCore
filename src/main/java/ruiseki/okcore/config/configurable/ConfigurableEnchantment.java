@@ -4,6 +4,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnumEnchantmentType;
 
 import ruiseki.okcore.config.extendedconfig.EnchantmentConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -23,9 +24,9 @@ public class ConfigurableEnchantment extends Enchantment implements IConfigurabl
      * @param weight  The weight in which this enchantment should occurd
      * @param type    The type of enchantment
      */
-    protected ConfigurableEnchantment(EnchantmentConfig eConfig, int weight, EnumEnchantmentType type) {
-        super(eConfig.ID, weight, type);
-        this.setConfig(eConfig);
+    protected ConfigurableEnchantment(ExtendedConfig<EnchantmentConfig> eConfig, int weight, EnumEnchantmentType type) {
+        super(eConfig.downCast().ID, weight, type);
+        this.setConfig((EnchantmentConfig) eConfig);
         this.setName(eConfig.getUnlocalizedName());
         if (isAllowedOnBooks()) {
             addToBookList(this);

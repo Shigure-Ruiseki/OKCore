@@ -9,7 +9,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.TagHelpers;
@@ -28,7 +28,8 @@ public class ItemEnergyTest extends ConfigurableItem {
         return _instance;
     }
 
-    public ItemEnergyTest(ItemConfig eConfig) {
+    @SuppressWarnings("rawtypes")
+    public ItemEnergyTest(ExtendedConfig eConfig) {
         super(eConfig);
         setTextureName("stick");
     }

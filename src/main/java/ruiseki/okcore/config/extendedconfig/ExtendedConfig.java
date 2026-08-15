@@ -151,7 +151,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
             if (getOverriddenSubInstance() == null && this.getHolderType()
                 .hasUniqueInstance()) {
                 Constructor<?> constructor = this.getElement()
-                    .getDeclaredConstructor(this.getClass());
+                    .getDeclaredConstructor(ExtendedConfig.class);
                 if (constructor == null) {
                     throw new OKCoreConfigException(
                         String.format(
@@ -347,6 +347,16 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
             + ". This is an error in the mod code.";
         mod.log(Level.FATAL, message);
         throw new OKCoreConfigException(message);
+    }
+
+    /**
+     * Get the lowest castable config.
+     * 
+     * @return The downcasted config.
+     */
+    @SuppressWarnings("unchecked")
+    public C downCast() {
+        return (C) this;
     }
 
     /**

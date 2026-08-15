@@ -56,8 +56,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
      * @param material   Material of this blockState.
      * @param tileEntity The class of the tile entity this blockState holds.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableBlockContainer(ExtendedConfig eConfig, Material material,
+    public ConfigurableBlockContainer(ExtendedConfig<BlockConfig> eConfig, Material material,
         Class<? extends TileEntityOK> tileEntity) {
         super(material);
         this.setConfig(eConfig);

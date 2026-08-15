@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
@@ -38,7 +38,8 @@ public class ItemInventoryTest extends ConfigurableItem implements IItemCooldown
         return _instance;
     }
 
-    public ItemInventoryTest(ItemConfig eConfig) {
+    @SuppressWarnings("rawtypes")
+    public ItemInventoryTest(ExtendedConfig eConfig) {
         super(eConfig);
         setTextureName("stick");
     }

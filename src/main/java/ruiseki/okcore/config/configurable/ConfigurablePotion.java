@@ -10,6 +10,7 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.PotionConfig;
 import ruiseki.okcore.init.ModBase;
 
@@ -32,9 +33,9 @@ public abstract class ConfigurablePotion extends Potion implements IConfigurable
      * @param color     The color of the potion.
      * @param iconIndex The sprite index of the icon.
      */
-    protected ConfigurablePotion(PotionConfig eConfig, boolean badEffect, int color, int iconIndex) {
-        super(eConfig.ID, badEffect, color);
-        this.setConfig(eConfig);
+    protected ConfigurablePotion(ExtendedConfig<PotionConfig> eConfig, boolean badEffect, int color, int iconIndex) {
+        super(eConfig.downCast().ID, badEffect, color);
+        this.setConfig((PotionConfig) eConfig);
         this.setPotionName(eConfig.getUnlocalizedName());
         this.setIconIndex(iconIndex % 8, iconIndex / 8);
         this.resource = new ResourceLocation(

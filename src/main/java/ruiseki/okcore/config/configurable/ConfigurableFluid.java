@@ -2,6 +2,7 @@ package ruiseki.okcore.config.configurable;
 
 import net.minecraftforge.fluids.Fluid;
 
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.FluidConfig;
 
 /**
@@ -19,9 +20,9 @@ public abstract class ConfigurableFluid extends Fluid implements IConfigurable<F
      *
      * @param eConfig Config for this blockState.
      */
-    protected ConfigurableFluid(FluidConfig eConfig) {
+    protected ConfigurableFluid(ExtendedConfig<FluidConfig> eConfig) {
         super(eConfig.getNamedId());
-        this.setConfig(eConfig);
+        this.setConfig((FluidConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
     }
 

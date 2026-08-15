@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.capabilities.IItemCapability;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.item.IItemSharedTag;
@@ -28,8 +29,8 @@ public class ConfigurableItem extends Item implements IConfigurableItem, IItemCa
      *
      * @param eConfig Config for this blockState.
      */
-    public ConfigurableItem(ItemConfig eConfig) {
-        this.setConfig(eConfig);
+    public ConfigurableItem(ExtendedConfig<ItemConfig> eConfig) {
+        this.setConfig((ItemConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
         this.setTextureName(
             eConfig.getMod()

@@ -10,6 +10,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
@@ -39,8 +40,7 @@ public abstract class ConfigurableBlockContainerGui extends ConfigurableBlockCon
      * @param material   Material of this blockState.
      * @param tileEntity The class of the tile entity this blockState holds.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableBlockContainerGui(ExtendedConfig eConfig, Material material,
+    public ConfigurableBlockContainerGui(ExtendedConfig<BlockConfig> eConfig, Material material,
         Class<? extends TileEntityOK> tileEntity) {
         super(eConfig, material, tileEntity);
         this.hasGui = true;

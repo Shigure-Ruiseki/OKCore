@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -29,10 +30,10 @@ public class ConfigurableItemFood extends ItemFood implements IConfigurableItem 
      * @param saturationModifier  The modifier for the saturation.
      * @param isWolfsFavoriteMeat If this is wolf food.
      */
-    public ConfigurableItemFood(ItemConfig eConfig, int healAmount, float saturationModifier,
+    public ConfigurableItemFood(ExtendedConfig<ItemConfig> eConfig, int healAmount, float saturationModifier,
         boolean isWolfsFavoriteMeat) {
         super(healAmount, saturationModifier, isWolfsFavoriteMeat);
-        this.setConfig(eConfig);
+        this.setConfig((ItemConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
         this.setTextureName(
             eConfig.getMod()

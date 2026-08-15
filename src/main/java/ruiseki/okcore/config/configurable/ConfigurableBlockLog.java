@@ -13,6 +13,7 @@ import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.BlockHelpers;
 
 public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock, IBlockPropertyProvider {
@@ -28,8 +29,8 @@ public class ConfigurableBlockLog extends BlockLog implements IConfigurableBlock
      *
      * @param eConfig Config for this block.
      */
-    public ConfigurableBlockLog(BlockConfig eConfig) {
-        this.setConfig(eConfig);
+    public ConfigurableBlockLog(ExtendedConfig<BlockConfig> eConfig) {
+        this.setConfig((BlockConfig) eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
     }
 

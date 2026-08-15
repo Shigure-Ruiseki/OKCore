@@ -37,13 +37,13 @@ public class ItemBlockNBT extends ItemBlockMetadata {
 
             if (tile != null && stack.getTagCompound() != null) {
                 tile.readFromNBT(stack.getTagCompound());
-                readAdditionalInfo(tile, stack);
+                itemStackDataToTile(stack, tile);
             }
 
-            return false;
+            return true;
         }
 
-        return super.placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata);
+        return false;
     }
 
     /**
@@ -52,7 +52,7 @@ public class ItemBlockNBT extends ItemBlockMetadata {
      * @param tile      The tile that is being created.
      * @param itemStack The item that is placed.
      */
-    protected void readAdditionalInfo(TileEntity tile, ItemStack itemStack) {
+    protected void itemStackDataToTile(ItemStack itemStack, TileEntity tile) {
 
     }
 }

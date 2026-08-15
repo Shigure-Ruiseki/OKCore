@@ -21,8 +21,9 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 
 public class ConfigurableBlockLog extends ConfigurableBlock {
+
     @BlockProperty
-    private static final IEnumProperty<Axis> AXIS = IEnumProperty
+    public static final IEnumProperty<Axis> AXIS = IEnumProperty
         .construct("axis", Axis.class, Axis.Y, (world, x, y, z) -> {
             int meta = world.getBlockMetadata(x, y, z);
             return switch (meta & 0b1100) {
@@ -38,7 +39,7 @@ public class ConfigurableBlockLog extends ConfigurableBlock {
                 default -> 0b0000; // Axis.Y
             };
             int newMeta = (currentMeta & ~0b1100) | axisBits;
-            world.setBlockMetadataWithNotify(x, y, z, newMeta, 3);
+            world.setBlockMetadataWithNotify(x, y, z, newMeta, 2);
         });
 
     protected BlockConfig eConfig = null;
@@ -64,7 +65,7 @@ public class ConfigurableBlockLog extends ConfigurableBlock {
     public BlockState getStateForPlacement(World world, BlockPos pos, ForgeDirection facing, float hitX, float hitY,
         float hitZ, int meta, EntityLivingBase placer) {
         BlockState state = super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer);
-        state.setPropertyValue("axis", Axis.fromDirection(facing));
+        state.setPropertyValue(AXIS, Axis.fromDirection(facing));
         return state;
     }
 }

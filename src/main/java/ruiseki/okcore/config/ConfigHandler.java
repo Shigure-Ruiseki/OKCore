@@ -27,7 +27,6 @@ import com.google.common.collect.Sets;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.init.IInitListener;
@@ -43,7 +42,6 @@ import ruiseki.okcore.registries.RegistryEvent;
  *
  */
 @SuppressWarnings("rawtypes")
-@EqualsAndHashCode(callSuper = false)
 @Data
 public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?>> {
 

@@ -14,7 +14,6 @@ import ruiseki.okcore.helper.GuiHelpers;
 
 /**
  * An item renderer that can handle stack sizes larger than 64.
- * 1.7.10 Backport Version.
  *
  * @author rubensworks
  */
@@ -59,17 +58,17 @@ public class RenderItemExtendedSlotCount extends RenderItem {
     public void renderItemOverlayIntoGUI(FontRenderer fr, TextureManager tm, ItemStack stack, int xPosition,
         int yPosition, String text) {
         if (stack != null && stack.getItem() != null) {
-            if (stack.stackSize != 1 || text != null) {
+            if (stack.stackSize > 1 || text != null) {
                 String renderText = text == null ? GuiHelpers.quantityToScaledString(stack.stackSize) : text;
                 drawSlotText(fr, renderText, xPosition, yPosition);
             }
 
             if (stack.getItem()
-                .isDamaged(stack)) {
-                int k = (int) Math
-                    .round(13.0D - (double) stack.getItemDamageForDisplay() * 13.0D / (double) stack.getMaxDamage());
-                int l = (int) Math
-                    .round(255.0D - (double) stack.getItemDamageForDisplay() * 255.0D / (double) stack.getMaxDamage());
+                .showDurabilityBar(stack)) {
+                double health = stack.getItem()
+                    .getDurabilityForDisplay(stack);
+                int j1 = (int) Math.round(13.0D - health * 13.0D);
+                int k = (int) Math.round(255.0D - health * 255.0D);
 
                 GL11.glDisable(GL11.GL_LIGHTING);
                 GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -78,17 +77,18 @@ public class RenderItemExtendedSlotCount extends RenderItem {
                 GL11.glDisable(GL11.GL_BLEND);
 
                 Tessellator tessellator = Tessellator.instance;
-                int i1 = 255 - l << 16 | l << 8;
-                int j1 = (255 - l) / 4 << 16 | 16128;
+                int l = 255 - k << 16 | k << 8;
+                int i1 = (255 - k) / 4 << 16 | 16128;
 
                 this.renderQuad(tessellator, xPosition + 2, yPosition + 13, 13, 2, 0);
-                this.renderQuad(tessellator, xPosition + 2, yPosition + 13, 12, 1, j1);
-                this.renderQuad(tessellator, xPosition + 2, yPosition + 13, k, 1, i1);
+                this.renderQuad(tessellator, xPosition + 2, yPosition + 13, 12, 1, i1);
+                this.renderQuad(tessellator, xPosition + 2, yPosition + 13, j1, 1, l);
 
+                GL11.glEnable(GL11.GL_ALPHA_TEST);
                 GL11.glEnable(GL11.GL_TEXTURE_2D);
                 GL11.glEnable(GL11.GL_LIGHTING);
                 GL11.glEnable(GL11.GL_DEPTH_TEST);
-                GL11.glEnable(GL11.GL_ALPHA_TEST);
+                GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             }
         }
     }

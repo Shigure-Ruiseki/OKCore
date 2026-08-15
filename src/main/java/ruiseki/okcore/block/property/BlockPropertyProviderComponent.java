@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -16,7 +15,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
 
     private final Block block;
-    private List<Field> autoFields;
+    private final List<Field> autoFields;
 
     public BlockPropertyProviderComponent(Block block) {
         this.block = block;
@@ -27,13 +26,10 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
         List<Field> fields = new LinkedList<>();
 
         for (Class<?> current = clazz; current != null && current != Object.class; current = current.getSuperclass()) {
-
             for (Field field : current.getDeclaredFields()) {
-
                 if (!field.isAnnotationPresent(BlockProperty.class)) {
                     continue;
                 }
-
                 field.setAccessible(true);
                 fields.add(field);
             }
@@ -46,17 +42,19 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
     public void registerProperties() {
         for (Field field : autoFields) {
             try {
+                BlockProperty annotation = field.getAnnotation(BlockProperty.class);
+                if (annotation == null) continue;
+
                 boolean isStatic = Modifier.isStatic(field.getModifiers());
                 Object value = field.get(isStatic ? null : block);
                 if (value == null) continue;
 
                 if (value instanceof IProperty<?>property) {
-                    register(property);
-
+                    register(property, annotation);
                 } else if (value instanceof IProperty<?>[]array) {
                     for (IProperty<?> property : array) {
                         if (property != null) {
-                            register(property);
+                            register(property, annotation);
                         }
                     }
                 }
@@ -67,31 +65,16 @@ public class BlockPropertyProviderComponent implements IBlockPropertyProvider {
         }
     }
 
-    private void removeExistingProperty(Block block, String propertyName) {
-        try {
-            Field field = BlockPropertyRegistry.class.getDeclaredField("BLOCK_PROPERTIES");
-            field.setAccessible(true);
-            Object propertyMapInstance = field.get(null);
-
-            if (propertyMapInstance instanceof Map) return;
-            {
-                Map<Block, Map<String, Object>> map = (Map<Block, Map<String, Object>>) propertyMapInstance;
-                Map<String, Object> blockProps = map.get(block);
-                if (blockProps != null) {
-                    blockProps.remove(propertyName);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    private void register(IProperty<?> property, BlockProperty annotation) {
+        if (annotation.allowBlock()) {
+            BlockPropertyRegistry.registerProperty(block, property);
         }
-    }
 
-    private void register(IProperty<?> property) {
-        removeExistingProperty(block, property.getName());
-        BlockPropertyRegistry.registerProperty(block, property);
-        Item item = Item.getItemFromBlock(block);
-        if (item instanceof ItemBlock && property.hasTrait(BlockPropertyTrait.SupportsStacks)) {
-            BlockPropertyRegistry.registerProperty(item, property);
+        if (annotation.allowItem()) {
+            Item item = Item.getItemFromBlock(block);
+            if (item instanceof ItemBlock && property.hasTrait(BlockPropertyTrait.SupportsStacks)) {
+                BlockPropertyRegistry.registerProperty(item, property);
+            }
         }
     }
 }

@@ -53,6 +53,26 @@ public interface IEnumProperty<E extends Enum<E>> extends IProperty<E> {
         }
     }
 
+    static <E extends Enum<E>> AbstractEnumProperty<E> construct(String name, Class<E> enumClass, E defaultValue) {
+        return new AbstractEnumProperty<>(name, enumClass, defaultValue) {
+
+            @Override
+            public E getValue(ItemStack stack) {
+                return getDefaultValue();
+            }
+
+            @Override
+            public E getValue(IBlockAccess world, int x, int y, int z) {
+                return getDefaultValue();
+            }
+
+            @Override
+            public void setValue(World world, int x, int y, int z, E value) {
+                // Default no-op
+            }
+        };
+    }
+
     static <E extends Enum<E>> AbstractEnumProperty<E> construct(String name, Class<E> enumClass, E defaultValue,
         PropertyGetter<E> getter, PropertySetter<E> setter) {
         return new AbstractEnumProperty<>(name, enumClass, defaultValue) {

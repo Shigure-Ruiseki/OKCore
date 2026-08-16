@@ -1,9 +1,7 @@
 package ruiseki.okcore.config.configurable;
 
 import java.util.List;
-import java.util.Set;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
@@ -31,8 +29,7 @@ public class ConfigurableItemPickaxe extends ItemPickaxe implements IConfigurabl
      *
      * @param eConfig Config for this blockState.
      */
-    public ConfigurableItemPickaxe(ExtendedConfig<ItemConfig> eConfig, float damageVsEntity, ToolMaterial toolMaterial,
-        Set<Block> blocks) {
+    public ConfigurableItemPickaxe(ExtendedConfig<ItemConfig> eConfig, ToolMaterial toolMaterial) {
         super(toolMaterial);
         this.setConfig((ItemConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());

@@ -13,12 +13,12 @@ import ruiseki.okcore.init.ModBase;
 /**
  * Config for entities.
  * For mobs, there is the {@link MobConfig}.
- * For entities with custom models there is {@link ModelEntityConfig}.
  * 
+ * @param <T> The entity type
  * @author rubensworks
  * @see ExtendedConfig
  */
-public abstract class EntityConfig extends ExtendedConfig<EntityConfig> {
+public abstract class EntityConfig<T extends Entity> extends ExtendedConfig<EntityConfig<T>> {
 
     /**
      * Make a new instance.
@@ -29,7 +29,7 @@ public abstract class EntityConfig extends ExtendedConfig<EntityConfig> {
      * @param comment The comment to add in the config file for this configurable.
      * @param element The class of this configurable.
      */
-    public EntityConfig(ModBase mod, boolean enabled, String namedId, String comment, Class<? extends Entity> element) {
+    public EntityConfig(ModBase mod, boolean enabled, String namedId, String comment, Class<? extends T> element) {
         super(mod, enabled, namedId, comment, element);
     }
 
@@ -60,7 +60,7 @@ public abstract class EntityConfig extends ExtendedConfig<EntityConfig> {
 
     /**
      * The range at which MC will send tracking updates.
-     * 
+     *
      * @return The tracking range.
      */
     public int getTrackingRange() {
@@ -69,7 +69,7 @@ public abstract class EntityConfig extends ExtendedConfig<EntityConfig> {
 
     /**
      * The frequency of tracking updates.
-     * 
+     *
      * @return The update frequency.
      */
     public int getUpdateFrequency() {
@@ -78,7 +78,7 @@ public abstract class EntityConfig extends ExtendedConfig<EntityConfig> {
 
     /**
      * Whether to send velocity information packets as well.
-     * 
+     *
      * @return Send velocity updates?
      */
     public boolean sendVelocityUpdates() {

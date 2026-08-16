@@ -28,6 +28,7 @@ public class ItemEnergyTest extends ConfigurableItem {
         return _instance;
     }
 
+    @SuppressWarnings("rawtypes")
     public ItemEnergyTest(ExtendedConfig eConfig) {
         super(eConfig);
         setTextureName("stick");

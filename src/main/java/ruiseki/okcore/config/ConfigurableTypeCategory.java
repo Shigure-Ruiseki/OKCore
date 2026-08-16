@@ -3,7 +3,7 @@ package ruiseki.okcore.config;
 /**
  * An enumeration of {@link ConfigurableType} categories.
  * They will be categorised like this in the config file.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -53,7 +53,14 @@ public enum ConfigurableTypeCategory {
      * Potion category.
      */
     POTION("potion"),
-
+    /**
+     * Recipe category.
+     */
+    RECIPE("recipe"),
+    /**
+     * Recipe type category.
+     */
+    RECIPE_TYPE("recipe_type"),
     /**
      * Category with core settings.
      */
@@ -72,7 +79,7 @@ public enum ConfigurableTypeCategory {
 
     /**
      * Get the original to string.
-     * 
+     *
      * @return The enum name.
      */
     public String rawToString() {

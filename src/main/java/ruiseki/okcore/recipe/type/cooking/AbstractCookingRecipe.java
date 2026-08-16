@@ -1,30 +1,67 @@
 package ruiseki.okcore.recipe.type.cooking;
 
-import java.util.Objects;
-
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-import ruiseki.okcore.json.item.CompoundItemMaterial;
+import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.recipe.IRecipeOK;
+import ruiseki.okcore.recipe.IRecipeType;
+import ruiseki.okcore.recipe.ingredient.Ingredient;
 
 public abstract class AbstractCookingRecipe implements IRecipeOK<IInventory> {
 
+    protected final IRecipeType<?> type;
     protected final ResourceLocation id;
+    protected final Ingredient ingredient;
     protected final ItemStack result;
-    protected final CompoundItemMaterial ingredient;
     protected final float experience;
     protected final int cookingTime;
 
-    protected AbstractCookingRecipe(ResourceLocation id, ItemStack result, CompoundItemMaterial ingredient,
+    public AbstractCookingRecipe(IRecipeType<?> type, ResourceLocation id, Ingredient ingredient, ItemStack result,
         float experience, int cookingTime) {
+        this.type = type;
         this.id = id;
-        this.result = result;
         this.ingredient = ingredient;
+        this.result = result;
         this.experience = experience;
         this.cookingTime = cookingTime;
+    }
+
+    @Override
+    public boolean matchesOK(IInventory inventory, World world) {
+        return this.ingredient.test(inventory.getStackInSlot(0));
+    }
+
+    @Override
+    public ItemStack assemble(IInventory p_77572_1_) {
+        return this.result.copy();
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int p_194133_1_, int p_194133_2_) {
+        return true;
+    }
+
+    @Override
+    public NonNullList<Ingredient> getIngredients() {
+        NonNullList<Ingredient> nonnulllist = NonNullList.create();
+        nonnulllist.add(this.ingredient);
+        return nonnulllist;
+    }
+
+    public float getExperience() {
+        return this.experience;
+    }
+
+    @Override
+    public ItemStack getResultItem() {
+        return this.result;
+    }
+
+    public int getCookingTime() {
+        return this.cookingTime;
     }
 
     @Override
@@ -33,80 +70,16 @@ public abstract class AbstractCookingRecipe implements IRecipeOK<IInventory> {
     }
 
     @Override
-    public boolean matchesOK(IInventory inventory, World world) {
-        if (inventory == null || inventory.getSizeInventory() == 0) {
-            return false;
-        }
-
-        ItemStack inputStack = inventory.getStackInSlot(0);
-        if (inputStack == null) {
-            return false;
-        }
-
-        if (this.ingredient == null || this.ingredient.isEmpty()) {
-            return false;
-        }
-
-        return this.ingredient.test(inputStack);
+    public IRecipeType<?> getType() {
+        return this.type;
     }
 
-    @Override
-    public ItemStack getCraftingResultOK(IInventory inventory) {
-        return this.result.copy();
+    public Ingredient getIngredient() {
+        return ingredient;
     }
 
     @Override
     public int getRecipeSize() {
         return 1;
-    }
-
-    @Override
-    public ItemStack getRecipeOutput() {
-        return this.result;
-    }
-
-    public float getExperience() {
-        return this.experience;
-    }
-
-    public int getCookingTime() {
-        return this.cookingTime;
-    }
-
-    public CompoundItemMaterial getIngredient() {
-        return this.ingredient;
-    }
-
-    public boolean matchesExperience(ItemStack currentInput) {
-        if (this.result == null || currentInput == null) {
-            return false;
-        }
-        return this.result.getItem() == currentInput.getItem()
-            && (this.result.getItemDamage() == 32767 || this.result.getItemDamage() == currentInput.getItemDamage());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
-        AbstractCookingRecipe that = (AbstractCookingRecipe) o;
-        if (!Objects.equals(this.id, that.id)) return false;
-        if (this.cookingTime != that.cookingTime) return false;
-        if (Float.compare(that.experience, this.experience) != 0) return false;
-        if (!Objects.equals(this.ingredient, that.ingredient)) return false;
-        return ItemStack.areItemStacksEqual(this.result, that.result);
-    }
-
-    @Override
-    public int hashCode() {
-        int resultHash = Objects.hash(id, ingredient, experience, cookingTime);
-        if (result != null && result.getItem() != null) {
-            resultHash = 31 * resultHash + Objects.hash(result.getItem(), result.getItemDamage(), result.stackSize);
-            if (result.hasTagCompound()) {
-                resultHash = 31 * resultHash + result.getTagCompound()
-                    .hashCode();
-            }
-        }
-        return resultHash;
     }
 }

@@ -9,9 +9,8 @@ import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
-public class ConfigurableBlock extends Block implements IConfigurableBlock, IBlockPropertyProvider {
+public class ConfigurableBlock extends Block implements IConfigurableBlock {
 
-    @SuppressWarnings("rawtypes")
     protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
@@ -24,8 +23,7 @@ public class ConfigurableBlock extends Block implements IConfigurableBlock, IBlo
      * @param eConfig  Config for this blockState.
      * @param material Material of this blockState.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableBlock(ExtendedConfig eConfig, Material material) {
+    public ConfigurableBlock(ExtendedConfig<BlockConfig> eConfig, Material material) {
         super(material);
         this.setConfig(eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
@@ -45,8 +43,7 @@ public class ConfigurableBlock extends Block implements IConfigurableBlock, IBlo
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public BlockConfig getConfig() {
         return eConfig;
     }
-
 }

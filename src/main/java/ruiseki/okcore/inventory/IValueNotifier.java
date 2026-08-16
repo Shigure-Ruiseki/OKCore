@@ -1,5 +1,7 @@
 package ruiseki.okcore.inventory;
 
+import java.util.Set;
+
 import net.minecraft.nbt.NBTTagCompound;
 
 /**
@@ -12,6 +14,16 @@ import net.minecraft.nbt.NBTTagCompound;
 public interface IValueNotifier {
 
     /**
+     * @return The mod the gui belongs to.
+     */
+    String getGuiModId();
+
+    /**
+     * @return The id of the gui.
+     */
+    int getGuiId();
+
+    /**
      * Set the value for given value id.
      * This will send a packet if it has changed.
      * If called on the client, a packet to the server will be sent.
@@ -21,6 +33,11 @@ public interface IValueNotifier {
      * @param value   The new value.
      */
     void setValue(int valueId, NBTTagCompound value);
+
+    /**
+     * @return All available value ids.
+     */
+    public Set<Integer> getValueIds();
 
     /**
      * Get the value for the given value id.

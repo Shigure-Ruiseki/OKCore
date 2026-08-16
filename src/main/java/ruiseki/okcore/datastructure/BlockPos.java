@@ -301,6 +301,33 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
         };
     }
 
+    /**
+     * Calculate squared distance to the given coordinates
+     */
+    public double distanceSq(double toX, double toY, double toZ) {
+        double d0 = (double) this.getX() - toX;
+        double d1 = (double) this.getY() - toY;
+        double d2 = (double) this.getZ() - toZ;
+        return d0 * d0 + d1 * d1 + d2 * d2;
+    }
+
+    /**
+     * Compute square of distance from point x, y, z to center of this Block
+     */
+    public double distanceSqToCenter(double xIn, double yIn, double zIn) {
+        double d0 = (double) this.getX() + 0.5D - xIn;
+        double d1 = (double) this.getY() + 0.5D - yIn;
+        double d2 = (double) this.getZ() + 0.5D - zIn;
+        return d0 * d0 + d1 * d1 + d2 * d2;
+    }
+
+    /**
+     * Calculate squared distance to the given Vector
+     */
+    public double distanceSq(Vector3i to) {
+        return this.distanceSq((double) to.x, (double) to.y, (double) to.z());
+    }
+
     public BiomeGenBase getBiomeGen(World world) {
         return world.getBiomeGenForCoords(getX(), getZ());
     }

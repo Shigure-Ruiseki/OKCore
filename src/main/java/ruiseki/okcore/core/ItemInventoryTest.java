@@ -38,6 +38,7 @@ public class ItemInventoryTest extends ConfigurableItem implements IItemCooldown
         return _instance;
     }
 
+    @SuppressWarnings("rawtypes")
     public ItemInventoryTest(ExtendedConfig eConfig) {
         super(eConfig);
         setTextureName("stick");

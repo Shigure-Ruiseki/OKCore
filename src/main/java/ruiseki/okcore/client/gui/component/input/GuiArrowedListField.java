@@ -9,7 +9,7 @@ import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
 
 /**
  * A number field which by default only accepts positive numbers.
- * 
+ *
  * @param <E> The element type
  * @author rubensworks
  */
@@ -28,8 +28,8 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
         this.arrows = arrows;
 
         if (this.arrows) {
-            arrowLeft = new GuiButtonArrow(0, x, y, GuiButtonArrow.Direction.WEST);
-            arrowRight = new GuiButtonArrow(1, x + width, y, GuiButtonArrow.Direction.EAST);
+            arrowLeft = new GuiButtonArrow(0, x, y - 1, GuiButtonArrow.Direction.WEST);
+            arrowRight = new GuiButtonArrow(1, x + width, y - 1, GuiButtonArrow.Direction.EAST);
             arrowRight.xPosition -= arrowRight.width;
         }
         setEnableBackgroundDrawing(true);
@@ -47,14 +47,27 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     }
 
     public void setActiveElement(int index) {
-        if (index >= elements.size()) {
+        if (elements == null || elements.isEmpty() || index < 0 || index >= elements.size()) {
             this.activeElement = -1;
             setText("");
         } else {
             this.activeElement = index;
-            setText(getActiveElement().toString());
+            setText(activeElementToString(getActiveElement()));
         }
         if (listener != null) listener.onChanged();
+    }
+
+    public boolean setActiveElement(E element) {
+        int index = this.elements.indexOf(element);
+        if (index < 0) {
+            return false;
+        }
+        setActiveElement(index);
+        return true;
+    }
+
+    protected String activeElementToString(E element) {
+        return element.toString();
     }
 
     public E getActiveElement() throws NumberFormatException {
@@ -71,29 +84,33 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
             arrowLeft.drawButton(minecraft, mouseX, mouseY);
             arrowRight.drawButton(minecraft, mouseX, mouseY);
             offsetX = arrowLeft.width;
-            xPosition += offsetX;
+            xPosition += offsetX + 1;
             width -= offsetX * 2;
         }
         super.drawTextBox(minecraft, mouseX, mouseY);
         if (arrows) {
-            xPosition -= offsetX;
+            xPosition -= offsetX + 1;
             width += offsetX * 2;
         }
     }
 
     protected void increase() {
-        setActiveElement((activeElement + 1) % elements.size());
+        if (elements == null || elements.isEmpty()) return;
+        int nextIndex = (activeElement < 0) ? 0 : (activeElement + 1) % elements.size();
+        setActiveElement(nextIndex);
     }
 
     protected void decrease() {
-        setActiveElement((activeElement - 1 + elements.size()) % elements.size());
+        if (elements == null || elements.isEmpty()) return;
+        int prevIndex = (activeElement <= 0) ? elements.size() - 1 : activeElement - 1;
+        setActiveElement(prevIndex);
     }
 
     @Override
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (arrowRight.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
+        if (arrows && arrowRight != null && arrowRight.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
             increase();
-        } else if (arrowLeft.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
+        } else if (arrows && arrowLeft != null && arrowLeft.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
             decrease();
         } else {
             super.mouseClicked(mouseX, mouseY, mouseButton);

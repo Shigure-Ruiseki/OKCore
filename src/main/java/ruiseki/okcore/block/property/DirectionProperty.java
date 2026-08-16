@@ -1,53 +1,19 @@
 package ruiseki.okcore.block.property;
 
-import static net.minecraftforge.common.util.ForgeDirection.UNKNOWN;
-
-import java.lang.reflect.Type;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
-
 import ruiseki.okcore.block.IBlockDirection;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public interface DirectionProperty extends IProperty<ForgeDirection> {
+public interface DirectionProperty extends IEnumProperty<ForgeDirection> {
 
     @Override
-    default Type getType() {
+    default Class<ForgeDirection> getEnumClass() {
         return ForgeDirection.class;
-    }
-
-    @Override
-    default JsonElement serialize(ForgeDirection value) {
-        return new JsonPrimitive(stringify(value));
-    }
-
-    @Override
-    default ForgeDirection deserialize(JsonElement element) {
-        return element.isJsonPrimitive() && element.getAsJsonPrimitive()
-            .isString() ? parse(element.getAsString()) : UNKNOWN;
-    }
-
-    @Override
-    default String stringify(ForgeDirection value) {
-        return value.name()
-            .toLowerCase();
-    }
-
-    @Override
-    default ForgeDirection parse(String text) throws InvalidPropertyTextException {
-        try {
-            return ForgeDirection.valueOf(text.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new InvalidPropertyTextException("Invalid ForgeDirection", e);
-        }
     }
 
     static AbstractDirectionProperty facing() {
@@ -56,8 +22,9 @@ public interface DirectionProperty extends IProperty<ForgeDirection> {
 
     static AbstractDirectionProperty facing(ForgeDirection defaultValue) {
         return facing(defaultValue, (world, x, y, z) -> {
-            if (world.getBlock(x, y, z) instanceof IBlockDirection direction)
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
                 return direction.getDirection(world, x, y, z);
+            }
 
             IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
             if (direction != null) return direction.getDirection(world, x, y, z);
@@ -67,7 +34,9 @@ public interface DirectionProperty extends IProperty<ForgeDirection> {
 
             return null;
         }, (world, x, y, z, v) -> {
-            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) direction.setDirection(world, x, y, z, v);
+            if (world.getBlock(x, y, z) instanceof IBlockDirection direction) {
+                direction.setDirection(world, x, y, z, v);
+            }
 
             IBlockDirection direction = TileHelpers.getSafeTile(world, x, y, z, IBlockDirection.class);
             if (direction != null) direction.setDirection(world, x, y, z, v);
@@ -104,33 +73,20 @@ public interface DirectionProperty extends IProperty<ForgeDirection> {
         };
     }
 
-    abstract class AbstractDirectionProperty implements DirectionProperty {
-
-        private String name;
-        private ForgeDirection defaultValue;
+    abstract class AbstractDirectionProperty extends AbstractEnumProperty<ForgeDirection> implements DirectionProperty {
 
         public AbstractDirectionProperty(String name, ForgeDirection defaultValue) {
-            this.name = name;
-            this.defaultValue = defaultValue;
+            super(name, ForgeDirection.class, defaultValue);
         }
 
         public AbstractDirectionProperty(String name) {
             this(name, ForgeDirection.SOUTH);
         }
 
+        @Override
         public AbstractDirectionProperty setName(String name) {
-            this.name = name;
+            super.setName(name);
             return this;
-        }
-
-        @Override
-        public ForgeDirection getDefaultValue() {
-            return this.defaultValue;
-        }
-
-        @Override
-        public String getName() {
-            return name;
         }
     }
 }

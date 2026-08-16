@@ -4,6 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
+import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A number field which by default only accepts positive numbers.
@@ -15,7 +17,9 @@ public class GuiNumberField extends GuiTextFieldExtended {
     private final boolean arrows;
     private GuiButtonArrow arrowUp;
     private GuiButtonArrow arrowDown;
-    private boolean positiveOnly = true;
+    private int minValue = Integer.MIN_VALUE;
+    private int maxValue = Integer.MAX_VALUE;
+    private boolean isEnabled = true;
 
     public GuiNumberField(int componentId, FontRenderer fontrenderer, int x, int y, int width, int height,
         boolean arrows, boolean background) {
@@ -32,29 +36,60 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        arrowUp.enabled = enabled;
+        arrowDown.enabled = enabled;
+        isEnabled = enabled;
+        super.setEnabled(enabled);
+    }
+
+    @Override
     public boolean getEnableBackgroundDrawing() {
         return false; // We want the offset, but not the drawing itself.
     }
 
     public void setPositiveOnly(boolean positiveOnly) {
-        this.positiveOnly = positiveOnly;
+        setMinValue(positiveOnly ? 0 : Integer.MIN_VALUE);
+    }
+
+    public int getMinValue() {
+        return minValue;
+    }
+
+    /**
+     * @param minValue The minimal value (inclusive)
+     */
+    public void setMinValue(int minValue) {
+        this.minValue = minValue;
+    }
+
+    public int getMaxValue() {
+        return maxValue;
+    }
+
+    /**
+     * @param maxValue The maximal value (inclusive)
+     */
+    public void setMaxValue(int maxValue) {
+        this.maxValue = maxValue;
     }
 
     public int getInt() throws NumberFormatException {
-        return Integer.parseInt(getText());
+        return validateNumber(Integer.parseInt(getText()));
     }
 
     public double getDouble() throws NumberFormatException {
-        return Double.parseDouble(getText());
+        return validateNumber(Double.parseDouble(getText()));
     }
 
     public float getFloat() throws NumberFormatException {
-        return Float.parseFloat(getText());
+        return validateNumber(Float.parseFloat(getText()));
     }
 
     @Override
     public void drawTextBox(Minecraft minecraft, int mouseX, int mouseY) {
         int offsetX = 0;
+        GlStateManager.color(1, 1, 1, 1);
         if (arrows) {
             arrowUp.drawButton(minecraft, mouseX, mouseY);
             arrowDown.drawButton(minecraft, mouseX, mouseY);
@@ -69,16 +104,20 @@ public class GuiNumberField extends GuiTextFieldExtended {
         }
     }
 
-    protected int validateNumber(int number) {
-        if (this.positiveOnly) {
-            return Math.max(number, 0);
-        } else {
-            return number;
-        }
+    public int validateNumber(int number) {
+        return Math.max(this.minValue, Math.min(this.maxValue, number));
+    }
+
+    public double validateNumber(double number) {
+        return Math.max(this.minValue, Math.min(this.maxValue, number));
+    }
+
+    public float validateNumber(float number) {
+        return Math.max(this.minValue, Math.min(this.maxValue, number));
     }
 
     protected int getDiffAmount() {
-        return Minecraft.getMinecraft().thePlayer.isSneaking() ? 10 : 1;
+        return MinecraftHelpers.isShifted() ? 10 : 1;
     }
 
     protected void increase() {
@@ -99,20 +138,45 @@ public class GuiNumberField extends GuiTextFieldExtended {
 
     @Override
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (arrowUp.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
-            increase();
-        } else if (arrowDown.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
-            decrease();
-        } else {
-            super.mouseClicked(mouseX, mouseY, mouseButton);
-        }
-        arrowDown.enabled = true;
-        try {
-            if (getInt() == 0) {
-                arrowDown.enabled = false;
+        if (this.isEnabled) {
+            if (this.arrows && arrowUp.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
+                increase();
+            } else if (this.arrows && arrowDown.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
+                decrease();
+            } else {
+                super.mouseClicked(mouseX, mouseY, mouseButton);
             }
-        } catch (NumberFormatException e) {
+            updateArrowsState();
+        }
+    }
 
+    @Override
+    public void setText(String value) {
+        super.setText(value);
+        updateArrowsState();
+    }
+
+    @Override
+    public boolean textboxKeyTyped(char typedChar, int keyCode) {
+        boolean ret = super.textboxKeyTyped(typedChar, keyCode);
+        updateArrowsState();
+        return ret;
+    }
+
+    protected void updateArrowsState() {
+        if (this.arrows) {
+            arrowDown.enabled = true;
+            arrowUp.enabled = true;
+            try {
+                if (getInt() <= this.minValue) {
+                    arrowDown.enabled = false;
+                }
+                if (getInt() >= this.maxValue) {
+                    arrowUp.enabled = false;
+                }
+            } catch (NumberFormatException e) {
+
+            }
         }
     }
 

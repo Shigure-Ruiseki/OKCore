@@ -31,11 +31,14 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.capability.FluidHandlerItemCapacityConfig;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.BlockWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.FluidBlockWrapper;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
+import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
@@ -46,6 +49,92 @@ import ruiseki.okcore.item.handler.IItemHandler;
 public class FluidHelpers {
 
     public static final int BUCKET_VOLUME = FluidContainerRegistry.BUCKET_VOLUME;
+
+    /**
+     * Get the fluid amount of the given stack in a safe manner.
+     *
+     * @param fluidStack The fluid stack
+     * @return The fluid amount.
+     */
+    public static int getAmount(@Nullable FluidStack fluidStack) {
+        return fluidStack != null ? fluidStack.amount : 0;
+    }
+
+    public static String getModId(Fluid fluid) {
+        String fullName = FluidRegistry.masterFluidReference.inverse()
+            .get(fluid);
+        if (fullName != null && fullName.contains(":")) {
+            return fullName.split(":")[0];
+        }
+        return null;
+    }
+
+    /**
+     * Copy the given fluid stack
+     *
+     * @param fluidStack The fluid stack to copy.
+     * @return A copy of the fluid stack.
+     */
+    public static FluidStack copy(@Nullable FluidStack fluidStack) {
+        if (fluidStack == null) return null;
+        return fluidStack.copy();
+    }
+
+    /**
+     * If this destination can completely contain the given fluid in the given source.
+     *
+     * @param source      The source of the fluid that has to be moved.
+     * @param destination The target of the fluid that has to be moved.
+     * @return If the destination can completely contain the fluid of the source.
+     */
+    public static boolean canCompletelyFill(IFluidHandler source, IFluidHandler destination) {
+        FluidStack drained = source.drain(Integer.MAX_VALUE, false);
+        return drained != null && destination.fill(drained, false) == drained.amount;
+    }
+
+    /**
+     * Get the fluid contained in a fluid handler.
+     *
+     * @param fluidHandler The fluid handler.
+     * @return The fluid.
+     */
+    public static FluidStack getFluid(@Nullable IFluidHandler fluidHandler) {
+        return fluidHandler != null ? fluidHandler.drain(Integer.MAX_VALUE, false) : null;
+    }
+
+    /**
+     * Check if the fluid handler is not empty.
+     *
+     * @param fluidHandler The fluid handler.
+     * @return If it is not empty.
+     */
+    public static boolean hasFluid(@Nullable IFluidHandler fluidHandler) {
+        return getFluid(fluidHandler) != null;
+    }
+
+    /**
+     * Get the capacity of a fluid handler.
+     *
+     * @param fluidHandler The fluid handler.
+     * @return The capacity.
+     */
+    public static int getCapacity(@Nullable IFluidHandler fluidHandler) {
+        if (fluidHandler != null) {
+            for (IFluidTankProperties properties : fluidHandler.getTankProperties()) {
+                return properties.getCapacity();
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * @param itemStack The itemstack
+     * @return The item capacity fluid handler.
+     */
+    public static @Nullable IFluidHandlerItemCapacity getFluidHandlerItemCapacity(ItemStack itemStack) {
+        return CapabilityHelpers.getCapability(itemStack, FluidHandlerItemCapacityConfig.CAPABILITY)
+            .getOrNull();
+    }
 
     /**
      * Used to handle the common case of a player holding a fluid item and right-clicking on a fluid handler block.

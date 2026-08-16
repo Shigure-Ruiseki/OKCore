@@ -13,7 +13,7 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
  * A wrapper that contains a reference to a {@link net.minecraft.util.ResourceLocation} and its sheet position.
- * 
+ *
  * @author rubensworks
  */
 @Data
@@ -32,8 +32,12 @@ public class Image implements IImage {
 
     @Override
     public void draw(Gui gui, int x, int y) {
+        GlStateManager.enableBlend();
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().renderEngine.bindTexture(resourceLocation);
         gui.drawTexturedModalRect(x, y, sheetX, sheetY, sheetWidth, sheetHeight);
+        GlStateManager.disableBlend();
     }
 
     @Override
@@ -91,5 +95,15 @@ public class Image implements IImage {
     @Override
     public void drawWorldWithAlpha(TextureManager textureManager, float x2, float y2, float alpha) {
         this.drawWorldWithAlpha(textureManager, 0, x2, 0, y2, alpha);
+    }
+
+    @Override
+    public int getWidth() {
+        return this.sheetWidth;
+    }
+
+    @Override
+    public int getHeight() {
+        return this.sheetHeight;
     }
 }

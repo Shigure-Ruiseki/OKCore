@@ -1,6 +1,9 @@
 package ruiseki.okcore.inventory.container;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -12,7 +15,9 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -25,7 +30,7 @@ import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.network.packet.ValueNotifyPacket;
 
 /**
- * A container with inventory.
+ * A container with inventory for Minecraft 1.7.10.
  *
  * @author rubensworks
  */
@@ -34,8 +39,9 @@ public abstract class InventoryContainer extends Container
 
     protected static final int ITEMBOX = 18;
 
-    private final Map<Integer, IButtonActionServer> buttonActions = Maps.newHashMap();
+    private final Map<Integer, IButtonActionServer<InventoryContainer>> buttonActions = Maps.newHashMap();
     private final Map<Integer, NBTTagCompound> values = Maps.newHashMap();
+    private final List<SyncedGuiVariable<?>> syncedGuiVariables = Lists.newArrayList();
     private int nextValueId = 0;
     private IValueNotifiable guiValueListener = null;
 
@@ -44,14 +50,31 @@ public abstract class InventoryContainer extends Container
     protected int offsetX = 0;
     protected int offsetY = 0;
 
+    /* The current drag mode (0 : evenly split, 1 : one item by slot, 2 : not used ?) */
+    private int dragMode = -1;
+    /** The current drag event (0 : start, 1 : add slot : 2 : end) */
+    private int dragEvent;
+    /** The list of slots where the itemstack holds will be distributed */
+    private final Set<Slot> dragSlots = Sets.newHashSet();
+
     /**
-     * Make a new TileInventoryContainer.
+     * Make a new InventoryContainer.
      *
      * @param inventory The player inventory.
      */
     public InventoryContainer(InventoryPlayer inventory) {
         this.playerIInventory = inventory;
         this.player = inventory.player;
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+        if (!MinecraftHelpers.isClientSide()) {
+            for (SyncedGuiVariable<?> syncedGuiVariable : this.syncedGuiVariables) {
+                syncedGuiVariable.detectAndSendChanges();
+            }
+        }
     }
 
     /**
@@ -74,8 +97,6 @@ public abstract class InventoryContainer extends Container
     /**
      * This is the place to initialize values server-side so that they can be sent to the client for the first time.
      * This is only called on the server.
-     * Make sure not to initialize the value id's here, but do that inside the constructor, because these must be equal
-     * for client and server.
      */
     protected void initializeValues() {
 
@@ -85,6 +106,7 @@ public abstract class InventoryContainer extends Container
         return new Slot(inventory, index, x, y);
     }
 
+    @Override
     protected Slot addSlotToContainer(Slot slot) {
         slot.xDisplayPosition += offsetX;
         slot.yDisplayPosition += offsetY;
@@ -94,7 +116,6 @@ public abstract class InventoryContainer extends Container
     protected void addInventory(IInventory inventory, int indexOffset, int offsetX, int offsetY, int rows, int cols) {
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
-                // Slot params: id, x-coord, y-coord (coords are relative to gui box)
                 addSlotToContainer(
                     createNewSlot(inventory, x + y * cols + indexOffset, offsetX + x * ITEMBOX, offsetY + y * ITEMBOX));
             }
@@ -103,28 +124,20 @@ public abstract class InventoryContainer extends Container
 
     /**
      * Add player inventory and hotbar to the GUI.
-     *
-     * @param inventory Inventory of the player
-     * @param offsetX   Offset to X
-     * @param offsetY   Offset to Y
      */
     protected void addPlayerInventory(InventoryPlayer inventory, int offsetX, int offsetY) {
-        // Player inventory
         int rows = 3;
         int cols = 9;
-        addInventory(inventory, cols, offsetX, offsetY, rows, cols);
 
         // Player hotbar
-        offsetY += 58;
-        addInventory(inventory, 0, offsetX, offsetY, 1, cols);
+        addInventory(inventory, 0, offsetX, offsetY + 58, 1, cols);
+
+        // Player inventory
+        addInventory(inventory, cols, offsetX, offsetY, rows, cols);
     }
 
     /**
      * Add player armor inventory to the GUI.
-     *
-     * @param inventory Inventory of the player
-     * @param offsetX   Offset to X
-     * @param offsetY   Offset to Y
      */
     protected void addPlayerArmorInventory(InventoryPlayer inventory, int offsetX, int offsetY) {
         for (int y = 0; y < 4; y++) {
@@ -146,18 +159,19 @@ public abstract class InventoryContainer extends Container
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int slotID) {
         ItemStack stack = null;
-        Slot slot = (Slot) inventorySlots.get(slotID);
+        Slot slot = (Slot) this.inventorySlots.get(slotID);
         int slots = getSizeInventory();
 
         if (slot != null && slot.getHasStack()) {
-            ItemStack stackInSlot = slot.getStack();
+            ItemStack stackInSlot = slot.getStack()
+                .copy();
             stack = stackInSlot.copy();
 
             if (slotID < slots) { // Click in tile -> player inventory
                 if (!mergeItemStack(
                     stackInSlot,
                     getSlotStart(slotID, slots, true),
-                    getSlotRange(slotID, inventorySlots.size(), true),
+                    getSlotRange(slotID, this.inventorySlots.size(), true),
                     true)) {
                     return null;
                 }
@@ -202,7 +216,8 @@ public abstract class InventoryContainer extends Container
             while (stack.stackSize > 0 && (!reverse && slotIndex < slotRange || reverse && slotIndex >= slotStart)) {
                 slot = (Slot) this.inventorySlots.get(slotIndex);
                 int maxSlotSize = Math.min(slot.getSlotStackLimit(), maxStack);
-                existingStack = slot.getStack();
+                existingStack = slot.getStack() != null ? slot.getStack()
+                    .copy() : null;
 
                 if (slot.isItemValid(stack) && existingStack != null
                     && existingStack.getItem() == stack.getItem()
@@ -212,12 +227,12 @@ public abstract class InventoryContainer extends Container
                     if (existingSize <= maxSlotSize) {
                         stack.stackSize = 0;
                         existingStack.stackSize = existingSize;
-                        slot.onSlotChanged();
+                        slot.putStack(existingStack);
                         successful = true;
                     } else if (existingStack.stackSize < maxSlotSize) {
                         stack.stackSize -= maxSlotSize - existingStack.stackSize;
                         existingStack.stackSize = maxSlotSize;
-                        slot.onSlotChanged();
+                        slot.putStack(existingStack);
                         successful = true;
                     }
                 }
@@ -246,7 +261,6 @@ public abstract class InventoryContainer extends Container
                     ItemStack toPut = stack.copy();
                     toPut.stackSize = placedAmount;
                     slot.putStack(toPut);
-                    slot.onSlotChanged();
                     stack.stackSize -= placedAmount;
                     successful = true;
                 }
@@ -262,26 +276,106 @@ public abstract class InventoryContainer extends Container
         return successful;
     }
 
-    /**
-     * Get the inventory of the player for which this container is instantiated.
-     *
-     * @return The player inventory.
-     */
     public IInventory getPlayerIInventory() {
         return playerIInventory;
     }
 
     @Override
-    public ItemStack slotClick(int slotId, int arg, int function, EntityPlayer player) {
+    public ItemStack slotClick(int slotId, int clickedButton, int mode, EntityPlayer player) {
         Slot slot = slotId < 0 ? null : (Slot) this.inventorySlots.get(slotId);
-        // Phantom slot code based on Buildcraft
-        if (slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {
-            return slotClickPhantom(slot, arg, function, player);
+        InventoryPlayer inventoryplayer = player.inventory;
+
+        if (mode == 5) { // QUICK_CRAFT mode in vanilla MC 1.7.10
+            int previousDragEvent = this.dragEvent;
+            this.dragEvent = func_94532_c(clickedButton);
+
+            if ((previousDragEvent != 1 || this.dragEvent != 2) && previousDragEvent != this.dragEvent) {
+                this.func_94533_d();
+            } else if (inventoryplayer.getItemStack() == null) {
+                this.func_94533_d();
+            } else if (this.dragEvent == 0) {
+                this.dragMode = func_94529_b(clickedButton);
+
+                if (func_94528_d(this.dragMode)) {
+                    this.dragEvent = 1;
+                    this.dragSlots.clear();
+                } else {
+                    this.func_94533_d();
+                }
+            } else if (this.dragEvent == 1) {
+                Slot dragTargetSlot = (Slot) this.inventorySlots.get(slotId);
+                ItemStack heldStack = inventoryplayer.getItemStack();
+
+                if (dragTargetSlot != null && func_94527_a(dragTargetSlot, heldStack, true)
+                    && dragTargetSlot.isItemValid(heldStack)
+                    && (this.dragMode == 2 || heldStack.stackSize > this.dragSlots.size())
+                    && this.canDragIntoSlot(dragTargetSlot)) {
+                    this.dragSlots.add(dragTargetSlot);
+                }
+            } else if (this.dragEvent == 2) {
+                if (!this.dragSlots.isEmpty()) {
+                    ItemStack originalHeld = inventoryplayer.getItemStack()
+                        .copy();
+                    int remainingCount = inventoryplayer.getItemStack().stackSize;
+                    int phantomCount = 0;
+
+                    for (Slot targetSlot : this.dragSlots) {
+                        ItemStack currentHeld = inventoryplayer.getItemStack();
+
+                        if (targetSlot != null && func_94527_a(targetSlot, currentHeld, true)
+                            && targetSlot.isItemValid(currentHeld)
+                            && (this.dragMode == 2 || currentHeld.stackSize >= this.dragSlots.size())
+                            && this.canDragIntoSlot(targetSlot)) {
+                            ItemStack calculatedStack = originalHeld.copy();
+                            int currentSlotCount = targetSlot.getHasStack() ? targetSlot.getStack().stackSize : 0;
+                            func_94525_a(this.dragSlots, this.dragMode, calculatedStack, currentSlotCount);
+                            int maxAllowed = Math
+                                .min(calculatedStack.getMaxStackSize(), targetSlot.getSlotStackLimit());
+
+                            if (calculatedStack.stackSize > maxAllowed) {
+                                calculatedStack.stackSize = maxAllowed;
+                            }
+
+                            remainingCount -= calculatedStack.stackSize - currentSlotCount;
+                            targetSlot.putStack(calculatedStack);
+
+                            if (targetSlot instanceof SlotExtended && ((SlotExtended) targetSlot).isPhantom()) {
+                                phantomCount += calculatedStack.stackSize - currentSlotCount;
+                            }
+                        }
+                    }
+
+                    originalHeld.stackSize = remainingCount + phantomCount;
+                    if (originalHeld.stackSize <= 0) {
+                        inventoryplayer.setItemStack(null);
+                    } else {
+                        inventoryplayer.setItemStack(originalHeld);
+                    }
+                }
+
+                this.func_94533_d();
+            } else {
+                this.func_94533_d();
+            }
+            return null;
+        } else if (this.dragEvent != 0) {
+            this.func_94533_d();
+            return null;
+        } else if (slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {
+            return slotClickPhantom(slot, clickedButton, mode, player);
+        } else {
+            return super.slotClick(slotId, clickedButton, mode, player);
         }
-        return super.slotClick(slotId, arg, function, player);
     }
 
-    private ItemStack slotClickPhantom(Slot slot, int mouseButton, int modifier, EntityPlayer player) {
+    @Override
+    protected void func_94533_d() { // Equivalent to resetDrag in 1.7.10
+        super.func_94533_d();
+        this.dragEvent = 0;
+        this.dragSlots.clear();
+    }
+
+    private ItemStack slotClickPhantom(Slot slot, int mouseButton, int mode, EntityPlayer player) {
         ItemStack stack = null;
 
         if (mouseButton == 2) {
@@ -300,29 +394,32 @@ public abstract class InventoryContainer extends Container
 
             if (stackSlot == null) {
                 if (stackHeld != null && slot.isItemValid(stackHeld)) {
-                    fillPhantomSlot(slot, stackHeld, mouseButton, modifier);
+                    fillPhantomSlot(slot, stackHeld, mouseButton, mode);
                 }
             } else if (stackHeld == null) {
-                adjustPhantomSlot(slot, mouseButton, modifier);
+                adjustPhantomSlot(slot, mouseButton, mode);
                 slot.onPickupFromSlot(player, playerInv.getItemStack());
             } else if (slot.isItemValid(stackHeld)) {
-                if (ItemStack.areItemStacksEqual(stackSlot, stackHeld)) {
-                    adjustPhantomSlot(slot, mouseButton, modifier);
+                if (ItemStack.areItemStacksEqual(stackSlot, stackHeld)
+                    && ItemStack.areItemStackTagsEqual(stackSlot, stackHeld)) {
+                    adjustPhantomSlot(slot, mouseButton, mode);
                 } else {
-                    fillPhantomSlot(slot, stackHeld, mouseButton, modifier);
+                    fillPhantomSlot(slot, stackHeld, mouseButton, mode);
                 }
             }
         }
         return stack;
     }
 
-    protected void adjustPhantomSlot(Slot slot, int mouseButton, int modifier) {
+    protected void adjustPhantomSlot(Slot slot, int mouseButton, int mode) {
         if (!((SlotExtended) slot).isAdjustable()) {
             return;
         }
         ItemStack stackSlot = slot.getStack();
+        if (stackSlot == null) return;
+
         int stackSize;
-        if (modifier == 1) {
+        if (mode == 1) { // Shift Click
             stackSize = mouseButton == 0 ? (stackSlot.stackSize + 1) / 2 : stackSlot.stackSize * 2;
         } else {
             stackSize = mouseButton == 0 ? stackSlot.stackSize - 1 : stackSlot.stackSize + 1;
@@ -339,7 +436,7 @@ public abstract class InventoryContainer extends Container
         }
     }
 
-    protected void fillPhantomSlot(Slot slot, ItemStack stackHeld, int mouseButton, int modifier) {
+    protected void fillPhantomSlot(Slot slot, ItemStack stackHeld, int mouseButton, int mode) {
         if (!((SlotExtended) slot).isAdjustable()) {
             return;
         }
@@ -365,15 +462,12 @@ public abstract class InventoryContainer extends Container
 
     @Override
     public void onButtonClick(int buttonId) {
-        IButtonActionServer action;
+        IButtonActionServer<InventoryContainer> action;
         if ((action = buttonActions.get(buttonId)) != null) {
             action.onAction(buttonId, this);
         }
     }
 
-    /**
-     * @return The next unique value id.
-     */
     protected int getNextValueId() {
         return nextValueId++;
     }
@@ -382,12 +476,14 @@ public abstract class InventoryContainer extends Container
     public void setValue(int valueId, NBTTagCompound value) {
         if (!values.containsKey(valueId) || !values.get(valueId)
             .equals(value)) {
-            if (!MinecraftHelpers.isClientSide()) { // server -> client
+            if (!player.worldObj.isRemote) { // server -> client
                 OKCore._instance.getPacketHandler()
-                    .sendToPlayer(new ValueNotifyPacket(valueId, value), (EntityPlayerMP) player);
+                    .sendToPlayer(
+                        new ValueNotifyPacket(getGuiModId(), getGuiId(), valueId, value),
+                        (EntityPlayerMP) player);
             } else { // client -> server
                 OKCore._instance.getPacketHandler()
-                    .sendToServer(new ValueNotifyPacket(valueId, value));
+                    .sendToServer(new ValueNotifyPacket(getGuiModId(), getGuiId(), valueId, value));
             }
             values.put(valueId, value);
         }
@@ -399,10 +495,21 @@ public abstract class InventoryContainer extends Container
     }
 
     @Override
+    public Set<Integer> getValueIds() {
+        return values.keySet();
+    }
+
+    @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         values.put(valueId, value);
         if (guiValueListener != null) {
             guiValueListener.onUpdate(valueId, value);
         }
+    }
+
+    public <T> Supplier<T> registerSyncedVariable(Class<T> clazz, Supplier<T> serverValueSupplier) {
+        SyncedGuiVariable<T> variable = new SyncedGuiVariable<>(this, clazz, serverValueSupplier);
+        this.syncedGuiVariables.add(variable);
+        return variable;
     }
 }

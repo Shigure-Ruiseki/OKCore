@@ -5,9 +5,11 @@ import java.util.List;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.capabilities.resolver.ICapabilityResolver;
 import ruiseki.okcore.datastructure.LazyOptional;
 
@@ -18,7 +20,7 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     private final V valueObject;
     private final ICapabilityConstructor<?, K, V> constructor;
 
-    private LazyOptional<?> cachedOptional = null;
+    private LazyOptional<?> cachedOptional = LazyOptional.empty();
 
     public ConstructorCapabilityResolver(Capability<?> capability, K keyObject, V valueObject,
         ICapabilityConstructor<?, K, V> constructor) {
@@ -29,23 +31,22 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     }
 
     @Override
-    public List<Capability<?>> getSupportedCapabilities() {
+    public @NotNull List<Capability<?>> getSupportedCapabilities() {
         return Collections.singletonList(capability);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> LazyOptional<T> resolve(Capability<T> capability, @Nullable ForgeDirection side) {
+    public <T> @NotNull LazyOptional<T> resolve(@NotNull Capability<T> capability, @Nullable ForgeDirection side) {
         if (this.capability == capability) {
-            if (cachedOptional == null) {
-                Object instance = constructor.createProvider(keyObject, valueObject);
-                if (instance != null) {
-                    cachedOptional = LazyOptional.of(() -> instance);
+            if (!cachedOptional.isPresent()) {
+                ICapabilityProvider provider = constructor.createProvider(keyObject, valueObject);
+                if (provider != null) {
+                    cachedOptional = provider.getCapability(capability, side);
                 } else {
                     cachedOptional = LazyOptional.empty();
                 }
             }
-            return (LazyOptional<T>) cachedOptional;
+            return cachedOptional.cast();
         }
         return LazyOptional.empty();
     }
@@ -54,7 +55,7 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     public void invalidate(Capability<?> capability, @Nullable ForgeDirection side) {
         if (this.capability == capability && cachedOptional != null) {
             cachedOptional.invalidate();
-            cachedOptional = null;
+            cachedOptional = LazyOptional.empty();
         }
     }
 
@@ -62,7 +63,7 @@ public class ConstructorCapabilityResolver<K, V> implements ICapabilityResolver 
     public void invalidateAll() {
         if (cachedOptional != null) {
             cachedOptional.invalidate();
-            cachedOptional = null;
+            cachedOptional = LazyOptional.empty();
         }
     }
 }

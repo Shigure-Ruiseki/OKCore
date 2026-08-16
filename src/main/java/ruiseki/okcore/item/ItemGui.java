@@ -12,6 +12,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
@@ -31,14 +32,13 @@ public abstract class ItemGui extends ConfigurableItem implements IGuiContainerP
      *
      * @param eConfig Config for this blockState.
      */
-    @SuppressWarnings({ "rawtypes" })
-    protected ItemGui(ExtendedConfig eConfig) {
+    protected ItemGui(ExtendedConfig<ItemConfig> eConfig) {
         super(eConfig);
         this.guiID = Helpers.getNewId(eConfig.getMod(), Helpers.IDType.GUI);
     }
 
     @Override
-    public ModBase getMod() {
+    public ModBase getModGui() {
         return eConfig.getMod();
     }
 

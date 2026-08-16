@@ -1,0 +1,16 @@
+package ruiseki.okcore.nbt.path.parse;
+
+/**
+ * A handler that handles boolean expressions in the form of " &ge; 10".
+ */
+public class NbtPathExpressionParseHandlerBooleanRelationalGreaterThanOrEqual
+    extends NbtPathExpressionParseHandlerBooleanRelationalAdapter {
+
+    public NbtPathExpressionParseHandlerBooleanRelationalGreaterThanOrEqual() {
+        super(">=");
+    }
+
+    protected boolean getRelationalValue(double left, double right) {
+        return left >= right;
+    }
+}

@@ -8,26 +8,26 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.recipe.ingredient.Ingredient;
 
 public interface IRecipeOK<C extends IInventory> extends IRecipe {
 
-    ResourceLocation getId();
-
-    IRecipeSerializer<?> getSerializer();
-
-    IRecipeType<?> getType();
-
     boolean matchesOK(C inventory, World world);
 
-    ItemStack getCraftingResultOK(C inventory);
+    ItemStack assemble(C inventory);
+
+    boolean canCraftInDimensions(int width, int height);
+
+    ItemStack getResultItem();
 
     default NonNullList<ItemStack> getRemainingItems(C inventory) {
         NonNullList<ItemStack> nonnulllist = NonNullList.withSize(inventory.getSizeInventory(), null);
 
         for (int i = 0; i < nonnulllist.size(); ++i) {
             ItemStack item = inventory.getStackInSlot(i);
-            if (item.getItem() != null && item.getItem()
-                .hasContainerItem(item)) {
+            if (item != null && item.getItem() != null
+                && item.getItem()
+                    .hasContainerItem(item)) {
                 nonnulllist.set(
                     i,
                     item.getItem()
@@ -37,6 +37,20 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
 
         return nonnulllist;
     }
+
+    default NonNullList<Ingredient> getIngredients() {
+        return NonNullList.create();
+    }
+
+    default boolean isSpecial() {
+        return false;
+    }
+
+    ResourceLocation getId();
+
+    IRecipeSerializer<?> getSerializer();
+
+    IRecipeType<?> getType();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -52,9 +66,14 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
     @Override
     default ItemStack getCraftingResult(InventoryCrafting inv) {
         try {
-            return this.getCraftingResultOK((C) inv);
+            return this.assemble((C) inv);
         } catch (ClassCastException e) {
             return null;
         }
+    }
+
+    @Override
+    default ItemStack getRecipeOutput() {
+        return getResultItem();
     }
 }

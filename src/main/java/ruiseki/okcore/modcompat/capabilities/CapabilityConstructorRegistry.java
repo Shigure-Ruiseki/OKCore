@@ -14,6 +14,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.HashMultimap;
@@ -302,7 +303,8 @@ public class CapabilityConstructorRegistry {
         }
 
         @Override
-        public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable ForgeDirection side) {
+        public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
+            @Nullable ForgeDirection side) {
             return cache.getCapability(capability, side);
         }
     }

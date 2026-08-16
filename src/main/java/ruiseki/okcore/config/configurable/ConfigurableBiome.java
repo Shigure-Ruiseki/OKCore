@@ -8,34 +8,35 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * A simple configurable for Biomes, will auto-register itself after construction.
- * 
+ *
  * @author rubensworks
  *
  */
-public class ConfigurableBiome extends BiomeGenBase implements IConfigurable {
+public class ConfigurableBiome extends BiomeGenBase implements IConfigurable<BiomeConfig> {
 
     protected BiomeConfig eConfig = null;
 
     /**
      * Make a new Biome instance
-     * 
+     *
      * @param eConfig Config for this enchantment.
      */
-    protected ConfigurableBiome(BiomeConfig eConfig) {
-        super(eConfig.getId());
-        this.setConfig(eConfig);
+    protected ConfigurableBiome(ExtendedConfig<BiomeConfig> eConfig) {
+        super(
+            eConfig.downCast()
+                .getId());
+        this.setConfig((BiomeConfig) eConfig);
         this.setBiomeName(getLocalizedName());
 
     }
 
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
-        this.eConfig = (BiomeConfig) eConfig;
+    private void setConfig(BiomeConfig eConfig) {
+        this.eConfig = eConfig;
     }
 
     /**
      * Get localized name of this biome.
-     * 
+     *
      * @return Localized name.
      */
     public String getLocalizedName() {
@@ -43,7 +44,7 @@ public class ConfigurableBiome extends BiomeGenBase implements IConfigurable {
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public BiomeConfig getConfig() {
         return eConfig;
     }
 

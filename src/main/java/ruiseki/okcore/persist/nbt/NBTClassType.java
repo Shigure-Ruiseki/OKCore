@@ -31,6 +31,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
@@ -567,7 +568,8 @@ public abstract class NBTClassType<T> {
                 int dim = dimPos.getInteger("dim");
                 World world;
                 if (!MinecraftHelpers.isClientSide()) {
-                    if (MinecraftServer.getServer().worldServers.length >= dim) {
+                    if (dim >= FMLCommonHandler.instance()
+                        .getMinecraftServerInstance().worldServers.length) {
                         dim = 0;
                     }
                     world = MinecraftServer.getServer().worldServers[dim];
@@ -704,13 +706,54 @@ public abstract class NBTClassType<T> {
 
     }
 
-    private static boolean isImplementsInterface(Class<?> clazz, Class<?> interfaceClazz) {
-        try {
-            clazz.asSubclass(interfaceClazz);
-        } catch (ClassCastException e) {
-            return false;
+    /**
+     * Get the serialization class for the given object.
+     *
+     * @param clazz The class of the object.
+     * @param <T>   The object type
+     * @return The serialization class.
+     */
+    public static <T> NBTClassType<T> getClassType(Class<T> clazz) {
+        return (NBTClassType<T>) NBTYPES.get(clazz);
+    }
+
+    /**
+     * Write the given object to NBT.
+     *
+     * @param clazz    The class of the object.
+     * @param name     The NBT key name to write to.
+     * @param instance The instance to serialize.
+     * @param tag      The NBT tag to write in.
+     * @param <T>      The class type.
+     * @param <I>      The object type.
+     */
+    public static <T, I extends T> void writeNbt(Class<T> clazz, String name, I instance, NBTTagCompound tag) {
+        NBTClassType<T> serializationClass = getClassType(clazz);
+        if (serializationClass == null) {
+            throw new RuntimeException("No valid NBT serialization was found for " + instance + " of type " + clazz);
         }
-        return true;
+        serializationClass.writePersistedField(name, instance, tag);
+    }
+
+    /**
+     * Read an object from NBT.
+     *
+     * @param clazz The class of the object.
+     * @param name  The NBT key name to read from.
+     * @param tag   The NBT tag to read in.
+     * @param <T>   The class type.
+     * @return The read object.
+     */
+    public static <T> T readNbt(Class<T> clazz, String name, NBTTagCompound tag) {
+        NBTClassType<T> serializationClass = getClassType(clazz);
+        if (serializationClass == null) {
+            throw new RuntimeException("No valid NBT serialization was found type " + clazz);
+        }
+        return serializationClass.readPersistedField(name, tag);
+    }
+
+    private static boolean isImplementsInterface(Class<?> clazz, Class<?> interfaceClazz) {
+        return interfaceClazz.isAssignableFrom(clazz);
     }
 
     private static NBTClassType getTypeSilent(Class<?> type) {
@@ -841,26 +884,28 @@ public abstract class NBTClassType<T> {
         Class<?> type = field.getType();
         String fieldName = field.getName();
 
-        // Make editable, will set back to the original at the end of this call.
+        // Make editable if it was not editable before.
         boolean wasAccessible = field.isAccessible();
-        try {
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            OKCore.okLog(Level.ERROR, e.getMessage());
+        if (!wasAccessible) {
+            try {
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            field.setAccessible(true);
         }
-        field.setAccessible(true);
 
         // Get a non-null action
         NBTClassType<?> action = getType(type, provider);
         try {
             action.persistedFieldAction(provider, field, tag, write);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Could not access field " + fieldName + " in " + provider.getClass());
+            e.printStackTrace();
+            throw new RuntimeException(
+                "Could not access field " + fieldName + " in " + provider.getClass() + " " + e.getMessage());
         }
-
-        field.setAccessible(wasAccessible);
     }
 
     /**
@@ -880,17 +925,19 @@ public abstract class NBTClassType<T> {
 
         String name = annotation.value()
             .isEmpty() ? field.getName() : annotation.value();
-
+        boolean useDefaultValue = annotation.useDefaultValue();
         Object castTile = field.getDeclaringClass()
             .cast(provider);
         if (write) {
             try {
+                field.setAccessible(true); // At least one coremod seems to reset this for some reason, so force enable
+                                           // it again.
                 T object = (T) field.get(castTile);
                 if (object != null) {
                     try {
                         writePersistedField(name, object, tag);
                     } catch (Exception e) {
-                        OKCore.okLog(Level.ERROR, e.getMessage());
+                        e.printStackTrace();
                         throw new RuntimeException(
                             "Something went from with the field " + field
                                 .getName() + " in " + castTile + ": " + e.getMessage());
@@ -898,21 +945,35 @@ public abstract class NBTClassType<T> {
                 }
             } catch (IllegalArgumentException e) {
                 throw new RuntimeException(
-                    "Can not write the field " + field.getName() + " in " + castTile + " since it does not exist.");
+                    "Can not write the field " + field
+                        .getName() + " in " + castTile + " since it does not exist. " + e.getMessage());
             }
         } else {
-            if (tag.hasKey(name)) {
-                if (INBTSerializable.class.isAssignableFrom(field.getType())) {
-                    INBTSerializable existing = (INBTSerializable) field.get(castTile);
-
-                    if (existing != null) {
-                        existing.deserializeNBT(tag.getCompoundTag(name));
-                    }
-                } else {
-                    T object = readPersistedField(name, tag);
+            T object = null;
+            try {
+                if (tag.hasKey(name)) {
+                    object = readPersistedField(name, tag);
+                    field.setAccessible(true); // At least one coremod seems to reset this for some reason, so force
+                                               // enable it again.
+                    field.set(castTile, object);
+                } else if (useDefaultValue) {
+                    object = getDefaultValue();
+                    field.setAccessible(true); // At least one coremod seems to reset this for some reason, so force
+                                               // enable it again.
                     field.set(castTile, object);
                 }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                throw new RuntimeException(
+                    "Can not read the field " + field.getName()
+                        + " as "
+                        + object
+                        + " in "
+                        + castTile
+                        + " since it does not exist OR there is a class mismatch. "
+                        + e.getMessage());
             }
+
         }
     }
 
@@ -959,11 +1020,11 @@ public abstract class NBTClassType<T> {
             NBTTagCompound collectionTag = tag.getCompoundTag(name);
             C collection = createNewCollection();
             NBTTagList list = collectionTag
-                .getTagList("collection", MinecraftHelpers.NBTTag_Types.NBTTagCompound.getId());
+                .getTagList("collection", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
             if (list.tagCount() > 0) {
                 NBTClassType elementNBTClassType;
                 try {
-                    Class elementType = Class.forName(collectionTag.getString("elementType"));
+                    Class<?> elementType = Class.forName(collectionTag.getString("elementType"));
                     elementNBTClassType = getType(elementType, collection);
                 } catch (ClassNotFoundException e) {
                     OKCore.okLog(

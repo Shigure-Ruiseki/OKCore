@@ -16,19 +16,18 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * A configurable potion effect.
- * 
+ *
  * @author rubensworks
  */
-public abstract class ConfigurablePotion extends Potion implements IConfigurable {
+public abstract class ConfigurablePotion extends Potion implements IConfigurable<PotionConfig> {
 
     private final ResourceLocation resource;
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected PotionConfig eConfig = null;
 
     /**
      * Make a new Enchantment instance
-     * 
+     *
      * @param eConfig   Config for this enchantment.
      * @param badEffect If the potion effect is bad.
      * @param color     The color of the potion.
@@ -36,7 +35,7 @@ public abstract class ConfigurablePotion extends Potion implements IConfigurable
      */
     protected ConfigurablePotion(ExtendedConfig<PotionConfig> eConfig, boolean badEffect, int color, int iconIndex) {
         super(eConfig.downCast().ID, badEffect, color);
-        this.setConfig(eConfig);
+        this.setConfig((PotionConfig) eConfig);
         this.setPotionName(eConfig.getUnlocalizedName());
         this.setIconIndex(iconIndex % 8, iconIndex / 8);
         this.resource = new ResourceLocation(
@@ -54,13 +53,12 @@ public abstract class ConfigurablePotion extends Potion implements IConfigurable
         return super.getStatusIconIndex();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void setConfig(ExtendedConfig eConfig) {
+    private void setConfig(PotionConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public PotionConfig getConfig() {
         return eConfig;
     }
 

@@ -35,7 +35,7 @@ public abstract class RecipeDataBase implements IRecipeOK<IInventory> {
     }
 
     @Override
-    public ItemStack getCraftingResultOK(IInventory crafting) {
+    public ItemStack assemble(IInventory crafting) {
         return null;
     }
 
@@ -45,7 +45,12 @@ public abstract class RecipeDataBase implements IRecipeOK<IInventory> {
     }
 
     @Override
-    public ItemStack getRecipeOutput() {
+    public boolean canCraftInDimensions(int width, int height) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getResultItem() {
         return null;
     }
 }

@@ -17,7 +17,7 @@ import codechicken.nei.NEIClientConfig;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.recipe.ShapelessRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import ruiseki.okcore.json.item.CompoundItemMaterial;
+import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
 
 @Mixin(value = ShapelessRecipeHandler.class, remap = false)
@@ -100,17 +100,17 @@ public abstract class MixinShapelessRecipeHandler extends TemplateRecipeHandler 
     private ShapelessRecipeHandler.CachedShapelessRecipe okcore$createNeiCachedRecipe(ShapelessRecipeHandler handler,
         ShapelessRecipe recipe) {
         try {
-            List<CompoundItemMaterial> ingredients = recipe.getIngredients();
+            List<Ingredient> ingredients = recipe.getIngredients();
             if (ingredients == null || ingredients.isEmpty()) {
                 return null;
             }
 
             List<Object> rawInputs = new ArrayList<>();
 
-            for (CompoundItemMaterial ingredient : ingredients) {
+            for (Ingredient ingredient : ingredients) {
                 if (ingredient.isEmpty()) continue;
 
-                List<ItemStack> displayStacks = ingredient.toStacks();
+                List<ItemStack> displayStacks = List.of(ingredient.getItems());
                 if (displayStacks.isEmpty()) {
                     return null;
                 }

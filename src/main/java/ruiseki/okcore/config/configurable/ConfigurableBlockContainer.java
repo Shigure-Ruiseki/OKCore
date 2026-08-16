@@ -31,7 +31,7 @@ import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class ConfigurableBlockContainer extends BlockContainer implements IConfigurableBlock, IBlockPropertyProvider {
+public class ConfigurableBlockContainer extends BlockContainer implements IConfigurableBlock {
 
     @SuppressWarnings("rawtypes")
     protected BlockConfig eConfig = null;
@@ -56,8 +56,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
      * @param material   Material of this blockState.
      * @param tileEntity The class of the tile entity this blockState holds.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableBlockContainer(ExtendedConfig eConfig, Material material,
+    public ConfigurableBlockContainer(ExtendedConfig<BlockConfig> eConfig, Material material,
         Class<? extends TileEntityOK> tileEntity) {
         super(material);
         this.setConfig(eConfig);
@@ -239,7 +238,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
     }
 
     @Override
-    public final ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
+    public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
         ArrayList<ItemStack> drops = new ArrayList<>();
 
         Item item = getItemDropped(meta, world.rand, fortune);
@@ -272,7 +271,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
 
     /**
      * If this blockState can be rotated.
-     * 
+     *
      * @return Can be rotated.
      */
     public boolean isRotatable() {
@@ -281,7 +280,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
 
     /**
      * Set whether of not this container must be able to be rotated.
-     * 
+     *
      * @param rotatable Can be rotated.
      */
     public void setRotatable(boolean rotatable) {
@@ -290,7 +289,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
 
     /**
      * Get the texture path of the GUI.
-     * 
+     *
      * @return The path of the GUI for this blockState.
      */
     public String getGuiTexture() {
@@ -299,7 +298,7 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
 
     /**
      * Get the texture path of the GUI.
-     * 
+     *
      * @param suffix Suffix to add to the path.
      * @return The path of the GUI for this blockState.
      */

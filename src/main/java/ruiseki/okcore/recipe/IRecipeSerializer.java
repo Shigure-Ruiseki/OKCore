@@ -18,4 +18,8 @@ public interface IRecipeSerializer<T extends IRecipeOK<?>> {
     T fromNetwork(ResourceLocation id, ExtendedBuffer buffer) throws IOException;
 
     void toNetwork(ExtendedBuffer buffer, T iRecipes) throws IOException;
+
+    public static <S extends IRecipeSerializer<T>, T extends IRecipeOK<?>> S register(String key, S serializer) {
+        return RecipeRegistry.registerSerializer(new ResourceLocation(key), serializer);
+    }
 }

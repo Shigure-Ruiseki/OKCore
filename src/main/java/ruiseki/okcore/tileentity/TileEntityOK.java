@@ -217,22 +217,14 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         writeGeneratedFieldsToNBT(tag);
-        writeCommon(tag);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         readGeneratedFieldsFromNBT(tag);
-        readCommon(tag);
         onLoad();
     }
-
-    @Deprecated
-    public void writeCommon(NBTTagCompound tag) {}
-
-    @Deprecated
-    public void readCommon(NBTTagCompound tag) {}
 
     /**
      * When the tile is loaded or created.

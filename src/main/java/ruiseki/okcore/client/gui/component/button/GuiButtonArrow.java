@@ -10,7 +10,6 @@ import ruiseki.okcore.client.gui.image.Images;
  * A button with an arrow in a certain direction.
  *
  * @author rubensworks
- *
  */
 public class GuiButtonArrow extends GuiButtonExtended {
 
@@ -42,7 +41,7 @@ public class GuiButtonArrow extends GuiButtonExtended {
         } else if (direction == Direction.WEST) {
             return Images.BUTTON_ARROW_LEFT;
         }
-        return null;
+        return Images.BUTTON_ARROW_UP;
     }
 
     @Override
@@ -62,6 +61,7 @@ public class GuiButtonArrow extends GuiButtonExtended {
         SOUTH(15, 10),
         WEST(10, 15);
 
+        @Getter
         private final int width, height;
 
         private Direction(int width, int height) {

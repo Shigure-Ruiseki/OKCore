@@ -8,7 +8,7 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 /**
  * An extended {@link net.minecraft.client.gui.GuiButton} which is better resizable.
  * Based on chickenbones' GuiNEIButton.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -18,7 +18,7 @@ public abstract class GuiButtonExtended extends GuiButton {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param id         The ID.
      * @param x          X
      * @param y          Y
@@ -43,14 +43,16 @@ public abstract class GuiButtonExtended extends GuiButton {
             200 - width / 2,
             46 + hoverState * 20,
             width / 2,
-            height / 2);// top right
+            height / 2);// top
+        // right
         drawTexturedModalRect(
             xPosition,
             yPosition + height / 2,
             0,
             46 + hoverState * 20 + 20 - height / 2,
             width / 2,
-            height / 2);// bottom left
+            height / 2);// bottom
+        // left
         drawTexturedModalRect(
             xPosition + width / 2,
             yPosition + height / 2,

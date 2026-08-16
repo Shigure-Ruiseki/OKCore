@@ -10,9 +10,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLModIdMappingEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
@@ -20,7 +19,6 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
 import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.command.CommandDatapack;
@@ -29,12 +27,11 @@ import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
-import ruiseki.okcore.guide.GuideGuiHandler;
-import ruiseki.okcore.guide.GuideRegistry;
-import ruiseki.okcore.guide.capability.CapabilityGuide;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
+import ruiseki.okcore.recipe.ingredient.Ingredient;
+import ruiseki.okcore.registries.ForgeRegistryManager;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -57,17 +54,11 @@ public class OKCore extends ModBaseVersionable {
         addInitListeners(new CapabilityItemHandler());
         addInitListeners(new CapabilityFluidHandler());
         addInitListeners(new CapabilityEnergy());
-        addInitListeners(new CapabilityGuide());
-
-        addInitListeners(new GuideRegistry());
     }
 
     @Mod.EventHandler
-    public void onConstruction(FMLConstructionEvent event) {
-        ASMDataTable asmData = event.getASMHarvestedData();
-
-        CapabilityManager.INSTANCE.injectCapabilities(asmData);
-        GuideRegistry.loadFromASM(asmData);
+    public void mappingChanged(FMLModIdMappingEvent event) {
+        Ingredient.invalidateAll();
     }
 
     @Override
@@ -80,17 +71,18 @@ public class OKCore extends ModBaseVersionable {
     @Override
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        ForgeRegistryManager.fireCreateRegistryEvents();
+        CapabilityManager.INSTANCE.injectCapabilities(event.getAsmData());
         super.preInit(event);
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
         }
-
-        NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuideGuiHandler());
     }
 
     @Override
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
+        ForgeRegistryManager.fireRegistryEvents();
         super.init(event);
     }
 
@@ -104,7 +96,7 @@ public class OKCore extends ModBaseVersionable {
     @Mod.EventHandler
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
         super.onServerAboutToStart(event);
-        DatapackLoader.loadAllDataAtServerStart(event.getServer());
+        DatapackLoader.loadAllData(event.getServer());
     }
 
     @Override

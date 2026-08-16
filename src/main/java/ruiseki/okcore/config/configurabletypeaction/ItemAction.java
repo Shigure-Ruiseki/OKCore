@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.client.gui.GuiHandler;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
@@ -24,11 +25,11 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
      * Registers an item.
      *
      * @param item         The item instance.
-     * @param name         The unique name for this block.
+     * @param config       The config.
      * @param creativeTabs The creative tab this block will reside in.
      */
-    public static void register(Item item, String name, @Nullable CreativeTabs creativeTabs) {
-        GameRegistry.registerItem(item, name);
+    public static void register(Item item, ExtendedConfig<ItemConfig> config, @Nullable CreativeTabs creativeTabs) {
+        GameRegistry.registerItem(item, config.getSubUniqueName());
 
         if (creativeTabs != null) {
             item.setCreativeTab(creativeTabs);
@@ -60,7 +61,7 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
         Item item = (Item) eConfig.getSubInstance();
 
         // Register item and set creative tab.
-        register(item, eConfig.getSubUniqueName(), eConfig.getTargetTab());
+        register(item, eConfig, eConfig.getTargetTab());
 
         // Optionally register gui
         if (item instanceof IGuiContainerProvider) {

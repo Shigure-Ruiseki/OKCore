@@ -20,9 +20,8 @@ import ruiseki.okcore.item.IItemSharedTag;
  * @author rubensworks
  *
  */
-public class ConfigurableItem extends Item implements IConfigurable, IItemCapability, IItemSharedTag {
+public class ConfigurableItem extends Item implements IConfigurableItem, IItemCapability, IItemSharedTag {
 
-    @SuppressWarnings("rawtypes")
     protected ItemConfig eConfig = null;
 
     /**
@@ -30,9 +29,8 @@ public class ConfigurableItem extends Item implements IConfigurable, IItemCapabi
      *
      * @param eConfig Config for this blockState.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableItem(ExtendedConfig eConfig) {
-        this.setConfig(eConfig);
+    public ConfigurableItem(ExtendedConfig<ItemConfig> eConfig) {
+        this.setConfig((ItemConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
         this.setTextureName(
             eConfig.getMod()
@@ -40,21 +38,19 @@ public class ConfigurableItem extends Item implements IConfigurable, IItemCapabi
                 + eConfig.getNamedId());
     }
 
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
-        this.eConfig = (ItemConfig) eConfig;
+    private void setConfig(ItemConfig eConfig) {
+        this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public ItemConfig getConfig() {
         return eConfig;
     }
 
-    @SuppressWarnings("rawtypes")
     @SideOnly(Side.CLIENT)
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
-        super.addInformation(itemStack, entityPlayer, list, par4);
+    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean flag) {
+        super.addInformation(itemStack, entityPlayer, list, flag);
         LangHelpers.addOptionalInfo(list, getUnlocalizedName(itemStack));
     }
 

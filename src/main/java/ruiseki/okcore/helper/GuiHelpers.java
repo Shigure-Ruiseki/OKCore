@@ -20,39 +20,52 @@ import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.FluidStack;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
+import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.event.gui.RenderTooltipEvent;
-import ruiseki.okcore.event.guide.BookEvent;
-import ruiseki.okcore.guide.gui.GuiEntry;
-import ruiseki.okcore.guide.impl.Book;
-import ruiseki.okcore.guide.impl.abstraction.CategoryAbstract;
-import ruiseki.okcore.guide.impl.abstraction.EntryAbstract;
 
 public class GuiHelpers {
 
-    private static final RenderItem render = new RenderItem();
+    private static final RenderItem render = RenderItem.getInstance();
+
+    /**
+     * The default item slot size. Width and height are equal.
+     */
+    public static int SLOT_SIZE = 18;
+    /**
+     * The default inner item slot size. Width and height are equal.
+     */
+    public static int SLOT_SIZE_INNER = 16;
 
     /**
      * @param mouseX - Position of the mouse on the x-axiq
@@ -266,18 +279,6 @@ public class GuiHelpers {
         return list;
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void openBookClient(Book book, CategoryAbstract category, EntryAbstract entryAbstract,
-        EntityPlayer player) {
-        BookEvent.Open event = new BookEvent.Open(book, player);
-        if (MinecraftForge.EVENT_BUS.post(event)) {
-            player.addChatComponentMessage(event.getCanceledText());
-            return;
-        }
-        Minecraft.getMinecraft()
-            .displayGuiScreen(new GuiEntry(book, category, entryAbstract, player));
-    }
-
     @Nonnull
     private static ItemStack cachedTooltipStack = null;
 
@@ -442,77 +443,77 @@ public class GuiHelpers {
             borderColorStart = colorEvent.getBorderStart();
             borderColorEnd = colorEvent.getBorderEnd();
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 4,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY - 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY + tooltipHeight + 3,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 4,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 3,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 4,
                 tooltipY - 3,
                 tooltipX - 3,
                 tooltipY + tooltipHeight + 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY - 3,
                 tooltipX + tooltipTextWidth + 4,
                 tooltipY + tooltipHeight + 3,
                 backgroundColor,
-                backgroundColor);
+                backgroundColor,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 3 + 1,
                 tooltipX - 3 + 1,
                 tooltipY + tooltipHeight + 3 - 1,
                 borderColorStart,
-                borderColorEnd);
+                borderColorEnd,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX + tooltipTextWidth + 2,
                 tooltipY - 3 + 1,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 3 - 1,
                 borderColorStart,
-                borderColorEnd);
+                borderColorEnd,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY - 3,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY - 3 + 1,
                 borderColorStart,
-                borderColorStart);
+                borderColorStart,
+                zLevel);
             drawGradientRect(
-                zLevel,
                 tooltipX - 3,
                 tooltipY + tooltipHeight + 2,
                 tooltipX + tooltipTextWidth + 3,
                 tooltipY + tooltipHeight + 3,
                 borderColorEnd,
-                borderColorEnd);
+                borderColorEnd,
+                zLevel);
 
             MinecraftForge.EVENT_BUS.post(
                 new RenderTooltipEvent.PostBackground(
@@ -553,8 +554,8 @@ public class GuiHelpers {
         }
     }
 
-    public static void drawGradientRect(int zLevel, int left, int top, int right, int bottom, int startColor,
-        int endColor) {
+    public static void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor,
+        int zLevel) {
         float startAlpha = (float) (startColor >> 24 & 255) / 255.0F;
         float startRed = (float) (startColor >> 16 & 255) / 255.0F;
         float startGreen = (float) (startColor >> 8 & 255) / 255.0F;
@@ -613,6 +614,416 @@ public class GuiHelpers {
             return (Slot) cachedSlotField.get(guiContainer);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public static void drawIcon(int x, int y, IIcon icon, int width, int height) {
+        if (icon == null) return;
+
+        double minU = icon.getMinU();
+        double maxU = icon.getMaxU();
+        double minV = icon.getMinV();
+        double maxV = icon.getMaxV();
+
+        maxV = minV + (maxV - minV) * ((double) height / 16.0D);
+
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(x, y + height, 0, minU, maxV);
+        tessellator.addVertexWithUV(x + width, y + height, 0, maxU, maxV);
+        tessellator.addVertexWithUV(x + width, y, 0, maxU, minV);
+        tessellator.addVertexWithUV(x, y, 0, minU, minV);
+        tessellator.draw();
+    }
+
+    /**
+     * Render a fluid tank in a gui.
+     *
+     * @param gui        The gui to render in.
+     * @param fluidStack The fluid to render.
+     * @param capacity   The tank capacity.
+     * @param x          The gui x position, including gui left.
+     * @param y          The gui y position, including gui top.
+     * @param width      The tank width.
+     * @param height     The tank height.
+     */
+    public static void renderFluidTank(Gui gui, FluidStack fluidStack, int capacity, int x, int y, int width,
+        int height) {
+        if (fluidStack != null && fluidStack.getFluid() != null && capacity > 0) {
+            GL11.glPushMatrix();
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            RenderHelper.enableGUIStandardItemLighting();
+
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+            int level = (int) (height * (((double) fluidStack.amount) / capacity));
+            IIcon icon = RenderHelpers.getFluidIcon(fluidStack, ForgeDirection.UP);
+            int verticalOffset = 0;
+
+            // Bind Texture Terrain (Blocks & Liquids)
+            Minecraft.getMinecraft()
+                .getTextureManager()
+                .bindTexture(TextureMap.locationBlocksTexture);
+
+            // Fluids can have a custom overlay color
+            Triple<Float, Float, Float> colorParts = Helpers.intToRGB(
+                fluidStack.getFluid()
+                    .getColor(fluidStack));
+            GL11.glColor4f(colorParts.getLeft(), colorParts.getMiddle(), colorParts.getRight(), 1.0F);
+
+            while (level > 0) {
+                int textureHeight;
+                if (level > 16) {
+                    textureHeight = 16;
+                    level -= 16;
+                } else {
+                    textureHeight = level;
+                    level = 0;
+                }
+
+                drawIcon(x, y - textureHeight - verticalOffset + height, icon, width, textureHeight);
+                verticalOffset += 16;
+            }
+
+            // Reset color & GL States when done
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderHelper.disableStandardItemLighting();
+            GL11.glDisable(GL11.GL_DEPTH_TEST);
+            GL11.glDisable(GL11.GL_BLEND);
+            GL11.glPopMatrix();
+        }
+    }
+
+    /**
+     * Render the given fluid in a standard slot.
+     *
+     * @param gui        The gui to render in.
+     * @param fluidStack The fluid to render.
+     * @param x          The slot X position.
+     * @param y          The slot Y position.
+     */
+    public static void renderFluidSlot(Gui gui, @Nullable FluidStack fluidStack, int x, int y) {
+        if (fluidStack != null) {
+            GuiHelpers.renderFluidTank(gui, fluidStack, fluidStack.amount, x, y, SLOT_SIZE_INNER, SLOT_SIZE_INNER);
+        }
+    }
+
+    /**
+     * Render a fluid tank in a gui with a tank overlay.
+     * This assumes that the tank overlay has the provided width and height.
+     *
+     * @param gui             The gui to render in.
+     * @param fluidStack      The fluid to render.
+     * @param capacity        The tank capacity.
+     * @param x               The gui x position, including gui left.
+     * @param y               The gui y position, including gui top.
+     * @param width           The tank width.
+     * @param height          The tank height.
+     * @param textureOverlay  The texture of the tank overlay.
+     * @param overlayTextureX The overlay x texture position.
+     * @param overlayTextureY The overlay y texture position.
+     */
+    public static void renderOverlayedFluidTank(Gui gui, @Nullable FluidStack fluidStack, int capacity, int x, int y,
+        int width, int height, ResourceLocation textureOverlay, int overlayTextureX, int overlayTextureY) {
+        renderFluidTank(gui, fluidStack, capacity, x, y, width, height);
+        if (fluidStack != null && capacity > 0) {
+            GlStateManager.enableBlend();
+            RenderHelpers.bindTexture(textureOverlay);
+            gui.drawTexturedModalRect(x, y, overlayTextureX, overlayTextureY, width, height);
+        }
+    }
+
+    /**
+     * Render a progress bar in a certain direction.
+     * The currently bound texture will be used to render the progress bar.
+     *
+     * @param gui         The gui to render in.
+     * @param x           The gui x position, including gui left.
+     * @param y           The gui y position, including gui top.
+     * @param width       The progress bar width.
+     * @param height      The progress bar height.
+     * @param textureX    The texture x position.
+     * @param textureY    The texture y position.
+     * @param direction   The direction to progress in.
+     * @param progress    The current progress.
+     * @param progressMax The maximum progress.
+     */
+    public static void renderProgressBar(Gui gui, int x, int y, int width, int height, int textureX, int textureY,
+        ProgressDirection direction, int progress, int progressMax) {
+        if (progressMax > 0 && progress > 0) {
+            int scaledWidth = width;
+            int scaledHeight = height;
+
+            // Scale the width and/or height
+            if (direction.getIncrementX() != 0) {
+                scaledWidth = (int) (scaledWidth * (((double) progress) / progressMax));
+            }
+            if (direction.getIncrementY() != 0) {
+                scaledHeight = (int) (scaledHeight * (((double) progress) / progressMax));
+            }
+
+            // If increments happen inversely, make sure we start incrementing from the other end of the progress bar
+            if (direction.getIncrementX() < 0) {
+                int offset = width - scaledWidth;
+                x += offset;
+                textureX += offset;
+            }
+            if (direction.getIncrementY() < 0) {
+                int offset = height - scaledHeight;
+                y += offset;
+                textureY += offset;
+            }
+
+            gui.drawTexturedModalRect(x, y, textureX, textureY, scaledWidth, scaledHeight);
+        }
+    }
+
+    /**
+     * Draw a tooltip.
+     *
+     * @param gui   The gui to draw in.
+     * @param lines A list of lines.
+     * @param x     Tooltip X.
+     * @param y     Tooltip Y.
+     */
+    public static void drawTooltip(GuiContainer gui, List<String> lines, int x, int y) {
+        if (lines == null || lines.isEmpty()) {
+            return;
+        }
+
+        int guiLeft = gui.guiLeft;
+        int guiTop = gui.guiTop;
+        int width = gui.width;
+        int height = gui.height;
+        Minecraft mc = Minecraft.getMinecraft();
+
+        GlStateManager.pushMatrix();
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.disableLighting();
+
+        int tooltipWidth = 0;
+        for (String line : lines) {
+            int tempWidth = mc.fontRenderer.getStringWidth(line);
+            if (tempWidth > tooltipWidth) {
+                tooltipWidth = tempWidth;
+            }
+        }
+
+        int xStart = x + 12;
+        int yStart = y - 12;
+        int tooltipHeight = 8;
+
+        if (lines.size() > 1) {
+            tooltipHeight += 2 + (lines.size() - 1) * 10;
+        }
+
+        if (guiLeft + xStart + tooltipWidth + 6 > width) {
+            xStart = width - tooltipWidth - guiLeft - 6;
+        }
+
+        if (guiTop + yStart + tooltipHeight + 6 > height) {
+            yStart = height - tooltipHeight - guiTop - 6;
+        }
+
+        final int zLevel = 300;
+        render.zLevel = 300.0F;
+
+        int color1 = 0xF0100010; // -267386864 in HEX
+        drawGradientRect(xStart - 3, yStart - 4, xStart + tooltipWidth + 3, yStart - 3, color1, color1, zLevel);
+        drawGradientRect(
+            xStart - 3,
+            yStart + tooltipHeight + 3,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 4,
+            color1,
+            color1,
+            zLevel);
+        drawGradientRect(
+            xStart - 3,
+            yStart - 3,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 3,
+            color1,
+            color1,
+            zLevel);
+        drawGradientRect(xStart - 4, yStart - 3, xStart - 3, yStart + tooltipHeight + 3, color1, color1, zLevel);
+        drawGradientRect(
+            xStart + tooltipWidth + 3,
+            yStart - 3,
+            xStart + tooltipWidth + 4,
+            yStart + tooltipHeight + 3,
+            color1,
+            color1,
+            zLevel);
+
+        int color2 = 0x505000FF; // 1347420415 in HEX
+        int color3 = (color2 & 0xFEFEFE) >> 1 | color2 & 0xFF000000;
+        drawGradientRect(
+            xStart - 3,
+            yStart - 3 + 1,
+            xStart - 3 + 1,
+            yStart + tooltipHeight + 3 - 1,
+            color2,
+            color3,
+            zLevel);
+        drawGradientRect(
+            xStart + tooltipWidth + 2,
+            yStart - 3 + 1,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 3 - 1,
+            color2,
+            color3,
+            zLevel);
+        drawGradientRect(xStart - 3, yStart - 3, xStart + tooltipWidth + 3, yStart - 3 + 1, color2, color2, zLevel);
+        drawGradientRect(
+            xStart - 3,
+            yStart + tooltipHeight + 2,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 3,
+            color3,
+            color3,
+            zLevel);
+
+        for (int stringIndex = 0; stringIndex < lines.size(); ++stringIndex) {
+            String line = lines.get(stringIndex);
+
+            if (stringIndex == 0) {
+                line = EnumChatFormatting.WHITE + line;
+            } else {
+                line = EnumChatFormatting.GRAY + line;
+            }
+
+            mc.fontRenderer.drawStringWithShadow(line, xStart, yStart, -1);
+
+            if (stringIndex == 0) {
+                yStart += 2;
+            }
+
+            yStart += 10;
+        }
+
+        GlStateManager.popMatrix();
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+        render.zLevel = 0.0F;
+    }
+
+    /**
+     * Render a tooltip if the mouse if in the bounding box defined by the given position, width and height.
+     * The tooltip lines supplier can return an optional list.
+     *
+     * @param gui           The gui to render in.
+     * @param x             The gui x position, excluding gui left.
+     * @param y             The gui y position, excluding gui top.
+     * @param width         The area width.
+     * @param height        The area height.
+     * @param mouseX        The mouse x position.
+     * @param mouseY        The mouse y position.
+     * @param linesSupplier A supplier for the optional tooltip lines to render.
+     *                      No tooltip will be rendered when the optional value is absent.
+     *                      This will only be called when needed.
+     */
+    public static void renderTooltipOptional(GuiContainer gui, int x, int y, int width, int height, int mouseX,
+        int mouseY, Supplier<Optional<List<String>>> linesSupplier) {
+        if (RenderHelpers.isPointInRegion(x, y, width, height, mouseX - gui.guiLeft, mouseY - gui.guiTop)) {
+            linesSupplier.get()
+                .ifPresent(lines -> drawTooltip(gui, lines, mouseX - gui.guiLeft, mouseY - gui.guiTop));
+        }
+    }
+
+    /**
+     * Render a tooltip if the mouse if in the bounding box defined by the given position, width and height.
+     *
+     * @param gui           The gui to render in.
+     * @param x             The gui x position, excluding gui left.
+     * @param y             The gui y position, excluding gui top.
+     * @param width         The area width.
+     * @param height        The area height.
+     * @param mouseX        The mouse x position.
+     * @param mouseY        The mouse y position.
+     * @param linesSupplier A supplier for the tooltip lines to render.
+     *                      This will only be called when needed.
+     */
+    public static void renderTooltip(GuiContainer gui, int x, int y, int width, int height, int mouseX, int mouseY,
+        Supplier<List<String>> linesSupplier) {
+        renderTooltipOptional(gui, x, y, width, height, mouseX, mouseY, () -> Optional.of(linesSupplier.get()));
+    }
+
+    private static final List<Pair<Long, String>> COUNT_SCALES = Lists.newArrayList(
+        Pair.of(1000000000000000000L, "E"),
+        Pair.of(1000000000000000L, "P"),
+        Pair.of(1000000000000L, "T"),
+        Pair.of(1000000000L, "G"),
+        Pair.of(1000000L, "M"),
+        Pair.of(1000L, "K"));
+
+    /**
+     * Stringify a (potentially large) quantity to a scaled string.
+     *
+     * For example, 123765 will be converted as 1.23M.
+     *
+     * @param quantity A quantity.
+     * @return A scaled quantity string.
+     */
+    public static String quantityToScaledString(long quantity) {
+        for (Pair<Long, String> countScale : COUNT_SCALES) {
+            long scale = countScale.getLeft();
+            if (quantity >= scale) {
+                long division = quantity / scale;
+                String divisionString = String.valueOf(division);
+
+                // Add digits if string is short
+                if (division < 10) {
+                    long mod = quantity % scale;
+                    if (mod > 0) {
+                        long digits = mod * 100 / scale;
+                        divisionString += "." + (digits < 10 ? "0" : "") + String.valueOf(digits);
+                    }
+                } else if (division < 100) {
+                    long mod = quantity % scale;
+                    if (mod > 0) {
+                        long digits = mod * 10 / scale;
+                        divisionString += "." + String.valueOf(digits);
+                    }
+                }
+
+                return divisionString + countScale.getRight();
+            }
+        }
+        return String.valueOf(quantity);
+    }
+
+    /**
+     * Represents the direction of a progress bar.
+     */
+    public static enum ProgressDirection {
+
+        UP(0, -1),
+        DOWN(0, 1),
+        LEFT(-1, 0),
+        RIGHT(1, 0),
+
+        UP_LEFT(-1, -1),
+        UP_RIGHT(1, -1),
+        DOWN_LEFT(-1, 1),
+        DOWN_RIGHT(1, 1);
+
+        private final int incrementX;
+        private final int incrementY;
+
+        private ProgressDirection(int incrementX, int incrementY) {
+            this.incrementX = incrementX;
+            this.incrementY = incrementY;
+        }
+
+        public int getIncrementX() {
+            return incrementX;
+        }
+
+        public int getIncrementY() {
+            return incrementY;
         }
     }
 }

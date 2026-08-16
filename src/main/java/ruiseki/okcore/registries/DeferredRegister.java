@@ -22,6 +22,7 @@ import ruiseki.okcore.tag.ResourceKey;
  * while preserving the original RegistryObject structure containing a ResourceKey.
  *
  * @param <T> Typically Item or Block in 1.7.10
+ *            use {@link ruiseki.okcore.config.extendedconfig.ExtendedConfig}
  */
 public class DeferredRegister<T> {
 

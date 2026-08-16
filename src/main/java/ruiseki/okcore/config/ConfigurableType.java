@@ -3,6 +3,7 @@ package ruiseki.okcore.config;
 import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.configurabletypeaction.BiomeAction;
 import ruiseki.okcore.config.configurabletypeaction.BlockAction;
+import ruiseki.okcore.config.configurabletypeaction.CapabilityAction;
 import ruiseki.okcore.config.configurabletypeaction.ConfigurableTypeAction;
 import ruiseki.okcore.config.configurabletypeaction.DummyAction;
 import ruiseki.okcore.config.configurabletypeaction.EnchantmentAction;
@@ -11,8 +12,11 @@ import ruiseki.okcore.config.configurabletypeaction.FluidAction;
 import ruiseki.okcore.config.configurabletypeaction.ItemAction;
 import ruiseki.okcore.config.configurabletypeaction.MobAction;
 import ruiseki.okcore.config.configurabletypeaction.PotionAction;
+import ruiseki.okcore.config.configurabletypeaction.RecipeAction;
+import ruiseki.okcore.config.configurabletypeaction.RecipeTypeAction;
 import ruiseki.okcore.config.extendedconfig.BiomeConfig;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
 import ruiseki.okcore.config.extendedconfig.EnchantmentConfig;
 import ruiseki.okcore.config.extendedconfig.EntityConfig;
@@ -21,6 +25,8 @@ import ruiseki.okcore.config.extendedconfig.FluidConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.config.extendedconfig.MobConfig;
 import ruiseki.okcore.config.extendedconfig.PotionConfig;
+import ruiseki.okcore.config.extendedconfig.RecipeConfig;
+import ruiseki.okcore.config.extendedconfig.RecipeTypeConfig;
 
 /**
  * The different types of {@link IConfigurable}.
@@ -111,6 +117,30 @@ public class ConfigurableType {
         PotionConfig.class,
         new PotionAction(),
         ConfigurableTypeCategory.POTION);
+    /**
+     * Potion effect type.
+     */
+    public static final ConfigurableType RECIPE = new ConfigurableType(
+        true,
+        RecipeConfig.class,
+        new RecipeAction(),
+        ConfigurableTypeCategory.RECIPE);
+    /**
+     * Potion effect type.
+     */
+    public static final ConfigurableType RECIPE_TYPE = new ConfigurableType(
+        true,
+        RecipeTypeConfig.class,
+        new RecipeTypeAction(),
+        ConfigurableTypeCategory.RECIPE_TYPE);
+    /**
+     * Capability type.
+     */
+    public static final ConfigurableType CAPABILITY = new ConfigurableType(
+        false,
+        CapabilityConfig.class,
+        new CapabilityAction(),
+        "capability");
 
     /**
      * Dummy type, only used for configs that refer to nothing.

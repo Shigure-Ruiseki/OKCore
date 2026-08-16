@@ -11,6 +11,9 @@ import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.apache.logging.log4j.Level;
+
+import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -86,37 +89,43 @@ public class CommandDatapack extends CommandMod {
 
         printLineToChat(sender, EnumChatFormatting.YELLOW + "Reloading datapacks, please wait...");
 
-        try {
-            long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
-            DatapackLoader.loadAllDataAtServerStart(this.server);
+        DatapackLoader.loadAllData(this.server)
+            .thenRunAsync(() -> {
+                ServerConfigurationManager configManager = this.server.getConfigurationManager();
 
-            ServerConfigurationManager configManager = this.server.getConfigurationManager();
-            MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
+                MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent(configManager, null));
 
-            PacketUpdateRecipes packetRecipes = new PacketUpdateRecipes(
-                RecipeManager.getManager()
-                    .getRecipes());
-            PacketUpdateTags packetTags = new PacketUpdateTags(
-                TagManager.getManager()
-                    .getTags());
-            if (configManager != null && configManager.playerEntityList != null) {
-                for (EntityPlayerMP player : configManager.playerEntityList) {
-                    OKCore._instance.getPacketHandler()
-                        .sendToPlayer(packetRecipes, player);
-                    OKCore._instance.getPacketHandler()
-                        .sendToPlayer(packetTags, player);
+                PacketUpdateRecipes packetRecipes = new PacketUpdateRecipes(
+                    RecipeManager.getManager()
+                        .getRecipes());
+
+                PacketUpdateTags packetTags = new PacketUpdateTags(
+                    TagManager.getManager()
+                        .getTags());
+
+                if (configManager != null && configManager.playerEntityList != null) {
+                    for (EntityPlayerMP player : configManager.playerEntityList) {
+                        OKCore._instance.getPacketHandler()
+                            .sendToPlayer(packetRecipes, player);
+                        OKCore._instance.getPacketHandler()
+                            .sendToPlayer(packetTags, player);
+                    }
                 }
-            }
-            long endTime = System.currentTimeMillis() - startTime;
-            printLineToChat(
-                sender,
-                EnumChatFormatting.GREEN + "Successfully reloaded all datapacks and synced clients in "
-                    + endTime
-                    + " ms!");
-        } catch (Exception e) {
-            printErrorToChat(sender, "Critical error occurred during data reload! Check server logs.");
-        }
+
+                long endTime = System.currentTimeMillis() - startTime;
+                printLineToChat(
+                    sender,
+                    EnumChatFormatting.GREEN + "Successfully reloaded all datapacks and synced clients in "
+                        + endTime
+                        + " ms!");
+            }, ServerThreadUtil::addScheduledTask)
+            .exceptionally(ex -> {
+                printErrorToChat(sender, "Critical error occurred during data reload! Check server logs.");
+                OKCore.okLog(Level.ERROR, "Error executing reload command", ex);
+                return null;
+            });
 
         return Command.SINGLE_SUCCESS;
     }

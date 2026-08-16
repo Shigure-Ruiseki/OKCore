@@ -43,6 +43,7 @@ public class ItemFluidTest extends ConfigurableItem implements IItemToggle {
         return _instance;
     }
 
+    @SuppressWarnings("rawtypes")
     public ItemFluidTest(ExtendedConfig eConfig) {
         super(eConfig);
         setTextureName("stick");

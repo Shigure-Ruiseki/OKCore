@@ -15,7 +15,7 @@ import ruiseki.okcore.init.ModBase;
  * {@link ruiseki.okcore.config.configurable.IConfigurable}.
  * Do no confuse with {@link ConfigurableProperty} which is an annotation an is internally used to
  * make new instances of {@link ConfigProperty}.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -31,10 +31,13 @@ public final class ConfigProperty {
     private Field field;
     private boolean requiresWorldRestart;
     private boolean requiresMcRestart;
+    private boolean showInGui;
+    private int minValue;
+    private int maxValue;
 
     /**
      * Define a new configurable property.
-     * 
+     *
      * @param mod           The owner mod.
      * @param category      Category.
      * @param name          Name of the property.
@@ -60,7 +63,7 @@ public final class ConfigProperty {
 
     /**
      * Define a new configurable property without a comment.
-     * 
+     *
      * @param mod           The owner mod.
      * @param category      Category.
      * @param name          Name of the property.
@@ -77,7 +80,7 @@ public final class ConfigProperty {
 
     /**
      * Get the category.
-     * 
+     *
      * @return The category.
      */
     public String getCategory() {
@@ -86,7 +89,7 @@ public final class ConfigProperty {
 
     /**
      * Set the category.
-     * 
+     *
      * @param category The category to set.
      */
     public void setCategory(String category) {
@@ -95,7 +98,7 @@ public final class ConfigProperty {
 
     /**
      * Get the name.
-     * 
+     *
      * @return The name.
      */
     public String getName() {
@@ -104,7 +107,7 @@ public final class ConfigProperty {
 
     /**
      * Set the name.
-     * 
+     *
      * @param name The name to be set.
      */
     public void setName(String name) {
@@ -113,7 +116,7 @@ public final class ConfigProperty {
 
     /**
      * Get the value.
-     * 
+     *
      * @return The value.
      */
     public Object getValue() {
@@ -122,7 +125,7 @@ public final class ConfigProperty {
 
     /**
      * Set the value.
-     * 
+     *
      * @param value The value to be set.
      */
     public void setValue(Object value) {
@@ -137,7 +140,7 @@ public final class ConfigProperty {
 
     /**
      * Get the comment.
-     * 
+     *
      * @return The comment.
      */
     public String getComment() {
@@ -146,7 +149,7 @@ public final class ConfigProperty {
 
     /**
      * Set the comment.
-     * 
+     *
      * @param comment The comment to be set.
      */
     public void setComment(String comment) {
@@ -155,7 +158,7 @@ public final class ConfigProperty {
 
     /**
      * Get the callback.
-     * 
+     *
      * @return The callback.
      */
     public ConfigPropertyCallback getCallback() {
@@ -164,7 +167,7 @@ public final class ConfigProperty {
 
     /**
      * Set the calback.
-     * 
+     *
      * @param callback The callback to be set.
      */
     public void setCallback(ConfigPropertyCallback callback) {
@@ -173,7 +176,7 @@ public final class ConfigProperty {
 
     /**
      * If this property can be configured with commands.
-     * 
+     *
      * @return Is this commandable.
      */
     public boolean isCommandable() {
@@ -182,7 +185,7 @@ public final class ConfigProperty {
 
     /**
      * Set if this property can be configured with commands.
-     * 
+     *
      * @param isCommandable True if this property can be configured with commands.
      */
     public void setCommandable(boolean isCommandable) {
@@ -191,7 +194,7 @@ public final class ConfigProperty {
 
     /**
      * Save this property in the given config file.
-     * 
+     *
      * @param config The config file to save to.
      */
     public void save(Configuration config) {
@@ -200,7 +203,7 @@ public final class ConfigProperty {
 
     /**
      * Save this property in the given config file.
-     * 
+     *
      * @param config      The config file to save to.
      * @param forceUpdate If the value in the config file has to be overwritten.
      */
@@ -287,6 +290,13 @@ public final class ConfigProperty {
             additionalProperty.setRequiresWorldRestart(isRequiresWorldRestart());
             additionalProperty.setRequiresMcRestart(isRequiresMcRestart());
         }
+
+        if (value instanceof Integer || value instanceof Double) {
+            additionalProperty.setMinValue(getMinValue());
+            additionalProperty.setMaxValue(getMaxValue());
+        }
+
+        additionalProperty.setShowInGui(showInGui());
     }
 
     /**
@@ -315,5 +325,47 @@ public final class ConfigProperty {
      */
     public void setRequiresMcRestart(boolean requiresMcRestart) {
         this.requiresMcRestart = requiresMcRestart;
+    }
+
+    /**
+     * @param showInGui the showInGui to set
+     */
+    public void setShowInGui(boolean showInGui) {
+        this.showInGui = showInGui;
+    }
+
+    /**
+     * @return if item is shown in config GUI
+     */
+    public boolean showInGui() {
+        return showInGui;
+    }
+
+    /**
+     * @return the minValue
+     */
+    public int getMinValue() {
+        return minValue;
+    }
+
+    /**
+     * @param minValue minimal value of parameter
+     */
+    public void setMinValue(int minValue) {
+        this.minValue = minValue;
+    }
+
+    /**
+     * @return the maxValue
+     */
+    public int getMaxValue() {
+        return maxValue;
+    }
+
+    /**
+     * @param maxValue maximal value of parameter
+     */
+    public void setMaxValue(int maxValue) {
+        this.maxValue = maxValue;
     }
 }

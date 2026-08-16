@@ -7,6 +7,7 @@ import net.minecraft.world.World;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
@@ -19,8 +20,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  *
  */
-public abstract class ConfigurableBlockGui extends ConfigurableBlock
-    implements IGuiContainerProvider, IBlockPropertyProvider {
+public abstract class ConfigurableBlockGui extends ConfigurableBlock implements IGuiContainerProvider {
 
     private int guiID;
 
@@ -33,8 +33,7 @@ public abstract class ConfigurableBlockGui extends ConfigurableBlock
      * @param eConfig  Config for this blockState.
      * @param material Material of this blockState.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableBlockGui(ExtendedConfig eConfig, Material material) {
+    public ConfigurableBlockGui(ExtendedConfig<BlockConfig> eConfig, Material material) {
         super(eConfig, material);
         this.hasGui = true;
         if (hasGui()) {
@@ -48,7 +47,7 @@ public abstract class ConfigurableBlockGui extends ConfigurableBlock
     }
 
     @Override
-    public ModBase getMod() {
+    public ModBase getModGui() {
         return getConfig().getMod();
     }
 

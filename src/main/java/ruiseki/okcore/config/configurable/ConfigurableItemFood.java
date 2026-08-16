@@ -9,42 +9,44 @@ import net.minecraft.item.ItemStack;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Item food that can hold ExtendedConfigs
- * 
+ *
  * @author rubensworks
  *
  */
-public class ConfigurableItemFood extends ItemFood implements IConfigurable {
+public class ConfigurableItemFood extends ItemFood implements IConfigurableItem {
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected ItemConfig eConfig = null;
 
     /**
      * Make a new blockState instance.
-     * 
+     *
      * @param eConfig             Config for this blockState.
      * @param healAmount          Amount of health to regen.
      * @param saturationModifier  The modifier for the saturation.
      * @param isWolfsFavoriteMeat If this is wolf food.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableItemFood(ExtendedConfig eConfig, int healAmount, float saturationModifier,
+    public ConfigurableItemFood(ExtendedConfig<ItemConfig> eConfig, int healAmount, float saturationModifier,
         boolean isWolfsFavoriteMeat) {
         super(healAmount, saturationModifier, isWolfsFavoriteMeat);
-        this.setConfig(eConfig);
+        this.setConfig((ItemConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());
+        this.setTextureName(
+            eConfig.getMod()
+                .getModId() + ":"
+                + eConfig.getNamedId());
     }
 
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
+    private void setConfig(ItemConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public ItemConfig getConfig() {
         return eConfig;
     }
 

@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -217,7 +218,14 @@ public class GuiHandler implements IGuiHandler {
                             return containerConstructor.newInstance(player.inventory, world, x, y, z);
                         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                             | NoSuchMethodException e2) {
-                            e2.printStackTrace();
+                            try {
+                                Constructor<? extends Container> containerConstructor = containerClass
+                                    .getConstructor(InventoryPlayer.class, World.class, BlockPos.class);
+                                return containerConstructor.newInstance(player.inventory, world, new BlockPos(x, y, z));
+                            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                                | NoSuchMethodException e3) {
+                                e2.printStackTrace();
+                            }
                         }
                     }
                     return null;
@@ -282,7 +290,15 @@ public class GuiHandler implements IGuiHandler {
                                 return guiConstructor.newInstance(player.inventory, world, x, y, z);
                             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                                 | NoSuchMethodException e2) {
-                                e2.printStackTrace();
+                                try {
+                                    Constructor<? extends GuiScreen> containerConstructor = guiClass
+                                        .getConstructor(InventoryPlayer.class, World.class, BlockPos.class);
+                                    return containerConstructor
+                                        .newInstance(player.inventory, world, new BlockPos(x, y, z));
+                                } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                                    | NoSuchMethodException e3) {
+                                    e2.printStackTrace();
+                                }
                             }
                         }
                         return null;

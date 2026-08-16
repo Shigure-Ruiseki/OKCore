@@ -5,11 +5,12 @@ import net.minecraft.block.BlockTorch;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * Torch blockState that can hold ExtendedConfigs
- * 
+ *
  * @author rubensworks
  *
  */
@@ -18,18 +19,16 @@ public class ConfigurableBlockTorch extends BlockTorch implements IConfigurableB
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
-    @SuppressWarnings("rawtypes")
-    protected ExtendedConfig eConfig = null;
+    protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
     /**
      * Make a new blockState instance.
-     * 
+     *
      * @param eConfig Config for this blockState.
      */
-    @SuppressWarnings({ "rawtypes" })
-    public ConfigurableBlockTorch(ExtendedConfig eConfig) {
-        this.setConfig(eConfig);
+    public ConfigurableBlockTorch(ExtendedConfig<BlockConfig> eConfig) {
+        this.setConfig((BlockConfig) eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
         this.setBlockTextureName(
             eConfig.getMod()
@@ -45,14 +44,12 @@ public class ConfigurableBlockTorch extends BlockTorch implements IConfigurableB
         return hasGui;
     }
 
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
+    private void setConfig(BlockConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public BlockConfig getConfig() {
         return eConfig;
     }
-
 }

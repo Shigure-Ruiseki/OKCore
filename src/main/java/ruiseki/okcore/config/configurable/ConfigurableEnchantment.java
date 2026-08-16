@@ -9,24 +9,24 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * A simple configurable for Enchantments, will auto-register itself after construction.
- * 
+ *
  * @author rubensworks
  *
  */
-public class ConfigurableEnchantment extends Enchantment implements IConfigurable {
+public class ConfigurableEnchantment extends Enchantment implements IConfigurable<EnchantmentConfig> {
 
-    protected ExtendedConfig<EnchantmentConfig> eConfig = null;
+    protected EnchantmentConfig eConfig = null;
 
     /**
      * Make a new Enchantment instance
-     * 
+     *
      * @param eConfig Config for this enchantment.
      * @param weight  The weight in which this enchantment should occurd
      * @param type    The type of enchantment
      */
     protected ConfigurableEnchantment(ExtendedConfig<EnchantmentConfig> eConfig, int weight, EnumEnchantmentType type) {
         super(eConfig.downCast().ID, weight, type);
-        this.setConfig(eConfig);
+        this.setConfig((EnchantmentConfig) eConfig);
         this.setName(eConfig.getUnlocalizedName());
         if (isAllowedOnBooks()) {
             addToBookList(this);
@@ -34,13 +34,12 @@ public class ConfigurableEnchantment extends Enchantment implements IConfigurabl
 
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void setConfig(ExtendedConfig eConfig) {
+    private void setConfig(EnchantmentConfig eConfig) {
         this.eConfig = eConfig;
     }
 
     @Override
-    public ExtendedConfig<?> getConfig() {
+    public EnchantmentConfig getConfig() {
         return eConfig;
     }
 
@@ -48,10 +47,7 @@ public class ConfigurableEnchantment extends Enchantment implements IConfigurabl
     public String getTranslatedName(int level) {
         String enchantmentName = LangHelpers.localize(
             "enchantment." + eConfig.getMod()
-                .getModId()
-                + "."
-                + eConfig.downCast()
-                    .getNamedId());
+                .getModId() + "." + eConfig.getNamedId());
         return enchantmentName + " " + LangHelpers.localize("enchantment.level." + level);
     }
 }

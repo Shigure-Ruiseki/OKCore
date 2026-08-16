@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
+import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * Interface for blocks that have a collidable component.
@@ -34,7 +35,9 @@ public interface ICollidable<P> {
      * Add the current block bounding box to the given list.
      *
      * @param world           The world
-     * @param x,              y, z The position
+     * @param x               X coordinate
+     * @param y               Y coordinate
+     * @param z               Z coordinate
      * @param mask            The bounding boxes mask
      * @param list            The list to add to
      * @param collidingEntity The entity that is colliding
@@ -43,10 +46,12 @@ public interface ICollidable<P> {
         Entity collidingEntity);
 
     /**
-     * The the selected bounding box.
+     * The selected bounding box.
      *
      * @param world The world
-     * @param x,    y, z The position
+     * @param x     X coordinate
+     * @param y     Y coordinate
+     * @param z     Z coordinate
      * @return The selected bounding box
      */
     @SideOnly(Side.CLIENT)
@@ -56,17 +61,19 @@ public interface ICollidable<P> {
      * Do a ray trace for the current look direction of the player.
      *
      * @param world  The world.
-     * @param x,     y, z The block position to perform a ray trace for.
+     * @param pos    The block position to perform a ray trace for.
      * @param player The player.
      * @return A holder object with information on the ray tracing.
      */
-    public RayTraceResult<P> doRayTrace(World world, int x, int y, int z, EntityPlayer player);
+    public RayTraceResult<P> doRayTrace(World world, BlockPos pos, EntityPlayer player);
 
     /**
      * Ray trace the given direction.
      *
      * @param world     The world
-     * @param x,        y, z The position
+     * @param x         X coordinate
+     * @param y         Y coordinate
+     * @param z         Z coordinate
      * @param origin    The origin vector
      * @param direction The direction vector
      * @return The position object holder
@@ -104,22 +111,22 @@ public interface ICollidable<P> {
 
         public int getBoundsCount(P position);
 
-        public boolean isActive(B block, World world, int x, int y, int z, P position);
+        public boolean isActive(B block, World world, BlockPos pos, P position);
 
-        public List<AxisAlignedBB> getBounds(B block, World world, int x, int y, int z, P position);
+        public List<AxisAlignedBB> getBounds(B block, World world, BlockPos pos, P position);
 
-        public ItemStack getPickBlock(World world, int x, int y, int z, P position);
+        public ItemStack getPickBlock(World world, BlockPos pos, P position);
 
         /**
          * Destroy this component
          *
-         * @param world    The world
-         * @param x,       y, z The position
-         * @param position The component position
-         * @param player   The player destroying the component.
+         * @param world     The world
+         * @param pos       The position
+         * @param position  The component position
+         * @param player    The player destroying the component.
+         * @param saveState If the component state should be saved in the dropped item.
          * @return If the complete block was destroyed
          */
-        public boolean destroy(World world, int x, int y, int z, P position, EntityPlayer player);
+        public boolean destroy(World world, BlockPos pos, P position, EntityPlayer player, boolean saveState);
     }
-
 }

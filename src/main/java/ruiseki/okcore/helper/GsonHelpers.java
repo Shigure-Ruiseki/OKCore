@@ -34,6 +34,48 @@ import com.google.gson.stream.JsonReader;
 
 public class GsonHelpers {
 
+    public static boolean isStringValue(JsonObject json, String key) {
+        return isValidPrimitive(json, key) && json.getAsJsonPrimitive(key)
+            .isString();
+    }
+
+    public static boolean isStringValue(JsonElement element) {
+        return element.isJsonPrimitive() && element.getAsJsonPrimitive()
+            .isString();
+    }
+
+    public static boolean isNumberValue(JsonElement element) {
+        return element.isJsonPrimitive() && element.getAsJsonPrimitive()
+            .isNumber();
+    }
+
+    public static boolean isBooleanValue(JsonObject json, String key) {
+        return isValidPrimitive(json, key) && json.getAsJsonPrimitive(key)
+            .isBoolean();
+    }
+
+    public static boolean isArrayNode(JsonObject jsonObject, String key) {
+        return isValidNode(jsonObject, key) && jsonObject.get(key)
+            .isJsonArray();
+    }
+
+    public static boolean isValidPrimitive(JsonObject json, String key) {
+        return isValidNode(json, key) && json.get(key)
+            .isJsonPrimitive();
+    }
+
+    public static boolean isValidNode(JsonObject json, String key) {
+        if (json == null) {
+            return false;
+        } else {
+            return json.get(key) != null;
+        }
+    }
+
+    public static String getAsString(JsonObject object, String key, String defaultValue) {
+        return object.has(key) ? convertToString(object.get(key), key) : defaultValue;
+    }
+
     public static String getAsString(JsonObject object, String key) {
         if (object.has(key)) {
             return convertToString(object.get(key), key);
@@ -67,6 +109,26 @@ public class GsonHelpers {
             return element.getAsBoolean();
         } else {
             throw new JsonSyntaxException("Expected " + key + " to be a Boolean, was " + getType(element));
+        }
+    }
+
+    public static float getAsFloat(JsonObject object, String key, float defaultValue) {
+        return object.has(key) ? convertToFloat(object.get(key), key) : defaultValue;
+    }
+
+    public static float getAsFloat(JsonObject object, String key) {
+        if (object.has(key)) {
+            return convertToFloat(object.get(key), key);
+        } else {
+            throw new JsonSyntaxException("Missing " + key + ", expected to find a string");
+        }
+    }
+
+    public static float convertToFloat(JsonElement element, String key) {
+        if (element.isJsonPrimitive()) {
+            return element.getAsFloat();
+        } else {
+            throw new JsonSyntaxException("Expected " + key + " to be a string, was " + getType(element));
         }
     }
 
@@ -365,10 +427,9 @@ public class GsonHelpers {
                 if (n instanceof Short) return new NBTTagShort(n.shortValue());
                 if (n instanceof Byte) return new NBTTagByte(n.byteValue());
 
-                // Fallback for GSON's LazilyParsedNumber
                 String s = n.toString();
+                if (s.contains(".")) return new NBTTagDouble(n.doubleValue());
                 try {
-                    if (s.contains(".")) return new NBTTagDouble(n.doubleValue());
                     long l = n.longValue();
                     if (l <= Integer.MAX_VALUE && l >= Integer.MIN_VALUE) return new NBTTagInt((int) l);
                     return new NBTTagLong(l);

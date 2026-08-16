@@ -1,17 +1,22 @@
 package ruiseki.okcore.client.gui.container;
 
+import java.util.List;
+
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.inventory.Slot;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import com.google.common.collect.Lists;
+
 import ruiseki.okcore.inventory.container.ScrollingInventoryContainer;
 
 /**
  * Gui for an inventory container that has a scrollbar and search field.
- * 
+ *
  * @author rubensworks
  */
 public abstract class ScrollingGuiContainer extends GuiContainerExtended {
@@ -33,13 +38,13 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
      *
      * @param container The container to make the GUI for.
      */
-    public ScrollingGuiContainer(ScrollingInventoryContainer container) {
+    public ScrollingGuiContainer(ScrollingInventoryContainer<?> container) {
         super(container);
         this.allowUserInput = true;
     }
 
-    protected ScrollingInventoryContainer getScrollingInventoryContainer() {
-        return (ScrollingInventoryContainer) this.inventorySlots;
+    protected ScrollingInventoryContainer<?> getScrollingInventoryContainer() {
+        return (ScrollingInventoryContainer<?>) this.inventorySlots;
     }
 
     @Override
@@ -106,6 +111,12 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
             + 1;
     }
 
+    protected void scrollRelative(int step) {
+        this.currentScroll = (float) ((double) this.currentScroll - (double) step / (double) getScrollStep());
+        this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
+        getScrollingInventoryContainer().scrollTo(this.currentScroll);
+    }
+
     @Override
     public void handleMouseInput() {
         super.handleMouseInput();
@@ -115,9 +126,7 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
             if (i > 0) i = 1;
             if (i < 0) i = -1;
 
-            this.currentScroll = (float) ((double) this.currentScroll - (double) i / (double) getScrollStep());
-            this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
-            getScrollingInventoryContainer().scrollTo(this.currentScroll);
+            scrollRelative(i);
         }
     }
 
@@ -155,7 +164,33 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
             getScrollingInventoryContainer().scrollTo(this.currentScroll);
         }
 
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        if (isSubsetRenderSlots()) {
+            // Temporarily swap slot list, to avoid rendering all slots (which would include the hidden ones)
+            List<Slot> oldSlots = this.inventorySlots.inventorySlots;
+            int startIndex = getScrollingInventoryContainer().getFirstElement();
+            List<Slot> newSlots = Lists.newArrayList();
+            newSlots.addAll(
+                oldSlots.subList(
+                    startIndex,
+                    Math.min(
+                        oldSlots.size(),
+                        startIndex + (getScrollingInventoryContainer().getPageSize()
+                            * getScrollingInventoryContainer().getColumns()))));
+            newSlots
+                .addAll(oldSlots.subList(getScrollingInventoryContainer().getUnfilteredItemCount(), oldSlots.size()));
+            this.inventorySlots.inventorySlots = newSlots;
+            super.drawScreen(mouseX, mouseY, partialTicks);
+            this.inventorySlots.inventorySlots = oldSlots;
+        } else {
+            super.drawScreen(mouseX, mouseY, partialTicks);
+        }
+    }
+
+    /**
+     * @return If the optimization should be done for only rendering the visible slots. Default: false
+     */
+    protected boolean isSubsetRenderSlots() {
+        return false;
     }
 
     @Override
@@ -183,6 +218,10 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
 
     protected boolean needsScrollBars() {
         return getScrollingInventoryContainer().getFilteredItemCount() > getScrollingInventoryContainer().getPageSize();
+    }
+
+    public GuiTextField getSearchField() {
+        return searchField;
     }
 
     protected int getScrollX() {

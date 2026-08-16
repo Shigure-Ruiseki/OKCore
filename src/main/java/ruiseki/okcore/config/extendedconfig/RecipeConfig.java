@@ -36,4 +36,8 @@ public class RecipeConfig<T extends IRecipeOK<?>> extends ExtendedConfig<RecipeC
     public ConfigurableType getHolderType() {
         return ConfigurableType.RECIPE;
     }
+
+    public IRecipeSerializer<T> getRecipeSerializer() {
+        return (IRecipeSerializer<T>) getSubInstance();
+    }
 }

@@ -22,8 +22,7 @@ import ruiseki.okcore.item.IItemSharedTag;
  * @author rubensworks
  *
  */
-public class ConfigurableItemItemPickaxe extends ItemPickaxe
-    implements IConfigurableItem, IItemCapability, IItemSharedTag {
+public class ConfigurableItemPickaxe extends ItemPickaxe implements IConfigurableItem, IItemCapability, IItemSharedTag {
 
     protected ItemConfig eConfig = null;
 
@@ -32,8 +31,8 @@ public class ConfigurableItemItemPickaxe extends ItemPickaxe
      *
      * @param eConfig Config for this blockState.
      */
-    public ConfigurableItemItemPickaxe(ExtendedConfig<ItemConfig> eConfig, float damageVsEntity,
-        ToolMaterial toolMaterial, Set<Block> blocks) {
+    public ConfigurableItemPickaxe(ExtendedConfig<ItemConfig> eConfig, float damageVsEntity, ToolMaterial toolMaterial,
+        Set<Block> blocks) {
         super(toolMaterial);
         this.setConfig((ItemConfig) eConfig);
         this.setUnlocalizedName(eConfig.getUnlocalizedName());

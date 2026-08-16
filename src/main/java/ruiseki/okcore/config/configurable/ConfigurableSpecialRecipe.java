@@ -15,7 +15,7 @@ public class ConfigurableSpecialRecipe<T extends IRecipeOK<?>> extends SpecialRe
     private RecipeConfig<T> eConfig;
 
     public ConfigurableSpecialRecipe(ExtendedConfig<RecipeConfig<T>> eConfig,
-                                     Function<ResourceLocation, T> constructor) {
+        Function<ResourceLocation, T> constructor) {
         super(constructor);
         this.setConfig(eConfig);
     }

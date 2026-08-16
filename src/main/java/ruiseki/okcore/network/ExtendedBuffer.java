@@ -13,6 +13,8 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+
 import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import ruiseki.okcore.datastructure.BlockStack;
@@ -158,4 +160,40 @@ public class ExtendedBuffer extends PacketBuffer {
     public Set<String> readStringSet() {
         return readStringCollection(new HashSet<>());
     }
+
+    /**
+     * Reads a BlockState from this buffer.
+     *
+     * @return The parsed BlockState, or null if null was written or reading failed.
+     */
+    public BlockState readBlockState() {
+        if (!this.readBoolean()) {
+            return null;
+        }
+
+        String stateStr = this.readString();
+        if (stateStr.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return BlockState.fromString(null, stateStr);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Writes the BlockState to this buffer as a String using its toString() format.
+     * @param state The BlockState to write.
+     */
+    public void writeBlockState(BlockState state) {
+        if (state == null) {
+            this.writeBoolean(false);
+        } else {
+            this.writeBoolean(true);
+            this.writeString(state.toString());
+        }
+    }
+
 }

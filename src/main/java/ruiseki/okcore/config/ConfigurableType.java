@@ -13,6 +13,7 @@ import ruiseki.okcore.config.configurabletypeaction.ItemAction;
 import ruiseki.okcore.config.configurabletypeaction.MobAction;
 import ruiseki.okcore.config.configurabletypeaction.PotionAction;
 import ruiseki.okcore.config.configurabletypeaction.RecipeAction;
+import ruiseki.okcore.config.configurabletypeaction.RecipeTypeAction;
 import ruiseki.okcore.config.extendedconfig.BiomeConfig;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
@@ -130,7 +131,7 @@ public class ConfigurableType {
     public static final ConfigurableType RECIPE_TYPE = new ConfigurableType(
         true,
         RecipeTypeConfig.class,
-        new RecipeAction(),
+        new RecipeTypeAction(),
         ConfigurableTypeCategory.RECIPE_TYPE);
     /**
      * Capability type.

@@ -5,12 +5,12 @@ import ruiseki.okcore.config.extendedconfig.RecipeConfig;
 import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 
-public abstract class ConfigurableRecipeSerializer<T extends IRecipeOK<?>>
+public abstract class ConfigurableRecipe<T extends IRecipeOK<?>>
     implements IRecipeSerializer<T>, IConfigurable<RecipeConfig<T>> {
 
     private RecipeConfig<T> eConfig;
 
-    public ConfigurableRecipeSerializer(ExtendedConfig<RecipeConfig<T>> eConfig) {
+    public ConfigurableRecipe(ExtendedConfig<RecipeConfig<T>> eConfig) {
         this.setConfig(eConfig);
     }
 

@@ -9,13 +9,13 @@ import ruiseki.okcore.config.extendedconfig.RecipeConfig;
 import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.type.crafting.SpecialRecipeSerializer;
 
-public class ConfigurableSpecialRecipeSerializer<T extends IRecipeOK<?>> extends SpecialRecipeSerializer<T>
+public class ConfigurableSpecialRecipe<T extends IRecipeOK<?>> extends SpecialRecipeSerializer<T>
     implements IConfigurable<RecipeConfig<T>> {
 
     private RecipeConfig<T> eConfig;
 
-    public ConfigurableSpecialRecipeSerializer(ExtendedConfig<RecipeConfig<T>> eConfig,
-        Function<ResourceLocation, T> constructor) {
+    public ConfigurableSpecialRecipe(ExtendedConfig<RecipeConfig<T>> eConfig,
+                                     Function<ResourceLocation, T> constructor) {
         super(constructor);
         this.setConfig(eConfig);
     }

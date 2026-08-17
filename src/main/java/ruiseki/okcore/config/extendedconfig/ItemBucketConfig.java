@@ -9,12 +9,13 @@ import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
+import ruiseki.okcore.config.configurable.ConfigurableFluid;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.IBucketRegistry;
 
 /**
  * Config for buckets, extension of {@link ItemConfig}.
- * 
+ *
  * @author rubensworks
  * @see ExtendedConfig
  * @see ItemConfig
@@ -23,7 +24,7 @@ public abstract class ItemBucketConfig extends ItemConfig {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param mod     The mod instance.
      * @param enabled If this should is enabled.
      * @param namedId The unique name ID for the configurable.
@@ -42,14 +43,14 @@ public abstract class ItemBucketConfig extends ItemConfig {
 
     /**
      * Get the {@link ConfigurableFluid} this bucket can contain.
-     * 
+     *
      * @return the fluid.
      */
     public abstract Fluid getFluidInstance();
 
     /**
      * Get the {@link ConfigurableBlockFluidClassic} this bucket can place / pick up.
-     * 
+     *
      * @return the fluid blockState.
      */
     public abstract Block getFluidBlockInstance();

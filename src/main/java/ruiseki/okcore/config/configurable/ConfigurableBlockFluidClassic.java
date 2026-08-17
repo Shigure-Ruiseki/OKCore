@@ -10,9 +10,12 @@ import net.minecraftforge.fluids.Fluid;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import lombok.experimental.Delegate;
 import ruiseki.okcore.block.IEntityDropParticleFXBlock;
 import ruiseki.okcore.block.ParticleDropBlockComponent;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
+import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
+import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
@@ -32,6 +35,9 @@ public abstract class ConfigurableBlockFluidClassic extends BlockFluidClassic
 
     @SideOnly(Side.CLIENT)
     protected ParticleDropBlockComponent particleDropBlockComponent;
+
+    @Delegate
+    protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     /**
      * Make a new blockState instance.

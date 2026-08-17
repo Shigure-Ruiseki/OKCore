@@ -2,6 +2,9 @@ package ruiseki.okcore.block.property;
 
 import java.lang.reflect.Type;
 
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.IBlockAccess;
+
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockPropertyTrait;
 
 public class UnlistedProperty<TValue> implements IProperty<TValue> {
@@ -38,5 +41,15 @@ public class UnlistedProperty<TValue> implements IProperty<TValue> {
     @Override
     public boolean hasTrait(BlockPropertyTrait trait) {
         return trait == BlockPropertyTrait.SupportsWorld || trait == BlockPropertyTrait.SupportsStacks;
+    }
+
+    @Override
+    public TValue getValue(IBlockAccess world, int x, int y, int z) {
+        return getDefaultValue();
+    }
+
+    @Override
+    public TValue getValue(ItemStack stack) {
+        return getDefaultValue();
     }
 }

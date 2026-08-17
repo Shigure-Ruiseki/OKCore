@@ -50,10 +50,6 @@ public abstract class ConfigurableBlockFluidClassic extends BlockFluidClassic
         super(fluid, material);
         this.setConfig((BlockConfig) eConfig);
         this.setBlockName(eConfig.getUnlocalizedName());
-        this.setBlockTextureName(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId());
         fluid.setBlock(this);
         this.fluid = fluid;
     }

@@ -70,6 +70,22 @@ public class BlockStateBuilder {
         return new BlockStateBuilder(block);
     }
 
+    public static BlockStateBuilder builder(Block block, int meta) {
+        return new BlockStateBuilder(block, meta);
+    }
+
+    public static BlockStateBuilder builder(BlockStack stack) {
+        return new BlockStateBuilder(stack);
+    }
+
+    public static BlockStateBuilder builder(IBlockAccess world, BlockPos pos) {
+        return new BlockStateBuilder(world, pos);
+    }
+
+    public static BlockStateBuilder builder(IBlockAccess world, int x, int y, int z) {
+        return new BlockStateBuilder(world, x, y, z);
+    }
+
     public static BlockStateBuilder builder(BlockState blockState) {
         return new BlockStateBuilder(blockState);
     }

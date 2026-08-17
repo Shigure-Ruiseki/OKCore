@@ -31,7 +31,7 @@ public interface IConfigurableBlock extends IConfigurable<BlockConfig>, IBlockPr
 
     /**
      * Gets the {@link BlockState} to place
-     * 
+     *
      * @param world  The world the block is being placed in
      * @param pos    The position the block is being placed at
      * @param facing The side the block is being placed on
@@ -44,6 +44,10 @@ public interface IConfigurableBlock extends IConfigurable<BlockConfig>, IBlockPr
      */
     default BlockState getStateForPlacement(World world, BlockPos pos, ForgeDirection facing, float hitX, float hitY,
         float hitZ, int meta, EntityLivingBase placer) {
+        return BlockStateHelpers.getState(getConfig().getBlockInstance(), meta);
+    }
+
+    default BlockState getDefaultState(int meta) {
         return BlockStateHelpers.getState(getConfig().getBlockInstance(), meta);
     }
 }

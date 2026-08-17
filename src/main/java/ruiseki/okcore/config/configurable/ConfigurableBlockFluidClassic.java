@@ -4,6 +4,7 @@ import java.util.Random;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
@@ -102,5 +103,11 @@ public abstract class ConfigurableBlockFluidClassic extends BlockFluidClassic
     public void randomDisplayTick(World worldIn, int x, int y, int z, Random random) {
         super.randomDisplayTick(worldIn, x, y, z, random);
         if (particleDropBlockComponent != null) particleDropBlockComponent.randomDisplayTick(worldIn, x, y, z, random);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(int side, int meta) {
+        return side <= 1 ? this.fluid.getStillIcon() : this.fluid.getFlowingIcon();
     }
 }

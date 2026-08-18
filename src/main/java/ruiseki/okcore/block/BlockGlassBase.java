@@ -21,11 +21,10 @@ public class BlockGlassBase extends BlockGlass
     /**
      * Make a new blockState instance.
      *
-     * @param eConfig          Config for this blockState.
      * @param material         Material of this blockState.
      * @param ignoreSimilarity Whether neighbor blocks of the same type should connect/render seamlessly.
      */
-    public BlockGlassBase(ExtendedConfig<BlockConfig, Block> eConfig, Material material, boolean ignoreSimilarity) {
+    public BlockGlassBase(Material material, boolean ignoreSimilarity) {
         super(material, ignoreSimilarity);
     }
 

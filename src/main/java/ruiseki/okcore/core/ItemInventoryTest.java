@@ -13,11 +13,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
+import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.item.UseCooldown;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tag.Registries;
@@ -25,22 +24,10 @@ import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
-public class ItemInventoryTest extends ConfigurableItem implements IItemCooldown, IItemToggle {
+public class ItemInventoryTest extends ItemBase implements IItemCooldown, IItemToggle {
 
-    private static ItemInventoryTest _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemInventoryTest getInstance() {
-        return _instance;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public ItemInventoryTest(ExtendedConfig eConfig) {
-        super(eConfig);
+    public ItemInventoryTest() {
+        super();
         setTextureName("stick");
     }
 

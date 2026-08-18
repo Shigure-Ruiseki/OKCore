@@ -9,11 +9,11 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * The action used for {@link MobConfig}.
- * 
+ *
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class MobAction extends ConfigurableTypeAction<MobConfig> {
+public class MobAction extends ConfigurableTypeAction<MobConfig, EntityLiving> {
 
     @Override
     public void preRun(MobConfig eConfig, Configuration config, boolean startup) {
@@ -27,7 +27,7 @@ public class MobAction extends ConfigurableTypeAction<MobConfig> {
         eConfig.save();
 
         // Register mob
-        Class<? extends EntityLiving> clazz = (Class<? extends EntityLiving>) eConfig.getElement();
+        Class<? extends EntityLiving> clazz = eConfig.getMobClass();
         int modEntityId = Helpers.getNewId(eConfig.getMod(), Helpers.IDType.ENTITY);
 
         EntityRegistry.registerModEntity(clazz, eConfig.getNamedId(), modEntityId, eConfig.getMod(), 80, 3, true);

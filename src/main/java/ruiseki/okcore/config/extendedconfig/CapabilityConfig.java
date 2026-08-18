@@ -5,17 +5,17 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * Config for capabilities.
- * 
+ *
  * @author rubensworks
  * @see ExtendedConfig
  */
-public abstract class CapabilityConfig<T> extends ExtendedConfig<CapabilityConfig<T>> {
+public abstract class CapabilityConfig<T> extends ExtendedConfig<CapabilityConfig<T>, T> {
 
     private final Class<T> type;
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param mod     The mod
      * @param enabled If this should is enabled.
      * @param namedId The unique name ID for the configurable.

@@ -22,13 +22,7 @@ import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngred
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.commoncapabilities.capability.ingredient.storage.IngredientComponentStorageHandlerConfig;
-import ruiseki.commoncapabilities.capability.inventorystate.InventoryStateConfig;
-import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
-import ruiseki.commoncapabilities.capability.recipehandler.RecipeHandlerConfig;
-import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
-import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
-import ruiseki.commoncapabilities.capability.wrench.WrenchConfig;
+import ruiseki.commoncapabilities.modcompat.mekansim.MekanismModCompat;
 import ruiseki.commoncapabilities.modcompat.vanilla.VanillaModCompat;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.init.ModBase;
@@ -62,6 +56,7 @@ public class CommonCapabilities extends ModBase {
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         super.loadModCompats(modCompatLoader);
         modCompatLoader.addModCompat(new VanillaModCompat());
+        modCompatLoader.addModCompat(new MekanismModCompat());
     }
 
     @Mod.EventHandler
@@ -121,14 +116,7 @@ public class CommonCapabilities extends ModBase {
 
     @Override
     public void onMainConfigsRegister(ConfigHandler configHandler) {
-        super.onMainConfigsRegister(configHandler);
-        configHandler.add(new WorkerConfig());
-        configHandler.add(new WrenchConfig());
-        configHandler.add(new TemperatureConfig());
-        configHandler.add(new InventoryStateConfig());
-        configHandler.add(new SlotlessItemHandlerConfig());
-        configHandler.add(new RecipeHandlerConfig());
-        configHandler.add(new IngredientComponentStorageHandlerConfig());
+        Configs.register(configHandler);
     }
 
     @Override

@@ -8,7 +8,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
@@ -146,8 +145,7 @@ public class ShapedRecipe implements ICraftingRecipe, IShapedRecipe<InventoryCra
         return true;
     }
 
-    @VisibleForTesting
-    static String[] shrink(String... p_194134_0_) {
+    public static String[] shrink(String... p_194134_0_) {
         int i = Integer.MAX_VALUE;
         int j = 0;
         int k = 0;

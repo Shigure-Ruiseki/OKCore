@@ -1,5 +1,7 @@
 package ruiseki.okcore.config.extendedconfig;
 
+import java.util.function.Function;
+
 import net.minecraft.enchantment.Enchantment;
 
 import ruiseki.okcore.config.ConfigurableType;
@@ -7,11 +9,11 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * Config for enchantments.
- * 
+ *
  * @author rubensworks
  * @see ExtendedConfig
  */
-public abstract class EnchantmentConfig extends ExtendedConfig<EnchantmentConfig> {
+public abstract class EnchantmentConfig extends ExtendedConfig<EnchantmentConfig, Enchantment> {
 
     /**
      * The ID for the configurable.
@@ -20,16 +22,16 @@ public abstract class EnchantmentConfig extends ExtendedConfig<EnchantmentConfig
 
     /**
      * Make a new instance.
-     * 
-     * @param mod       The mod instance.
-     * @param defaultId The default ID for the configurable.
-     * @param namedId   The unique name ID for the configurable.
-     * @param comment   The comment to add in the config file for this configurable.
-     * @param element   The class of this configurable.
+     *
+     * @param mod            The mod instance.
+     * @param defaultId      The default ID for the configurable.
+     * @param namedId        The unique name ID for the configurable.
+     * @param comment        The comment to add in the config file for this configurable.
+     * @param elementFactory Function factory to create the Enchantment instance.
      */
     public EnchantmentConfig(ModBase mod, int defaultId, String namedId, String comment,
-        Class<? extends Enchantment> element) {
-        super(mod, defaultId != 0, namedId, comment, element);
+        Function<EnchantmentConfig, Enchantment> elementFactory) {
+        super(mod, defaultId != 0, namedId, comment, elementFactory);
         this.ID = defaultId;
     }
 

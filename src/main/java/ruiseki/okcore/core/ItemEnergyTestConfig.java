@@ -14,7 +14,7 @@ public class ItemEnergyTestConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemEnergyTestConfig() {
-        super(OKCore._instance, true, "energy_test", null, ItemEnergyTest.class);
+        super(OKCore._instance, true, "energy_test", null, itemConfig -> new ItemEnergyTest());
     }
 
 }

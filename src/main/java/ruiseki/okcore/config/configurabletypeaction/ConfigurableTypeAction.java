@@ -24,7 +24,7 @@ import ruiseki.okcore.registries.IForgeRegistryEntry;
  * @param <C> The subclass of ExtendedConfig
  * @see ConfigHandler
  */
-public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C>> {
+public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C, I>, I> {
 
     /**
      * The common run method for all the subtypes of {@link ConfigurableTypeAction}.
@@ -83,7 +83,7 @@ public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C>> {
      * @param config   The corresponding config.
      * @param <T>      The type to register.
      */
-    public static <T extends IForgeRegistryEntry<T>> void register(T instance, ExtendedConfig<?> config) {
+    public static <T extends IForgeRegistryEntry<T>> void register(T instance, ExtendedConfig<?, ?> config) {
         register(instance, config, () -> {
             config.onForgeRegistered();
             return null;
@@ -98,7 +98,7 @@ public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C>> {
      * @param callback A callback that will be called when the entry is registered.
      * @param <T>      The type to register.
      */
-    public static <T extends IForgeRegistryEntry<T>> void register(T instance, ExtendedConfig<?> config,
+    public static <T extends IForgeRegistryEntry<T>> void register(T instance, ExtendedConfig<?, ?> config,
         @Nullable Callable<?> callback) {
         register(
             Objects.requireNonNull(
@@ -118,7 +118,7 @@ public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C>> {
      * @param <T>      The type to register.
      */
     public static <T extends IForgeRegistryEntry<T>> void register(IForgeRegistry<T> registry, T instance,
-        ExtendedConfig<?> config) {
+        ExtendedConfig<?, ?> config) {
         register(registry, instance, config, null);
     }
 
@@ -132,7 +132,7 @@ public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C>> {
      * @param <T>      The type to register.
      */
     public static <T extends IForgeRegistryEntry<T>> void register(IForgeRegistry<T> registry, T instance,
-        ExtendedConfig<?> config, @Nullable Callable<?> callback) {
+        ExtendedConfig<?, ?> config, @Nullable Callable<?> callback) {
         if (instance.getRegistryName() == null) {
             instance.setRegistryName(
                 new ResourceLocation(

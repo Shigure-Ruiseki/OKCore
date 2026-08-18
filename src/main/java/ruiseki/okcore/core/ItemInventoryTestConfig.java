@@ -14,7 +14,7 @@ public class ItemInventoryTestConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemInventoryTestConfig() {
-        super(OKCore._instance, true, "inventory_test", null, ItemInventoryTest.class);
+        super(OKCore._instance, true, "inventory_test", null, itemConfig -> new ItemInventoryTest());
     }
 
 }

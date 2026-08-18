@@ -7,6 +7,15 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 public class ImmutableAxisAlignedBB extends AxisAlignedBB {
 
+    public static final ImmutableAxisAlignedBB FULL_BLOCK_AABB = new ImmutableAxisAlignedBB(
+        0.0D,
+        0.0D,
+        0.0D,
+        1.0D,
+        1.0D,
+        1.0D);
+    public static final ImmutableAxisAlignedBB NULL_AABB = null;
+
     public ImmutableAxisAlignedBB(double x1, double y1, double z1, double x2, double y2, double z2) {
         super(x1, y1, z1, x2, y2, z2);
     }

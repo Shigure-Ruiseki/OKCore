@@ -20,7 +20,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.BlockOK;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
+import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
@@ -251,8 +251,7 @@ public class MinecraftHelpers {
             TileEntityNBTStorage.TAG = teok.getNBTTagCompound();
             TileEntityNBTStorage.TILE = teok;
             if (block instanceof BlockOK blockOK) blockOK.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
-            if (block instanceof ConfigurableBlockContainer cfgBlock)
-                cfgBlock.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
+            if (block instanceof BlockTile cfgBlock) cfgBlock.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
 
             teok.destroy();
         } else {

@@ -10,12 +10,7 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.GuiHandler;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
-import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
+import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Configurable item that can show a GUI on right clicking.
@@ -23,28 +18,13 @@ import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
  * @author rubensworks
  *
  */
-public abstract class ItemGui extends ConfigurableItem implements IGuiContainerProviderConfigurable {
-
-    private int guiID;
+public abstract class ItemGui extends ItemBase implements IGuiContainerProvider {
 
     /**
      * Make a new item instance.
-     *
-     * @param eConfig Config for this blockState.
      */
-    protected ItemGui(ExtendedConfig<ItemConfig> eConfig) {
-        super(eConfig);
-        this.guiID = Helpers.getNewId(eConfig.getMod(), Helpers.IDType.GUI);
-    }
-
-    @Override
-    public ModBase getModGui() {
-        return eConfig.getMod();
-    }
-
-    @Override
-    public int getGuiID() {
-        return this.guiID;
+    protected ItemGui() {
+        super();
     }
 
     @Override
@@ -72,17 +52,10 @@ public abstract class ItemGui extends ConfigurableItem implements IGuiContainerP
      * @param itemIndex The item index in the player inventory.
      */
     public void openGuiForItemIndex(World world, EntityPlayer player, int itemIndex) {
-        getConfig().getMod()
-            .getGuiHandler()
+        getModGui().getGuiHandler()
             .setTemporaryData(GuiHandler.GuiType.ITEM, itemIndex);
         if (!world.isRemote || isClientSideOnlyGui()) {
-            player.openGui(
-                getConfig().getMod(),
-                getGuiID(),
-                world,
-                (int) player.posX,
-                (int) player.posY,
-                (int) player.posZ);
+            player.openGui(getModGui(), getGuiID(), world, (int) player.posX, (int) player.posY, (int) player.posZ);
         }
     }
 

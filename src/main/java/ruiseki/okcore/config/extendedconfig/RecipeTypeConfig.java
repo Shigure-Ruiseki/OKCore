@@ -1,5 +1,7 @@
 package ruiseki.okcore.config.extendedconfig;
 
+import java.util.function.Function;
+
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.recipe.IRecipeOK;
@@ -11,20 +13,20 @@ import ruiseki.okcore.recipe.IRecipeType;
  * @author rubensworks
  * @see ExtendedConfig
  */
-public class RecipeTypeConfig<T extends IRecipeOK<?>> extends ExtendedConfig<RecipeTypeConfig<T>> {
+public class RecipeTypeConfig<T extends IRecipeOK<?>> extends ExtendedConfig<RecipeTypeConfig<T>, IRecipeType<T>> {
 
     /**
      * Full Constructor.
      *
-     * @param mod     The mod instance.
-     * @param enabled If this should be enabled by default.
-     * @param namedId A unique name id.
-     * @param comment A comment that can be added to the config file line.
-     * @param element The class of the recipe serializer.
+     * @param mod            The mod instance.
+     * @param enabled        If this should be enabled by default.
+     * @param namedId        A unique name id.
+     * @param comment        A comment that can be added to the config file line.
+     * @param elementFactory Function factory to create the IRecipeType instance.
      */
     public RecipeTypeConfig(ModBase mod, boolean enabled, String namedId, String comment,
-        Class<? extends IRecipeType<T>> element) {
-        super(mod, enabled, namedId, comment, element);
+        Function<RecipeTypeConfig<T>, IRecipeType<T>> elementFactory) {
+        super(mod, enabled, namedId, comment, elementFactory);
     }
 
     @Override
@@ -35,9 +37,5 @@ public class RecipeTypeConfig<T extends IRecipeOK<?>> extends ExtendedConfig<Rec
     @Override
     public ConfigurableType getHolderType() {
         return ConfigurableType.RECIPE_TYPE;
-    }
-
-    public IRecipeType<T> getRecipeType() {
-        return (IRecipeType<T>) getSubInstance();
     }
 }

@@ -8,11 +8,11 @@ import ruiseki.okcore.config.extendedconfig.FluidConfig;
 
 /**
  * The action used for {@link FluidConfig}.
- * 
+ *
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class FluidAction extends ConfigurableTypeAction<FluidConfig> {
+public class FluidAction extends ConfigurableTypeAction<FluidConfig, Fluid> {
 
     @Override
     public void preRun(FluidConfig eConfig, Configuration config, boolean startup) {
@@ -25,10 +25,6 @@ public class FluidAction extends ConfigurableTypeAction<FluidConfig> {
         eConfig.save();
 
         // Register
-        FluidRegistry.registerFluid((Fluid) eConfig.getSubInstance());
-
-        // Add I18N
-        // LanguageRegistry.instance().addStringLocalization("fluid.fluids."+eConfig.NAMEDID, eConfig.NAME);
+        FluidRegistry.registerFluid(eConfig.getInstance());
     }
-
 }

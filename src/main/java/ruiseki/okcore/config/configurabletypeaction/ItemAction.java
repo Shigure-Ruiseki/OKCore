@@ -61,10 +61,12 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig, Item> {
 
         Item item = eConfig.getInstance();
         item.setUnlocalizedName(eConfig.getUnlocalizedName());
-        item.setTextureName(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId());
+        if (item.iconString == null) {
+            item.setTextureName(
+                eConfig.getMod()
+                    .getModId() + ":"
+                    + eConfig.getNamedId());
+        }
 
         // Register item and set creative tab.
         register(item, eConfig, eConfig.getTargetTab());

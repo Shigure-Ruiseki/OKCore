@@ -98,10 +98,12 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
 
         Block block = eConfig.getInstance();
         block.setBlockName(eConfig.getUnlocalizedName());
-        block.setBlockTextureName(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId());
+        if (block.textureName == null) {
+            block.setBlockTextureName(
+                eConfig.getMod()
+                    .getModId() + ":"
+                    + eConfig.getNamedId());
+        }
 
         register(block, eConfig.getItemBlockClass(), eConfig, eConfig.getTargetTab());
 

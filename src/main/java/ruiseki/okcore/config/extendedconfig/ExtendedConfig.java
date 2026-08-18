@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -47,6 +48,10 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     @Getter
     private final Class<?> element;
 
+    @Getter
+    @Nullable
+    private final Function<C, ? extends IConfigurable<C>> elementFactory;
+
     private IConfigurable<C> overriddenSubInstance;
 
     /**
@@ -55,14 +60,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     public List<ConfigProperty> configProperties = Lists.newLinkedList();
 
     /**
-     * Create a new config
-     *
-     * @param mod     The mod instance.
-     * @param enabled If this should is enabled by default. If this is false, this can still
-     *                be enabled through the config file.
-     * @param namedId a unique name id
-     * @param comment a comment that can be added to the config file line
-     * @param element the class for the element this config is for
+     * Create a new config with Reflection element class
      */
     public ExtendedConfig(ModBase mod, boolean enabled, String namedId, String comment, Class<?> element) {
         this.mod = mod;
@@ -70,6 +68,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
         this.namedId = namedId.toLowerCase(Locale.ROOT);
         this.comment = comment;
         this.element = element;
+        this.elementFactory = null;
         try {
             generateConfigProperties();
         } catch (IllegalArgumentException | IllegalAccessException e1) {
@@ -78,12 +77,23 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     }
 
     /**
-     * Generate the list of ConfigProperties by checking all the fields with the ConfigurableProperty
-     * annotation.
-     *
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
+     * Create a new config using a Function Factory instead of a Class element
      */
+    public ExtendedConfig(ModBase mod, boolean enabled, String namedId, String comment,
+        Function<C, ? extends IConfigurable<C>> elementFactory) {
+        this.mod = mod;
+        this.enabled = enabled;
+        this.namedId = namedId.toLowerCase(Locale.ROOT);
+        this.comment = comment;
+        this.element = null;
+        this.elementFactory = elementFactory;
+        try {
+            generateConfigProperties();
+        } catch (IllegalArgumentException | IllegalAccessException e1) {
+            e1.printStackTrace();
+        }
+    }
+
     private void generateConfigProperties() throws IllegalArgumentException, IllegalAccessException {
         for (Field field : this.getClass()
             .getDeclaredFields()) {
@@ -147,7 +157,11 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
             // Try initalizing the override sub instance.
             this.overriddenSubInstance = initSubInstance();
 
-            // Save inside the unique instance this config refers to (only if such an instance exists!)
+            if (getOverriddenSubInstance() == null && this.elementFactory != null) {
+                this.overriddenSubInstance = this.elementFactory.apply(downCast());
+            }
+
+            // Save inside the unique instance this config refers to (via Reflection)
             if (getOverriddenSubInstance() == null && this.getHolderType()
                 .hasUniqueInstance()) {
                 Constructor<?> constructor = this.getElement()
@@ -246,6 +260,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
      *
      * @return instance of sub object
      */
+    @SuppressWarnings("unchecked")
     public IConfigurable<C> getSubInstance() {
         if (getOverriddenSubInstance() != null) {
             return getOverriddenSubInstance();
@@ -351,7 +366,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
 
     /**
      * Get the lowest castable config.
-     * 
+     *
      * @return The downcasted config.
      */
     @SuppressWarnings("unchecked")

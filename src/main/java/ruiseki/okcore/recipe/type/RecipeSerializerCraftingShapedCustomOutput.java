@@ -21,7 +21,7 @@ import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
 
 /**
  * Recipe serializer for predefined output items.
- * 
+ *
  * @author rubensworks
  */
 public class RecipeSerializerCraftingShapedCustomOutput implements IRecipeSerializer<RecipeCraftingShapedCustomOutput> {

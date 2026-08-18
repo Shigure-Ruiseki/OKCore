@@ -27,6 +27,7 @@ import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
+@Deprecated
 public class BlockOK extends Block implements IBlock, IBlockPropertyProvider {
 
     @Delegate

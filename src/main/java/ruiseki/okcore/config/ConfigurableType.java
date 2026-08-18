@@ -1,6 +1,5 @@
 package ruiseki.okcore.config;
 
-import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.configurabletypeaction.BiomeAction;
 import ruiseki.okcore.config.configurabletypeaction.BlockAction;
 import ruiseki.okcore.config.configurabletypeaction.CapabilityAction;

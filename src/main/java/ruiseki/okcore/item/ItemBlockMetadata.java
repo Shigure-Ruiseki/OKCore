@@ -15,9 +15,9 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.IBlockRarityProvider;
+import ruiseki.okcore.block.IBlockStateAction;
 import ruiseki.okcore.block.IBlockTooltipProvider;
 import ruiseki.okcore.capabilities.IItemCapability;
-import ruiseki.okcore.config.configurable.IConfigurableBlock;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -73,7 +73,7 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
     @Override
     public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
         float hitX, float hitY, float hitZ, int metadata) {
-        if (this.field_150939_a instanceof IConfigurableBlock configurableBlock) {
+        if (this.field_150939_a instanceof IBlockStateAction configurableBlock) {
             BlockState state = configurableBlock.getStateForPlacement(
                 world,
                 new BlockPos(x, y, z),

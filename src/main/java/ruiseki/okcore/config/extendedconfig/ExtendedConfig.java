@@ -1,9 +1,6 @@
 package ruiseki.okcore.config.extendedconfig;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
@@ -21,22 +18,20 @@ import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.IChangedCallback;
 import ruiseki.okcore.config.OKCoreConfigException;
-import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.registries.IForgeRegistry;
 
 /**
- * A config that refers to a {@link IConfigurable}. Every unique {@link IConfigurable} must have one
- * unique extension of this class. This contains several configurable settings and properties
- * that can also be set in the config file.
+ * A config that refers to an instance of {@link I}. Every unique entry must have one
+ * unique extension of this class.
  *
  * @author rubensworks
  * @param <C> Class of the extension of ExtendedConfig
- *
+ * @param <I> Class of the instance that is being configured
  */
-public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
-    implements Comparable<ExtendedConfig<C>>, IInitListener {
+public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
+    implements Comparable<ExtendedConfig<C, I>>, IInitListener {
 
     @Getter
     private final ModBase mod;
@@ -45,14 +40,12 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     private final String namedId;
     @Getter
     private final String comment;
-    @Getter
-    private final Class<?> element;
 
     @Getter
     @Nullable
-    private final Function<C, ? extends IConfigurable<C>> elementFactory;
+    private final Function<C, I> factory;
 
-    private IConfigurable<C> overriddenSubInstance;
+    private I instance;
 
     /**
      * A list of {@link ConfigProperty} that can contain additional settings for this configurable.
@@ -60,33 +53,14 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     public List<ConfigProperty> configProperties = Lists.newLinkedList();
 
     /**
-     * Create a new config with Reflection element class
+     * Create a new config using a Function Factory
      */
-    public ExtendedConfig(ModBase mod, boolean enabled, String namedId, String comment, Class<?> element) {
+    public ExtendedConfig(ModBase mod, boolean enabled, String namedId, String comment, Function<C, I> factory) {
         this.mod = mod;
         this.enabled = enabled;
         this.namedId = namedId.toLowerCase(Locale.ROOT);
         this.comment = comment;
-        this.element = element;
-        this.elementFactory = null;
-        try {
-            generateConfigProperties();
-        } catch (IllegalArgumentException | IllegalAccessException e1) {
-            e1.printStackTrace();
-        }
-    }
-
-    /**
-     * Create a new config using a Function Factory instead of a Class element
-     */
-    public ExtendedConfig(ModBase mod, boolean enabled, String namedId, String comment,
-        Function<C, ? extends IConfigurable<C>> elementFactory) {
-        this.mod = mod;
-        this.enabled = enabled;
-        this.namedId = namedId.toLowerCase(Locale.ROOT);
-        this.comment = comment;
-        this.element = null;
-        this.elementFactory = elementFactory;
+        this.factory = factory;
         try {
             generateConfigProperties();
         } catch (IllegalArgumentException | IllegalAccessException e1) {
@@ -140,7 +114,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     }
 
     /**
-     * Save this config inside the correct element and inside the implementation if itself.
+     * Save this config inside the correct element and inside the implementation of itself.
      */
     public void save() {
         try {
@@ -151,68 +125,18 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
                     .set(null, this);
             } catch (NoSuchFieldError e) {
                 throw new OKCoreConfigException(
-                    String.format("The config file for %s requires a static field " + "_instance.", this.getNamedId()));
+                    String.format("The config file for %s requires a static field _instance.", this.getNamedId()));
             }
 
-            // Try initalizing the override sub instance.
-            this.overriddenSubInstance = initSubInstance();
-
-            if (getOverriddenSubInstance() == null && this.elementFactory != null) {
-                this.overriddenSubInstance = this.elementFactory.apply(downCast());
+            if (this.factory != null) {
+                this.instance = this.factory.apply(downCast());
             }
-
-            // Save inside the unique instance this config refers to (via Reflection)
-            if (getOverriddenSubInstance() == null && this.getHolderType()
-                .hasUniqueInstance()) {
-                Constructor<?> constructor = this.getElement()
-                    .getDeclaredConstructor(ExtendedConfig.class);
-                if (constructor == null) {
-                    throw new OKCoreConfigException(
-                        String.format(
-                            "The class %s requires a constructor with " + "ExtendedConfig as single parameter.",
-                            this.getElement()));
-                }
-                Object instance = constructor.newInstance(this);
-
-                Field field = this.getElement()
-                    .getDeclaredField("_instance");
-                field.setAccessible(true);
-                if (field.get(null) == null) {
-                    field.set(null, instance);
-                } else {
-                    showDoubleInitError();
-                }
-            }
-        } catch (IllegalAccessException | NoSuchFieldException | InstantiationException | NoSuchMethodException
-            | RuntimeException e) {
+        } catch (IllegalAccessException | NoSuchFieldException | RuntimeException e) {
             mod.getLoggerHelper()
                 .getLogger()
                 .error(String.format("Registering %s caused an issue. ", getNamedId()), e);
             throw new OKCoreConfigException(
                 String.format("Registering %s caused the issue: %s", this.getNamedId(), e.getMessage()));
-        } catch (InvocationTargetException e) {
-            mod.log(
-                Level.ERROR,
-                "Registering " + this.getNamedId()
-                    + " caused the issue "
-                    + "(skipping registration): "
-                    + e.getCause()
-                        .getMessage());
-            mod.getLoggerHelper()
-                .getLogger()
-                .error("Registering %s caused an issue. ", e.getCause());
-
-            // Disable this configurable.
-            if (!this.isDisableable()) {
-                throw new OKCoreConfigException(
-                    "Registering " + this.getNamedId()
-                        + " caused the issue: "
-                        + e.getCause()
-                            .getMessage()
-                        + ". Since this is a required element of this mod, we can not continue, "
-                        + "there might be ID conflicts with other mods.");
-            }
-            this.setEnabled(false);
         }
     }
 
@@ -240,47 +164,11 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     }
 
     /**
-     * This method will by default just return null.
-     * If it returns something else, this config will assume that the object that is returned is the unique sub-instance
-     * for the configurable.
-     * This is only called once.
-     *
-     * @return A sub-instance that will become a singleton.
+     * Get the instance created by this config.
      */
-    protected IConfigurable<C> initSubInstance() {
-        return null;
-    }
 
-    private IConfigurable<C> getOverriddenSubInstance() {
-        return this.overriddenSubInstance;
-    }
-
-    /**
-     * Will return the instance of the object this config refers to
-     *
-     * @return instance of sub object
-     */
-    @SuppressWarnings("unchecked")
-    public IConfigurable<C> getSubInstance() {
-        if (getOverriddenSubInstance() != null) {
-            return getOverriddenSubInstance();
-        }
-        if (!this.getHolderType()
-            .hasUniqueInstance()) throw new OKCoreConfigException("There exists no unique instance for " + this);
-        try {
-            Method method = this.getElement()
-                .getMethod("getInstance");
-            if (method == null) {
-                throw new OKCoreConfigException("There exists no static getInstance method for  " + this);
-            }
-            return (IConfigurable<C>) method.invoke(null);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException e1) {
-            // Only possible in development mode
-            e1.printStackTrace();
-        }
-
-        return null;
+    public I getInstance() {
+        return this.instance;
     }
 
     /**
@@ -312,7 +200,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
     }
 
     @Override
-    public int compareTo(ExtendedConfig<C> o) {
+    public int compareTo(ExtendedConfig<C, I> o) {
         return getNamedId().compareTo(o.getNamedId());
     }
 
@@ -358,7 +246,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C>>
      */
     public void showDoubleInitError() {
         String message = this.getClass() + " caused a double registration of "
-            + getSubInstance()
+            + getInstance()
             + ". This is an error in the mod code.";
         mod.log(Level.FATAL, message);
         throw new OKCoreConfigException(message);

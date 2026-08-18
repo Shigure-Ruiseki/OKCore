@@ -17,7 +17,7 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 public class Debug {
 
     private static final String CONFIGCHECKER_PREFIX = "[CONFIGCHECKER] ";
-    private final Set<ExtendedConfig<?>> savedConfigs = Sets.newHashSet();
+    private final Set<ExtendedConfig<?, ?>> savedConfigs = Sets.newHashSet();
     private final ModBase mod;
 
     private boolean ok = true;
@@ -28,11 +28,11 @@ public class Debug {
 
     /**
      * Loops over the list of configs and checks their correctness.
-     * 
+     *
      * @param configs List of configs
      */
-    public void checkPreConfigurables(Set<ExtendedConfig<?>> configs) {
-        for (ExtendedConfig<?> config : configs) {
+    public void checkPreConfigurables(Set<ExtendedConfig<?, ?>> configs) {
+        for (ExtendedConfig<?, ?> config : configs) {
             // _instance field on ExtendedConfig
             try {
                 config.getClass()
@@ -52,22 +52,15 @@ public class Debug {
      * Loops over the list of configs (was saved from the Pre call) and checks their correctness.
      */
     public void checkPostConfigurables() {
-        for (ExtendedConfig<?> config : savedConfigs) {
+        for (ExtendedConfig<?, ?> config : savedConfigs) {
             if (config.getHolderType()
                 .hasUniqueInstance() && config.isEnabled()) {
-                // The sub-instance of ExtendedConfig (can be in a higher class hierarchy, bit of a hack...
-                if (config.getSubInstance() == null) {
-                    log(config.getElement() + " has no sub-instance, even though it is enabled.");
-                }
-
-                // getInstance() in the sub-instance of ExtendedConfig
-                try {
-                    config.getElement()
-                        .getMethod("getInstance");
-                } catch (NoSuchMethodException e) {
-                    log(config.getElement() + " has no static 'getInstance()' method.");
-                } catch (SecurityException e) {
-                    log(config.getElement() + " has a non-public static 'getInstance()' method, make it public.");
+                if (config.getInstance() == null) {
+                    log(
+                        config.getNamedId() + " ("
+                            + config.getClass()
+                                .getSimpleName()
+                            + ") has no instance registered, even though it is enabled.");
                 }
             }
         }

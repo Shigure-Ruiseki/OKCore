@@ -1,10 +1,9 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.block;
 
 import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.BlockSapling;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -18,16 +17,14 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
 
-public class ConfigurableBlockSapling extends BlockSapling implements IConfigurableBlock, IBlockPropertyProvider {
+public class BlockSaplingBase extends BlockSapling
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
-    protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
     @SideOnly(Side.CLIENT)
@@ -38,18 +35,9 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
     /**
      * Make a new blockState instance.
      *
-     * @param eConfig       Config for this blockState.
-     * @param material      Material of this blockState.
      * @param treeGenerator The world generator of the tree.
      */
-    public ConfigurableBlockSapling(ExtendedConfig<BlockConfig> eConfig, Material material,
-        WorldGeneratorTree treeGenerator) {
-        this.setConfig((BlockConfig) eConfig);
-        this.setBlockName(eConfig.getUnlocalizedName());
-        this.setBlockTextureName(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId());
+    public BlockSaplingBase(WorldGeneratorTree treeGenerator) {
         this.treeGenerator = treeGenerator;
         setStepSound(soundTypeGrass);
     }
@@ -57,15 +45,6 @@ public class ConfigurableBlockSapling extends BlockSapling implements IConfigura
     @Override
     public boolean hasGui() {
         return hasGui;
-    }
-
-    private void setConfig(BlockConfig eConfig) {
-        this.eConfig = eConfig;
-    }
-
-    @Override
-    public BlockConfig getConfig() {
-        return eConfig;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -1,4 +1,4 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.block;
 
 import java.util.List;
 
@@ -17,12 +17,10 @@ import com.gtnewhorizon.gtnhlib.geometry.Axis;
 
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IEnumProperty;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 
-public class ConfigurableBlockLog extends ConfigurableBlock {
+public class BlockLogBase extends BlockBase {
 
     @BlockProperty
     public static final IEnumProperty<Axis> AXIS = IEnumProperty
@@ -44,27 +42,10 @@ public class ConfigurableBlockLog extends ConfigurableBlock {
             world.setBlockMetadataWithNotify(x, y, z, newMeta, 2);
         });
 
-    protected BlockConfig eConfig = null;
-    protected boolean hasGui = false;
-
-    public ConfigurableBlockLog(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.wood);
+    public BlockLogBase() {
+        super(Material.wood);
         this.setHardness(2.0F);
         this.setStepSound(soundTypeWood);
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
-    }
-
-    private void setConfig(BlockConfig eConfig) {
-        this.eConfig = eConfig;
-    }
-
-    @Override
-    public BlockConfig getConfig() {
-        return eConfig;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

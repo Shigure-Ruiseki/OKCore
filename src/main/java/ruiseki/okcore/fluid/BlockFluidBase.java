@@ -1,4 +1,4 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.fluid;
 
 import java.util.Random;
 
@@ -12,13 +12,13 @@ import net.minecraftforge.fluids.Fluid;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
+import ruiseki.okcore.block.IBlockGui;
+import ruiseki.okcore.block.IBlockStateAction;
 import ruiseki.okcore.block.IEntityDropParticleFXBlock;
 import ruiseki.okcore.block.ParticleDropBlockComponent;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * Block that represents an in-world fluid that can hold ExtendedConfigs
@@ -26,12 +26,11 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
  * @author rubensworks
  *
  */
-public abstract class ConfigurableBlockFluidClassic extends BlockFluidClassic
-    implements IConfigurableBlock, IEntityDropParticleFXBlock {
+public abstract class BlockFluidBase extends BlockFluidClassic
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IEntityDropParticleFXBlock {
 
     private Fluid fluid;
 
-    protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
     @SideOnly(Side.CLIENT)
@@ -43,14 +42,11 @@ public abstract class ConfigurableBlockFluidClassic extends BlockFluidClassic
     /**
      * Make a new blockState instance.
      *
-     * @param eConfig  Config for this blockState.
      * @param fluid    The fluid this blockState has to represent
      * @param material Material of this blockState.
      */
-    public ConfigurableBlockFluidClassic(ExtendedConfig<BlockConfig> eConfig, Fluid fluid, Material material) {
+    public BlockFluidBase(Fluid fluid, Material material) {
         super(fluid, material);
-        this.setConfig((BlockConfig) eConfig);
-        this.setBlockName(eConfig.getUnlocalizedName());
         fluid.setBlock(this);
         this.fluid = fluid;
     }
@@ -72,15 +68,6 @@ public abstract class ConfigurableBlockFluidClassic extends BlockFluidClassic
         return this.fluid;
     }
 
-    private void setConfig(BlockConfig eConfig) {
-        this.eConfig = eConfig;
-    }
-
-    @Override
-    public BlockConfig getConfig() {
-        return eConfig;
-    }
-
     /**
      * Set the drop particle color.
      *
@@ -90,7 +77,7 @@ public abstract class ConfigurableBlockFluidClassic extends BlockFluidClassic
      * @return This instance of the blockState.
      */
     @SideOnly(Side.CLIENT)
-    public ConfigurableBlockFluidClassic setParticleColor(float particleRed, float particleGreen, float particleBlue) {
+    public BlockFluidBase setParticleColor(float particleRed, float particleGreen, float particleBlue) {
         particleDropBlockComponent = new ParticleDropBlockComponent(particleRed, particleGreen, particleBlue);
         return this;
     }

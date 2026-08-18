@@ -1,4 +1,4 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.block;
 
 import java.util.Random;
 
@@ -10,33 +10,27 @@ import net.minecraft.world.World;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.BlockDoorConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * Door block that can hold ExtendedConfigs.
  */
-public class ConfigurableBlockDoor extends BlockDoor implements IConfigurableBlock {
+public class BlockDoorBase extends BlockDoor
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     public Item item;
 
-    protected BlockDoorConfig eConfig = null;
     protected boolean hasGui = false;
 
     /**
      * Make a new block instance.
      *
-     * @param config   Config for this block.
      * @param material The door material.
      */
-    public ConfigurableBlockDoor(ExtendedConfig<BlockConfig> config, Material material) {
+    public BlockDoorBase(Material material) {
         super(material);
-        setConfig((BlockDoorConfig) config);
-        setBlockName(config.getUnlocalizedName());
         disableStats();
     }
 
@@ -51,7 +45,7 @@ public class ConfigurableBlockDoor extends BlockDoor implements IConfigurableBlo
     }
 
     @Override
-    public ConfigurableBlockDoor setStepSound(SoundType sound) {
+    public BlockDoorBase setStepSound(SoundType sound) {
         super.setStepSound(sound);
         return this;
     }
@@ -59,14 +53,5 @@ public class ConfigurableBlockDoor extends BlockDoor implements IConfigurableBlo
     @Override
     public boolean hasGui() {
         return hasGui;
-    }
-
-    private void setConfig(BlockDoorConfig eConfig) {
-        this.eConfig = eConfig;
-    }
-
-    @Override
-    public BlockDoorConfig getConfig() {
-        return eConfig;
     }
 }

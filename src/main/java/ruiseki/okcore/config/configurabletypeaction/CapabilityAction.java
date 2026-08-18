@@ -8,11 +8,11 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * The action used for {@link CapabilityConfig}.
- * 
+ *
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class CapabilityAction<T> extends ConfigurableTypeAction<CapabilityConfig<T>> {
+public class CapabilityAction<T> extends ConfigurableTypeAction<CapabilityConfig<T>, T> {
 
     @Override
     public void preRun(CapabilityConfig<T> eConfig, Configuration config, boolean startup) {

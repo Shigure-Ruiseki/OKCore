@@ -1,4 +1,4 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.block;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +21,6 @@ import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.BooleanProperty;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
@@ -32,7 +30,8 @@ import ruiseki.okcore.helper.BlockStateHelpers;
  * @author rubensworks
  *
  */
-public abstract class ConfigurableBlockLeaves extends BlockLeaves implements IConfigurableBlock {
+public abstract class BlockLeavesBase extends BlockLeaves
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
@@ -59,33 +58,20 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
             world.setBlockMetadataWithNotify(x, y, z, newMeta, 4);
         });
 
-    protected BlockConfig eConfig = null;
     protected boolean hasGui = false;
 
     private int[] surroundings;
 
     /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public ConfigurableBlockLeaves(ExtendedConfig<BlockConfig> eConfig) {
-        this.setConfig((BlockConfig) eConfig);
-        this.setBlockName(eConfig.getUnlocalizedName());
+    public BlockLeavesBase() {
+
     }
 
     @Override
     public boolean hasGui() {
         return hasGui;
-    }
-
-    private void setConfig(BlockConfig eConfig) {
-        this.eConfig = eConfig;
-    }
-
-    @Override
-    public BlockConfig getConfig() {
-        return eConfig;
     }
 
     @Override
@@ -151,7 +137,7 @@ public abstract class ConfigurableBlockLeaves extends BlockLeaves implements ICo
 
     @Override
     public String[] func_150125_e() {
-        return new String[] { eConfig.getNamedId() };
+        return new String[] { unlocalizedName };
     }
 
     @Override

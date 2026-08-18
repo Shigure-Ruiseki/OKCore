@@ -1,34 +1,36 @@
 package ruiseki.okcore.config.extendedconfig;
 
+import java.util.function.Function;
+
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 
 import ruiseki.okcore.config.ConfigurableType;
-import ruiseki.okcore.config.configurable.ConfigurableBiome;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.init.ModBase;
 
 /**
  * Config for biomes.
- * 
+ *
  * @author rubensworks
  * @see ExtendedConfig
  */
-public abstract class BiomeConfig extends ExtendedConfig<BiomeConfig> {
+public abstract class BiomeConfig extends ExtendedConfig<BiomeConfig, BiomeGenBase> {
 
     private int id;
 
     /**
      * Make a new instance.
-     * 
-     * @param mod       The mod instance.
-     * @param defaultId The default ID for the configurable.
-     * @param namedId   The unique name ID for the configurable.
-     * @param comment   The comment to add in the config file for this configurable.
-     * @param element   The class of this configurable.
+     *
+     * @param mod            The mod instance.
+     * @param defaultId      The default ID for the configurable.
+     * @param namedId        The unique name ID for the configurable.
+     * @param comment        The comment to add in the config file for this configurable.
+     * @param elementFactory Function factory to create the Biome instance.
      */
     public BiomeConfig(ModBase mod, int defaultId, String namedId, String comment,
-        Class<? extends BiomeGenBase> element) {
-        super(mod, defaultId > 0, namedId, comment, element);
+        Function<BiomeConfig, BiomeGenBase> elementFactory) {
+        super(mod, defaultId > 0, namedId, comment, elementFactory);
         this.id = defaultId;
     }
 
@@ -41,7 +43,7 @@ public abstract class BiomeConfig extends ExtendedConfig<BiomeConfig> {
 
     /**
      * Set the ID.
-     * 
+     *
      * @param id The new ID.
      */
     public void setId(int id) {
@@ -59,21 +61,13 @@ public abstract class BiomeConfig extends ExtendedConfig<BiomeConfig> {
     }
 
     /**
-     * Get the biome configurable
-     * 
-     * @return The biome.
-     */
-    public ConfigurableBiome getBiome() {
-        return (ConfigurableBiome) this.getSubInstance();
-    }
-
-    /**
      * Register the biome instance into the biome dictionary.
-     * 
+     *
      * @see BiomeDictionary
      */
     public void registerBiomeDictionary() {
-        BiomeDictionary.makeBestGuess(getBiome());
+        getInstance().setBiomeName(LangHelpers.localize(this.getUnlocalizedName()));
+        BiomeDictionary.makeBestGuess(getInstance());
     }
 
     @Override

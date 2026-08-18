@@ -18,34 +18,21 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.item.IItemToggle;
+import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.network.packet.PacketSyncCursorStack;
 import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
-public class ItemFluidTest extends ConfigurableItem implements IItemToggle {
+public class ItemFluidTest extends ItemBase implements IItemToggle {
 
-    private static ItemFluidTest _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemFluidTest getInstance() {
-        return _instance;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public ItemFluidTest(ExtendedConfig eConfig) {
-        super(eConfig);
+    public ItemFluidTest() {
+        super();
         setTextureName("stick");
     }
 

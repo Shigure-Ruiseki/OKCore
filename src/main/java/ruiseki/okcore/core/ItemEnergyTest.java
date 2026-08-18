@@ -8,29 +8,16 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.TagHelpers;
+import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.tag.TagKey;
 
-public class ItemEnergyTest extends ConfigurableItem {
+public class ItemEnergyTest extends ItemBase {
 
-    private static ItemEnergyTest _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemEnergyTest getInstance() {
-        return _instance;
-    }
-
-    public ItemEnergyTest(ExtendedConfig<ItemConfig> eConfig) {
-        super(eConfig);
+    public ItemEnergyTest() {
+        super();
         setTextureName("stick");
     }
 

@@ -471,7 +471,7 @@ public abstract class ModBase {
      *
      * @param extendedConfig The config to register.
      */
-    public final void registerConfig(ExtendedConfig<?> extendedConfig) {
+    public final void registerConfig(ExtendedConfig<?, ?> extendedConfig) {
         getConfigHandler().add(extendedConfig);
     }
 

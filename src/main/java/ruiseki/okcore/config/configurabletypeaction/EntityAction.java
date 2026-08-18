@@ -9,12 +9,12 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * The action used for {@link EntityConfig}.
- * 
+ *
  * @param <T> The entity type.
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class EntityAction<T extends Entity> extends ConfigurableTypeAction<EntityConfig<T>> {
+public class EntityAction<T extends Entity> extends ConfigurableTypeAction<EntityConfig<T>, Entity> {
 
     @Override
     public void preRun(EntityConfig eConfig, Configuration config, boolean startup) {
@@ -28,7 +28,7 @@ public class EntityAction<T extends Entity> extends ConfigurableTypeAction<Entit
         eConfig.save();
 
         @SuppressWarnings("unchecked")
-        Class<? extends T> clazz = (Class<? extends T>) eConfig.getElement();
+        Class<? extends T> clazz = (Class<? extends T>) eConfig.getEntityClass();
 
         // Register
         EntityRegistry.registerModEntity(

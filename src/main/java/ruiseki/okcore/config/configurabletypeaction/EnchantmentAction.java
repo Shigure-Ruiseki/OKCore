@@ -1,5 +1,6 @@
 package ruiseki.okcore.config.configurabletypeaction;
 
+import net.minecraft.enchantment.Enchantment;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -7,11 +8,11 @@ import ruiseki.okcore.config.extendedconfig.EnchantmentConfig;
 
 /**
  * The action used for {@link EnchantmentConfig}.
- * 
+ *
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class EnchantmentAction extends ConfigurableTypeAction<EnchantmentConfig> {
+public class EnchantmentAction extends ConfigurableTypeAction<EnchantmentConfig, Enchantment> {
 
     @Override
     public void preRun(EnchantmentConfig eConfig, Configuration config, boolean startup) {
@@ -34,6 +35,9 @@ public class EnchantmentAction extends ConfigurableTypeAction<EnchantmentConfig>
     public void postRun(EnchantmentConfig eConfig, Configuration config) {
         // Save the config inside the correct element
         eConfig.save();
+
+        Enchantment enchantment = eConfig.getInstance();
+        enchantment.setName(eConfig.getUnlocalizedName());
     }
 
 }

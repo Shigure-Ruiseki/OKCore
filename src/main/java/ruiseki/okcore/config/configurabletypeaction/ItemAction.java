@@ -19,7 +19,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
+public class ItemAction extends ConfigurableTypeAction<ItemConfig, Item> {
 
     /**
      * Registers an item.
@@ -28,7 +28,8 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
      * @param config       The config.
      * @param creativeTabs The creative tab this block will reside in.
      */
-    public static void register(Item item, ExtendedConfig<ItemConfig> config, @Nullable CreativeTabs creativeTabs) {
+    public static void register(Item item, ExtendedConfig<ItemConfig, Item> config,
+        @Nullable CreativeTabs creativeTabs) {
         GameRegistry.registerItem(item, config.getSubUniqueName());
 
         if (creativeTabs != null) {
@@ -58,7 +59,12 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig> {
         // Save the config inside the correct element
         eConfig.save();
 
-        Item item = (Item) eConfig.getSubInstance();
+        Item item = eConfig.getInstance();
+        item.setUnlocalizedName(eConfig.getUnlocalizedName());
+        item.setTextureName(
+            eConfig.getMod()
+                .getModId() + ":"
+                + eConfig.getNamedId());
 
         // Register item and set creative tab.
         register(item, eConfig, eConfig.getTargetTab());

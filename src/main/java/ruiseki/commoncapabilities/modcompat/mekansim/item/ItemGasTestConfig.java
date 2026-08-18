@@ -14,7 +14,7 @@ public class ItemGasTestConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemGasTestConfig() {
-        super(CommonCapabilities._instance, true, "gas_test", null, ItemGasTest.class);
+        super(CommonCapabilities._instance, true, "gas_test", null, itemConfig -> new ItemGasTest());
     }
 
 }

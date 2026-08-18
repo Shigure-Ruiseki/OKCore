@@ -6,11 +6,11 @@ import ruiseki.okcore.config.extendedconfig.DummyConfig;
 
 /**
  * Just a dummy action.
- * 
+ *
  * @author rubensworks
  *
  */
-public class DummyAction extends ConfigurableTypeAction<DummyConfig> {
+public class DummyAction extends ConfigurableTypeAction<DummyConfig, Void> {
 
     @Override
     public void preRun(DummyConfig eConfig, Configuration config, boolean startup) {

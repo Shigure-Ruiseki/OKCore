@@ -14,7 +14,7 @@ import ruiseki.okcore.helper.obfuscation.ObfuscationHelpers;
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class PotionAction extends ConfigurableTypeAction<PotionConfig> {
+public class PotionAction extends ConfigurableTypeAction<PotionConfig, Potion> {
 
     @Override
     public void preRun(PotionConfig eConfig, Configuration config, boolean startup) {

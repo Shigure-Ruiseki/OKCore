@@ -1,5 +1,6 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -8,26 +9,10 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
-import ruiseki.okcore.block.IBlockTooltipProvider;
-import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
-/**
- * Configurable blocks.
- *
- * @author rubensworks
- */
-public interface IConfigurableBlock extends IConfigurable<BlockConfig>, IBlockPropertyProvider, IBlockTooltipProvider {
-
-    /**
-     * If this block has a corresponding GUI.
-     * This required the block to implement {@link ruiseki.okcore.inventory.IGuiContainerProvider}.
-     *
-     * @return If it has a GUI.
-     */
-    public boolean hasGui();
+public interface IBlockStateAction {
 
     /**
      * Gets the {@link BlockState} to place
@@ -44,10 +29,20 @@ public interface IConfigurableBlock extends IConfigurable<BlockConfig>, IBlockPr
      */
     default BlockState getStateForPlacement(World world, BlockPos pos, ForgeDirection facing, float hitX, float hitY,
         float hitZ, int meta, EntityLivingBase placer) {
-        return BlockStateHelpers.getState(getConfig().getBlockInstance(), meta);
+        return getDefaultState();
     }
 
-    default BlockState getDefaultState(int meta) {
-        return BlockStateHelpers.getState(getConfig().getBlockInstance(), meta);
+    /**
+     * Gets the default state for this block (metadata 0).
+     *
+     * @throws IllegalStateException if implemented on a class that does not extend {@link Block}.
+     */
+    default BlockState getDefaultState() {
+        if (this instanceof Block block) {
+            return BlockStateHelpers.getState(block, 0);
+        }
+        throw new IllegalStateException(
+            "IBlockStateAction can only be implemented by a class extending net.minecraft.block.Block! Target class: "
+                + getClass().getName());
     }
 }

@@ -14,12 +14,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import lombok.experimental.Delegate;
+import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityCache;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.persist.nbt.INBTProvider;
@@ -288,8 +288,8 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      *
      * @return The blockState instance.
      */
-    public ConfigurableBlockContainer getBlock() {
-        return (ConfigurableBlockContainer) this.getBlockType();
+    public BlockTile getBlock() {
+        return (BlockTile) this.getBlockType();
     }
 
     @Override

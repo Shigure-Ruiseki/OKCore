@@ -8,12 +8,10 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import mekanism.api.gas.GasStack;
 import ruiseki.commoncapabilities.modcompat.mekansim.capability.gashandler.GasHandlerConfig;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.item.ItemBase;
 
-public class ItemGasTest extends ConfigurableItem {
+public class ItemGasTest extends ItemBase {
 
     private static ItemGasTest _instance = null;
 
@@ -26,8 +24,8 @@ public class ItemGasTest extends ConfigurableItem {
         return _instance;
     }
 
-    public ItemGasTest(ExtendedConfig<ItemConfig> eConfig) {
-        super(eConfig);
+    public ItemGasTest() {
+        super();
         setTextureName("stick");
     }
 

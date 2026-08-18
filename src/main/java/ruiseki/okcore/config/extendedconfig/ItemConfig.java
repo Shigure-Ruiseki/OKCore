@@ -1,13 +1,13 @@
 package ruiseki.okcore.config.extendedconfig;
 
+import java.util.function.Function;
+
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 import ruiseki.okcore.config.ConfigurableType;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.init.ModBase;
 
 /**
@@ -16,24 +16,20 @@ import ruiseki.okcore.init.ModBase;
  * @author rubensworks
  * @see ExtendedConfig
  */
-public abstract class ItemConfig extends ExtendedConfig<ItemConfig> {
+public abstract class ItemConfig extends ExtendedConfig<ItemConfig, Item> {
 
     /**
      * Make a new instance.
      *
-     * @param mod     The mod instance.
-     * @param enabled If this should is enabled.O
-     * @param namedId The unique name ID for the configurable.
-     * @param comment The comment to add in the config file for this configurable.
-     * @param element The class of this configurable.
+     * @param mod            The mod instance.
+     * @param enabled        If this should is enabled.
+     * @param namedId        The unique name ID for the configurable.
+     * @param comment        The comment to add in the config file for this configurable.
+     * @param elementFactory Function factory to create the Item instance.
      */
-    public ItemConfig(ModBase mod, boolean enabled, String namedId, String comment, Class<? extends Item> element) {
-        super(mod, enabled, namedId, comment, element);
-    }
-
-    @Override
-    protected IConfigurable initSubInstance() {
-        return this.getElement() == null ? new ConfigurableItem(this) : super.initSubInstance();
+    public ItemConfig(ModBase mod, boolean enabled, String namedId, String comment,
+        Function<ItemConfig, Item> elementFactory) {
+        super(mod, enabled, namedId, comment, elementFactory);
     }
 
     @Override
@@ -60,15 +56,6 @@ public abstract class ItemConfig extends ExtendedConfig<ItemConfig> {
         return null;
     }
 
-    /**
-     * Get the casted instance of the item.
-     *
-     * @return The item.
-     */
-    public Item getItemInstance() {
-        return (Item) super.getSubInstance();
-    }
-
     @Override
     public void onRegistered() {
         super.onRegistered();
@@ -76,7 +63,7 @@ public abstract class ItemConfig extends ExtendedConfig<ItemConfig> {
             if (getOreDictionaryId() != null) {
                 OreDictionary.registerOre(
                     getOreDictionaryId(),
-                    new ItemStack(this.getItemInstance(), 1, OreDictionary.WILDCARD_VALUE));
+                    new ItemStack(this.getInstance(), 1, OreDictionary.WILDCARD_VALUE));
             }
         }
     }

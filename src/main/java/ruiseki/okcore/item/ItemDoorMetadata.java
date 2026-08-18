@@ -11,8 +11,8 @@ import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.block.BlockDoorBase;
 import ruiseki.okcore.block.IBlockRarityProvider;
-import ruiseki.okcore.config.configurable.ConfigurableBlockDoor;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -26,11 +26,11 @@ public class ItemDoorMetadata extends ItemDoor {
     protected InformationProviderComponent informationProvider;
     protected IBlockRarityProvider rarityProvider = null;
 
-    protected final ConfigurableBlockDoor block;
+    protected final BlockDoorBase block;
 
     public ItemDoorMetadata(Block block) {
         super(block.getMaterial());
-        this.block = (ConfigurableBlockDoor) block;
+        this.block = (BlockDoorBase) block;
         this.block.item = this;
         informationProvider = new InformationProviderComponent(block);
         if (block instanceof IBlockRarityProvider) {

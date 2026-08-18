@@ -90,7 +90,7 @@ public class GeneralConfig extends DummyConfig {
      * Create a new instance.
      */
     public GeneralConfig() {
-        super(OKCore._instance, true, "general", null, GeneralConfig.class);
+        super(OKCore._instance, true, "general", null);
     }
 
     @Override

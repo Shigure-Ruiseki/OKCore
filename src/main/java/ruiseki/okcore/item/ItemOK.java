@@ -2,9 +2,8 @@ package ruiseki.okcore.item;
 
 import net.minecraft.item.Item;
 
-import ruiseki.okcore.capabilities.IItemCapability;
-
-public class ItemOK extends Item implements IItem, IItemCapability, IItemSharedTag {
+@Deprecated
+public class ItemOK extends ItemBase implements IItem {
 
     public ItemOK() {
         super();

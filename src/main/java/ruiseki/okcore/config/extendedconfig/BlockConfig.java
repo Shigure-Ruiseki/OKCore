@@ -1,5 +1,7 @@
 package ruiseki.okcore.config.extendedconfig;
 
+import java.util.function.Function;
+
 import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
@@ -16,19 +18,20 @@ import ruiseki.okcore.item.ItemBlockMetadata;
  * @author rubensworks
  * @see ExtendedConfig
  */
-public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
+public abstract class BlockConfig extends ExtendedConfig<BlockConfig, Block> {
 
     /**
      * Make a new instance.
      *
-     * @param mod     The mod instance.
-     * @param enabled If this should is enabled.
-     * @param namedId The unique name ID for the configurable.
-     * @param comment The comment to add in the config file for this configurable.
-     * @param element The class of this configurable.
+     * @param mod            The mod instance.
+     * @param enabled        If this is enabled.
+     * @param namedId        The unique name ID for the configurable.
+     * @param comment        The comment to add in the config file for this configurable.
+     * @param elementFactory Function factory to create the Block instance.
      */
-    public BlockConfig(ModBase mod, boolean enabled, String namedId, String comment, Class<? extends Block> element) {
-        super(mod, enabled, namedId, comment, element);
+    public BlockConfig(ModBase mod, boolean enabled, String namedId, String comment,
+        Function<BlockConfig, Block> elementFactory) {
+        super(mod, enabled, namedId, comment, elementFactory);
     }
 
     @Override
@@ -65,24 +68,6 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
     }
 
     /**
-     * If this blockState should enable Forge Multiparts and BC facades.
-     *
-     * @return If that should be enabled for this blockState.
-     */
-    public boolean isMultipartEnabled() {
-        return false;
-    }
-
-    /**
-     * Get the casted instance of the blockState.
-     *
-     * @return The blockState.
-     */
-    public Block getBlockInstance() {
-        return (Block) super.getSubInstance();
-    }
-
-    /**
      * Get the item corresponding to the block.
      * Will return Items.AIR rather than null if there isn't one.
      *
@@ -90,7 +75,7 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig> {
      */
     @Nonnull
     public Item getItemInstance() {
-        return Item.getItemFromBlock(getBlockInstance());
+        return Item.getItemFromBlock(getInstance());
     }
 
     /**

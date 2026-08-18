@@ -7,7 +7,7 @@ import ruiseki.okcore.init.IObjectReference;
 
 /**
  * Reference to an item.
- * 
+ *
  * @author rubensworks
  */
 public class ItemConfigReference implements IObjectReference<Item> {
@@ -31,6 +31,6 @@ public class ItemConfigReference implements IObjectReference<Item> {
                     "Something went wrong while materializating the reference to " + itemConfigClass.getName());
             }
         }
-        return itemConfig.getItemInstance();
+        return itemConfig.getInstance();
     }
 }

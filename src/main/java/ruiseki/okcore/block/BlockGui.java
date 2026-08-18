@@ -1,4 +1,4 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.block;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -7,10 +7,6 @@ import net.minecraft.world.World;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
@@ -20,9 +16,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  *
  */
-public abstract class ConfigurableBlockGui extends ConfigurableBlock implements IGuiContainerProvider {
-
-    private int guiID;
+public abstract class BlockGui extends BlockBase implements IGuiContainerProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
@@ -30,25 +24,11 @@ public abstract class ConfigurableBlockGui extends ConfigurableBlock implements 
     /**
      * Make a new block instance.
      *
-     * @param eConfig  Config for this blockState.
      * @param material Material of this blockState.
      */
-    public ConfigurableBlockGui(ExtendedConfig<BlockConfig> eConfig, Material material) {
-        super(eConfig, material);
+    public BlockGui(Material material) {
+        super(material);
         this.hasGui = true;
-        if (hasGui()) {
-            this.guiID = Helpers.getNewId(eConfig.getMod(), Helpers.IDType.GUI);
-        }
-    }
-
-    @Override
-    public int getGuiID() {
-        return this.guiID;
-    }
-
-    @Override
-    public ModBase getModGui() {
-        return getConfig().getMod();
     }
 
     @Override
@@ -62,7 +42,7 @@ public abstract class ConfigurableBlockGui extends ConfigurableBlock implements 
         }
 
         if (!world.isRemote && hasGui()) {
-            player.openGui(getConfig().getMod(), getGuiID(), world, x, y, z);
+            player.openGui(getModGui(), getGuiID(), world, x, y, z);
         }
 
         return true;

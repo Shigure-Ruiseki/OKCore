@@ -14,7 +14,7 @@ public class ItemFluidTestConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemFluidTestConfig() {
-        super(OKCore._instance, true, "fluid_test", null, ItemFluidTest.class);
+        super(OKCore._instance, true, "fluid_test", null, itemConfig -> new ItemFluidTest());
     }
 
 }

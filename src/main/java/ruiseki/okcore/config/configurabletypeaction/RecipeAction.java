@@ -13,7 +13,8 @@ import ruiseki.okcore.recipe.IRecipeSerializer;
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class RecipeAction<T extends IRecipeOK<?>> extends ConfigurableTypeAction<RecipeConfig<T>> {
+public class RecipeAction<T extends IRecipeOK<?>>
+    extends ConfigurableTypeAction<RecipeConfig<T>, IRecipeSerializer<T>> {
 
     /**
      * Registers a recipe serializer.
@@ -50,7 +51,7 @@ public class RecipeAction<T extends IRecipeOK<?>> extends ConfigurableTypeAction
         // Save the config inside the correct element
         eConfig.save();
 
-        IRecipeSerializer<T> serializer = (IRecipeSerializer<T>) eConfig.getSubInstance();
+        IRecipeSerializer<T> serializer = eConfig.getInstance();
         String key = eConfig.getMod()
             .getModId() + ":"
             + eConfig.getNamedId();

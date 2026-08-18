@@ -1,4 +1,4 @@
-package ruiseki.okcore.config.configurable;
+package ruiseki.okcore.block;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -22,19 +22,13 @@ import org.jetbrains.annotations.Nullable;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
-import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
-public class ConfigurableBlockContainer extends BlockContainer implements IConfigurableBlock {
-
-    @SuppressWarnings("rawtypes")
-    protected BlockConfig eConfig = null;
+public class BlockTile extends BlockContainer
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
 
     protected Random random;
     private Class<? extends TileEntityOK> tileEntity;
@@ -43,28 +37,17 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
 
     private boolean rotatable;
 
-    protected int pass = 0;
-    protected boolean isInventoryBlock = false;
-
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     /**
      * Make a new blockState instance.
      *
-     * @param eConfig    Config for this blockState.
      * @param material   Material of this blockState.
      * @param tileEntity The class of the tile entity this blockState holds.
      */
-    public ConfigurableBlockContainer(ExtendedConfig<BlockConfig> eConfig, Material material,
-        Class<? extends TileEntityOK> tileEntity) {
+    public BlockTile(Material material, Class<? extends TileEntityOK> tileEntity) {
         super(material);
-        this.setConfig(eConfig);
-        this.setBlockName(eConfig.getUnlocalizedName());
-        this.setBlockTextureName(
-            eConfig.getMod()
-                .getModId() + ":"
-                + eConfig.getNamedId());
         this.random = new Random();
         this.tileEntity = tileEntity;
         setHardness(5F);
@@ -78,11 +61,6 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
      */
     public Class<? extends TileEntity> getTileEntity() {
         return this.tileEntity;
-    }
-
-    @SuppressWarnings("rawtypes")
-    private void setConfig(ExtendedConfig eConfig) {
-        this.eConfig = (BlockConfig) eConfig;
     }
 
     @Override
@@ -114,8 +92,8 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
 
     /**
      * Sets a block to air, but also plays the sound and particles and can spawn drops.
-     * This includes calls to {@link ConfigurableBlockContainer#onPreBlockDestroyed(World, int, int, int)}
-     * and {@link ConfigurableBlockContainer#onPostBlockDestroyed(World, int, int, int)}.
+     * This includes calls to {@link BlockTile#onPreBlockDestroyed(World, int, int, int)}
+     * and {@link BlockTile#onPostBlockDestroyed(World, int, int, int)}.
      *
      * @param world     The world.
      * @param dropBlock If this should produce item drops.
@@ -287,26 +265,6 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
         this.rotatable = rotatable;
     }
 
-    /**
-     * Get the texture path of the GUI.
-     *
-     * @return The path of the GUI for this blockState.
-     */
-    public String getGuiTexture() {
-        return getGuiTexture("");
-    }
-
-    /**
-     * Get the texture path of the GUI.
-     *
-     * @param suffix Suffix to add to the path.
-     * @return The path of the GUI for this blockState.
-     */
-    public String getGuiTexture(String suffix) {
-        return getConfig().getMod()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + eConfig.getNamedId() + "_gui" + suffix + ".png";
-    }
-
     @Override
     public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z,
         @Nullable EntityPlayer player) {
@@ -316,10 +274,5 @@ public class ConfigurableBlockContainer extends BlockContainer implements IConfi
             itemStack.setTagCompound(teok.getNBTTagCompound());
         }
         return itemStack;
-    }
-
-    @Override
-    public final BlockContainerConfig getConfig() {
-        return (BlockContainerConfig) this.eConfig;
     }
 }

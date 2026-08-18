@@ -7,13 +7,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
+import ruiseki.okcore.block.BlockTile;
+
 /**
  * An extended {@link ItemBlockMetadata} that will add the NBT data that is stored inside
  * the item to the placed {@link TileEntity} for the blockState.
- * Subinstances of {@link ruiseki.okcore.config.configurable.ConfigurableBlockContainer} will perform the inverse
+ * Subinstances of {@link BlockTile} will perform the inverse
  * operation, being
  * that broken blocks will save the NBT data inside the dropped {@link ItemBlock}.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -21,7 +23,7 @@ public class ItemBlockNBT extends ItemBlockMetadata {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param block The blockState instance.
      */
     public ItemBlockNBT(Block block) {
@@ -48,7 +50,7 @@ public class ItemBlockNBT extends ItemBlockMetadata {
 
     /**
      * Read additional info about the item into the tile.
-     * 
+     *
      * @param tile      The tile that is being created.
      * @param itemStack The item that is placed.
      */

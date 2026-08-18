@@ -1,5 +1,6 @@
 package ruiseki.okcore.config.configurabletypeaction;
 
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -7,11 +8,11 @@ import ruiseki.okcore.config.extendedconfig.BiomeConfig;
 
 /**
  * The action used for {@link BiomeConfig}.
- * 
+ *
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class BiomeAction extends ConfigurableTypeAction<BiomeConfig> {
+public class BiomeAction extends ConfigurableTypeAction<BiomeConfig, BiomeGenBase> {
 
     @Override
     public void preRun(BiomeConfig eConfig, Configuration config, boolean startup) {

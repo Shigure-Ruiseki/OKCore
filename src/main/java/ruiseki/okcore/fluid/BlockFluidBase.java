@@ -95,6 +95,7 @@ public abstract class BlockFluidBase extends BlockFluidClassic
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(int side, int meta) {
-        return side <= 1 ? this.fluid.getStillIcon() : this.fluid.getFlowingIcon();
+        IIcon icon = side <= 1 ? this.fluid.getStillIcon() : this.fluid.getFlowingIcon();
+        return icon != null ? icon : super.getIcon(side, meta);
     }
 }

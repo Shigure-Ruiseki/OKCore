@@ -13,17 +13,6 @@ import ruiseki.okcore.item.ItemBase;
 
 public class ItemGasTest extends ItemBase {
 
-    private static ItemGasTest _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemGasTest getInstance() {
-        return _instance;
-    }
-
     public ItemGasTest() {
         super();
         setTextureName("stick");

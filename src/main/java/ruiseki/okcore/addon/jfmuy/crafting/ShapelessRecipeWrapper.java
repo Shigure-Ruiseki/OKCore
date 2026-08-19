@@ -1,17 +1,19 @@
 package ruiseki.okcore.addon.jfmuy.crafting;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+
 import org.jetbrains.annotations.Nullable;
+
 import ruiseki.jfmuy.api.ingredients.IIngredients;
 import ruiseki.jfmuy.api.ingredients.VanillaTypes;
 import ruiseki.jfmuy.api.recipe.wrapper.ICraftingRecipeWrapper;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class ShapelessRecipeWrapper implements ICraftingRecipeWrapper {
 

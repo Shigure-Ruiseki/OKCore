@@ -29,12 +29,12 @@ public class RecipeCraftingShapedCustomOutput extends ShapedRecipe {
     }
 
     @Override
-    public ItemStack getCraftingResult(InventoryCrafting inv) {
+    public ItemStack assemble(InventoryCrafting inv) {
         RecipeSerializerCraftingShapedCustomOutput.IOutputTransformer outputTransformer = serializer
             .getOutputTransformer();
         if (outputTransformer != null) {
-            return outputTransformer.transform(inv, super.getRecipeOutput());
+            return outputTransformer.transform(inv, super.getResultItem());
         }
-        return super.getRecipeOutput().copy();
+        return super.getResultItem().copy();
     }
 }

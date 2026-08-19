@@ -75,8 +75,8 @@ public abstract class FluidConfig extends ExtendedConfig<FluidConfig, Fluid> {
     @SideOnly(Side.CLIENT)
     public void onTextureStitch(TextureStitchEvent.Pre event) {
         if (event.map.getTextureType() == 0) {
-            IIcon still = event.map.registerIcon(getMod().getModId() + getNamedId() + "_still");
-            IIcon flowing = event.map.registerIcon(getMod().getModId() + getNamedId() + "_flow");
+            IIcon still = event.map.registerIcon(getMod().getModId() + ":" + getNamedId() + "_still");
+            IIcon flowing = event.map.registerIcon(getMod().getModId() + ":" + getNamedId() + "_flow");
             if (getInstance() != null) {
                 getInstance().setIcons(still, flowing);
             }

@@ -4,13 +4,18 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.GuiHandler;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
 
 /**
  * Configurable item that can show a GUI on right clicking.
@@ -18,13 +23,17 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  *
  */
-public abstract class ItemGui extends ItemBase implements IGuiContainerProvider {
+public abstract class ItemGui extends ItemBase implements IGuiContainerProviderConfigurable {
+
+    private final ExtendedConfig<ItemConfig, Item> eConfig;
+    private final int guiID;
 
     /**
      * Make a new item instance.
      */
-    protected ItemGui() {
-        super();
+    protected ItemGui(ExtendedConfig<ItemConfig, Item> eConfig) {
+        this.eConfig = eConfig;
+        this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
     }
 
     @Override
@@ -33,6 +42,21 @@ public abstract class ItemGui extends ItemBase implements IGuiContainerProvider 
     @Override
     @SideOnly(Side.CLIENT)
     public abstract Class<? extends GuiScreen> getGui();
+
+    @Override
+    public ExtendedConfig<?, ?> getConfig() {
+        return eConfig;
+    }
+
+    @Override
+    public ModBase getModGui() {
+        return eConfig.getMod();
+    }
+
+    @Override
+    public int getGuiID() {
+        return guiID;
+    }
 
     @Override
     public boolean onDroppedByPlayer(ItemStack itemstack, EntityPlayer player) {

@@ -1,5 +1,6 @@
 package ruiseki.okcore.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,7 +11,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
 import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -21,10 +26,13 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  * @author rubensworks
  *
  */
-public abstract class BlockTileGui extends BlockTile implements IGuiContainerProvider {
+public abstract class BlockTileGui extends BlockTile implements IGuiContainerProviderConfigurable {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
+
+    private final ExtendedConfig<BlockConfig, Block> eConfig;
+    private final int guiID;
 
     /**
      * Make a new blockState instance.
@@ -32,9 +40,27 @@ public abstract class BlockTileGui extends BlockTile implements IGuiContainerPro
      * @param material   Material of this blockState.
      * @param tileEntity The class of the tile entity this blockState holds.
      */
-    public BlockTileGui(Material material, Class<? extends TileEntityOK> tileEntity) {
+    public BlockTileGui(ExtendedConfig<BlockConfig, Block> eConfig, Material material,
+        Class<? extends TileEntityOK> tileEntity) {
         super(material, tileEntity);
+        this.eConfig = eConfig;
+        this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
         this.hasGui = true;
+    }
+
+    @Override
+    public ExtendedConfig<BlockConfig, Block> getConfig() {
+        return eConfig;
+    }
+
+    @Override
+    public ModBase getModGui() {
+        return eConfig.getMod();
+    }
+
+    @Override
+    public int getGuiID() {
+        return guiID;
     }
 
     @Override

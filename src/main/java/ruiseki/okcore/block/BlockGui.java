@@ -1,5 +1,6 @@
 package ruiseki.okcore.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -7,7 +8,11 @@ import net.minecraft.world.World;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
 
 /**
  * Block without a tile entity with a GUI that can hold ExtendedConfigs.
@@ -16,19 +21,39 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  *
  */
-public abstract class BlockGui extends BlockBase implements IGuiContainerProvider {
+public abstract class BlockGui extends BlockBase implements IGuiContainerProviderConfigurable {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
+
+    private final ExtendedConfig<BlockConfig, Block> eConfig;
+    private final int guiID;
 
     /**
      * Make a new block instance.
      *
      * @param material Material of this blockState.
      */
-    public BlockGui(Material material) {
+    public BlockGui(ExtendedConfig<BlockConfig, Block> eConfig, Material material) {
         super(material);
+        this.eConfig = eConfig;
+        this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
         this.hasGui = true;
+    }
+
+    @Override
+    public ExtendedConfig<BlockConfig, Block> getConfig() {
+        return eConfig;
+    }
+
+    @Override
+    public ModBase getModGui() {
+        return eConfig.getMod();
+    }
+
+    @Override
+    public int getGuiID() {
+        return guiID;
     }
 
     @Override

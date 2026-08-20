@@ -53,12 +53,7 @@ public class InputEventHandler {
 
                             if (selectedTabIndex == 11) {
                                 if (slot.inventory instanceof InventoryPlayer) {
-                                    int invIndex = slot.getSlotIndex();
-                                    if (invIndex < 9) {
-                                        sendSlotNumber = invIndex + 36;
-                                    } else {
-                                        sendSlotNumber = invIndex;
-                                    }
+                                    sendSlotNumber = slot.getSlotIndex();
                                 } else {
                                     sendSlotNumber = -1;
                                 }

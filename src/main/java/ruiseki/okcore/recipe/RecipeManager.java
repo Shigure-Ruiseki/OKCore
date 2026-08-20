@@ -109,9 +109,6 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
         this.recipes = ImmutableMap.copyOf(builtMap);
         this.byName = builder.build();
 
-        RecipeRegistry.syncMCCraftingManager();
-        RecipeRegistry.syncMCFurnaceRecipes();
-
         OKCore.okLog(Level.INFO, "Loaded {} recipes", this.byName.size());
     }
 

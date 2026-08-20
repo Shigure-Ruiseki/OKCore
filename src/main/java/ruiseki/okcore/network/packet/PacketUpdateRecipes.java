@@ -68,7 +68,10 @@ public class PacketUpdateRecipes extends PacketCodec {
     }
 
     @Override
-    public void actionServer(World world, EntityPlayerMP player) {}
+    public void actionServer(World world, EntityPlayerMP player) {
+        RecipeRegistry.syncMCCraftingManager();
+        RecipeRegistry.syncMCFurnaceRecipes();
+    }
 
     public static IRecipeOK<?> fromNetwork(ExtendedBuffer buffer) throws IOException {
         ResourceLocation serializerKey = buffer.readResourceLocation();

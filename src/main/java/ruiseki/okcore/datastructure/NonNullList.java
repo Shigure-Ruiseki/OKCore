@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,19 +17,20 @@ public class NonNullList<E> extends AbstractList<E> {
         return new NonNullList<E>();
     }
 
-    public static <E> NonNullList<E> withSize(int size, E fill) {
-        Validate.notNull(fill);
+    @SuppressWarnings("unchecked")
+    public static <E> NonNullList<E> withSize(int size, @Nullable E fill) {
         Object[] aobject = new Object[size];
-        Arrays.fill(aobject, fill);
+        if (fill != null) Arrays.fill(aobject, fill);
         return new NonNullList<E>(Arrays.asList((E[]) aobject), fill);
     }
 
+    @SafeVarargs
     public static <E> NonNullList<E> from(E defaultElementIn, E... elements) {
         return new NonNullList<E>(Arrays.asList(elements), defaultElementIn);
     }
 
     protected NonNullList() {
-        this(new ArrayList(), null);
+        this(new ArrayList<>(), null);
     }
 
     protected NonNullList(List<E> delegateIn, @Nullable E listType) {
@@ -39,28 +39,32 @@ public class NonNullList<E> extends AbstractList<E> {
     }
 
     @NotNull
-    public E get(int p_get_1_) {
-        return this.delegate.get(p_get_1_);
+    @Override
+    public E get(int index) {
+        return this.delegate.get(index);
     }
 
-    public E set(int p_set_1_, E p_set_2_) {
-        Validate.notNull(p_set_2_);
-        return this.delegate.set(p_set_1_, p_set_2_);
+    @Override
+    public E set(int index, E element) {
+        return this.delegate.set(index, element);
     }
 
-    public void add(int p_add_1_, E p_add_2_) {
-        Validate.notNull(p_add_2_);
-        this.delegate.add(p_add_1_, p_add_2_);
+    @Override
+    public void add(int index, E element) {
+        this.delegate.add(index, element);
     }
 
-    public E remove(int p_remove_1_) {
-        return this.delegate.remove(p_remove_1_);
+    @Override
+    public E remove(int index) {
+        return this.delegate.remove(index);
     }
 
+    @Override
     public int size() {
         return this.delegate.size();
     }
 
+    @Override
     public void clear() {
         if (this.defaultElement == null) {
             super.clear();

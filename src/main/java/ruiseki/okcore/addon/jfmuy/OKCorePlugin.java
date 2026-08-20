@@ -6,8 +6,8 @@ import ruiseki.jfmuy.api.JFMUYPlugin;
 import ruiseki.jfmuy.api.recipe.VanillaRecipeCategoryUid;
 import ruiseki.okcore.addon.jfmuy.crafting.ShapedRecipeWrapper;
 import ruiseki.okcore.addon.jfmuy.crafting.ShapelessRecipeWrapper;
-import ruiseki.okcore.recipe.type.RecipeCraftingShapedCustomOutput;
-import ruiseki.okcore.recipe.type.RecipeCraftingShapelessCustomOutput;
+import ruiseki.okcore.addon.jfmuy.crafting.SpecialRecipeWrapper;
+import ruiseki.okcore.recipe.type.crafting.SpecialRecipe;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
 
@@ -18,13 +18,6 @@ public class OKCorePlugin implements IModPlugin {
     public void register(IModRegistry registry) {
         registry.handleRecipes(ShapelessRecipe.class, ShapelessRecipeWrapper::new, VanillaRecipeCategoryUid.CRAFTING);
         registry.handleRecipes(ShapedRecipe.class, ShapedRecipeWrapper::new, VanillaRecipeCategoryUid.CRAFTING);
-        registry.handleRecipes(
-            RecipeCraftingShapelessCustomOutput.class,
-            ShapelessRecipeWrapper::new,
-            VanillaRecipeCategoryUid.CRAFTING);
-        registry.handleRecipes(
-            RecipeCraftingShapedCustomOutput.class,
-            ShapedRecipeWrapper::new,
-            VanillaRecipeCategoryUid.CRAFTING);
+        registry.handleRecipes(SpecialRecipe.class, SpecialRecipeWrapper::new, VanillaRecipeCategoryUid.CRAFTING);
     }
 }

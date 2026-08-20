@@ -47,22 +47,35 @@ public class InputEventHandler {
                 if (stack.getItem() instanceof IItemToggle toggle) {
                     if (toggle.canMouseClicked(stack, button) && toggle.isModifierKeyDown(stack)) {
                         int sendSlotNumber = slot.slotNumber;
-                        if (gui instanceof GuiContainerCreative) {
-                            if (slot.inventory instanceof InventoryPlayer) {
-                                sendSlotNumber = slot.getSlotIndex();
+
+                        if (gui instanceof GuiContainerCreative creativeGui) {
+                            int selectedTabIndex = creativeGui.func_147056_g();
+
+                            if (selectedTabIndex == 11) {
+                                if (slot.inventory instanceof InventoryPlayer) {
+                                    sendSlotNumber = slot.getSlotIndex();
+                                } else {
+                                    sendSlotNumber = -1;
+                                }
                             } else {
-                                sendSlotNumber = -1;
+                                if (slot.slotNumber >= 45 && slot.slotNumber <= 53) {
+                                    sendSlotNumber = slot.slotNumber - 45 + 36;
+                                } else {
+                                    sendSlotNumber = -1;
+                                }
                             }
                         }
-                        OKCore._instance.getPacketHandler()
-                            .sendToServer(new PacketItemToggle(sendSlotNumber, button));
-                        if (gui instanceof IGuiInputHandle handle) {
-                            handle.setMouseHandled(true);
+
+                        if (sendSlotNumber != -1) {
+                            OKCore._instance.getPacketHandler()
+                                .sendToServer(new PacketItemToggle(sendSlotNumber, button));
+
+                            if (gui instanceof IGuiInputHandle handle) {
+                                handle.setMouseHandled(true);
+                            }
+
+                            event.setCanceled(true);
                         }
-
-                        event.setCanceled(true);
-
-                        mc.thePlayer.playSound("random.click", 0.3F, 0.5F);
                     }
                 }
             }

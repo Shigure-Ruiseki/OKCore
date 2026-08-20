@@ -48,8 +48,8 @@ public class PacketItemToggle extends PacketCodec {
             ItemStack stack = slotObject.getStack();
 
             if (stack != null && stack.getItem() instanceof IItemToggle toggle) {
-
                 toggle.toggle(player, stack, button);
+                toggle.playSound(player, stack, button);
             }
         }
     }

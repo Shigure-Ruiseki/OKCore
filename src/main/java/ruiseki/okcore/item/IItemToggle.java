@@ -39,4 +39,8 @@ public interface IItemToggle {
     default boolean isModifierKeyDown(ItemStack stack) {
         return KeyBoardHelpers.isShiftKeyDown();
     }
+
+    default void playSound(EntityPlayer player, ItemStack stack, int button) {
+        player.worldObj.playSoundAtEntity(player, "random.click", 0.3F, 0.5F);
+    }
 }

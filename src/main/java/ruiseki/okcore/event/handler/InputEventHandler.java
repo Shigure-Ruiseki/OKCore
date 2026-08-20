@@ -2,6 +2,8 @@ package ruiseki.okcore.event.handler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.inventory.GuiContainerCreative;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
@@ -47,8 +49,16 @@ public class InputEventHandler {
                     boolean shiftOK = !toggle.needsShiftClick(stack) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 
                     if (toggle.canMouseClicked(stack, button) && shiftOK) {
+                        int sendSlotNumber = slot.slotNumber;
+                        if (gui instanceof GuiContainerCreative) {
+                            if (slot.inventory instanceof InventoryPlayer) {
+                                sendSlotNumber = slot.getSlotIndex();
+                            } else {
+                                sendSlotNumber = -1;
+                            }
+                        }
                         OKCore._instance.getPacketHandler()
-                            .sendToServer(new PacketItemToggle(slot.slotNumber));
+                            .sendToServer(new PacketItemToggle(sendSlotNumber));
                         if (gui instanceof IGuiInputHandle handle) {
                             handle.setMouseHandled(true);
                         }

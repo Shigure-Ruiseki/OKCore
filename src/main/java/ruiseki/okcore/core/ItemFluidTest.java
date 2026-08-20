@@ -61,7 +61,7 @@ public class ItemFluidTest extends ItemBase implements IItemToggle {
     }
 
     @Override
-    public void toggle(EntityPlayer player, ItemStack slotStack) {
+    public void toggle(EntityPlayerMP player, ItemStack slotStack, int button) {
         ItemStack cursorStack = player.inventory.getItemStack();
         if (cursorStack == null) return;
 
@@ -104,7 +104,7 @@ public class ItemFluidTest extends ItemBase implements IItemToggle {
     }
 
     @Override
-    public boolean needsShiftClick(ItemStack stack) {
+    public boolean isModifierKeyDown(ItemStack stack) {
         return false;
     }
 

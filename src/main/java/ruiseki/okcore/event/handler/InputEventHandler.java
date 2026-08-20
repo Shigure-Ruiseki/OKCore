@@ -7,7 +7,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
@@ -46,9 +45,7 @@ public class InputEventHandler {
                 ItemStack stack = slot.getStack();
 
                 if (stack.getItem() instanceof IItemToggle toggle) {
-                    boolean shiftOK = !toggle.needsShiftClick(stack) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
-
-                    if (toggle.canMouseClicked(stack, button) && shiftOK) {
+                    if (toggle.canMouseClicked(stack, button) && toggle.isModifierKeyDown(stack)) {
                         int sendSlotNumber = slot.slotNumber;
                         if (gui instanceof GuiContainerCreative) {
                             if (slot.inventory instanceof InventoryPlayer) {
@@ -58,7 +55,7 @@ public class InputEventHandler {
                             }
                         }
                         OKCore._instance.getPacketHandler()
-                            .sendToServer(new PacketItemToggle(sendSlotNumber));
+                            .sendToServer(new PacketItemToggle(sendSlotNumber, button));
                         if (gui instanceof IGuiInputHandle handle) {
                             handle.setMouseHandled(true);
                         }

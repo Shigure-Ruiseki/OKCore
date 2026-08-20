@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -71,7 +72,7 @@ public class ItemInventoryTest extends ItemBase implements IItemCooldown, IItemT
     }
 
     @Override
-    public void toggle(EntityPlayer player, ItemStack held) {
+    public void toggle(EntityPlayerMP player, ItemStack held, int button) {
         boolean wasOn = isOn(held);
         boolean newState = !wasOn;
 

@@ -15,11 +15,14 @@ public class PacketItemToggle extends PacketCodec {
 
     @CodecField
     private int slot;
+    @CodecField
+    private int button;
 
     public PacketItemToggle() {}
 
-    public PacketItemToggle(int slot) {
+    public PacketItemToggle(int slot, int button) {
         this.slot = slot;
+        this.button = button;
     }
 
     @Override
@@ -46,7 +49,7 @@ public class PacketItemToggle extends PacketCodec {
 
             if (stack != null && stack.getItem() instanceof IItemToggle toggle) {
 
-                toggle.toggle(player, stack);
+                toggle.toggle(player, stack, button);
             }
         }
     }

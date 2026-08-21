@@ -181,34 +181,32 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public static Ingredient of(Object input) {
-        if (input == null) return EMPTY;
-
-        if (input instanceof Ingredient) {
+        if (input == null) {
+            return EMPTY;
+        } else if (input instanceof Ingredient) {
             return (Ingredient) input;
-        }
-        if (input instanceof ItemStack) {
-            return of(input);
-        }
-        if (input instanceof Item) {
-            return of(input);
-        }
-        if (input instanceof String string) {
-            return fromValues(Stream.of(new OreList(string)));
-        }
-        if (input instanceof List<?>list) {
-            if (list.isEmpty()) return EMPTY;
-            Stream<ItemStack> stream = list.stream()
-                .filter(ItemStack.class::isInstance)
-                .map(ItemStack.class::cast);
-            return of(stream);
-        }
-        if (input instanceof ItemStack[]) {
+        } else if (input instanceof ItemStack) {
+            return of(new ItemStack[] { (ItemStack) input });
+        } else if (input instanceof Item) {
+            return of(new Item[] { (Item) input });
+        } else if (input instanceof String) {
+            return fromValues(Stream.of(new OreList((String) input)));
+        } else if (input instanceof List<?>list) {
+            if (list.isEmpty()) {
+                return EMPTY;
+            } else {
+                Stream<ItemStack> stream = list.stream()
+                    .filter(ItemStack.class::isInstance)
+                    .map(ItemStack.class::cast);
+                return of(stream);
+            }
+        } else if (input instanceof ItemStack[]) {
             return of((ItemStack[]) input);
+        } else {
+            throw new IllegalArgumentException(
+                "Cannot convert object of type " + input.getClass()
+                    .getName() + " to Ingredient");
         }
-
-        throw new IllegalArgumentException(
-            "Cannot convert object of type " + input.getClass()
-                .getName() + " to Ingredient");
     }
 
     public static Ingredient of(Item... items) {

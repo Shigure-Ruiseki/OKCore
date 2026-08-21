@@ -22,4 +22,9 @@ public abstract class SpecialRecipe implements ICraftingRecipe {
     public ItemStack getResultItem() {
         return null;
     }
+
+    @Override
+    public int getRecipeSize() {
+        return getIngredients().size();
+    }
 }

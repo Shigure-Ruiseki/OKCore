@@ -59,7 +59,7 @@ public abstract class FluidConfig extends ExtendedConfig<FluidConfig, Fluid> {
      * @return The icon location.
      */
     public ResourceLocation getIconLocationStill() {
-        return new ResourceLocation(getMod().getModId(), "blocks/" + getNamedId() + "_still");
+        return new ResourceLocation(getMod().getModId(), getNamedId() + "_still");
     }
 
     /**
@@ -68,7 +68,7 @@ public abstract class FluidConfig extends ExtendedConfig<FluidConfig, Fluid> {
      * @return The icon location.
      */
     public ResourceLocation getIconLocationFlow() {
-        return new ResourceLocation(getMod().getModId(), "blocks/" + getNamedId() + "_flow");
+        return new ResourceLocation(getMod().getModId(), getNamedId() + "_flow");
     }
 
     @SubscribeEvent
@@ -77,7 +77,9 @@ public abstract class FluidConfig extends ExtendedConfig<FluidConfig, Fluid> {
         if (event.map.getTextureType() == 0) {
             IIcon still = event.map.registerIcon(getIconLocationStill().toString());
             IIcon flowing = event.map.registerIcon(getIconLocationFlow().toString());
-            getInstance().setIcons(still, flowing);
+            if (getInstance() != null) {
+                getInstance().setIcons(still, flowing);
+            }
         }
     }
 }

@@ -272,7 +272,7 @@ public class RecipeRegistry {
 
         if (targetRecipes == null || targetRecipes.isEmpty()) return;
         for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe) {
+            if (recipe instanceof ICraftingRecipe) {
                 mcRecipeList.add(recipe);
             }
         }

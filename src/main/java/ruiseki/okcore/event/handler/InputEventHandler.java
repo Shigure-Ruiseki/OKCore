@@ -2,10 +2,11 @@ package ruiseki.okcore.event.handler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.inventory.GuiContainerCreative;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
@@ -44,18 +45,37 @@ public class InputEventHandler {
                 ItemStack stack = slot.getStack();
 
                 if (stack.getItem() instanceof IItemToggle toggle) {
-                    boolean shiftOK = !toggle.needsShiftClick(stack) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
+                    if (toggle.canMouseClicked(stack, button) && toggle.isModifierKeyDown(stack)) {
+                        int sendSlotNumber = slot.slotNumber;
 
-                    if (toggle.canMouseClicked(stack, button) && shiftOK) {
-                        OKCore._instance.getPacketHandler()
-                            .sendToServer(new PacketItemToggle(slot.slotNumber));
-                        if (gui instanceof IGuiInputHandle handle) {
-                            handle.setMouseHandled(true);
+                        if (gui instanceof GuiContainerCreative creativeGui) {
+                            int selectedTabIndex = creativeGui.func_147056_g();
+
+                            if (selectedTabIndex == 11) {
+                                if (slot.inventory instanceof InventoryPlayer) {
+                                    sendSlotNumber = slot.getSlotIndex();
+                                } else {
+                                    sendSlotNumber = -1;
+                                }
+                            } else {
+                                if (slot.slotNumber >= 45 && slot.slotNumber <= 53) {
+                                    sendSlotNumber = slot.slotNumber - 45 + 36;
+                                } else {
+                                    sendSlotNumber = -1;
+                                }
+                            }
                         }
 
-                        event.setCanceled(true);
+                        if (sendSlotNumber != -1) {
+                            OKCore._instance.getPacketHandler()
+                                .sendToServer(new PacketItemToggle(sendSlotNumber, button));
 
-                        mc.thePlayer.playSound("random.click", 0.3F, 0.5F);
+                            if (gui instanceof IGuiInputHandle handle) {
+                                handle.setMouseHandled(true);
+                            }
+
+                            event.setCanceled(true);
+                        }
                     }
                 }
             }

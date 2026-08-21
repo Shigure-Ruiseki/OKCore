@@ -1,14 +1,22 @@
 package ruiseki.okcore.item;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+
+import ruiseki.okcore.helper.KeyBoardHelpers;
 
 public interface IItemToggle {
 
     String TOGGLE_TAG = "on_off";
 
-    void toggle(EntityPlayer player, ItemStack slotStack);
+    default void toggle(EntityPlayerMP player, ItemStack slotStack, int button) {
+        toggle(player, slotStack);
+    }
+
+    @Deprecated
+    default void toggle(EntityPlayer player, ItemStack slotStack) {}
 
     default boolean isOn(ItemStack held) {
         if (held == null || !held.hasTagCompound()) return false;
@@ -28,7 +36,11 @@ public interface IItemToggle {
         return button == 1;
     }
 
-    default boolean needsShiftClick(ItemStack stack) {
-        return true;
+    default boolean isModifierKeyDown(ItemStack stack) {
+        return KeyBoardHelpers.isShiftKeyDown();
+    }
+
+    default void playSound(EntityPlayer player, ItemStack stack, int button) {
+        player.worldObj.playSoundAtEntity(player, "random.click", 0.3F, 0.5F);
     }
 }

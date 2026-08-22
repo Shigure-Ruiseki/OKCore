@@ -48,7 +48,7 @@ dependencies {
     compileOnlyApi("org.joml:joml:1.10.8") { transitive = false } // MIT
     compileOnlyApi("com.mojang:brigadier:1.0.18") // MIT
 
-    implementation("com.github.GTNewHorizons:GTNHLib:0.11.37:dev")
+    implementation("com.github.GTNewHorizons:GTNHLib:0.11.41:dev")
     implementation("com.github.GTNewHorizons:ModularUI2:2.3.85-1.7.10:dev")
 
     devOnlyNonPublishable('com.github.Shigure-Ruiseki:JFMUY:26.08.16.0:dev') { transitive = false }

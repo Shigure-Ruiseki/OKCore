@@ -7,6 +7,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.event.handler.CooldownEventHandler;
 import ruiseki.okcore.event.handler.DataEventHandler;
 import ruiseki.okcore.event.handler.InputEventHandler;
+import ruiseki.okcore.event.handler.RecipeRemainingItemsHandler;
 import ruiseki.okcore.event.handler.TileEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
@@ -52,6 +53,8 @@ public class CommonProxy extends CommonProxyComponent {
         MinecraftForge.EVENT_BUS.register(CooldownEventHandler.INSTANCE);
 
         MinecraftForge.EVENT_BUS.register(InputEventHandler.INSTANCE);
+
+        MinecraftForge.EVENT_BUS.register(RecipeRemainingItemsHandler.INSTANCE);
     }
 
     @Override

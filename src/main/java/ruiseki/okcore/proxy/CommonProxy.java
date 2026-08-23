@@ -54,7 +54,9 @@ public class CommonProxy extends CommonProxyComponent {
 
         MinecraftForge.EVENT_BUS.register(InputEventHandler.INSTANCE);
 
-        MinecraftForge.EVENT_BUS.register(RecipeRemainingItemsHandler.INSTANCE);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(RecipeRemainingItemsHandler.INSTANCE);
     }
 
     @Override

@@ -39,4 +39,8 @@ public class SlotExtended extends SlotBackground {
     public boolean canTakeStack(EntityPlayer playerIn) {
         return super.canTakeStack(playerIn) && !isPhantom();
     }
+
+    public int getItemStackLimit(ItemStack stack) {
+        return this.getSlotStackLimit();
+    }
 }

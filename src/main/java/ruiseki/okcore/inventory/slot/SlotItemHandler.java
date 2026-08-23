@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
-public class SlotItemHandler extends SlotBackground {
+public class SlotItemHandler extends SlotExtended {
 
     private static final IInventory emptyInventory = new InventoryBasic("[Null]", true, 0);
     private final IItemHandler itemHandler;
@@ -62,6 +62,7 @@ public class SlotItemHandler extends SlotBackground {
         return itemHandler.getSlotLimit(index);
     }
 
+    @Override
     public int getItemStackLimit(ItemStack stack) {
         ItemStack maxAdd = stack.copy();
         int maxInput = stack.getMaxStackSize();

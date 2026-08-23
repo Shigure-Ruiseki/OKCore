@@ -374,7 +374,7 @@ public class Ingredient implements Predicate<ItemStack> {
         @Override
         public JsonObject serialize() {
             JsonObject jsonobject = new JsonObject();
-            jsonobject.addProperty("tag", this.ore);
+            jsonobject.addProperty("ore", this.ore);
             return jsonobject;
         }
     }

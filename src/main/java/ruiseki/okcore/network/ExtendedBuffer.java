@@ -185,7 +185,7 @@ public class ExtendedBuffer extends PacketBuffer {
 
     /**
      * Writes the BlockState to this buffer as a String using its toString() format.
-     * 
+     *
      * @param state The BlockState to write.
      */
     public void writeBlockState(BlockState state) {

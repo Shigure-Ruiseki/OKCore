@@ -10,6 +10,9 @@ public enum Mixins implements IMixins {
     GENERIC_EVENT(new MixinBuilder("Hook Generic Event").addCommonMixins("event.generic.MixinASMEventHandler")
         .setPhase(Phase.EARLY)),
 
+    WORLD_MIXIN(new MixinBuilder("Add Some World Mixins").addCommonMixins("MixinWorld")
+        .setPhase(Phase.EARLY)),
+
     DATA_EVENT(new MixinBuilder("Hook Data Event").addCommonMixins("event.data.MixinServerConfigurationManager")
         .setPhase(Phase.EARLY)),
 

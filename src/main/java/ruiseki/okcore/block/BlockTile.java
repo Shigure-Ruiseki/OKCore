@@ -8,7 +8,6 @@ import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -156,7 +155,7 @@ public class BlockTile extends BlockContainer
     @Override
     public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
         onPreBlockDestroyed(world, x, y, z, player);
-        return world.setBlock(x, y, z, Blocks.air, 0, world.isRemote ? 11 : 3);
+        return world.setBlockToAir(x, y, z);
     }
 
     @Override

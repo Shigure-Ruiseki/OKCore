@@ -2,17 +2,22 @@ package ruiseki.okcore.inventory.slot;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 
 import lombok.Getter;
 import lombok.Setter;
+import ruiseki.okcore.client.gui.ISlotBackground;
 
 /**
  * A slot with some fancy and fun extra features.
  *
  * @author rubensworks
  */
-public class SlotExtended extends SlotBackground {
+public class SlotExtended extends Slot implements ISlotBackground {
+
+    protected ResourceLocation backgroundTexture;
 
     @Getter
     @Setter
@@ -42,5 +47,15 @@ public class SlotExtended extends SlotBackground {
 
     public int getItemStackLimit(ItemStack stack) {
         return this.getSlotStackLimit();
+    }
+
+    @Override
+    public ResourceLocation getBackgroundTexture() {
+        return backgroundTexture;
+    }
+
+    @Override
+    public void setBackgroundTexture(ResourceLocation backgroundTexture) {
+        this.backgroundTexture = backgroundTexture;
     }
 }

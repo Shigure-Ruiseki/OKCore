@@ -20,9 +20,9 @@ public abstract class MixinWorld {
     public abstract void notifyBlocksOfNeighborChange(int x, int y, int z, Block blockIn);
 
     @Inject(method = "markAndNotifyBlock", at = @At("TAIL"), remap = false)
-    private void addElseIfLogic(int x, int y, int z, Chunk chunk, Block oldBlock, Block newBlock, int flags,
+    private void injectObserverUpdateLogic(int x, int y, int z, Chunk chunk, Block oldBlock, Block newBlock, int flags,
         CallbackInfo ci) {
-        if (!this.isRemote && (flags & 16) == 0) {
+        if (!this.isRemote && (flags & 1) == 0 && (flags & 16) == 0) {
             this.notifyBlocksOfNeighborChange(x, y, z, newBlock);
         }
     }

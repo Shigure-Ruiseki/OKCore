@@ -155,7 +155,6 @@ public class BlockTile extends BlockContainer
     @Override
     public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
         onPreBlockDestroyed(world, x, y, z, player);
-        if (willHarvest) return true;
         return super.removedByPlayer(world, player, x, y, z, willHarvest);
     }
 

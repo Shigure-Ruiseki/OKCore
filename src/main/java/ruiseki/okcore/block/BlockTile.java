@@ -166,12 +166,6 @@ public class BlockTile extends BlockContainer
     }
 
     @Override
-    public void harvestBlock(World world, EntityPlayer player, int x, int y, int z, int meta) {
-        super.harvestBlock(world, player, x, y, z, meta);
-        world.setBlockToAir(x, y, z);
-    }
-
-    @Override
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
         if (entity != null) {
             TileEntityOK tile = TileHelpers.getSafeTile(world, x, y, z, TileEntityOK.class);

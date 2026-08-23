@@ -7,6 +7,10 @@ import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 public class EnergyStorage extends EnergyStorageDefault implements INBTSerializable {
 
+    public EnergyStorage() {
+        this(0);
+    }
+
     public EnergyStorage(int capacity) {
         this(capacity, capacity, capacity, 0);
     }

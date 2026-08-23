@@ -130,7 +130,7 @@ public class InventoryHelpers {
 
     /**
      * Get the item stack from the given index in the player inventory.
-     * 
+     *
      * @param player    The player.
      * @param itemIndex The index of the item in the inventory.
      * @return The item stack.
@@ -183,7 +183,7 @@ public class InventoryHelpers {
      * Core Method: Drop ItemStacks from a specific slot range
      */
     public static void dropItems(World world, IItemHandler handler, BlockPos pos, int startingSlot, int maxSlot) {
-        if (handler == null) return;
+        if (handler == null || world.isRemote) return;
 
         int endSlot = Math.min(maxSlot, handler.getSlots());
         int startSlot = Math.max(0, startingSlot);

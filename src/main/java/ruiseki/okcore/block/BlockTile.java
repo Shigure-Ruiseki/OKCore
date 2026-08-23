@@ -91,6 +91,13 @@ public class BlockTile extends BlockContainer
     }
 
     /**
+     * @return If the items should be dropped.
+     */
+    public boolean shouldDropInventory(World world, int x, int y, int z) {
+        return true;
+    }
+
+    /**
      * Sets a block to air, but also plays the sound and particles and can spawn drops.
      * This includes calls to {@link BlockTile#onPreBlockDestroyed(World, int, int, int)}
      * and {@link BlockTile#onPostBlockDestroyed(World, int, int, int)}.

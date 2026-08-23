@@ -230,15 +230,18 @@ public class MinecraftHelpers {
     public static void preDestroyBlock(Block block, World world, int x, int y, int z, boolean saveNBT) {
         TileEntity tile = world.getTileEntity(x, y, z);
 
-        if (block instanceof BlockOK blockOK) {
-            if (tile != null && blockOK.shouldDropInventory(world, x, y, z) && !world.isRemote) {
-                CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, ForgeDirection.UNKNOWN)
-                    .ifPresent(handler -> {
-                        InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
-                        InventoryHelpers.clearInventory(handler);
-                    });
-            }
-        } else {
+        if (block instanceof BlockOK blockOK && tile != null
+            && blockOK.shouldDropInventory(world, x, y, z)
+            && !world.isRemote) {
+            CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, ForgeDirection.UNKNOWN)
+                .ifPresent(handler -> {
+                    InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
+                    InventoryHelpers.clearInventory(handler);
+                });
+        }
+        if (block instanceof BlockTile blockTile && blockTile.shouldDropInventory(world, x, y, z)
+            && tile != null
+            && !world.isRemote) {
             CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, ForgeDirection.UNKNOWN)
                 .ifPresent(handler -> {
                     InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
@@ -259,14 +262,6 @@ public class MinecraftHelpers {
             TileEntityNBTStorage.TILE = null;
         }
 
-        // TODO: add IWorldNameable
-        // if (tile instanceof IWorldNameable && ((IWorldNameable) tile).hasCustomName()) {
-        // // Cache
-        // IWorldNameable ecTile = ((IWorldNameable) tile);
-        // TileEntityNBTStorage.NAME = ecTile.getName();
-        // } else {
-        // TileEntityNBTStorage.NAME = null;
-        // }
         TileEntityNBTStorage.NAME = null;
     }
 

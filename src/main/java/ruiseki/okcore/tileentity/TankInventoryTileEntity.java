@@ -9,6 +9,7 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.component.FluidHandlerComponent;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.fluid.handler.SmartTank;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
@@ -127,6 +128,11 @@ public abstract class TankInventoryTileEntity extends InventoryTileEntity
     }
 
     @Override
+    public IFluidTankProperties[] getTankProperties() {
+        return tank.getTankProperties();
+    }
+
+    @Override
     public void onTankChanged() {
         sendUpdate();
     }
@@ -139,5 +145,4 @@ public abstract class TankInventoryTileEntity extends InventoryTileEntity
             worldObj.notifyBlocksOfNeighborChange(getPos().getX(), getPos().getY(), getPos().getZ(), this.getBlock());
         }
     }
-
 }

@@ -152,40 +152,37 @@ public class RecipeSerializerHelpers {
     public static FluidStack deserializeFluidStack(JsonObject json, boolean readNbt) {
         if (json.has("data")) {
             throw new JsonParseException("Disallowed data tag found");
-        }
+        } else {
+            String fluidName = json.get("fluid")
+                .getAsString();
 
-        // Read Fluid
-        String fluidName = json.get("fluid")
-            .getAsString();
-        Fluid fluid = FluidRegistry.getFluid(fluidName);
-        if (fluid == null) {
-            throw new JsonParseException("Unknown fluid '" + fluidName + "'");
-        }
+            if (fluidName.contains(":")) {
+                fluidName = fluidName.split(":")[1];
+            }
 
-        // Read amount
-        int amount = FluidContainerRegistry.BUCKET_VOLUME;
-        if (json.has("amount")) {
-            amount = json.get("amount")
-                .getAsInt();
-        }
+            Fluid fluid = FluidRegistry.getFluid(fluidName);
+            if (fluid == null) {
+                throw new JsonParseException("Unknown fluid '" + fluidName + "'");
+            } else {
+                int amount = json.has("amount") ? json.get("amount")
+                    .getAsInt() : 1000;
+                FluidStack fluidStack = new FluidStack(fluid, amount);
 
-        FluidStack fluidStack = new FluidStack(fluid, amount);
-
-        // Read NBT
-        if (readNbt && json.has("nbt")) {
-            try {
-                JsonElement element = json.get("nbt");
-                String nbtString = element.isJsonObject() ? GSON.toJson(element) : element.getAsString();
-                NBTBase parsedNbt = JsonToNBT.func_150315_a(nbtString);
-                if (parsedNbt instanceof NBTTagCompound) {
-                    fluidStack.tag = (NBTTagCompound) parsedNbt;
+                if (readNbt && json.has("nbt")) {
+                    try {
+                        JsonElement element = json.get("nbt");
+                        String nbtString = element.isJsonObject() ? GSON.toJson(element) : element.getAsString();
+                        NBTBase parsedNbt = JsonToNBT.func_150315_a(nbtString);
+                        if (parsedNbt instanceof NBTTagCompound) {
+                            fluidStack.tag = (NBTTagCompound) parsedNbt;
+                        }
+                    } catch (NBTException e) {
+                        throw new JsonSyntaxException("Invalid NBT Entry: " + e.getMessage());
+                    }
                 }
-            } catch (NBTException e) {
-                throw new JsonSyntaxException("Invalid NBT Entry: " + e.getMessage());
+                return fluidStack;
             }
         }
-
-        return fluidStack;
     }
 
     public static FluidStack getJsonFluidStack(JsonObject json, String key, boolean required) {
@@ -200,11 +197,15 @@ public class RecipeSerializerHelpers {
             return deserializeFluidStack(json.getAsJsonObject(key), true);
         } else {
             String fluidName = element.getAsString();
+            if (fluidName.contains(":")) {
+                fluidName = fluidName.split(":")[1];
+            }
             Fluid fluid = FluidRegistry.getFluid(fluidName);
             if (fluid == null) {
                 throw new JsonParseException("Unknown fluid '" + fluidName + "'");
+            } else {
+                return new FluidStack(fluid, 1000);
             }
-            return new FluidStack(fluid, FluidContainerRegistry.BUCKET_VOLUME);
         }
     }
 

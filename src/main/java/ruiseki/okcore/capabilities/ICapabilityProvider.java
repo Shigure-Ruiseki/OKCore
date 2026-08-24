@@ -25,6 +25,14 @@ import ruiseki.okcore.datastructure.LazyOptional;
 
 public interface ICapabilityProvider {
 
+    ICapabilityProvider EMPTY = new ICapabilityProvider() {
+
+        @Override
+        public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable ForgeDirection side) {
+            return LazyOptional.empty();
+        }
+    };
+
     /**
      * Retrieves the Optional handler for the capability requested on the specific side.
      * The return value <strong>CAN</strong> be the same for multiple faces.

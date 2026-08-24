@@ -1,4 +1,4 @@
-package ruiseki.okcore.energy.capability.wrapper.cofh;
+package ruiseki.commoncapabilities.modcompat.vanilla.capability.energystorage;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;

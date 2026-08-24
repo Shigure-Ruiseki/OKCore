@@ -62,7 +62,7 @@ dependencies {
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:ForgeMultipart:1.7.11:dev")
 
     compileOnly(rfg.deobf("com.github.Thorfusion:Mekanism-Community-Edition:9.10.46:DEV"))
-    compileOnly("com.github.GTNewHorizons:EnderIO:2.10.36:dev")
+    devOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.10.36:dev")
 
     compileOnlyApi('com.github.GTNewHorizons:Angelica:2.1.60:dev')
     compileOnly('com.github.GTNewHorizons:Controlling:2.1.9:dev')

@@ -22,7 +22,6 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
 public abstract class TankInventoryTileEntity extends InventoryTileEntity
     implements SmartTank.IUpdateListener, IFluidHandler {
 
-    @NBTPersist
     private SmartTank tank = null;
     protected int tankSize;
 

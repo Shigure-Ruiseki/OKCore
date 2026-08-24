@@ -41,6 +41,10 @@ public class SmartTank extends FluidTank {
         return getFluidAmount() >= getCapacity();
     }
 
+    public boolean isEmpty() {
+        return getFluidAmount() == 0;
+    }
+
     public int getAvailableSpace() {
         return getCapacity() - getFluidAmount();
     }

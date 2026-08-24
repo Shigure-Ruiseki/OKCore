@@ -21,7 +21,7 @@ import ruiseki.okcore.helper.ItemNBTHelpers;
 @Optional.InterfaceList({
     @Optional.Interface(modid = "Baubles|Expanded", iface = "baubles.api.expanded.IBaubleExpanded"),
     @Optional.Interface(modid = "Baubles", iface = "baubles.api.IBauble"), })
-public class ItemBauble extends ItemOK implements IBaubleExpanded {
+public class ItemBauble extends ItemBase implements IBaubleExpanded {
 
     private static final String TAG_HASHCODE = "playerHashcode";
     private static final String TAG_BAUBLE_UUID_MOST = "baubleUUIDMost";

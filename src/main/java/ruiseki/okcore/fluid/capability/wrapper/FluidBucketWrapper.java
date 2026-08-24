@@ -47,10 +47,16 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
     }
 
     public boolean canFillFluidType(FluidStack fluidStack) {
+        if (fluidStack == null || fluidStack.getFluid() == null) {
+            return false;
+        }
+
         Fluid fluid = fluidStack.getFluid();
-        return fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA
-            || fluid.getName()
-                .equals("milk");
+        if (fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA || "milk".equals(fluid.getName())) {
+            return true;
+        }
+
+        return FluidHelpers.getFilledBucket(fluidStack) != null;
     }
 
     @Nullable
@@ -63,7 +69,7 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
         } else if (item == Items.milk_bucket) {
             return FluidRegistry.getFluidStack("milk", FluidHelpers.BUCKET_VOLUME);
         }
-        return null;
+        return FluidHelpers.getFluidFromContainer(container);
     }
 
     protected void setFluid(@Nullable FluidStack fluidStack) {

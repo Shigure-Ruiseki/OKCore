@@ -11,7 +11,6 @@ import ruiseki.okcore.fluid.component.FluidHandlerComponent;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.fluid.handler.SmartTank;
-import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
  * A TileEntity that has an inventory and a tank that can accept fluids or only one type of fluid.

@@ -1,6 +1,8 @@
 package ruiseki.okcore.tag;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,6 +11,7 @@ import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -18,12 +21,6 @@ import com.google.gson.JsonParseException;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DataManager;
 import ruiseki.okcore.data.MultiJsonResourceReloadListener;
@@ -36,9 +33,9 @@ public class TagManager extends MultiJsonResourceReloadListener implements IRegi
         .create();
     private static final TagManager INSTANCE = new TagManager();
 
-    private Map<TagKey<?>, Set<TagEntry>> tagToEntriesMap = Collections.emptyMap();
-    private Map<ResourceKey<?>, Map<ResourceLocation, Int2ObjectMap<Set<TagKey<?>>>>> registryToTagsCache = Collections
-        .emptyMap();
+    private Map<TagKey<?>, Set<TagEntry>> tagToEntriesMap = ImmutableMap.of();
+    private Map<ResourceKey<?>, Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>>> registryToTagsCache = ImmutableMap
+        .of();
 
     public TagManager() {
         super(GSON, "tags");
@@ -50,7 +47,7 @@ public class TagManager extends MultiJsonResourceReloadListener implements IRegi
 
     @Override
     protected void apply(Map<ResourceLocation, List<JsonElement>> data, DataManager manager) {
-        Map<TagKey<?>, Set<String>> rawTagsMap = new Object2ObjectOpenHashMap<>();
+        Map<TagKey<?>, Set<String>> rawTagsMap = new HashMap<>();
 
         for (Map.Entry<ResourceLocation, List<JsonElement>> entry : data.entrySet()) {
             ResourceLocation fileId = entry.getKey();
@@ -66,7 +63,7 @@ public class TagManager extends MultiJsonResourceReloadListener implements IRegi
             ResourceKey<?> registryKey = ResourceKey.createRegistryKey(new ResourceLocation(subfolder));
             TagKey<?> tagKey = TagKey.create(registryKey, new ResourceLocation(fileId.getResourceDomain(), tagPath));
 
-            Set<String> accumulatedRawValues = rawTagsMap.computeIfAbsent(tagKey, k -> new ObjectOpenHashSet<>());
+            Set<String> accumulatedRawValues = rawTagsMap.computeIfAbsent(tagKey, k -> new HashSet<>());
 
             for (JsonElement root : jsonFiles) {
                 try {
@@ -95,20 +92,20 @@ public class TagManager extends MultiJsonResourceReloadListener implements IRegi
             }
         }
 
-        Map<TagKey<?>, Set<TagEntry>> finalTagsMap = new Object2ObjectOpenHashMap<>();
+        Map<TagKey<?>, Set<TagEntry>> finalTagsMap = new HashMap<>();
 
         for (TagKey<?> tagKey : rawTagsMap.keySet()) {
-            Set<TagEntry> resolvedEntries = new ObjectOpenHashSet<>();
-            resolveTagValues(tagKey, rawTagsMap, resolvedEntries, new ObjectOpenHashSet<>());
+            Set<TagEntry> resolvedEntries = new HashSet<>();
+            resolveTagValues(tagKey, rawTagsMap, resolvedEntries, new HashSet<>());
             if (!resolvedEntries.isEmpty()) {
                 finalTagsMap.put(tagKey, resolvedEntries);
             }
         }
 
-        Map<TagKey<?>, Set<TagEntry>> builder = new Object2ObjectOpenHashMap<>();
+        ImmutableMap.Builder<TagKey<?>, Set<TagEntry>> builder = ImmutableMap.builder();
         finalTagsMap.forEach((tagKey, entries) -> builder.put(tagKey, Collections.unmodifiableSet(entries)));
 
-        this.tagToEntriesMap = Collections.unmodifiableMap(builder);
+        this.tagToEntriesMap = builder.build();
         this.bakeCache();
 
         OKCore.okLog(
@@ -169,13 +166,13 @@ public class TagManager extends MultiJsonResourceReloadListener implements IRegi
     public <T> Set<TagKey<T>> getTags(ResourceKey<T> registryKey, ResourceLocation id, int meta) {
         if (id == null || this.registryToTagsCache.isEmpty()) return Collections.emptySet();
 
-        Map<ResourceLocation, Int2ObjectMap<Set<TagKey<?>>>> idMap = this.registryToTagsCache.get(registryKey);
+        Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>> idMap = this.registryToTagsCache.get(registryKey);
         if (idMap == null) return Collections.emptySet();
 
-        Int2ObjectMap<Set<TagKey<?>>> metaMap = idMap.get(id);
+        Map<Integer, Set<TagKey<?>>> metaMap = idMap.get(id);
         if (metaMap == null) return Collections.emptySet();
 
-        Set<TagKey<T>> result = new ObjectOpenHashSet<>();
+        Set<TagKey<T>> result = new HashSet<>();
 
         Set<TagKey<?>> exactTags = metaMap.get(meta);
         if (exactTags != null) {
@@ -193,10 +190,10 @@ public class TagManager extends MultiJsonResourceReloadListener implements IRegi
     public boolean hasTag(ResourceKey<?> registryKey, ResourceLocation id, int meta, TagKey<?> tagKey) {
         if (id == null || tagKey == null || this.registryToTagsCache.isEmpty()) return false;
 
-        Map<ResourceLocation, Int2ObjectMap<Set<TagKey<?>>>> idMap = this.registryToTagsCache.get(registryKey);
+        Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>> idMap = this.registryToTagsCache.get(registryKey);
         if (idMap == null) return false;
 
-        Int2ObjectMap<Set<TagKey<?>>> metaMap = idMap.get(id);
+        Map<Integer, Set<TagKey<?>>> metaMap = idMap.get(id);
         if (metaMap == null) return false;
 
         Set<TagKey<?>> tags = metaMap.get(meta);
@@ -212,53 +209,53 @@ public class TagManager extends MultiJsonResourceReloadListener implements IRegi
 
     @SideOnly(Side.CLIENT)
     public void replaceTags(Map<TagKey<?>, Set<TagEntry>> serverTags) {
-        Map<TagKey<?>, Set<TagEntry>> map = new Object2ObjectOpenHashMap<>();
-        Map<TagKey<?>, Set<TagEntry>> builder = new Object2ObjectOpenHashMap<>();
+        Map<TagKey<?>, Set<TagEntry>> map = new HashMap<>();
+        ImmutableMap.Builder<TagKey<?>, Set<TagEntry>> builder = ImmutableMap.builder();
         serverTags.forEach((tagKey, wrappers) -> {
             if (tagKey != null && wrappers != null) {
-                Set<TagEntry> typeSet = map.computeIfAbsent(tagKey, k -> new ObjectOpenHashSet<>());
+                Set<TagEntry> typeSet = map.computeIfAbsent(tagKey, k -> new HashSet<>());
                 typeSet.addAll(wrappers);
                 builder.put(tagKey, Collections.unmodifiableSet(typeSet));
             }
         });
-        this.tagToEntriesMap = Collections.unmodifiableMap(builder);
+        this.tagToEntriesMap = builder.build();
         this.bakeCache();
     }
 
     private void bakeCache() {
-        Map<ResourceKey<?>, Map<ResourceLocation, Int2ObjectMap<Set<TagKey<?>>>>> tempRegistryMap = new Reference2ObjectOpenHashMap<>();
+        Map<ResourceKey<?>, Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>>> tempRegistryMap = new HashMap<>();
 
         for (Map.Entry<TagKey<?>, Set<TagEntry>> entry : this.tagToEntriesMap.entrySet()) {
             TagKey<?> tagKey = entry.getKey();
             if (tagKey == null || entry.getValue() == null) continue;
 
             ResourceKey<?> registryKey = tagKey.registry();
-            Map<ResourceLocation, Int2ObjectMap<Set<TagKey<?>>>> idMap = tempRegistryMap
-                .computeIfAbsent(registryKey, k -> new Object2ObjectOpenHashMap<>());
+            Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>> idMap = tempRegistryMap
+                .computeIfAbsent(registryKey, k -> new HashMap<>());
 
             for (TagEntry value : entry.getValue()) {
                 if (value != null) {
-                    Int2ObjectMap<Set<TagKey<?>>> metaMap = idMap
-                        .computeIfAbsent(value.id(), k -> new Int2ObjectOpenHashMap<>());
+                    Map<Integer, Set<TagKey<?>>> metaMap = idMap.computeIfAbsent(value.id(), k -> new HashMap<>());
 
-                    metaMap.computeIfAbsent(value.meta(), k -> new ObjectOpenHashSet<>())
+                    metaMap.computeIfAbsent(value.meta(), k -> new HashSet<>())
                         .add(tagKey);
                 }
             }
         }
 
-        Map<ResourceKey<?>, Map<ResourceLocation, Int2ObjectMap<Set<TagKey<?>>>>> registryBuilder = new Reference2ObjectOpenHashMap<>();
+        ImmutableMap.Builder<ResourceKey<?>, Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>>> registryBuilder = ImmutableMap
+            .builder();
 
         tempRegistryMap.forEach((regKey, idMap) -> {
-            Map<ResourceLocation, Int2ObjectMap<Set<TagKey<?>>>> immutableIdMap = new Object2ObjectOpenHashMap<>();
+            Map<ResourceLocation, Map<Integer, Set<TagKey<?>>>> immutableIdMap = new HashMap<>();
             idMap.forEach((id, metaMap) -> {
-                Int2ObjectMap<Set<TagKey<?>>> immutableMetaMap = new Int2ObjectOpenHashMap<>();
+                Map<Integer, Set<TagKey<?>>> immutableMetaMap = new HashMap<>();
                 metaMap.forEach((meta, tags) -> immutableMetaMap.put(meta, Collections.unmodifiableSet(tags)));
-                immutableIdMap.put(id, Int2ObjectMaps.unmodifiable(immutableMetaMap));
+                immutableIdMap.put(id, Collections.unmodifiableMap(immutableMetaMap));
             });
             registryBuilder.put(regKey, Collections.unmodifiableMap(immutableIdMap));
         });
 
-        this.registryToTagsCache = Collections.unmodifiableMap(registryBuilder);
+        this.registryToTagsCache = registryBuilder.build();
     }
 }

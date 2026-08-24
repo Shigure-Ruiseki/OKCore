@@ -3,6 +3,7 @@ package ruiseki.okcore.recipe;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -27,8 +30,6 @@ import com.google.gson.JsonParseException;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.data.DataManager;
 import ruiseki.okcore.data.SimpleJsonResourceReloadListener;
@@ -45,8 +46,8 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
 
     private static final RecipeManager INSTANCE = new RecipeManager();
 
-    protected Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> recipes = Collections.emptyMap();
-    private Map<ResourceLocation, IRecipeOK<?>> byName = Collections.emptyMap();
+    protected Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> recipes = ImmutableMap.of();
+    private Map<ResourceLocation, IRecipeOK<?>> byName = ImmutableMap.of();
     private final ICondition.IContext context;
 
     public RecipeManager() {
@@ -64,8 +65,8 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> data, DataManager manager) {
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> map = new Reference2ObjectOpenHashMap<>();
-        Map<ResourceLocation, IRecipeOK<?>> builderByName = new Object2ObjectOpenHashMap<>();
+        Map<IRecipeType<?>, ImmutableMap.Builder<ResourceLocation, IRecipeOK<?>>> map = new HashMap<>();
+        ImmutableMap.Builder<ResourceLocation, IRecipeOK<?>> builder = ImmutableMap.builder();
 
         for (Map.Entry<ResourceLocation, JsonElement> entry : data.entrySet()) {
             ResourceLocation id = entry.getKey();
@@ -88,18 +89,26 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
                         continue;
                     }
 
-                    map.computeIfAbsent(recipe.getType(), type -> new Object2ObjectOpenHashMap<>())
+                    map.computeIfAbsent(recipe.getType(), type -> ImmutableMap.builder())
                         .put(id, recipe);
 
-                    builderByName.put(id, recipe);
+                    builder.put(id, recipe);
                 }
             } catch (IllegalArgumentException | JsonParseException jsonparseexception) {
                 OKCore.okLog(Level.ERROR, "Parsing error loading recipe {}", id, jsonparseexception);
             }
         }
 
-        this.recipes = Collections.unmodifiableMap(map);
-        this.byName = Collections.unmodifiableMap(builderByName);
+        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> builtMap = map.entrySet()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> entry.getValue()
+                        .build()));
+
+        this.recipes = ImmutableMap.copyOf(builtMap);
+        this.byName = builder.build();
 
         OKCore.okLog(Level.INFO, "Loaded {} recipes", this.byName.size());
     }
@@ -198,12 +207,12 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
 
     @SideOnly(Side.CLIENT)
     public void replaceRecipes(Iterable<IRecipeOK<?>> serverRecipes) {
-        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> map = new Reference2ObjectOpenHashMap<>();
-        Map<ResourceLocation, IRecipeOK<?>> builder = new Object2ObjectOpenHashMap<>();
+        Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> map = Maps.newHashMap();
+        ImmutableMap.Builder<ResourceLocation, IRecipeOK<?>> builder = ImmutableMap.builder();
 
         serverRecipes.forEach(iRecipeOK -> {
             Map<ResourceLocation, IRecipeOK<?>> map1 = map
-                .computeIfAbsent(iRecipeOK.getType(), key -> new Object2ObjectOpenHashMap<>());
+                .computeIfAbsent(iRecipeOK.getType(), key -> Maps.newHashMap());
             ResourceLocation resourcelocation = iRecipeOK.getId();
             IRecipeOK<?> recipe = map1.put(resourcelocation, iRecipeOK);
             builder.put(resourcelocation, iRecipeOK);
@@ -212,8 +221,8 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
             }
         });
 
-        this.recipes = Collections.unmodifiableMap(map);
-        this.byName = Collections.unmodifiableMap(builder);
+        this.recipes = ImmutableMap.copyOf(map);
+        this.byName = builder.build();
     }
 
     public static <C extends IInventory, T extends IRecipeOK<C>> RecipeManager.CachedCheck<C, T> createCheck(

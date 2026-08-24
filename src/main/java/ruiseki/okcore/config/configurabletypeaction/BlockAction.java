@@ -49,13 +49,13 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
      *
      * @param block        The block instance.
      * @param itemclass    The optional item block class.
-     * @param config       The config.
+     * @param eConfig      The config.
      * @param creativeTabs The creative tab this block will reside in.
      */
     @SuppressWarnings("unchecked")
     public static void register(Block block, @Nullable Class<? extends Item> itemclass,
-        ExtendedConfig<BlockConfig, Block> config, @Nullable CreativeTabs creativeTabs) {
-        String name = config.getSubUniqueName();
+        ExtendedConfig<BlockConfig, Block> eConfig, @Nullable CreativeTabs creativeTabs) {
+        String name = eConfig.getSubUniqueName();
         if (itemclass == null) {
             GameRegistry.registerBlock(block, null, name);
         } else if (ItemBlock.class.isAssignableFrom(itemclass)) {
@@ -65,6 +65,11 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
             try {
                 Constructor<? extends Item> itemConstructor = itemclass.getConstructor(Block.class);
                 Item item = itemConstructor.newInstance(block);
+                item.setUnlocalizedName(name);
+                item.setTextureName(
+                    eConfig.getMod()
+                        .getModId() + ":"
+                        + eConfig.getNamedId());
                 GameRegistry.registerItem(item, name);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                 | NoSuchMethodException e) {

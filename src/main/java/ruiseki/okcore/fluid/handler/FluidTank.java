@@ -11,9 +11,8 @@ import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
 import ruiseki.okcore.fluid.capability.wrapper.FluidTankPropertiesWrapper;
-import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-public class FluidTank implements IFluidTank, IFluidHandler, INBTSerializable {
+public class FluidTank implements IFluidTank, IFluidHandler {
 
     @Nullable
     protected FluidStack fluid;
@@ -286,18 +285,6 @@ public class FluidTank implements IFluidTank, IFluidHandler, INBTSerializable {
 
     protected void onContentsChanged() {
 
-    }
-
-    @Override
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        writeToNBT(nbt);
-        return nbt;
-    }
-
-    @Override
-    public void deserializeNBT(NBTTagCompound tag) {
-        readFromNBT(tag);
     }
 
     public FluidTank readFromNBT(NBTTagCompound nbt) {

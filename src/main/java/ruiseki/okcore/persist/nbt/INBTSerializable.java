@@ -83,7 +83,7 @@ public interface INBTSerializable {
                 Method method = fieldType.getMethod("deserializeNBT", NBTTagCompound.class);
                 INBTSerializable obj = (INBTSerializable) constructor.newInstance();
                 if (tag.hasKey(name)) {
-                    method.invoke(obj, tag.getTag(name));
+                    method.invoke(obj, tag.getCompoundTag(name));
                 } else {
                     OKCore.okLog(
                         Level.WARN,

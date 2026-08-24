@@ -43,9 +43,15 @@ public class Ingredient implements Predicate<ItemStack> {
     private static final Set<Ingredient> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
 
     public static void invalidateAll() {
-        INSTANCES.stream()
-            .filter(Objects::nonNull)
-            .forEach(Ingredient::invalidate);
+        Ingredient[] ingredients;
+        synchronized (INSTANCES) {
+            ingredients = INSTANCES.toArray(new Ingredient[0]);
+        }
+        for (Ingredient ingredient : ingredients) {
+            if (ingredient != null) {
+                ingredient.invalidate();
+            }
+        }
     }
 
     public static final Ingredient EMPTY = new Ingredient(Stream.empty());
@@ -54,8 +60,8 @@ public class Ingredient implements Predicate<ItemStack> {
     private IntList stackingIds;
     private final boolean isSimple;
 
-    protected Ingredient(Stream<? extends IItemList> p_i49381_1_) {
-        this.values = p_i49381_1_.toArray(IItemList[]::new);
+    protected Ingredient(Stream<? extends IItemList> stream) {
+        this.values = stream.toArray(IItemList[]::new);
         this.isSimple = Arrays.stream(values)
             .noneMatch(
                 list -> list.getItems()

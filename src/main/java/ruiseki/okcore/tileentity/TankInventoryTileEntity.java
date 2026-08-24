@@ -35,7 +35,7 @@ public abstract class TankInventoryTileEntity extends InventoryTileEntity
      * @param tankSize      Size (mB) of the tank.
      * @param stackSize     The maximum stacksize each slot can have.
      */
-    public TankInventoryTileEntity(int inventorySize, String inventoryName, int tankSize, int stackSize) {
+    public TankInventoryTileEntity(int inventorySize, String inventoryName, int stackSize, int tankSize) {
         super(inventorySize, inventoryName, stackSize);
         this.tankSize = tankSize;
         tank = newTank(tankSize);

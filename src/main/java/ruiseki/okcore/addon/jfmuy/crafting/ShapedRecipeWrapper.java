@@ -29,7 +29,8 @@ public class ShapedRecipeWrapper implements IShapedCraftingRecipeWrapper {
         int height = recipe.getRecipeHeight();
         NonNullList<Ingredient> ingredients = recipe.getIngredients();
 
-        for (int i = 0; i < 9; i++) {
+        int gridSlots = Math.max(9, width * height);
+        for (int i = 0; i < gridSlots; i++) {
             inputs.add(new ArrayList<>());
         }
 
@@ -39,8 +40,7 @@ public class ShapedRecipeWrapper implements IShapedCraftingRecipeWrapper {
                 if (ingredientIndex < ingredients.size()) {
                     Ingredient ingredient = ingredients.get(ingredientIndex);
                     int slotIndex = col + row * 3;
-
-                    if (slotIndex < 9 && ingredient != Ingredient.EMPTY) {
+                    if (slotIndex < inputs.size() && ingredient != null && ingredient != Ingredient.EMPTY) {
                         ItemStack[] matchingStacks = ingredient.getItems();
                         if (matchingStacks != null && matchingStacks.length > 0) {
                             inputs.set(slotIndex, Arrays.asList(matchingStacks));

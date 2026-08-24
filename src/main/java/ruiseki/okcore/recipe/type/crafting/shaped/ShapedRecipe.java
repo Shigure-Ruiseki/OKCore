@@ -110,8 +110,7 @@ public class ShapedRecipe implements ICraftingRecipe, IShapedRecipe<InventoryCra
                 if (this.checkMatch(inventory, i, j, false)) {
                     return true;
                 }
-
-                if (this.checkMatch(inventory, i, j, false)) {
+                if (this.checkMatch(inventory, i, j, true)) {
                     return true;
                 }
             }
@@ -136,7 +135,8 @@ public class ShapedRecipe implements ICraftingRecipe, IShapedRecipe<InventoryCra
                     }
                 }
 
-                if (!target.test(inventory.getStackInRowAndColumn(x, y))) {
+                ItemStack stackInSlot = inventory.getStackInRowAndColumn(x, y);
+                if (!target.test(stackInSlot)) {
                     return false;
                 }
             }

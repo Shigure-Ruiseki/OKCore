@@ -17,7 +17,7 @@ public class RecipeRemainingItemsHandler {
 
     @SubscribeEvent
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
-        if (event.craftMatrix == null || event.player == null) return;
+        if (event.player == null || event.player.worldObj.isRemote || event.craftMatrix == null) return;
 
         IInventory matrix = event.craftMatrix;
         if (!(matrix instanceof InventoryCrafting inv)) return;
@@ -38,17 +38,23 @@ public class RecipeRemainingItemsHandler {
 
             for (int i = 0; i < remainingItems.size(); i++) {
                 ItemStack remaining = remainingItems.get(i);
+
+                if (remaining == null || remaining.stackSize <= 0) {
+                    continue;
+                }
+
                 ItemStack slotStack = matrix.getStackInSlot(i);
 
-                // Vanilla will handle it
                 if (slotStack != null && slotStack.getItem() != null
                     && slotStack.getItem()
                         .hasContainerItem(slotStack)) {
                     continue;
                 }
 
-                if (!player.inventory.addItemStackToInventory(remaining)) {
-                    if (!player.worldObj.isRemote) {
+                if (matrix.getStackInSlot(i) == null) {
+                    matrix.setInventorySlotContents(i, remaining);
+                } else {
+                    if (!player.inventory.addItemStackToInventory(remaining)) {
                         player.dropPlayerItemWithRandomChoice(remaining, false);
                     }
                 }

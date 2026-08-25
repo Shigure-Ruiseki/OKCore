@@ -22,6 +22,7 @@ import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngred
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.modcompat.enderio.EnderIOModCompat;
 import ruiseki.commoncapabilities.modcompat.mekansim.MekanismModCompat;
 import ruiseki.commoncapabilities.modcompat.vanilla.VanillaModCompat;
 import ruiseki.okcore.config.ConfigHandler;
@@ -56,6 +57,7 @@ public class CommonCapabilities extends ModBase {
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         super.loadModCompats(modCompatLoader);
         modCompatLoader.addModCompat(new VanillaModCompat());
+        modCompatLoader.addModCompat(new EnderIOModCompat());
         modCompatLoader.addModCompat(new MekanismModCompat());
     }
 

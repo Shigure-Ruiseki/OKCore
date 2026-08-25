@@ -41,6 +41,10 @@ public class SmartTank extends FluidTank {
         return getFluidAmount() >= getCapacity();
     }
 
+    public boolean isEmpty() {
+        return getFluidAmount() == 0;
+    }
+
     public int getAvailableSpace() {
         return getCapacity() - getFluidAmount();
     }
@@ -169,5 +173,23 @@ public class SmartTank extends FluidTank {
         }
 
         return nbt;
+    }
+
+    @Override
+    protected void onContentsChanged() {
+        if (tile instanceof IUpdateListener) {
+            ((IUpdateListener) tile).onTankChanged();
+        }
+    }
+
+    /**
+     * Implement this on a tile entity to indicate that it should listen to tank changes.
+     */
+    public static interface IUpdateListener {
+
+        /**
+         * Called when the contents of the tank have changed.
+         */
+        public void onTankChanged();
     }
 }

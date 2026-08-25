@@ -8,7 +8,7 @@ import ruiseki.okcore.helper.GsonHelpers;
 
 public class NotCondition implements ICondition {
 
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "not");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "not");
     private final ICondition child;
 
     public NotCondition(ICondition child) {

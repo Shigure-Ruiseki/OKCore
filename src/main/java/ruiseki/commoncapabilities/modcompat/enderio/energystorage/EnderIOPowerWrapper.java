@@ -1,4 +1,4 @@
-package ruiseki.okcore.energy.capability.wrapper.enderio;
+package ruiseki.commoncapabilities.modcompat.enderio.energystorage;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;

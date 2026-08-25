@@ -4,7 +4,10 @@ import java.util.Random;
 
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.IconFlipped;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.Item;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
 import lombok.experimental.Delegate;
@@ -54,4 +57,15 @@ public class BlockDoorBase extends BlockDoor
     public boolean hasGui() {
         return hasGui;
     }
+
+    @Override
+    public void registerBlockIcons(IIconRegister reg) {
+        this.field_150017_a = new IIcon[2];
+        this.field_150016_b = new IIcon[2];
+        this.field_150017_a[0] = reg.registerIcon(this.getTextureName() + "_upper");
+        this.field_150016_b[0] = reg.registerIcon(this.getTextureName() + "_lower");
+        this.field_150017_a[1] = new IconFlipped(this.field_150017_a[0], true, false);
+        this.field_150016_b[1] = new IconFlipped(this.field_150016_b[0], true, false);
+    }
+
 }

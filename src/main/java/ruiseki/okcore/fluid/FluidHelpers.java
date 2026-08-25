@@ -19,6 +19,7 @@ import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
+import net.minecraftforge.fluids.IFluidContainerItem;
 import net.minecraftforge.fluids.IFluidTank;
 
 import org.apache.logging.log4j.Level;
@@ -779,6 +780,22 @@ public class FluidHelpers {
         ItemStack emptyBucket = new ItemStack(Items.bucket);
         FluidStack bucketVolumeStack = new FluidStack(fluidStack, FluidContainerRegistry.BUCKET_VOLUME);
         return FluidContainerRegistry.fillFluidContainer(bucketVolumeStack, emptyBucket);
+    }
+
+    public static FluidStack getFluidFromContainer(@Nullable ItemStack container) {
+        if (container == null || container.getItem() == null) {
+            return null;
+        }
+
+        FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(container);
+        if (fluid != null) {
+            return fluid;
+        }
+
+        if (container.getItem() instanceof IFluidContainerItem) {
+            return ((IFluidContainerItem) container.getItem()).getFluid(container);
+        }
+        return null;
     }
 
     /**

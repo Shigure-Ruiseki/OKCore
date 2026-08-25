@@ -2,6 +2,7 @@ package ruiseki.okcore.recipe.type.cooking.furnace;
 
 import java.io.IOException;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
@@ -9,7 +10,9 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
+import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.helper.GsonHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.IRecipeSerializer;
@@ -33,12 +36,19 @@ public class CookingRecipeSerializer<T extends AbstractCookingRecipe> implements
             ? GsonHelpers.getAsJsonArray(json, "ingredient")
             : GsonHelpers.getAsJsonObject(json, "ingredient");
         Ingredient ingredient = Ingredient.fromJson(jsonelement);
-        // Forge: Check if primitive string to keep vanilla or a object which can contain a count field.
-        if (!json.has("result"))
-            throw new com.google.gson.JsonSyntaxException("Missing result, expected to find a string or object");
-        ItemStack itemstack = null;
+
+        if (!json.has("result")) throw new JsonSyntaxException("Missing result, expected to find a string or object");
+        ItemStack itemstack;
         if (json.get("result")
-            .isJsonObject()) itemstack = ShapedRecipe.itemFromJson(GsonHelpers.getAsJsonObject(json, "result"));
+            .isJsonObject()) {
+            itemstack = ShapedRecipe.itemFromJson(GsonHelpers.getAsJsonObject(json, "result"));
+        } else {
+            String s1 = GsonHelpers.getAsString(json, "result");
+            Item item = GameData.getItemRegistry()
+                .getObject(s1);
+            if (item == null) throw new JsonSyntaxException("Item: " + s1 + " does not exist");
+            itemstack = new ItemStack(item, 1, 0);
+        }
 
         float f = GsonHelpers.getAsFloat(json, "experience", 0.0F);
         int i = GsonHelpers.getAsInt(json, "cookingtime", this.defaultCookingTime);

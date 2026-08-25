@@ -24,14 +24,13 @@ import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.data.DatapackLoader;
-import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.enums.Mods;
-import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.init.ModBaseVersionable;
-import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.proxy.ICommonProxy;
+import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.registries.ForgeRegistryManager;
+import ruiseki.okcore.tag.TagManager;
 
 @Mod(
     modid = Reference.MOD_ID,
@@ -50,10 +49,6 @@ public class OKCore extends ModBaseVersionable {
     public OKCore() {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
         putGenericReference(REFKEY_MOD_VERSION, Reference.MOD_VERSION);
-
-        addInitListeners(new CapabilityItemHandler());
-        addInitListeners(new CapabilityFluidHandler());
-        addInitListeners(new CapabilityEnergy());
     }
 
     @Mod.EventHandler
@@ -73,6 +68,10 @@ public class OKCore extends ModBaseVersionable {
     public void preInit(FMLPreInitializationEvent event) {
         ForgeRegistryManager.fireCreateRegistryEvents();
         CapabilityManager.INSTANCE.injectCapabilities(event.getAsmData());
+        this.getRegistryManager()
+            .addRegistry(TagManager.class, TagManager.getManager());
+        this.getRegistryManager()
+            .addRegistry(RecipeManager.class, RecipeManager.getManager());
         super.preInit(event);
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();

@@ -10,6 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -21,9 +22,10 @@ import org.joml.Vector3i;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.AbstractIterator;
+import com.gtnewhorizon.gtnhlib.blockpos.IBlockPos;
 
 @Immutable
-public class BlockPos extends Vector3i implements Comparable<BlockPos> {
+public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPos {
 
     public static final BlockPos ORIGIN = new BlockPos();
 
@@ -54,6 +56,10 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
 
     public BlockPos(ChunkCoordinates chunkPosition) {
         super(chunkPosition.posX, chunkPosition.posY, chunkPosition.posZ);
+    }
+
+    public BlockPos(MovingObjectPosition position) {
+        super(position.blockX, position.blockY, position.blockZ);
     }
 
     public BlockPos(TileEntity tile) {
@@ -445,6 +451,16 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos> {
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
+    }
+
+    @Override
+    public long asLong() {
+        return toLong();
+    }
+
+    @Override
+    public IBlockPos copy() {
+        return new BlockPos(this.x, this.y, this.z);
     }
 
     @Override

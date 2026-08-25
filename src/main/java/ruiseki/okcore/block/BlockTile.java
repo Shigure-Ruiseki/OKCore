@@ -91,6 +91,13 @@ public class BlockTile extends BlockContainer
     }
 
     /**
+     * @return If the items should be dropped.
+     */
+    public boolean shouldDropInventory(World world, int x, int y, int z) {
+        return true;
+    }
+
+    /**
      * Sets a block to air, but also plays the sound and particles and can spawn drops.
      * This includes calls to {@link BlockTile#onPreBlockDestroyed(World, int, int, int)}
      * and {@link BlockTile#onPostBlockDestroyed(World, int, int, int)}.
@@ -155,8 +162,12 @@ public class BlockTile extends BlockContainer
     @Override
     public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
         onPreBlockDestroyed(world, x, y, z, player);
-        if (willHarvest) return true;
-        return super.removedByPlayer(world, player, x, y, z, willHarvest);
+        return world.setBlockToAir(x, y, z);
+    }
+
+    @Override
+    public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z) {
+        return this.removedByPlayer(world, player, x, y, z, false);
     }
 
     @Override
@@ -164,12 +175,6 @@ public class BlockTile extends BlockContainer
         onPreBlockDestroyed(world, x, y, z, null);
         super.onBlockExploded(world, x, y, z, explosion);
         onPostBlockDestroyed(world, x, y, z);
-    }
-
-    @Override
-    public void harvestBlock(World world, EntityPlayer player, int x, int y, int z, int meta) {
-        super.harvestBlock(world, player, x, y, z, meta);
-        world.setBlockToAir(x, y, z);
     }
 
     @Override

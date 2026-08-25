@@ -3,9 +3,8 @@ package ruiseki.okcore.energy.handler;
 import net.minecraft.nbt.NBTTagCompound;
 
 import ruiseki.okcore.energy.capability.EnergyStorageDefault;
-import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-public class EnergyStorage extends EnergyStorageDefault implements INBTSerializable {
+public class EnergyStorage extends EnergyStorageDefault {
 
     public EnergyStorage(int capacity) {
         this(capacity, capacity, capacity, 0);
@@ -91,18 +90,6 @@ public class EnergyStorage extends EnergyStorageDefault implements INBTSerializa
             this.energy = newEnergy;
             onEnergyChanged();
         }
-    }
-
-    @Override
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        writeToNBT(nbt);
-        return nbt;
-    }
-
-    @Override
-    public void deserializeNBT(NBTTagCompound tag) {
-        readFromNBT(tag);
     }
 
     public void readFromNBT(NBTTagCompound nbt) {

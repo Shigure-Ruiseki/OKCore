@@ -8,7 +8,7 @@ import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
 
 /**
  * Config for the item fluid handler with configurable capacity capability.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -29,7 +29,7 @@ public class FluidHandlerItemCapacityConfig extends CapabilityConfig<IFluidHandl
         super(
             OKCore._instance,
             true,
-            "fluid_handler_capacity",
+            "fluid_handler_item_capacity",
             "Item fluid handler with configurable capacity",
             IFluidHandlerItemCapacity.class);
     }

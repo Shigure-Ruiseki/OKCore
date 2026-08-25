@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 public class FalseCondition implements ICondition {
 
     public static final FalseCondition INSTANCE = new FalseCondition();
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "false");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "false");
 
     private FalseCondition() {}
 

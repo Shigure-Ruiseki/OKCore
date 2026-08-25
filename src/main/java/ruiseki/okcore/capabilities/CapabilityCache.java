@@ -13,17 +13,15 @@ import javax.annotation.Nullable;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNullByDefault;
 
-import ruiseki.okcore.OKCore;
 import ruiseki.okcore.capabilities.resolver.ICapabilityResolver;
 import ruiseki.okcore.datastructure.LazyOptional;
 
 @NotNullByDefault
 public class CapabilityCache {
 
-    private final Map<Capability<?>, ICapabilityResolver> capabilityResolvers = new HashMap<>();
+    private final Map<Capability<?>, List<ICapabilityResolver>> capabilityResolvers = new HashMap<>();
     /**
      * List of unique resolvers to make invalidating all easier as some resolvers (energy) may support multiple
      * capabilities.
@@ -40,12 +38,9 @@ public class CapabilityCache {
         List<Capability<?>> supportedCapabilities = resolver.getSupportedCapabilities();
         for (Capability<?> supportedCapability : supportedCapabilities) {
             // Don't add null capabilities. (Either ones that are not loaded mod wise or get fired during startup)
-            if (supportedCapability != null && capabilityResolvers.put(supportedCapability, resolver) != null) {
-                OKCore.okLog(
-                    Level.WARN,
-                    "Multiple capability resolvers registered for {}. Overriding",
-                    supportedCapability.getName(),
-                    new Exception());
+            if (supportedCapability != null) {
+                capabilityResolvers.computeIfAbsent(supportedCapability, cap -> new ArrayList<>())
+                    .add(resolver);
             }
         }
     }
@@ -113,7 +108,8 @@ public class CapabilityCache {
      * Checks if the given capability can be resolved by this capability cache.
      */
     public boolean canResolve(Capability<?> capability) {
-        return capabilityResolvers.containsKey(capability);
+        List<ICapabilityResolver> resolvers = capabilityResolvers.get(capability);
+        return resolvers != null && !resolvers.isEmpty();
     }
 
     /**
@@ -130,11 +126,19 @@ public class CapabilityCache {
      * Gets a capability on the given side not checking to ensure that it is not disabled.
      */
     public <T> LazyOptional<T> getCapabilityUnchecked(Capability<T> capability, @Nullable ForgeDirection side) {
-        ICapabilityResolver capabilityResolver = capabilityResolvers.get(capability);
-        if (capabilityResolver == null) {
+        List<ICapabilityResolver> resolvers = capabilityResolvers.get(capability);
+        if (resolvers == null || resolvers.isEmpty()) {
             return LazyOptional.empty();
         }
-        return capabilityResolver.resolve(capability, side);
+
+        for (ICapabilityResolver resolver : resolvers) {
+            LazyOptional<T> result = resolver.resolve(capability, side);
+            if (result.isPresent()) {
+                return result;
+            }
+        }
+
+        return LazyOptional.empty();
     }
 
     /**
@@ -144,9 +148,11 @@ public class CapabilityCache {
      * @param side       Side
      */
     public void invalidate(Capability<?> capability, @Nullable ForgeDirection side) {
-        ICapabilityResolver capabilityResolver = capabilityResolvers.get(capability);
-        if (capabilityResolver != null) {
-            capabilityResolver.invalidate(capability, side);
+        List<ICapabilityResolver> resolvers = capabilityResolvers.get(capability);
+        if (resolvers != null) {
+            for (ICapabilityResolver resolver : resolvers) {
+                resolver.invalidate(capability, side);
+            }
         }
     }
 

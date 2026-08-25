@@ -25,28 +25,18 @@ public class ShapedRecipeWrapper implements IShapedCraftingRecipeWrapper {
         this.recipe = recipe;
         this.inputs = new ArrayList<>();
 
-        int width = recipe.getRecipeWidth();
-        int height = recipe.getRecipeHeight();
         NonNullList<Ingredient> ingredients = recipe.getIngredients();
 
-        for (int i = 0; i < 9; i++) {
-            inputs.add(new ArrayList<>());
-        }
-
-        for (int row = 0; row < height; row++) {
-            for (int col = 0; col < width; col++) {
-                int ingredientIndex = col + row * width;
-                if (ingredientIndex < ingredients.size()) {
-                    Ingredient ingredient = ingredients.get(ingredientIndex);
-                    int slotIndex = col + row * 3;
-
-                    if (slotIndex < 9 && ingredient != Ingredient.EMPTY) {
-                        ItemStack[] matchingStacks = ingredient.getItems();
-                        if (matchingStacks != null && matchingStacks.length > 0) {
-                            inputs.set(slotIndex, Arrays.asList(matchingStacks));
-                        }
-                    }
+        for (Ingredient ingredient : ingredients) {
+            if (ingredient != null && ingredient != Ingredient.EMPTY) {
+                ItemStack[] matchingStacks = ingredient.getItems();
+                if (matchingStacks != null && matchingStacks.length > 0) {
+                    inputs.add(Arrays.asList(matchingStacks));
+                } else {
+                    inputs.add(new ArrayList<>());
                 }
+            } else {
+                inputs.add(new ArrayList<>());
             }
         }
     }

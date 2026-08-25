@@ -12,7 +12,7 @@ import ruiseki.okcore.helper.Helpers;
 
 public class ConfigCondition implements ICondition {
 
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "config");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "config");
     private static final Map<ResourceLocation, Boolean> CONFIG = new HashMap<>();
 
     private final ResourceLocation id;

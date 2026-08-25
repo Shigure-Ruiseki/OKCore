@@ -15,7 +15,7 @@ import ruiseki.okcore.helper.GsonHelpers;
 
 public class AndCondition implements ICondition {
 
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "and");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "and");
     private final ICondition[] children;
 
     public AndCondition(ICondition... values) {

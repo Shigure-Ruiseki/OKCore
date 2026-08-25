@@ -15,7 +15,7 @@ import ruiseki.okcore.helper.GsonHelpers;
 
 public class OrCondition implements ICondition {
 
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "or");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "or");
     private final ICondition[] children;
 
     public OrCondition(ICondition... values) {

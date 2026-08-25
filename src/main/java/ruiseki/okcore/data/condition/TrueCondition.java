@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 public class TrueCondition implements ICondition {
 
     public static final TrueCondition INSTANCE = new TrueCondition();
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "true");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "true");
 
     private TrueCondition() {}
 

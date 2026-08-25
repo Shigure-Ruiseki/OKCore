@@ -10,7 +10,7 @@ import ruiseki.okcore.helper.Helpers;
 
 public class ItemExistsCondition implements ICondition {
 
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "item_exists");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "item_exists");
     private final ResourceLocation item;
 
     public ItemExistsCondition(String location) {

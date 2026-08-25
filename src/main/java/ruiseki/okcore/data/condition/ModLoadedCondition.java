@@ -9,7 +9,7 @@ import ruiseki.okcore.helper.GsonHelpers;
 
 public class ModLoadedCondition implements ICondition {
 
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "mod_loaded");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "mod_loaded");
     private final String modid;
 
     public ModLoadedCondition(String modid) {

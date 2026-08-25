@@ -1,7 +1,5 @@
 package ruiseki.okcore;
 
-import java.util.UUID;
-
 import org.apache.logging.log4j.Level;
 
 import ruiseki.okcore.config.ConfigurableProperty;
@@ -54,15 +52,6 @@ public class GeneralConfig extends DummyConfig {
         comment = "If mod compatibility loader should crash hard if errors occur in that process.",
         requiresMcRestart = true)
     public static boolean crashOnModCompatCrash = false;
-
-    /**
-     * The anonymous id used by the analytics service.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
-        comment = "The anonymous id used by the analytics service.")
-    public static String anonymousAnalyticsID = UUID.randomUUID()
-        .toString();
 
     /**
      * If the version checker should be enabled.

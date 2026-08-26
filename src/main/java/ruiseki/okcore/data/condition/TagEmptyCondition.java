@@ -13,7 +13,7 @@ import ruiseki.okcore.tag.TagManager;
 
 public class TagEmptyCondition implements ICondition {
 
-    private static final ResourceLocation NAME = new ResourceLocation("okcore", "tag_empty");
+    private static final ResourceLocation NAME = new ResourceLocation("forge", "tag_empty");
     private final TagKey<Item> tagKey;
 
     public TagEmptyCondition(TagKey<Item> tagKey) {

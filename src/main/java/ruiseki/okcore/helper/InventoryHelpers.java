@@ -10,7 +10,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
@@ -143,7 +142,7 @@ public class InventoryHelpers {
 
     /**
      * Set the item stack at the given index in the player inventory.
-     * 
+     *
      * @param player    The player.
      * @param itemIndex The index of the item in the inventory.
      * @param itemStack The new item stack.
@@ -237,7 +236,7 @@ public class InventoryHelpers {
 
     /**
      * Try to add the given item to the given slot.
-     * 
+     *
      * @param inventory The inventory.
      * @param slot      The slot to add to.
      * @param itemStack The item to try to put in the production slot.
@@ -257,17 +256,24 @@ public class InventoryHelpers {
      * @return The remaining itemstack that could not be added anymore.
      */
     public static ItemStack fillSlot(IInventory inventory, int slot, ItemStack itemStack, boolean simulate) {
+        if (itemStack == null || itemStack.stackSize <= 0) {
+            return null;
+        }
+
         ItemStack produceStack = inventory.getStackInSlot(slot);
         if (produceStack == null) {
             if (!simulate) {
-                inventory.setInventorySlotContents(slot, itemStack);
+                inventory.setInventorySlotContents(slot, itemStack.copy());
+                inventory.markDirty();
             }
             return null;
         } else {
-            produceStack = produceStack.copy();
-            ItemStack remainder = addToStack(produceStack, itemStack);
-            if (!simulate && remainder.stackSize != itemStack.stackSize) {
-                inventory.setInventorySlotContents(slot, produceStack);
+            ItemStack targetStack = produceStack.copy();
+            ItemStack remainder = addToStack(targetStack, itemStack);
+
+            if (!simulate && remainder != itemStack) {
+                inventory.setInventorySlotContents(slot, targetStack);
+                inventory.markDirty();
             }
             return remainder;
         }
@@ -278,22 +284,31 @@ public class InventoryHelpers {
      *
      * @param itemStack The stack to mutate and add to.
      * @param toAdd     The stack to add.
-     * @return The remainder of the added stack
+     * @return The remainder of the added stack, or null if completely merged.
      */
     public static ItemStack addToStack(ItemStack itemStack, ItemStack toAdd) {
-        if (ItemStack.areItemStackTagsEqual(toAdd, itemStack) && ItemStackHelpers.areStacksEqual(toAdd, itemStack)
+        if (toAdd == null || toAdd.stackSize <= 0) {
+            return null;
+        }
+        if (itemStack != null && ItemStack.areItemStackTagsEqual(toAdd, itemStack)
+            && ItemStackHelpers.areStacksEqual(toAdd, itemStack)
             && itemStack.stackSize < itemStack.getMaxStackSize()) {
+
             toAdd = toAdd.copy();
             int toAddCount = Math.min(itemStack.getMaxStackSize() - itemStack.stackSize, toAdd.stackSize);
             ItemStackHelpers.grow(itemStack, toAddCount);
             ItemStackHelpers.shrink(toAdd, toAddCount);
+
+            if (toAdd.stackSize <= 0) {
+                return null;
+            }
         }
         return toAdd;
     }
 
     /**
      * Try to add the given item to the given slot.
-     * 
+     *
      * @param inventory The inventory.
      * @param slot      The slot to add to.
      * @param itemStack The item to try to put in the production slot.
@@ -315,25 +330,31 @@ public class InventoryHelpers {
      */
     public static NonNullList<ItemStack> addToInventory(IInventory inventory, int[] slots,
         NonNullList<ItemStack> itemStacks, boolean simulate) {
+
         NonNullList<ItemStack> remaining = NonNullList.create();
-        for (ItemStack itemStack : itemStacks) {
-            for (int i = 0; i < slots.length; i++) {
-                int slot = slots[i];
+        int[] availableSlots = slots.clone();
+
+        for (ItemStack stack : itemStacks) {
+            if (stack == null || stack.stackSize <= 0) continue;
+
+            ItemStack itemStack = stack.copy();
+
+            for (int i = 0; i < availableSlots.length; i++) {
+                int slot = availableSlots[i];
+                if (slot < 0) continue;
+
                 itemStack = fillSlot(inventory, slot, itemStack, simulate);
-                if (simulate) {
-                    // We blacklist this slot in the next iteration,
-                    // because in simulation, we don't fill the actual slot,
-                    // so it could occur that only one slot is empty,
-                    // and two different item outputs of this recipe want to fill that slot.
-                    // Note: this is a heuristic, and may be to pessimistic in some cases.
-                    slots = ArrayUtils.remove(slots, i);
-                    i--;
+
+                if (simulate && itemStack == null) {
+                    availableSlots[i] = -1;
                 }
-                if (itemStack == null) {
+
+                if (itemStack == null || itemStack.stackSize <= 0) {
                     break;
                 }
             }
-            if (itemStack != null) {
+
+            if (itemStack != null && itemStack.stackSize > 0) {
                 remaining.add(itemStack);
             }
         }

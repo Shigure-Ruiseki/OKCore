@@ -27,6 +27,7 @@ import com.google.common.collect.Maps;
 import io.netty.handler.codec.EncoderException;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.SingleCache;
 
 /**
@@ -288,6 +289,23 @@ public abstract class PacketCodec extends PacketBase {
                 double y = input.readDouble();
                 double z = input.readDouble();
                 return Vec3.createVectorHelper(x, y, z);
+            }
+        });
+        PacketCodec.registerCodecAction(DimPos.class, new PacketCodec.ICodecAction() {
+
+            @Override
+            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
+                DimPos dimPos = (DimPos) o;
+                extendedBuffer.writeInt(dimPos.getDimensionId());
+                extendedBuffer.writeLong(
+                    dimPos.getBlockPos()
+                        .toLong());
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer extendedBuffer) {
+                int dim = extendedBuffer.readInt();
+                return DimPos.of(dim, BlockPos.fromLong(extendedBuffer.readLong()));
             }
         });
 

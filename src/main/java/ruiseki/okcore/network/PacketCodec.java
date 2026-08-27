@@ -560,7 +560,6 @@ public abstract class PacketCodec extends PacketBase {
         return codecActions.get(clazz) != null;
     }
 
-
     protected SingleCache<Void, List<Field>> fieldCache = new SingleCache<Void, List<Field>>(
         new SingleCache.ICacheUpdater<Void, List<Field>>() {
 

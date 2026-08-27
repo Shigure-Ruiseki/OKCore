@@ -552,6 +552,15 @@ public abstract class PacketCodec extends PacketBase {
         });
     }
 
+    public static void registerCodecAction(Class<?> clazz, ICodecAction action) {
+        codecActions.put(clazz, action);
+    }
+
+    public static boolean hasCodecAction(Class<?> clazz) {
+        return codecActions.get(clazz) != null;
+    }
+
+
     protected SingleCache<Void, List<Field>> fieldCache = new SingleCache<Void, List<Field>>(
         new SingleCache.ICacheUpdater<Void, List<Field>>() {
 

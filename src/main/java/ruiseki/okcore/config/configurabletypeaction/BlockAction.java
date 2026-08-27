@@ -33,15 +33,11 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
 
     /**
-     * Registers a block.
-     *
-     * @param block        The block instance.
-     * @param config       The config.
-     * @param creativeTabs The creative tab this block will reside in.
+     * Registers a block without a custom item class/instance.
      */
     public static void register(Block block, ExtendedConfig<BlockConfig, Block> config,
         @Nullable CreativeTabs creativeTabs) {
-        register(block, null, config, creativeTabs);
+        register(block, (Class<? extends Item>) null, config, creativeTabs);
     }
 
     /**
@@ -79,6 +75,42 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
 
         if (creativeTabs != null) {
             block.setCreativeTab(creativeTabs);
+        }
+    }
+
+    /**
+     * Registers a block using an already instantiated Item.
+     *
+     * @param block        The block instance.
+     * @param item         The item instance associated with the block (can be ItemBlock or standalone Item).
+     * @param eConfig      The config.
+     * @param creativeTabs The creative tab this block/item will reside in.
+     */
+    public static void register(Block block, @Nullable Item item, ExtendedConfig<BlockConfig, Block> eConfig,
+        @Nullable CreativeTabs creativeTabs) {
+        String name = eConfig.getSubUniqueName();
+
+        if (item == null) {
+            GameRegistry.registerBlock(block, null, name);
+        } else if (item instanceof ItemBlock itemBlock) {
+            GameRegistry.registerBlock(block, itemBlock.getClass(), name);
+        } else {
+            GameRegistry.registerBlock(block, null, name);
+            item.setUnlocalizedName(name);
+            if (item.iconString == null) {
+                item.setTextureName(
+                    eConfig.getMod()
+                        .getModId() + ":"
+                        + eConfig.getNamedId());
+            }
+            GameRegistry.registerItem(item, name);
+        }
+
+        if (creativeTabs != null) {
+            block.setCreativeTab(creativeTabs);
+            if (item != null) {
+                item.setCreativeTab(creativeTabs);
+            }
         }
     }
 

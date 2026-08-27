@@ -667,7 +667,7 @@ public abstract class PacketCodec extends PacketBase {
         });
     }
 
-    private interface ICodecAction {
+    public interface ICodecAction {
 
         /**
          * Encode the given object.
@@ -687,7 +687,7 @@ public abstract class PacketCodec extends PacketBase {
 
     }
 
-    private interface ICodecRunnable {
+    public interface ICodecRunnable {
 
         /**
          * Run a type of codec.

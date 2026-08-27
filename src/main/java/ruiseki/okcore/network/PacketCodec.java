@@ -291,23 +291,6 @@ public abstract class PacketCodec extends PacketBase {
                 return Vec3.createVectorHelper(x, y, z);
             }
         });
-        PacketCodec.registerCodecAction(DimPos.class, new PacketCodec.ICodecAction() {
-
-            @Override
-            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
-                DimPos dimPos = (DimPos) o;
-                extendedBuffer.writeInt(dimPos.getDimensionId());
-                extendedBuffer.writeLong(
-                    dimPos.getBlockPos()
-                        .toLong());
-            }
-
-            @Override
-            public Object decode(ExtendedBuffer extendedBuffer) {
-                int dim = extendedBuffer.readInt();
-                return DimPos.of(dim, BlockPos.fromLong(extendedBuffer.readLong()));
-            }
-        });
 
         codecActions.put(Map.class, new ICodecAction() {
 
@@ -475,6 +458,23 @@ public abstract class PacketCodec extends PacketBase {
             @Override
             public Object decode(ExtendedBuffer input) {
                 return BlockPos.fromLong(input.readLong());
+            }
+        });
+        PacketCodec.registerCodecAction(DimPos.class, new PacketCodec.ICodecAction() {
+
+            @Override
+            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
+                DimPos dimPos = (DimPos) o;
+                extendedBuffer.writeInt(dimPos.getDimensionId());
+                extendedBuffer.writeLong(
+                    dimPos.getBlockPos()
+                        .toLong());
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer extendedBuffer) {
+                int dim = extendedBuffer.readInt();
+                return DimPos.of(dim, BlockPos.fromLong(extendedBuffer.readLong()));
             }
         });
 

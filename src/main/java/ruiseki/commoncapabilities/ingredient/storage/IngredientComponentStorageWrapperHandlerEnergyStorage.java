@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.google.common.collect.Iterators;
 
 import cofh.api.energy.IEnergyStorage;
@@ -25,22 +27,22 @@ import ruiseki.okcore.ingredient.collection.FilteredIngredientCollectionIterator
  * @author rubensworks
  */
 public class IngredientComponentStorageWrapperHandlerEnergyStorage
-    implements IIngredientComponentStorageWrapperHandler<Integer, Boolean, IEnergyStorage> {
+    implements IIngredientComponentStorageWrapperHandler<Long, Boolean, IEnergyStorage> {
 
-    private final IngredientComponent<Integer, Boolean> ingredientComponent;
+    private final IngredientComponent<Long, Boolean> ingredientComponent;
 
     public IngredientComponentStorageWrapperHandlerEnergyStorage(
-        IngredientComponent<Integer, Boolean> ingredientComponent) {
+        IngredientComponent<Long, Boolean> ingredientComponent) {
         this.ingredientComponent = Objects.requireNonNull(ingredientComponent);
     }
 
     @Override
-    public IIngredientComponentStorage<Integer, Boolean> wrapComponentStorage(IEnergyStorage storage) {
+    public IIngredientComponentStorage<Long, Boolean> wrapComponentStorage(IEnergyStorage storage) {
         return new ComponentStorageWrapper(getComponent(), storage);
     }
 
     @Override
-    public IEnergyStorage wrapStorage(IIngredientComponentStorage<Integer, Boolean> componentStorage) {
+    public IEnergyStorage wrapStorage(IIngredientComponentStorage<Long, Boolean> componentStorage) {
         return new EnergyStorageWrapper(componentStorage);
     }
 
@@ -52,33 +54,32 @@ public class IngredientComponentStorageWrapperHandlerEnergyStorage
     }
 
     @Override
-    public IngredientComponent<Integer, Boolean> getComponent() {
+    public IngredientComponent<Long, Boolean> getComponent() {
         return this.ingredientComponent;
     }
 
-    public static class ComponentStorageWrapper implements IIngredientComponentStorage<Integer, Boolean> {
+    public static class ComponentStorageWrapper implements IIngredientComponentStorage<Long, Boolean> {
 
-        private final IngredientComponent<Integer, Boolean> ingredientComponent;
+        private final IngredientComponent<Long, Boolean> ingredientComponent;
         private final IEnergyStorage storage;
 
-        public ComponentStorageWrapper(IngredientComponent<Integer, Boolean> ingredientComponent,
-            IEnergyStorage storage) {
+        public ComponentStorageWrapper(IngredientComponent<Long, Boolean> ingredientComponent, IEnergyStorage storage) {
             this.ingredientComponent = ingredientComponent;
             this.storage = storage;
         }
 
         @Override
-        public IngredientComponent<Integer, Boolean> getComponent() {
+        public IngredientComponent<Long, Boolean> getComponent() {
             return this.ingredientComponent;
         }
 
         @Override
-        public Iterator<Integer> iterator() {
-            return Iterators.forArray(storage.getEnergyStored());
+        public @NotNull Iterator<Long> iterator() {
+            return Iterators.forArray((long) storage.getEnergyStored());
         }
 
         @Override
-        public Iterator<Integer> iterator(@Nonnull Integer prototype, Boolean matchFlags) {
+        public Iterator<Long> iterator(@Nonnull Long prototype, Boolean matchFlags) {
             return new FilteredIngredientCollectionIterator<>(
                 iterator(),
                 getComponent().getMatcher(),
@@ -92,52 +93,58 @@ public class IngredientComponentStorageWrapperHandlerEnergyStorage
         }
 
         @Override
-        public Integer insert(@Nonnull Integer ingredient, boolean simulate) {
-            return ingredient - storage.receiveEnergy(ingredient, simulate);
+        public Long insert(@Nonnull Long ingredient, boolean simulate) {
+            int toReceive = Helpers.castSafe(ingredient);
+            return ingredient - storage.receiveEnergy(toReceive, simulate);
         }
 
         @Override
-        public Integer extract(@Nonnull Integer prototype, Boolean matchFlags, boolean simulate) {
-            if (matchFlags) {
-                int extractable = storage.extractEnergy(prototype, true);
-                if (extractable != prototype) {
-                    return 0;
+        public Long extract(@Nonnull Long prototype, Boolean matchFlags, boolean simulate) {
+            int toExtract = Helpers.castSafe(prototype);
+            if (Boolean.TRUE.equals(matchFlags)) {
+                int extractable = storage.extractEnergy(toExtract, true);
+                if (extractable != toExtract) {
+                    return 0L;
                 }
             }
-            return storage.extractEnergy(prototype, simulate);
+            return (long) storage.extractEnergy(toExtract, simulate);
         }
 
         @Override
-        public Integer extract(long maxQuantity, boolean simulate) {
-            return storage.extractEnergy(Helpers.castSafe(maxQuantity), simulate);
+        public Long extract(long maxQuantity, boolean simulate) {
+            return (long) storage.extractEnergy(Helpers.castSafe(maxQuantity), simulate);
         }
     }
 
     public static class EnergyStorageWrapper implements IEnergyStorage {
 
-        private final IIngredientComponentStorage<Integer, Boolean> storage;
+        private final IIngredientComponentStorage<Long, Boolean> storage;
 
-        public EnergyStorageWrapper(IIngredientComponentStorage<Integer, Boolean> storage) {
+        public EnergyStorageWrapper(IIngredientComponentStorage<Long, Boolean> storage) {
             this.storage = storage;
         }
 
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
-            return maxReceive - storage.insert(maxReceive, simulate);
+            Long notInserted = storage.insert((long) maxReceive, simulate);
+            return maxReceive - Helpers.castSafe(notInserted);
         }
 
         @Override
         public int extractEnergy(int maxExtract, boolean simulate) {
-            return storage.extract(maxExtract, simulate);
+            Long extracted = storage.extract((long) maxExtract, simulate);
+            return Helpers.castSafe(extracted);
         }
 
         @Override
         public int getEnergyStored() {
-            int total = 0;
-            for (Integer stored : storage) {
-                total = Math.addExact(total, stored);
+            long total = 0;
+            for (Long stored : storage) {
+                if (stored != null) {
+                    total += stored;
+                }
             }
-            return total;
+            return Helpers.castSafe(total);
         }
 
         @Override

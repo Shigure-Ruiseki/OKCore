@@ -1,19 +1,18 @@
 package ruiseki.commoncapabilities.ingredient;
 
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
-import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Exact matcher for a void match condition.
- * 
+ *
  * @author rubensworks
  */
-public class IngredientMatcherEnergy implements IIngredientMatcher<Integer, Boolean> {
+public class IngredientMatcherEnergy implements IIngredientMatcher<Long, Boolean> {
 
     @Override
     public boolean isInstance(Object object) {
-        return object instanceof Integer;
+        return object instanceof Long;
     }
 
     @Override
@@ -47,43 +46,43 @@ public class IngredientMatcherEnergy implements IIngredientMatcher<Integer, Bool
     }
 
     @Override
-    public boolean matches(Integer a, Integer b, Boolean matchCondition) {
-        return !matchCondition || a.intValue() == b.intValue();
+    public boolean matches(Long a, Long b, Boolean matchCondition) {
+        return !matchCondition || (a != null && b != null && a.longValue() == b.longValue());
     }
 
     @Override
-    public Integer getEmptyInstance() {
-        return 0;
+    public Long getEmptyInstance() {
+        return 0L;
     }
 
     @Override
-    public boolean isEmpty(Integer instance) {
-        return instance == 0;
+    public boolean isEmpty(Long instance) {
+        return instance == null || instance == 0L;
     }
 
     @Override
-    public int hash(Integer instance) {
+    public int hash(Long instance) {
+        return instance == null ? 0 : Long.hashCode(instance);
+    }
+
+    @Override
+    public Long copy(Long instance) {
         return instance;
     }
 
     @Override
-    public Integer copy(Integer instance) {
-        return instance;
+    public long getQuantity(Long instance) {
+        return instance == null ? 0L : instance;
     }
 
     @Override
-    public long getQuantity(Integer instance) {
-        return instance;
-    }
-
-    @Override
-    public Integer withQuantity(Integer instance, long quantity) {
-        return Helpers.castSafe(quantity);
+    public Long withQuantity(Long instance, long quantity) {
+        return quantity;
     }
 
     @Override
     public long getMaximumQuantity() {
-        return Integer.MAX_VALUE;
+        return Long.MAX_VALUE;
     }
 
     @Override
@@ -92,12 +91,15 @@ public class IngredientMatcherEnergy implements IIngredientMatcher<Integer, Bool
     }
 
     @Override
-    public String localize(Integer instance) {
+    public String localize(Long instance) {
         return LangHelpers.localize("recipecomponent.minecraft.energy");
     }
 
     @Override
-    public int compare(Integer o1, Integer o2) {
-        return o1 - o2;
+    public int compare(Long o1, Long o2) {
+        if (o1 == null && o2 == null) return 0;
+        if (o1 == null) return -1;
+        if (o2 == null) return 1;
+        return Long.compare(o1, o2);
     }
 }

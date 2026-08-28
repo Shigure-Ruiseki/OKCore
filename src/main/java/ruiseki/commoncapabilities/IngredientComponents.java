@@ -39,7 +39,7 @@ public class IngredientComponents {
 
     public static IngredientComponent<ItemStack, Integer> ITEMSTACK;
     public static IngredientComponent<FluidStack, Integer> FLUIDSTACK;
-    public static IngredientComponent<Integer, Boolean> ENERGY;
+    public static IngredientComponent<Long, Boolean> ENERGY;
 
     public static void register() {
         ITEMSTACK = new IngredientComponent<>(
@@ -110,7 +110,7 @@ public class IngredientComponents {
             Lists.newArrayList(
                 new IngredientComponentCategoryType<>(
                     new ResourceLocation("energy/amount"),
-                    Integer.class,
+                    Long.class,
                     false,
                     amount -> amount,
                     true,

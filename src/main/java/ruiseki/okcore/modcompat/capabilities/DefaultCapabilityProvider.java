@@ -29,6 +29,14 @@ public class DefaultCapabilityProvider<T> implements ICapabilityProvider {
         this(capabilityGetter, LazyOptional.of(() -> Objects.requireNonNull(capability)));
     }
 
+    public DefaultCapabilityProvider(Capability<T> capabilityType, T capability) {
+        Objects.requireNonNull(
+            capabilityType,
+            "The given capability can not be null, this is probably being called too early during init");
+        this.capabilityGetter = () -> capabilityType;
+        this.capability = LazyOptional.of(() -> Objects.requireNonNull(capability));
+    }
+
     public Capability<T> getCapabilityType() {
         return Objects.requireNonNull(capabilityGetter.getCapability(), "A registered capability is null");
     }

@@ -147,7 +147,7 @@ public class CommonCapabilities extends ModBase {
                 .getValue(new ResourceLocation("minecraft", "itemstack"));
             IngredientComponent.FLUIDSTACK = (IngredientComponent<FluidStack, Integer>) IngredientComponent.REGISTRY
                 .getValue(new ResourceLocation("minecraft", "fluidstack"));
-            IngredientComponent.ENERGY = (IngredientComponent<Integer, Boolean>) IngredientComponent.REGISTRY
+            IngredientComponent.ENERGY = (IngredientComponent<Long, Boolean>) IngredientComponent.REGISTRY
                 .getValue(new ResourceLocation("minecraft", "energy"));
         }
     }

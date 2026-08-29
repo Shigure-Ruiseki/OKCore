@@ -456,4 +456,23 @@ public class ItemStackHelpers {
             }
         }
     }
+
+    /**
+     * Get a list of variants from the given stack if its damage value is the wildcard value,
+     * otherwise the list will only contain the given itemstack.
+     *
+     * @param itemStack The itemstack
+     * @return The list of variants.
+     */
+    public static List<ItemStack> getItemStackVariants(ItemStack itemStack) {
+        List<ItemStack> output = new ArrayList<>();
+        if (itemStack == null || itemStack.getItem() == null) return output;
+        Item item = itemStack.getItem();
+        if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+            item.getSubItems(item, null, output);
+        } else {
+            output.add(itemStack);
+        }
+        return output;
+    }
 }

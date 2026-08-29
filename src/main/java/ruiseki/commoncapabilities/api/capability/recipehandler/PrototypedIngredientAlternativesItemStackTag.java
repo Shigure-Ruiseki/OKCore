@@ -1,6 +1,27 @@
 package ruiseki.commoncapabilities.api.capability.recipehandler;
 
-import java.util.ArrayList;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.Constants;
+import org.jetbrains.annotations.NotNull;
+import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
+import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
+import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
+import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.TagHelpers;
+import ruiseki.okcore.tag.Registries;
+import ruiseki.okcore.tag.TagKey;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -9,46 +30,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.oredict.OreDictionary;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
-
-import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
-import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
-import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
-import ruiseki.okcore.helper.ItemStackHelpers;
-
 /**
- * An oredictionary-based {@link IPrototypedIngredientAlternatives} implementation.
- *
+ * An tagged-based {@link IPrototypedIngredientAlternatives} implementation.
  * @author rubensworks
  */
-public class PrototypedIngredientAlternativesItemStackOredictionary
-    implements IPrototypedIngredientAlternatives<ItemStack, Integer> {
+public class PrototypedIngredientAlternativesItemStackTag implements IPrototypedIngredientAlternatives<ItemStack, Integer> {
 
-    public static final PrototypedIngredientAlternativesItemStackOredictionary.Serializer SERIALIZER = new PrototypedIngredientAlternativesItemStackOredictionary.Serializer();
+    public static final PrototypedIngredientAlternativesItemStackTag.Serializer SERIALIZER = new PrototypedIngredientAlternativesItemStackTag.Serializer();
     static {
         SERIALIZERS.put((byte) 1, SERIALIZER);
     }
 
     private static final LoadingCache<String, List<ItemStack>> CACHE_OREDICT = CacheBuilder.newBuilder()
-        .expireAfterWrite(1, TimeUnit.MINUTES)
-        .build(new CacheLoader<String, List<ItemStack>>() {
-
+        .expireAfterWrite(1, TimeUnit.MINUTES).build(new CacheLoader<String, List<ItemStack>>() {
             @Override
-            public List<ItemStack> load(String key) throws Exception {
-                return OreDictionary.getOres(key);
+            public List<ItemStack> load(@NotNull String key) {
+                TagKey<Item> tagKey = TagKey.create(Registries.ITEM, new ResourceLocation(key));
+                return TagHelpers.toItemStacks(tagKey);
             }
         });
 
@@ -56,8 +54,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
     private final Integer matchCondition;
     private final long quantity;
 
-    public PrototypedIngredientAlternativesItemStackOredictionary(List<String> keys, Integer matchCondition,
-        long quantity) {
+    public PrototypedIngredientAlternativesItemStackTag(List<String> keys, Integer matchCondition, long quantity) {
         this.keys = keys;
         this.matchCondition = matchCondition;
         this.quantity = quantity;
@@ -87,12 +84,10 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof PrototypedIngredientAlternativesItemStackOredictionary
-            && this.keys.equals(((PrototypedIngredientAlternativesItemStackOredictionary) obj).keys)
-            && Objects.equals(
-                this.matchCondition,
-                ((PrototypedIngredientAlternativesItemStackOredictionary) obj).matchCondition)
-            && Objects.equals(this.quantity, ((PrototypedIngredientAlternativesItemStackOredictionary) obj).quantity);
+        return obj instanceof PrototypedIngredientAlternativesItemStackTag
+            && this.keys.equals(((PrototypedIngredientAlternativesItemStackTag) obj).keys)
+            && Objects.equals(this.matchCondition, ((PrototypedIngredientAlternativesItemStackTag) obj).matchCondition)
+            && Objects.equals(this.quantity, ((PrototypedIngredientAlternativesItemStackTag) obj).quantity);
     }
 
     @Override
@@ -109,17 +104,14 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
         return "[PrototypedIngredientAlternativesList: " + this.keys.toString() + "]";
     }
 
-    public static class Serializer implements
-        IPrototypedIngredientAlternatives.ISerializer<PrototypedIngredientAlternativesItemStackOredictionary> {
-
+    public static class Serializer implements IPrototypedIngredientAlternatives.ISerializer<PrototypedIngredientAlternativesItemStackTag> {
         @Override
         public byte getId() {
             return 1;
         }
 
         @Override
-        public <T, M> NBTBase serialize(IngredientComponent<T, M> ingredientComponent,
-            PrototypedIngredientAlternativesItemStackOredictionary alternatives) {
+        public <T, M> NBTBase serialize(IngredientComponent<T, M> ingredientComponent, PrototypedIngredientAlternativesItemStackTag alternatives) {
             NBTTagCompound tag = new NBTTagCompound();
             NBTTagList keys = new NBTTagList();
             for (String key : alternatives.keys) {
@@ -132,14 +124,13 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
         }
 
         @Override
-        public <T, M> PrototypedIngredientAlternativesItemStackOredictionary deserialize(
-            IngredientComponent<T, M> ingredientComponent, NBTBase tag) {
+        public <T, M> PrototypedIngredientAlternativesItemStackTag deserialize(IngredientComponent<T, M> ingredientComponent, NBTBase tag) {
             NBTTagCompound tagCompound = (NBTTagCompound) tag;
             if (!tagCompound.hasKey("keys")) {
-                throw new IllegalArgumentException("A oredict prototyped alternatives did not contain valid keys");
+                throw new IllegalArgumentException("A tagged prototyped alternatives did not contain valid keys");
             }
             if (!tagCompound.hasKey("match")) {
-                throw new IllegalArgumentException("A oredict prototyped alternatives did not contain a valid match");
+                throw new IllegalArgumentException("A tagged prototyped alternatives did not contain a valid match");
             }
             NBTTagList keysTag = tagCompound.getTagList("keys", Constants.NBT.TAG_STRING);
             List<String> keys = Lists.newArrayList();
@@ -147,9 +138,8 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
                 keys.add(((NBTTagString) key).func_150285_a_());
             }
             int matchCondition = tagCompound.getInteger("match");
-            long quantity = tagCompound.hasKey("quantity") ? tagCompound.getLong("quantity") : 1; // TODO: remove check
-                                                                                                  // in 1.13
-            return new PrototypedIngredientAlternativesItemStackOredictionary(keys, matchCondition, quantity);
+            long quantity = tagCompound.getLong("quantity");
+            return new PrototypedIngredientAlternativesItemStackTag(keys, matchCondition, quantity);
         }
     }
 }

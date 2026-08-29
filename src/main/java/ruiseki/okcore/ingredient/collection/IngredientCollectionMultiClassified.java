@@ -30,9 +30,9 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponentCategoryType
  */
 public class IngredientCollectionMultiClassified<T, M> extends IngredientCollectionAdapter<T, M>
     implements IIngredientCollectionMutable<T, M>,
-    IIngredientCollectionLikeMultiClassifiedTrait<T, M, T, IngredientCollectionSingleClassified<T, M, ?>> {
+    IIngredientCollectionLikeMultiClassifiedTrait<T, M, T, IngredientCollectionSingleClassified<T, M, ?, ?>> {
 
-    private final Map<IngredientComponentCategoryType<T, M, ?>, IngredientCollectionSingleClassified<T, M, ?>> classifiedCollections;
+    private final Map<IngredientComponentCategoryType<T, M, ?>, IngredientCollectionSingleClassified<T, M, ?, ?>> classifiedCollections;
 
     public IngredientCollectionMultiClassified(IngredientComponent<T, M> component,
         Supplier<IIngredientCollectionMutable<T, M>> collectionCreator) {
@@ -48,7 +48,7 @@ public class IngredientCollectionMultiClassified<T, M> extends IngredientCollect
     @Override
     public boolean add(T instance) {
         boolean result = false;
-        for (IngredientCollectionSingleClassified<T, M, ?> singleClassified : classifiedCollections.values()) {
+        for (IngredientCollectionSingleClassified<T, M, ?, ?> singleClassified : classifiedCollections.values()) {
             result = singleClassified.add(instance);
         }
         return result;
@@ -92,7 +92,7 @@ public class IngredientCollectionMultiClassified<T, M> extends IngredientCollect
     @Override
     public boolean remove(T instance) {
         boolean result = false;
-        for (IngredientCollectionSingleClassified<T, M, ?> singleClassified : classifiedCollections.values()) {
+        for (IngredientCollectionSingleClassified<T, M, ?, ?> singleClassified : classifiedCollections.values()) {
             result = singleClassified.remove(instance);
         }
         return result;
@@ -110,11 +110,11 @@ public class IngredientCollectionMultiClassified<T, M> extends IngredientCollect
 
         // Pick the best classified collection for the given condition,
         // and iterate over all matching elements.
-        IngredientCollectionSingleClassified<T, M, ?> classifiedCollection = getBestClassifiedCollection(
+        IngredientCollectionSingleClassified<T, M, ?, ?> classifiedCollection = getBestClassifiedCollection(
             matchCondition);
 
         // Determine all other classified collections
-        Set<IngredientCollectionSingleClassified<T, M, ?>> otherClassifiedCollections = Sets.newIdentityHashSet();
+        Set<IngredientCollectionSingleClassified<T, M, ?, ?>> otherClassifiedCollections = Sets.newIdentityHashSet();
         otherClassifiedCollections.addAll(classifiedCollections.values());
         otherClassifiedCollections.remove(classifiedCollection);
 
@@ -151,7 +151,7 @@ public class IngredientCollectionMultiClassified<T, M> extends IngredientCollect
 
     @Override
     public void clear() {
-        for (IngredientCollectionSingleClassified<T, M, ?> singleClassified : classifiedCollections.values()) {
+        for (IngredientCollectionSingleClassified<T, M, ?, ?> singleClassified : classifiedCollections.values()) {
             singleClassified.clear();
         }
     }
@@ -185,12 +185,12 @@ public class IngredientCollectionMultiClassified<T, M> extends IngredientCollect
     }
 
     @Override
-    public void removeInstance(IngredientCollectionSingleClassified<T, M, ?> collection, T iterableInstance) {
+    public void removeInstance(IngredientCollectionSingleClassified<T, M, ?, ?> collection, T iterableInstance) {
         collection.remove(iterableInstance);
     }
 
     @Override
-    public Map<IngredientComponentCategoryType<T, M, ?>, IngredientCollectionSingleClassified<T, M, ?>> getClassifiedCollections() {
+    public Map<IngredientComponentCategoryType<T, M, ?>, IngredientCollectionSingleClassified<T, M, ?, ?>> getClassifiedCollections() {
         return this.classifiedCollections;
     }
 }

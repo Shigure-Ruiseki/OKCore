@@ -460,7 +460,7 @@ public abstract class PacketCodec extends PacketBase {
                 return BlockPos.fromLong(input.readLong());
             }
         });
-        PacketCodec.registerCodecAction(DimPos.class, new PacketCodec.ICodecAction() {
+        codecActions.put(DimPos.class, new PacketCodec.ICodecAction() {
 
             @Override
             public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
@@ -570,7 +570,7 @@ public abstract class PacketCodec extends PacketBase {
         });
     }
 
-    public static void registerCodecAction(Class<?> clazz, ICodecAction action) {
+    public static void addCodedAction(Class<?> clazz, ICodecAction action) {
         codecActions.put(clazz, action);
     }
 

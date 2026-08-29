@@ -1,9 +1,13 @@
 package ruiseki.commoncapabilities.api.capability.recipehandler;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
@@ -12,7 +16,14 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
+
 import org.jetbrains.annotations.NotNull;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
+
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -22,19 +33,13 @@ import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagKey;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * An tagged-based {@link IPrototypedIngredientAlternatives} implementation.
+ * 
  * @author rubensworks
  */
-public class PrototypedIngredientAlternativesItemStackTag implements IPrototypedIngredientAlternatives<ItemStack, Integer> {
+public class PrototypedIngredientAlternativesItemStackTag
+    implements IPrototypedIngredientAlternatives<ItemStack, Integer> {
 
     public static final PrototypedIngredientAlternativesItemStackTag.Serializer SERIALIZER = new PrototypedIngredientAlternativesItemStackTag.Serializer();
     static {
@@ -42,7 +47,9 @@ public class PrototypedIngredientAlternativesItemStackTag implements IPrototyped
     }
 
     private static final LoadingCache<String, List<ItemStack>> CACHE_OREDICT = CacheBuilder.newBuilder()
-        .expireAfterWrite(1, TimeUnit.MINUTES).build(new CacheLoader<String, List<ItemStack>>() {
+        .expireAfterWrite(1, TimeUnit.MINUTES)
+        .build(new CacheLoader<String, List<ItemStack>>() {
+
             @Override
             public List<ItemStack> load(@NotNull String key) {
                 TagKey<Item> tagKey = TagKey.create(Registries.ITEM, new ResourceLocation(key));
@@ -71,7 +78,9 @@ public class PrototypedIngredientAlternativesItemStackTag implements IPrototyped
                     return Stream.empty();
                 }
             })
-            .flatMap(itemStack -> ItemStackHelpers.getItemStackVariants(itemStack).stream())
+            .flatMap(
+                itemStack -> ItemStackHelpers.getItemStackVariants(itemStack)
+                    .stream())
             .map(itemStack -> matcher.withQuantity(itemStack, getQuantity()))
             .map(itemStack -> new PrototypedIngredient<>(IngredientComponent.ITEMSTACK, itemStack, this.matchCondition))
             .collect(Collectors.toList());
@@ -104,14 +113,17 @@ public class PrototypedIngredientAlternativesItemStackTag implements IPrototyped
         return "[PrototypedIngredientAlternativesList: " + this.keys.toString() + "]";
     }
 
-    public static class Serializer implements IPrototypedIngredientAlternatives.ISerializer<PrototypedIngredientAlternativesItemStackTag> {
+    public static class Serializer
+        implements IPrototypedIngredientAlternatives.ISerializer<PrototypedIngredientAlternativesItemStackTag> {
+
         @Override
         public byte getId() {
             return 1;
         }
 
         @Override
-        public <T, M> NBTBase serialize(IngredientComponent<T, M> ingredientComponent, PrototypedIngredientAlternativesItemStackTag alternatives) {
+        public <T, M> NBTBase serialize(IngredientComponent<T, M> ingredientComponent,
+            PrototypedIngredientAlternativesItemStackTag alternatives) {
             NBTTagCompound tag = new NBTTagCompound();
             NBTTagList keys = new NBTTagList();
             for (String key : alternatives.keys) {
@@ -124,7 +136,8 @@ public class PrototypedIngredientAlternativesItemStackTag implements IPrototyped
         }
 
         @Override
-        public <T, M> PrototypedIngredientAlternativesItemStackTag deserialize(IngredientComponent<T, M> ingredientComponent, NBTBase tag) {
+        public <T, M> PrototypedIngredientAlternativesItemStackTag deserialize(
+            IngredientComponent<T, M> ingredientComponent, NBTBase tag) {
             NBTTagCompound tagCompound = (NBTTagCompound) tag;
             if (!tagCompound.hasKey("keys")) {
                 throw new IllegalArgumentException("A tagged prototyped alternatives did not contain valid keys");

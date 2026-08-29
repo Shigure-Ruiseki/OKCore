@@ -911,6 +911,119 @@ public class GuiHelpers {
     }
 
     /**
+     * Draw the background box for a tooltip.
+     *
+     * @param xStart        X
+     * @param yStart        Y
+     * @param tooltipWidth  Width
+     * @param tooltipHeight Height
+     */
+    public static void drawTooltipBackground(int xStart, int yStart, int tooltipWidth, int tooltipHeight) {
+        float zLevel = 300.0F;
+        int color1 = -267386864;
+        fillGradient(xStart - 3, yStart - 4, xStart + tooltipWidth + 3, yStart - 3, color1, color1, zLevel);
+        fillGradient(
+            xStart - 3,
+            yStart + tooltipHeight + 3,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 4,
+            color1,
+            color1,
+            zLevel);
+        fillGradient(
+            xStart - 3,
+            yStart - 3,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 3,
+            color1,
+            color1,
+            zLevel);
+        fillGradient(xStart - 4, yStart - 3, xStart - 3, yStart + tooltipHeight + 3, color1, color1, zLevel);
+        fillGradient(
+            xStart + tooltipWidth + 3,
+            yStart - 3,
+            xStart + tooltipWidth + 4,
+            yStart + tooltipHeight + 3,
+            color1,
+            color1,
+            zLevel);
+        int color2 = 1347420415;
+        int color3 = (color2 & 16711422) >> 1 | color2 & -16777216;
+        fillGradient(
+            xStart - 3,
+            yStart - 3 + 1,
+            xStart - 3 + 1,
+            yStart + tooltipHeight + 3 - 1,
+            color2,
+            color3,
+            zLevel);
+        fillGradient(
+            xStart + tooltipWidth + 2,
+            yStart - 3 + 1,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 3 - 1,
+            color2,
+            color3,
+            zLevel);
+        fillGradient(xStart - 3, yStart - 3, xStart + tooltipWidth + 3, yStart - 3 + 1, color2, color2, zLevel);
+        fillGradient(
+            xStart - 3,
+            yStart + tooltipHeight + 2,
+            xStart + tooltipWidth + 3,
+            yStart + tooltipHeight + 3,
+            color3,
+            color3,
+            zLevel);
+    }
+
+    /**
+     * Render a rectangle.
+     */
+    public static void fillGradient(int left, int top, int right, int bottom, int startColor, int endColor,
+        float zLevel) {
+        float f = (float) (startColor >> 24 & 255) / 255.0F;
+        float f1 = (float) (startColor >> 16 & 255) / 255.0F;
+        float f2 = (float) (startColor >> 8 & 255) / 255.0F;
+        float f3 = (float) (startColor & 255) / 255.0F;
+        float f4 = (float) (endColor >> 24 & 255) / 255.0F;
+        float f5 = (float) (endColor >> 16 & 255) / 255.0F;
+        float f6 = (float) (endColor >> 8 & 255) / 255.0F;
+        float f7 = (float) (endColor & 255) / 255.0F;
+
+        GlStateManager.disableTexture();
+        GlStateManager.enableBlend();
+        GlStateManager.disableAlphaTest();
+        GlStateManager.blendFuncSeparate(
+            GlStateManager.SourceFactor.SRC_ALPHA,
+            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+            GlStateManager.SourceFactor.ONE,
+            GlStateManager.DestFactor.ZERO);
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+
+        net.minecraft.client.renderer.Tessellator tessellator = net.minecraft.client.renderer.Tessellator.instance;
+        tessellator.startDrawingQuads();
+
+        tessellator.setColorRGBA_F(f1, f2, f3, f);
+        tessellator.addVertex((double) right, (double) top, (double) zLevel);
+
+        tessellator.setColorRGBA_F(f1, f2, f3, f);
+        tessellator.addVertex((double) left, (double) top, (double) zLevel);
+
+        tessellator.setColorRGBA_F(f5, f6, f7, f4);
+        tessellator.addVertex((double) left, (double) bottom, (double) zLevel);
+
+        tessellator.setColorRGBA_F(f5, f6, f7, f4);
+        tessellator.addVertex((double) right, (double) bottom, (double) zLevel);
+
+        tessellator.draw();
+
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.disableBlend();
+        GlStateManager.enableAlphaTest();
+        GlStateManager.enableTexture();
+    }
+
+    /**
      * Render a tooltip if the mouse if in the bounding box defined by the given position, width and height.
      * The tooltip lines supplier can return an optional list.
      *

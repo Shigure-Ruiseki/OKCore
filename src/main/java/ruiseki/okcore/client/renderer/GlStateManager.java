@@ -7,6 +7,31 @@ import org.lwjgl.opengl.GL12;
 
 public class GlStateManager {
 
+    public static void disableTexture() {
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+    }
+
+    public static void enableTexture() {
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+    }
+
+    public static void disableAlphaTest() {
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
+    }
+
+    public static void enableAlphaTest() {
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+    }
+
+    public static void blendFuncSeparate(SourceFactor srcFactor, DestFactor dstFactor, SourceFactor srcFactorAlpha,
+        DestFactor dstFactorAlpha) {
+        tryBlendFuncSeparate(srcFactor.factor, dstFactor.factor, srcFactorAlpha.factor, dstFactorAlpha.factor);
+    }
+
+    public static void blendFuncSeparate(int srcFactor, int dstFactor, int srcFactorAlpha, int dstFactorAlpha) {
+        OpenGlHelper.glBlendFunc(srcFactor, dstFactor, srcFactorAlpha, dstFactorAlpha);
+    }
+
     public static void disableAlpha() {
         GL11.glDisable(GL11.GL_ALPHA_TEST);
     }
@@ -162,6 +187,10 @@ public class GlStateManager {
 
     public static void translate(double x, double y, double z) {
         GL11.glTranslated(x, y, z);
+    }
+
+    public static void color(float colorRed, float colorGreen, float colorBlue) {
+        GL11.glColor3f(colorRed, colorGreen, colorBlue);
     }
 
     public static void color(float colorRed, float colorGreen, float colorBlue, float colorAlpha) {

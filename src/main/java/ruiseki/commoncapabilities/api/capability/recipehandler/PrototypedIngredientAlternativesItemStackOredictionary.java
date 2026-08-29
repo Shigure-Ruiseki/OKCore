@@ -1,6 +1,5 @@
 package ruiseki.commoncapabilities.api.capability.recipehandler;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -74,7 +72,9 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
                     return Stream.empty();
                 }
             })
-            .flatMap(itemStack -> ItemStackHelpers.getItemStackVariants(itemStack).stream())
+            .flatMap(
+                itemStack -> ItemStackHelpers.getItemStackVariants(itemStack)
+                    .stream())
             .map(itemStack -> matcher.withQuantity(itemStack, getQuantity()))
             .map(itemStack -> new PrototypedIngredient<>(IngredientComponent.ITEMSTACK, itemStack, this.matchCondition))
             .collect(Collectors.toList());

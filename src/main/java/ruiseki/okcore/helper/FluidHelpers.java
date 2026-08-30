@@ -48,14 +48,27 @@ public class FluidHelpers {
 
     public static final int BUCKET_VOLUME = FluidContainerRegistry.BUCKET_VOLUME;
 
-    /**
-     * Get the fluid amount of the given stack in a safe manner.
-     *
-     * @param fluidStack The fluid stack
-     * @return The fluid amount.
-     */
+    public static final FluidStack EMPTY = null;
+
+    public static boolean isEmpty(@Nullable FluidStack stack) {
+        return stack == null || stack.getFluid() == null || stack.amount <= 0;
+    }
+
+    @Nullable
+    public static FluidStack copy(@Nullable FluidStack stack) {
+        return isEmpty(stack) ? null : stack.copy();
+    }
+
+    @Nullable
+    public static FluidStack copyWithAmount(@Nullable FluidStack stack, int amount) {
+        if (isEmpty(stack)) return EMPTY;
+        FluidStack copy = stack.copy();
+        copy.amount = amount;
+        return copy;
+    }
+
     public static int getAmount(@Nullable FluidStack fluidStack) {
-        return fluidStack != null ? fluidStack.amount : 0;
+        return isEmpty(fluidStack) ? 0 : fluidStack.amount;
     }
 
     public static String getModId(Fluid fluid) {
@@ -65,17 +78,6 @@ public class FluidHelpers {
             return fullName.split(":")[0];
         }
         return null;
-    }
-
-    /**
-     * Copy the given fluid stack
-     *
-     * @param fluidStack The fluid stack to copy.
-     * @return A copy of the fluid stack.
-     */
-    public static FluidStack copy(@Nullable FluidStack fluidStack) {
-        if (fluidStack == null) return null;
-        return fluidStack.copy();
     }
 
     /**

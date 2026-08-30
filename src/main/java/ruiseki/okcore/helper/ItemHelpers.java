@@ -48,12 +48,12 @@ public class ItemHelpers {
 
     @Nullable
     public static ItemStack copy(@Nullable ItemStack stack) {
-        return isEmpty(stack) ? null : stack.copy();
+        return isEmpty(stack) ? EMPTY : stack.copy();
     }
 
     @Nullable
     public static ItemStack copyWithSize(@Nullable ItemStack stack, int size) {
-        if (isEmpty(stack)) return null;
+        if (isEmpty(stack)) return EMPTY;
         ItemStack copy = stack.copy();
         copy.stackSize = size;
         return copy;
@@ -83,7 +83,7 @@ public class ItemHelpers {
 
     @Nullable
     public static ItemStack split(@Nullable ItemStack stack, int amount) {
-        if (isEmpty(stack)) return null;
+        if (isEmpty(stack)) return EMPTY;
 
         int i = Math.min(amount, stack.stackSize);
         ItemStack itemstack = stack.copy();

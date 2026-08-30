@@ -24,10 +24,6 @@ public class ValueNotifierHelpers {
 
     /**
      * Set the NBT value
-     *
-     * @param notifier The notifier instance
-     * @param valueId  The value id
-     * @param value    The value
      */
     public static void setValue(IValueNotifier notifier, int valueId, NBTTagCompound value) {
         NBTTagCompound tag = new NBTTagCompound();
@@ -37,10 +33,6 @@ public class ValueNotifierHelpers {
 
     /**
      * Set the int value
-     *
-     * @param notifier The notifier instance
-     * @param valueId  The value id
-     * @param value    The value
      */
     public static void setValue(IValueNotifier notifier, int valueId, int value) {
         NBTTagCompound tag = new NBTTagCompound();
@@ -70,6 +62,9 @@ public class ValueNotifierHelpers {
      */
     public static void setValue(IValueNotifier notifier, int valueId, String value) {
         NBTTagCompound tag = new NBTTagCompound();
+        if (value == null || value.isEmpty()) {
+            value = " ";
+        }
         tag.setString(KEY, value);
         notifier.setValue(valueId, tag);
     }
@@ -84,8 +79,13 @@ public class ValueNotifierHelpers {
     public static void setValue(IValueNotifier notifier, int valueId, List<String> values) {
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagList list = new NBTTagList();
-        for (String value : values) {
-            list.appendTag(new NBTTagString(value));
+        if (values != null) {
+            for (String value : values) {
+                if (value == null || value.isEmpty()) {
+                    value = " ";
+                }
+                list.appendTag(new NBTTagString(value));
+            }
         }
         tag.setTag(KEY, list);
         notifier.setValue(valueId, tag);
@@ -148,7 +148,8 @@ public class ValueNotifierHelpers {
     public static String getValueString(IValueNotifier notifier, int valueId) {
         NBTTagCompound tag = notifier.getValue(valueId);
         if (tag != null) {
-            return tag.getString(KEY);
+            String val = tag.getString(KEY);
+            return " ".equals(val) ? "" : val;
         }
         return null;
     }
@@ -167,11 +168,11 @@ public class ValueNotifierHelpers {
             NBTTagList listTag = tag.getTagList(KEY, Constants.NBT.TAG_STRING);
             List<String> list = new ArrayList<>();
             for (int i = 0; i < listTag.tagCount(); i++) {
-                list.add(listTag.getStringTagAt(i));
+                String val = listTag.getStringTagAt(i);
+                list.add(" ".equals(val) ? "" : val);
             }
             return list;
         }
         return null;
     }
-
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 public class WeightedOreStack extends WeightedStackBase {
 
@@ -32,19 +32,19 @@ public class WeightedOreStack extends WeightedStackBase {
     @Override
     public boolean isStackEqual(ItemStack stack) {
         ItemStack mainStack = getMainStack();
-        if (ItemStackHelpers.isEmpty(mainStack) || ItemStackHelpers.isEmpty(stack)) {
+        if (ItemHelpers.isEmpty(mainStack) || ItemHelpers.isEmpty(stack)) {
             return false;
         }
-        return ItemStackHelpers.areStacksEqual(mainStack, stack);
+        return ItemHelpers.areItemsEqual(mainStack, stack);
     }
 
     @Override
     public ItemStack getMainStack() {
         if (this.stacks != null && !this.stacks.isEmpty()) {
             ItemStack firstStack = this.stacks.get(0);
-            return ItemStackHelpers.isEmpty(firstStack) ? ItemStackHelpers.EMPTY : firstStack;
+            return ItemHelpers.isEmpty(firstStack) ? ItemHelpers.EMPTY : firstStack;
         }
-        return ItemStackHelpers.EMPTY;
+        return ItemHelpers.EMPTY;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class WeightedOreStack extends WeightedStackBase {
 
         if (this.stacks != null) {
             for (ItemStack itemStack : this.stacks) {
-                newStacks.add(ItemStackHelpers.copy(itemStack));
+                newStacks.add(ItemHelpers.copy(itemStack));
             }
         }
 

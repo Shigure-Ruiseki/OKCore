@@ -11,7 +11,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 public final class ItemStackKey {
 
@@ -38,7 +38,7 @@ public final class ItemStackKey {
         if (stack == null || stack.stackSize <= 0 || stack.getItem() == null) return null;
 
         int itemId = Item.getIdFromItem(stack.getItem());
-        int meta = stack.isItemStackDamageable() ? 0 : ItemStackHelpers.getStackMeta(stack);
+        int meta = stack.isItemStackDamageable() ? 0 : ItemHelpers.getStackMeta(stack);
         long packedItemMeta = packItemMeta(itemId, meta);
 
         NBTTagCompound tag = stack.getTagCompound();

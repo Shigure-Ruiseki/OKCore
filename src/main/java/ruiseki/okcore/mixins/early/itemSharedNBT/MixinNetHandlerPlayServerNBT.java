@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 @Mixin(NetHandlerPlayServer.class)
 public class MixinNetHandlerPlayServerNBT {
@@ -18,6 +18,6 @@ public class MixinNetHandlerPlayServerNBT {
             value = "INVOKE",
             target = "Lnet/minecraft/item/ItemStack;areItemStacksEqual(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
     private boolean okcore$compare(ItemStack a, ItemStack b) {
-        return ItemStackHelpers.areItemStacksEqualUsingNBTShareTag(a, b);
+        return ItemHelpers.areItemStacksEqualUsingNBTShareTag(a, b);
     }
 }

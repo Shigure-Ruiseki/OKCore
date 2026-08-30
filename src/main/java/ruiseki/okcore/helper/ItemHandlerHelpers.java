@@ -17,13 +17,13 @@ public class ItemHandlerHelpers {
 
     @Nullable
     public static ItemStack insertItem(IItemHandler dest, @Nullable ItemStack stack, boolean simulate) {
-        if (dest == null || ItemStackHelpers.isEmpty(stack)) {
+        if (dest == null || ItemHelpers.isEmpty(stack)) {
             return stack;
         }
 
         for (int i = 0; i < dest.getSlots(); ++i) {
             stack = dest.insertItem(i, stack, simulate);
-            if (ItemStackHelpers.isEmpty(stack)) {
+            if (ItemHelpers.isEmpty(stack)) {
                 return null;
             }
         }
@@ -31,7 +31,7 @@ public class ItemHandlerHelpers {
     }
 
     public static boolean canItemStacksStack(@Nullable ItemStack a, @Nullable ItemStack b) {
-        if (ItemStackHelpers.isEmpty(a) || ItemStackHelpers.isEmpty(b)) {
+        if (ItemHelpers.isEmpty(a) || ItemHelpers.isEmpty(b)) {
             return false;
         }
         if (a.isItemEqual(b) && a.hasTagCompound() == b.hasTagCompound()) {
@@ -42,7 +42,7 @@ public class ItemHandlerHelpers {
     }
 
     public static boolean canItemStacksStackRelaxed(@Nullable ItemStack a, @Nullable ItemStack b) {
-        if (ItemStackHelpers.isEmpty(a) || ItemStackHelpers.isEmpty(b)) {
+        if (ItemHelpers.isEmpty(a) || ItemHelpers.isEmpty(b)) {
             return false;
         }
         if (a.getItem() != b.getItem()) {
@@ -64,15 +64,15 @@ public class ItemHandlerHelpers {
 
     @Nullable
     public static ItemStack copyStackWithSize(@Nullable ItemStack itemStack, int size) {
-        if (ItemStackHelpers.isEmpty(itemStack) || size <= 0) {
+        if (ItemHelpers.isEmpty(itemStack) || size <= 0) {
             return null;
         }
-        return ItemStackHelpers.copyWithSize(itemStack, size);
+        return ItemHelpers.copyWithSize(itemStack, size);
     }
 
     @Nullable
     public static ItemStack insertItemStacked(IItemHandler inventory, @Nullable ItemStack stack, boolean simulate) {
-        if (inventory == null || ItemStackHelpers.isEmpty(stack)) {
+        if (inventory == null || ItemHelpers.isEmpty(stack)) {
             return stack;
         }
 
@@ -86,17 +86,17 @@ public class ItemHandlerHelpers {
             ItemStack slot = inventory.getStackInSlot(i);
             if (canItemStacksStackRelaxed(slot, stack)) {
                 stack = inventory.insertItem(i, stack, simulate);
-                if (ItemStackHelpers.isEmpty(stack)) {
+                if (ItemHelpers.isEmpty(stack)) {
                     break;
                 }
             }
         }
 
-        if (!ItemStackHelpers.isEmpty(stack)) {
+        if (!ItemHelpers.isEmpty(stack)) {
             for (int i = 0; i < sizeInventory; ++i) {
-                if (ItemStackHelpers.isEmpty(inventory.getStackInSlot(i))) {
+                if (ItemHelpers.isEmpty(inventory.getStackInSlot(i))) {
                     stack = inventory.insertItem(i, stack, simulate);
-                    if (ItemStackHelpers.isEmpty(stack)) {
+                    if (ItemHelpers.isEmpty(stack)) {
                         break;
                     }
                 }
@@ -111,7 +111,7 @@ public class ItemHandlerHelpers {
     }
 
     public static void giveItemToPlayer(EntityPlayer player, @Nullable ItemStack stack, int preferredSlot) {
-        if (player == null || ItemStackHelpers.isEmpty(stack)) {
+        if (player == null || ItemHelpers.isEmpty(stack)) {
             return;
         }
 
@@ -123,11 +123,11 @@ public class ItemHandlerHelpers {
             remainder = inventory.insertItem(preferredSlot, stack, false);
         }
 
-        if (!ItemStackHelpers.isEmpty(remainder)) {
+        if (!ItemHelpers.isEmpty(remainder)) {
             remainder = insertItemStacked(inventory, remainder, false);
         }
 
-        if (ItemStackHelpers.isEmpty(remainder) || remainder.stackSize != stack.stackSize) {
+        if (ItemHelpers.isEmpty(remainder) || remainder.stackSize != stack.stackSize) {
             world.playSoundAtEntity(
                 player,
                 "random.pop",
@@ -135,7 +135,7 @@ public class ItemHandlerHelpers {
                 ((world.rand.nextFloat() - world.rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
         }
 
-        if (!ItemStackHelpers.isEmpty(remainder) && !world.isRemote) {
+        if (!ItemHelpers.isEmpty(remainder) && !world.isRemote) {
             EntityItem entityitem = new EntityItem(world, player.posX, player.posY + 0.5D, player.posZ, remainder);
             entityitem.delayBeforeCanPickup = 40;
             entityitem.motionX = 0.0D;
@@ -154,7 +154,7 @@ public class ItemHandlerHelpers {
 
         for (int j = 0; j < inv.getSlots(); ++j) {
             ItemStack itemstack = inv.getStackInSlot(j);
-            if (!ItemStackHelpers.isEmpty(itemstack)) {
+            if (!ItemHelpers.isEmpty(itemstack)) {
                 proportion += (float) itemstack.stackSize
                     / (float) Math.min(inv.getSlotLimit(j), itemstack.getMaxStackSize());
                 ++itemsFound;

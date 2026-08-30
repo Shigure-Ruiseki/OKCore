@@ -10,7 +10,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
 import ruiseki.okcore.helper.FluidHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * A component that has to be added for classes that want to implement the DamageIndicator behaviour.
@@ -77,7 +77,7 @@ public class DamageIndicatedItemComponent {
      * @return The info for the item.
      */
     public String getInfo(ItemStack itemStack) {
-        if (ItemStackHelpers.isEmpty(itemStack)) {
+        if (ItemHelpers.isEmpty(itemStack)) {
             return getInfo(null, 0, 0);
         }
 
@@ -117,7 +117,7 @@ public class DamageIndicatedItemComponent {
      * @param flag      the tooltip flag
      */
     public void addInformation(ItemStack itemStack, EntityPlayer world, List<String> list, boolean flag) {
-        if (ItemStackHelpers.isEmpty(itemStack) || list == null) {
+        if (ItemHelpers.isEmpty(itemStack) || list == null) {
             return;
         }
 
@@ -133,7 +133,7 @@ public class DamageIndicatedItemComponent {
      * @return The displayed durability.
      */
     public double getDurability(ItemStack itemStack) {
-        if (ItemStackHelpers.isEmpty(itemStack)) {
+        if (ItemHelpers.isEmpty(itemStack)) {
             return 1.0;
         }
 

@@ -15,7 +15,7 @@ import net.minecraftforge.common.util.Constants;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.helper.ItemHandlerHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, INBTSerializable {
@@ -39,12 +39,12 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     public void setEmpty() {
-        this.stacks.replaceAll(ignored -> ItemStackHelpers.EMPTY);
+        this.stacks.replaceAll(ignored -> ItemHelpers.EMPTY);
     }
 
     public void setSize(int size) {
         ItemStack[] array = new ItemStack[size];
-        Arrays.fill(array, ItemStackHelpers.EMPTY);
+        Arrays.fill(array, ItemHelpers.EMPTY);
         this.stacks = new ArrayList<>(Arrays.asList(array));
     }
 
@@ -56,7 +56,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     @Override
     public void setStackInSlot(int slot, ItemStack stack) {
         this.validateSlotIndex(slot);
-        this.stacks.set(slot, ItemStackHelpers.isEmpty(stack) ? ItemStackHelpers.EMPTY : stack);
+        this.stacks.set(slot, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
         this.onContentsChanged(slot);
     }
 
@@ -69,19 +69,19 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     public ItemStack getStackInSlot(int slot) {
         this.validateSlotIndex(slot);
         ItemStack stack = this.stacks.get(slot);
-        return ItemStackHelpers.isEmpty(stack) ? ItemStackHelpers.EMPTY : stack;
+        return ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack;
     }
 
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        if (ItemStackHelpers.isEmpty(stack)) {
-            return ItemStackHelpers.EMPTY;
+        if (ItemHelpers.isEmpty(stack)) {
+            return ItemHelpers.EMPTY;
         } else {
             this.validateSlotIndex(slot);
             ItemStack existing = this.stacks.get(slot);
             int limit = this.getStackLimit(slot, stack);
 
-            if (!ItemStackHelpers.isEmpty(existing)) {
+            if (!ItemHelpers.isEmpty(existing)) {
                 if (!ItemHandlerHelpers.canItemStacksStack(stack, existing)) {
                     return stack;
                 }
@@ -94,20 +94,20 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
             } else {
                 boolean reachedLimit = stack.stackSize > limit;
                 if (!simulate) {
-                    if (ItemStackHelpers.isEmpty(existing)) {
+                    if (ItemHelpers.isEmpty(existing)) {
                         this.stacks.set(
                             slot,
                             reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, limit)
-                                : ItemStackHelpers.copy(stack));
+                                : ItemHelpers.copy(stack));
                     } else {
-                        ItemStackHelpers.grow(existing, reachedLimit ? limit : stack.stackSize);
+                        ItemHelpers.grow(existing, reachedLimit ? limit : stack.stackSize);
                     }
 
                     this.onContentsChanged(slot);
                 }
 
                 return reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, stack.stackSize - limit)
-                    : ItemStackHelpers.EMPTY;
+                    : ItemHelpers.EMPTY;
             }
         }
     }
@@ -115,17 +115,17 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (amount <= 0) {
-            return ItemStackHelpers.EMPTY;
+            return ItemHelpers.EMPTY;
         } else {
             this.validateSlotIndex(slot);
             ItemStack existing = this.stacks.get(slot);
-            if (ItemStackHelpers.isEmpty(existing)) {
-                return ItemStackHelpers.EMPTY;
+            if (ItemHelpers.isEmpty(existing)) {
+                return ItemHelpers.EMPTY;
             } else {
                 int toExtract = Math.min(amount, existing.getMaxStackSize());
                 if (existing.stackSize <= toExtract) {
                     if (!simulate) {
-                        this.stacks.set(slot, ItemStackHelpers.EMPTY);
+                        this.stacks.set(slot, ItemHelpers.EMPTY);
                         this.onContentsChanged(slot);
                     }
 
@@ -149,7 +149,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     protected int getStackLimit(int slot, @Nullable ItemStack stack) {
-        if (ItemStackHelpers.isEmpty(stack)) {
+        if (ItemHelpers.isEmpty(stack)) {
             return 0;
         }
         return Math.min(this.getSlotLimit(slot), stack.getMaxStackSize());
@@ -166,7 +166,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
 
         for (int i = 0; i < this.stacks.size(); ++i) {
             ItemStack stack = this.stacks.get(i);
-            if (!ItemStackHelpers.isEmpty(stack)) {
+            if (!ItemHelpers.isEmpty(stack)) {
                 NBTTagCompound itemTag = new NBTTagCompound();
                 itemTag.setInteger("Slot", i);
                 stack.writeToNBT(itemTag);
@@ -191,10 +191,10 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
             int slot = itemTags.getInteger("Slot");
             if (slot >= 0 && slot < this.stacks.size()) {
                 ItemStack loadedStack = ItemStack.loadItemStackFromNBT(itemTags);
-                if (!ItemStackHelpers.isEmpty(loadedStack) && itemTags.hasKey("Count", Constants.NBT.TAG_INT)) {
+                if (!ItemHelpers.isEmpty(loadedStack) && itemTags.hasKey("Count", Constants.NBT.TAG_INT)) {
                     loadedStack.stackSize = itemTags.getInteger("Count");
                 }
-                this.stacks.set(slot, ItemStackHelpers.isEmpty(loadedStack) ? ItemStackHelpers.EMPTY : loadedStack);
+                this.stacks.set(slot, ItemHelpers.isEmpty(loadedStack) ? ItemHelpers.EMPTY : loadedStack);
             }
         }
 
@@ -214,12 +214,12 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     public ItemStack getAndRemoveSlot(int slot) {
         ItemStack stack = this.getStackInSlot(slot);
 
-        if (ItemStackHelpers.isEmpty(stack)) {
-            return ItemStackHelpers.EMPTY;
+        if (ItemHelpers.isEmpty(stack)) {
+            return ItemHelpers.EMPTY;
         }
 
-        ItemStack extract = ItemStackHelpers.copy(stack);
-        this.setStackInSlot(slot, ItemStackHelpers.EMPTY);
+        ItemStack extract = ItemHelpers.copy(stack);
+        this.setStackInSlot(slot, ItemHelpers.EMPTY);
         return extract;
     }
 
@@ -227,14 +227,14 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         if (amount <= 0) return 0;
 
         ItemStack stack = getStackInSlot(slot);
-        if (ItemStackHelpers.isEmpty(stack)) return amount;
+        if (ItemHelpers.isEmpty(stack)) return amount;
 
         int oldCount = stack.stackSize;
         int toVoid = Math.min(oldCount, amount);
 
-        ItemStackHelpers.shrink(stack, toVoid);
-        if (ItemStackHelpers.isEmpty(stack)) {
-            setStackInSlot(slot, ItemStackHelpers.EMPTY);
+        ItemHelpers.shrink(stack, toVoid);
+        if (ItemHelpers.isEmpty(stack)) {
+            setStackInSlot(slot, ItemHelpers.EMPTY);
         } else {
             setStackInSlot(slot, stack);
         }
@@ -246,20 +246,20 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         if (amount <= 0) return 0;
 
         ItemStack stack = getStackInSlot(slot);
-        if (ItemStackHelpers.isEmpty(stack)) return amount;
+        if (ItemHelpers.isEmpty(stack)) return amount;
 
         int oldCount = stack.stackSize;
         int max = stack.getMaxStackSize();
 
         int toAdd = Math.min(amount, max - oldCount);
-        ItemStackHelpers.grow(stack, toAdd);
+        ItemHelpers.grow(stack, toAdd);
 
         setStackInSlot(slot, stack);
         return amount - toAdd;
     }
 
     public boolean hasRoomForItem(ItemStack stack) {
-        if (ItemStackHelpers.isEmpty(stack)) {
+        if (ItemHelpers.isEmpty(stack)) {
             return false;
         }
 
@@ -268,9 +268,9 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         for (int i = 0; i < getSlots(); i++) {
             ItemStack slotStack = getStackInSlot(i);
 
-            if (ItemStackHelpers.isEmpty(slotStack)) {
+            if (ItemHelpers.isEmpty(slotStack)) {
                 remaining -= Math.min(stack.getMaxStackSize(), remaining);
-            } else if (ItemStackHelpers.areStacksEqual(slotStack, stack)) {
+            } else if (ItemHelpers.areItemsEqual(slotStack, stack)) {
                 int space = slotStack.getMaxStackSize() - slotStack.stackSize;
                 if (space > 0) {
                     remaining -= Math.min(space, remaining);
@@ -288,7 +288,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     public boolean hasEmptySlot() {
         for (int i = 0; i < getSlots(); i++) {
             ItemStack stack = getStackInSlot(i);
-            if (ItemStackHelpers.isEmpty(stack)) {
+            if (ItemHelpers.isEmpty(stack)) {
                 return true;
             }
         }
@@ -296,7 +296,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     public int addItemToAvailableSlots(ItemStack stack) {
-        if (ItemStackHelpers.isEmpty(stack)) {
+        if (ItemHelpers.isEmpty(stack)) {
             return 0;
         }
 
@@ -305,15 +305,15 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         for (int i = 0; i < getSlots() && remaining > 0; i++) {
             ItemStack slotStack = getStackInSlot(i);
 
-            if (ItemStackHelpers.isEmpty(slotStack)) continue;
+            if (ItemHelpers.isEmpty(slotStack)) continue;
 
-            if (ItemStackHelpers.canStack(slotStack, stack)) {
+            if (ItemHelpers.canStack(slotStack, stack)) {
                 int max = slotStack.getMaxStackSize();
                 int canAdd = max - slotStack.stackSize;
 
                 if (canAdd > 0) {
                     int toAdd = Math.min(canAdd, remaining);
-                    ItemStackHelpers.grow(slotStack, toAdd);
+                    ItemHelpers.grow(slotStack, toAdd);
                     setStackInSlot(i, slotStack);
                     remaining -= toAdd;
                 }
@@ -323,9 +323,9 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         for (int i = 0; i < getSlots() && remaining > 0; i++) {
             ItemStack slotStack = getStackInSlot(i);
 
-            if (!ItemStackHelpers.isEmpty(slotStack)) continue;
+            if (!ItemHelpers.isEmpty(slotStack)) continue;
 
-            ItemStack newStack = ItemStackHelpers.copy(stack);
+            ItemStack newStack = ItemHelpers.copy(stack);
             int toAdd = Math.min(newStack.getMaxStackSize(), remaining);
             newStack.stackSize = toAdd;
 
@@ -339,14 +339,14 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     public void dropAll(World world, int x, int y, int z) {
         for (int i = 0; i < getSlots(); i++) {
             ItemStack stack = getStackInSlot(i);
-            if (!ItemStackHelpers.isEmpty(stack)) {
+            if (!ItemHelpers.isEmpty(stack)) {
                 dropStack(world, x, y, z, stack);
             }
         }
     }
 
     public static void dropStack(World world, int x, int y, int z, ItemStack stack) {
-        if (ItemStackHelpers.isEmpty(stack)) {
+        if (ItemHelpers.isEmpty(stack)) {
             return;
         }
 
@@ -354,7 +354,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         float dy = world.rand.nextFloat() * 0.8F + 0.1F;
         float dz = world.rand.nextFloat() * 0.8F + 0.1F;
 
-        EntityItem entityItem = new EntityItem(world, x + dx, y + dy, z + dz, ItemStackHelpers.copy(stack));
+        EntityItem entityItem = new EntityItem(world, x + dx, y + dy, z + dz, ItemHelpers.copy(stack));
 
         float motion = 0.05F;
         entityItem.motionX = world.rand.nextGaussian() * motion;

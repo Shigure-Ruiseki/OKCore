@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * Matcher for ItemStacks.
@@ -67,7 +67,7 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public int hash(ItemStack instance) {
-        return ItemStackHelpers.getItemStackHashCode(instance);
+        return ItemHelpers.getItemStackHashCode(instance);
     }
 
     @Override

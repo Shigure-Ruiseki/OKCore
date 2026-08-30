@@ -268,7 +268,7 @@ public class FluidHelpers {
                     }
 
                     ItemStack containerCopy = container.copy();
-                    ItemStackHelpers.shrink(containerCopy, 1);
+                    ItemHelpers.shrink(containerCopy, 1);
                     return new FluidActionResult(containerCopy);
                 }
             }
@@ -353,7 +353,7 @@ public class FluidHelpers {
                     }
 
                     ItemStack containerCopy = container.copy();
-                    ItemStackHelpers.shrink(containerCopy, 1);
+                    ItemHelpers.shrink(containerCopy, 1);
                     return new FluidActionResult(containerCopy);
                 }
             }

@@ -14,7 +14,7 @@ import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
 
@@ -61,7 +61,7 @@ public abstract class ItemGui extends ItemBase implements IGuiContainerProviderC
 
     @Override
     public boolean onDroppedByPlayer(ItemStack itemstack, EntityPlayer player) {
-        if (!ItemStackHelpers.isEmpty(itemstack) && player instanceof EntityPlayerMP
+        if (!ItemHelpers.isEmpty(itemstack) && player instanceof EntityPlayerMP
             && player.openContainer != null
             && player.openContainer.getClass() == getContainer()) {
             player.closeScreen();

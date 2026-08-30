@@ -19,7 +19,7 @@ import ruiseki.okcore.capabilities.IItemCapability;
 import ruiseki.okcore.fluid.handler.FluidHandlerItemCapacity;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.helper.FluidHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * This extension on {@link ItemFluidContainer} with a fluid capability will show a damage indicator depending on how
@@ -56,7 +56,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
 
     @Override
     public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> itemList) {
-        if (!ItemStackHelpers.isValidCreativeTab(this, tab) || itemList == null) {
+        if (!ItemHelpers.isValidCreativeTab(this, tab) || itemList == null) {
             return;
         }
         component.getSubItems(tab, itemList, fluid, 0);
@@ -64,7 +64,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
 
     @Override
     public String getInfo(ItemStack itemStack) {
-        if (ItemStackHelpers.isEmpty(itemStack)) {
+        if (ItemHelpers.isEmpty(itemStack)) {
             return "";
         }
         return component.getInfo(itemStack);
@@ -79,7 +79,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer world, List<String> list, boolean flag) {
-        if (ItemStackHelpers.isEmpty(itemStack) || list == null) {
+        if (ItemHelpers.isEmpty(itemStack) || list == null) {
             return;
         }
         component.addInformation(itemStack, world, list, flag);
@@ -93,7 +93,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
 
     @Override
     public double getDurabilityForDisplay(ItemStack itemStack) {
-        if (ItemStackHelpers.isEmpty(itemStack)) {
+        if (ItemHelpers.isEmpty(itemStack)) {
             return 1.0;
         }
         return component.getDurability(itemStack);
@@ -116,7 +116,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
      * @return If it could be drained.
      */
     public boolean canDrain(int amount, ItemStack itemStack) {
-        if (ItemStackHelpers.isEmpty(itemStack) || amount <= 0) {
+        if (ItemHelpers.isEmpty(itemStack) || amount <= 0) {
             return false;
         }
 
@@ -132,7 +132,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
 
     @Override
     public ICapabilityProvider initCapabilities(@NotNull ItemStack stack, NBTTagCompound nbt) {
-        if (ItemStackHelpers.isEmpty(stack)) {
+        if (ItemHelpers.isEmpty(stack)) {
             return null;
         }
         return new FluidHandlerItemCapacity(stack, capacity, getFluid());

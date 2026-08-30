@@ -25,7 +25,7 @@ import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * An oredictionary-based {@link IPrototypedIngredientAlternatives} implementation.
@@ -73,7 +73,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
                 }
             })
             .flatMap(
-                itemStack -> ItemStackHelpers.getVariants(itemStack)
+                itemStack -> ItemHelpers.getVariants(itemStack)
                     .stream())
             .map(itemStack -> matcher.withQuantity(itemStack, getQuantity()))
             .map(itemStack -> new PrototypedIngredient<>(IngredientComponent.ITEMSTACK, itemStack, this.matchCondition))

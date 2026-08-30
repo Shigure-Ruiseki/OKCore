@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterators;
 
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.handler.EmptyHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
@@ -65,7 +65,7 @@ public class CombinedInvWrapper implements IItemHandlerModifiable, Iterable<IIte
         int index = getIndexForSlot(slot);
         IItemHandlerModifiable handler = getHandlerFromIndex(index);
         int localSlot = getSlotFromIndex(slot, index);
-        handler.setStackInSlot(localSlot, ItemStackHelpers.isEmpty(stack) ? ItemStackHelpers.EMPTY : stack);
+        handler.setStackInSlot(localSlot, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
     }
 
     @Override
@@ -79,29 +79,29 @@ public class CombinedInvWrapper implements IItemHandlerModifiable, Iterable<IIte
         IItemHandlerModifiable handler = getHandlerFromIndex(index);
         int localSlot = getSlotFromIndex(slot, index);
         ItemStack result = handler.getStackInSlot(localSlot);
-        return ItemStackHelpers.isEmpty(result) ? ItemStackHelpers.EMPTY : result;
+        return ItemHelpers.isEmpty(result) ? ItemHelpers.EMPTY : result;
     }
 
     @Override
     public @Nullable ItemStack insertItem(int slot, @Nullable ItemStack stack, boolean simulate) {
-        if (ItemStackHelpers.isEmpty(stack)) return ItemStackHelpers.EMPTY;
+        if (ItemHelpers.isEmpty(stack)) return ItemHelpers.EMPTY;
 
         int index = getIndexForSlot(slot);
         IItemHandlerModifiable handler = getHandlerFromIndex(index);
         int localSlot = getSlotFromIndex(slot, index);
         ItemStack result = handler.insertItem(localSlot, stack, simulate);
-        return ItemStackHelpers.isEmpty(result) ? ItemStackHelpers.EMPTY : result;
+        return ItemHelpers.isEmpty(result) ? ItemHelpers.EMPTY : result;
     }
 
     @Override
     public @Nullable ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if (amount <= 0) return ItemStackHelpers.EMPTY;
+        if (amount <= 0) return ItemHelpers.EMPTY;
 
         int index = getIndexForSlot(slot);
         IItemHandlerModifiable handler = getHandlerFromIndex(index);
         int localSlot = getSlotFromIndex(slot, index);
         ItemStack result = handler.extractItem(localSlot, amount, simulate);
-        return ItemStackHelpers.isEmpty(result) ? ItemStackHelpers.EMPTY : result;
+        return ItemHelpers.isEmpty(result) ? ItemHelpers.EMPTY : result;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class CombinedInvWrapper implements IItemHandlerModifiable, Iterable<IIte
 
     @Override
     public boolean isItemValid(int slot, @Nullable ItemStack stack) {
-        if (ItemStackHelpers.isEmpty(stack)) return false;
+        if (ItemHelpers.isEmpty(stack)) return false;
 
         int index = getIndexForSlot(slot);
         IItemHandlerModifiable handler = getHandlerFromIndex(index);

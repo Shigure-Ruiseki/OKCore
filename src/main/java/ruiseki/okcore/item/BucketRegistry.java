@@ -15,7 +15,7 @@ import com.google.common.collect.Maps;
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * This will take care of the logic of custom buckets, so they can be filled like other buckets.
@@ -51,20 +51,20 @@ public class BucketRegistry implements IBucketRegistry {
     @Override
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onBucketFill(FillBucketEvent event) {
-        if (event == null || event.target == null || ItemStackHelpers.isEmpty(event.current)) {
+        if (event == null || event.target == null || ItemHelpers.isEmpty(event.current)) {
             return;
         }
 
         ItemStack result = fillCustomBucket(event.world, event.target, event.current);
-        if (!ItemStackHelpers.isEmpty(result)) {
+        if (!ItemHelpers.isEmpty(result)) {
             event.result = result;
             event.setResult(Event.Result.ALLOW);
         }
     }
 
     private ItemStack fillCustomBucket(World world, MovingObjectPosition pos, ItemStack current) {
-        if (world == null || pos == null || ItemStackHelpers.isEmpty(current)) {
-            return ItemStackHelpers.EMPTY;
+        if (world == null || pos == null || ItemHelpers.isEmpty(current)) {
+            return ItemHelpers.EMPTY;
         }
 
         int x = pos.blockX;
@@ -80,12 +80,12 @@ public class BucketRegistry implements IBucketRegistry {
             ItemStack bucketStack = new ItemStack(bucket);
             ItemStack containerItem = bucket.getContainerItem(bucketStack);
 
-            if (!ItemStackHelpers.isEmpty(containerItem) && ItemStackHelpers.areStacksEqual(current, containerItem)) {
+            if (!ItemHelpers.isEmpty(containerItem) && ItemHelpers.areItemsEqual(current, containerItem)) {
                 world.setBlockToAir(x, y, z);
                 return bucketStack;
             }
         }
 
-        return ItemStackHelpers.EMPTY;
+        return ItemHelpers.EMPTY;
     }
 }

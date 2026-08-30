@@ -291,13 +291,13 @@ public class InventoryHelpers {
             return null;
         }
         if (itemStack != null && ItemStack.areItemStackTagsEqual(toAdd, itemStack)
-            && ItemStackHelpers.areStacksEqual(toAdd, itemStack)
+            && ItemHelpers.areItemsEqual(toAdd, itemStack)
             && itemStack.stackSize < itemStack.getMaxStackSize()) {
 
             toAdd = toAdd.copy();
             int toAddCount = Math.min(itemStack.getMaxStackSize() - itemStack.stackSize, toAdd.stackSize);
-            ItemStackHelpers.grow(itemStack, toAddCount);
-            ItemStackHelpers.shrink(toAdd, toAddCount);
+            ItemHelpers.grow(itemStack, toAddCount);
+            ItemHelpers.shrink(toAdd, toAddCount);
 
             if (toAdd.stackSize <= 0) {
                 return null;

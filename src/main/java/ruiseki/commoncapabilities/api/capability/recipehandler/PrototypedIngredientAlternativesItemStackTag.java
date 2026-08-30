@@ -35,7 +35,7 @@ import ruiseki.okcore.tag.TagKey;
 
 /**
  * An tagged-based {@link IPrototypedIngredientAlternatives} implementation.
- * 
+ *
  * @author rubensworks
  */
 public class PrototypedIngredientAlternativesItemStackTag
@@ -79,7 +79,7 @@ public class PrototypedIngredientAlternativesItemStackTag
                 }
             })
             .flatMap(
-                itemStack -> ItemStackHelpers.getItemStackVariants(itemStack)
+                itemStack -> ItemStackHelpers.getVariants(itemStack)
                     .stream())
             .map(itemStack -> matcher.withQuantity(itemStack, getQuantity()))
             .map(itemStack -> new PrototypedIngredient<>(IngredientComponent.ITEMSTACK, itemStack, this.matchCondition))

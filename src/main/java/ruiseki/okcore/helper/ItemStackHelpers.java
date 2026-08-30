@@ -18,8 +18,6 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.collect.Lists;
-
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
@@ -34,6 +32,35 @@ import ruiseki.okcore.item.weighted.WeightedStackBase;
 public class ItemStackHelpers {
 
     private static final Random RANDOM = new Random();
+
+    public static final ItemStack EMPTY = null;
+
+    public static boolean isEmpty(ItemStack stack) {
+        return stack == null || stack.getItem() == null || stack.stackSize <= 0;
+    }
+
+    public static ItemStack copy(ItemStack stack) {
+        return isEmpty(stack) ? null : stack.copy();
+    }
+
+    public static void grow(ItemStack stack, int amount) {
+        if (isEmpty(stack)) return;
+        stack.stackSize += amount;
+    }
+
+    public static void shrink(ItemStack stack, int amount) {
+        grow(stack, -amount);
+    }
+
+    public static ItemStack split(ItemStack stack, int amount) {
+        if (isEmpty(stack)) return null;
+
+        int i = Math.min(amount, stack.stackSize);
+        ItemStack itemstack = stack.copy();
+        itemstack.stackSize = i;
+        shrink(stack, i);
+        return itemstack;
+    }
 
     /**
      * Spawn an itemstack into the world.
@@ -60,7 +87,7 @@ public class ItemStackHelpers {
         float offsetY = RANDOM.nextFloat() * 0.8F + 0.1F;
         float offsetZ = RANDOM.nextFloat() * 0.8F + 0.1F;
 
-        while (itemStack.stackSize > 0) {
+        while (!isEmpty(itemStack)) {
             int i = RANDOM.nextInt(21) + 10;
 
             if (i > itemStack.stackSize) {
@@ -136,7 +163,7 @@ public class ItemStackHelpers {
     public static boolean hasPlayerItem(EntityPlayer player, Item item) {
         for (PlayerExtendedInventoryIterator it = new PlayerExtendedInventoryIterator(player); it.hasNext();) {
             ItemStack itemStack = it.next();
-            if (itemStack != null && itemStack.getItem() == item) {
+            if (!isEmpty(itemStack) && itemStack.getItem() == item) {
                 return true;
             }
         }
@@ -151,15 +178,7 @@ public class ItemStackHelpers {
      * @return The list of variants.
      */
     public static List<ItemStack> getVariants(ItemStack itemStack) {
-        List<ItemStack> output = Lists.newLinkedList();
-        if (itemStack == null || itemStack.getItem() == null) return output;
-        Item item = itemStack.getItem();
-        if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-            item.getSubItems(item, null, output);
-        } else {
-            output.add(itemStack);
-        }
-        return output;
+        return getSubItemsIfWildcardMeta(itemStack);
     }
 
     /**
@@ -206,8 +225,7 @@ public class ItemStackHelpers {
      * @return If they are completely equal.
      */
     public static boolean areItemStacksIdentical(ItemStack a, ItemStack b) {
-        return ItemStack.areItemStacksEqual(a, b)
-            && ((a == null && b == null) || (a != null && a.stackSize == b.stackSize));
+        return ItemStack.areItemStacksEqual(a, b) && (a == null || !isEmpty(a) && a.stackSize == b.stackSize);
     }
 
     /**
@@ -218,7 +236,7 @@ public class ItemStackHelpers {
      * @return The hash code.
      */
     public static int getItemStackHashCode(ItemStack stack) {
-        if (stack == null || stack.getItem() == null) {
+        if (isEmpty(stack)) {
             return 0;
         }
         int result = 1;
@@ -227,9 +245,6 @@ public class ItemStackHelpers {
             .hashCode();
         result = 37 * result + stack.getItemDamage();
 
-        // Tags can be very large, and expensive to calculate, which is not needed for hashCodes.
-        // NBTTagCompound tagCompound = stack.getTagCompound();
-        // result = 37 * result + (tagCompound != null ? tagCompound.hashCode() : 0);
         return result;
     }
 
@@ -258,7 +273,7 @@ public class ItemStackHelpers {
      */
     public static List<ItemStack> getSubItems(ItemStack itemStack) {
         List<ItemStack> subItems = new ArrayList<>();
-        if (itemStack.getItem() == null) return subItems;
+        if (isEmpty(itemStack)) return subItems;
         itemStack.getItem()
             .getSubItems(itemStack.getItem(), null, subItems);
         return subItems;
@@ -273,6 +288,8 @@ public class ItemStackHelpers {
      * @return The sub items.
      */
     public static List<ItemStack> getSubItemsIfWildcardMeta(ItemStack itemStack) {
+        if (isEmpty(itemStack)) return Collections.emptyList();
+
         if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
             return getSubItems(itemStack);
         } else {
@@ -288,19 +305,10 @@ public class ItemStackHelpers {
         for (WeightedStackBase weightedStackBase : src) {
             dest.add(weightedStackBase.copy());
         }
-
     }
 
     public static int getStackMeta(ItemStack stack) {
         return stack.getItemDamage();
-    }
-
-    public static boolean isStackEmpty(ItemStack stack) {
-        return stack == null || stack.getItem() == null || stack.stackSize <= 0;
-    }
-
-    public static boolean isStackInvalid(ItemStack stack) {
-        return stack == null || stack.getItem() == null || stack.stackSize < 0;
     }
 
     public static boolean areStacksEqual(ItemStack stack1, ItemStack stack2) {
@@ -364,58 +372,27 @@ public class ItemStackHelpers {
     }
 
     public static ItemStack merge(ItemStack a, ItemStack b) {
-        if (a == null) return b;
+        if (isEmpty(a)) return b;
         a.stackSize += b.stackSize;
         return a;
     }
 
-    public static void grow(ItemStack stack, int amount) {
-        if (stack == null) return;
-        stack.stackSize += amount;
-    }
-
-    public static void shrink(ItemStack stack, int amount) {
-        if (stack == null) return;
-        stack.stackSize -= amount;
-
-        if (stack.stackSize <= 0) {
-            stack.stackSize = 0;
-        }
-    }
-
-    public static ItemStack split(ItemStack stack, int amount) {
-        if (stack == null) return null;
-
-        int removed = Math.min(amount, stack.stackSize);
-        ItemStack result = stack.copy();
-        result.stackSize = removed;
-
-        stack.stackSize -= removed;
-
-        if (stack.stackSize <= 0) {
-            stack.stackSize = 0;
-        }
-
-        return result;
-    }
-
     public static ItemStack copyWithSize(ItemStack stack, int size) {
-        if (stack == null) return null;
-
+        if (isEmpty(stack)) return null;
         ItemStack copy = stack.copy();
         copy.stackSize = size;
         return copy;
     }
 
     public static boolean canStack(ItemStack a, ItemStack b) {
-        if (a == null || b == null) return false;
+        if (isEmpty(a) || isEmpty(b)) return false;
 
         return a.getItem() == b.getItem() && a.getItemDamage() == b.getItemDamage()
             && ItemStack.areItemStackTagsEqual(a, b);
     }
 
     public static int getSpace(ItemStack stack) {
-        if (stack == null) return 64;
+        if (isEmpty(stack)) return 64;
         return stack.getMaxStackSize() - stack.stackSize;
     }
 
@@ -455,24 +432,5 @@ public class ItemStackHelpers {
                 list.set(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
             }
         }
-    }
-
-    /**
-     * Get a list of variants from the given stack if its damage value is the wildcard value,
-     * otherwise the list will only contain the given itemstack.
-     *
-     * @param itemStack The itemstack
-     * @return The list of variants.
-     */
-    public static List<ItemStack> getItemStackVariants(ItemStack itemStack) {
-        List<ItemStack> output = new ArrayList<>();
-        if (itemStack == null || itemStack.getItem() == null) return output;
-        Item item = itemStack.getItem();
-        if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-            item.getSubItems(item, null, output);
-        } else {
-            output.add(itemStack);
-        }
-        return output;
     }
 }

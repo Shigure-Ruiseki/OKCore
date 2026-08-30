@@ -107,7 +107,7 @@ public class ItemTransfer {
                 if (srcSlot < 0 || srcSlot >= sourceHandler.getSlots()) continue;
 
                 ItemStack available = sourceHandler.getStackInSlot(srcSlot);
-                if (ItemStackHelpers.isStackEmpty(available)) continue;
+                if (ItemStackHelpers.isEmpty(available)) continue;
 
                 if (filter != null && !filter.test(available)) continue;
 
@@ -122,7 +122,7 @@ public class ItemTransfer {
                     int toExtract = Math.min(availableCount, toTransferThisOP);
 
                     ItemStack simulatedExtracted = sourceHandler.extractItem(srcSlot, toExtract, true);
-                    if (ItemStackHelpers.isStackEmpty(simulatedExtracted)) break;
+                    if (ItemStackHelpers.isEmpty(simulatedExtracted)) break;
 
                     if (filter != null && !filter.test(simulatedExtracted)) break;
 
@@ -134,31 +134,31 @@ public class ItemTransfer {
 
                         int currentSlotLimit = Math.min(sinkHandler.getSlotLimit(dstSlot), maxSinkSlotStackSize);
                         ItemStack currentInSink = sinkHandler.getStackInSlot(dstSlot);
-                        if (!ItemStackHelpers.isStackEmpty(currentInSink)) {
+                        if (!ItemStackHelpers.isEmpty(currentInSink)) {
                             if (currentInSink.stackSize >= currentSlotLimit) continue;
                         }
 
                         remainder = sinkHandler.insertItem(dstSlot, remainder, true);
-                        if (ItemStackHelpers.isStackEmpty(remainder)) break;
+                        if (ItemStackHelpers.isEmpty(remainder)) break;
                     }
 
                     int acceptedCount = initialCount - (remainder == null ? 0 : remainder.stackSize);
                     if (acceptedCount <= 0) break;
 
                     ItemStack actualExtracted = sourceHandler.extractItem(srcSlot, acceptedCount, false);
-                    if (ItemStackHelpers.isStackEmpty(actualExtracted)) break;
+                    if (ItemStackHelpers.isEmpty(actualExtracted)) break;
 
                     availableCount -= actualExtracted.stackSize;
                     ItemStack realRemainder = actualExtracted.copy();
 
                     for (int dstSlot : sinkIndices) {
                         realRemainder = sinkHandler.insertItem(dstSlot, realRemainder, false);
-                        if (ItemStackHelpers.isStackEmpty(realRemainder)) break;
+                        if (ItemStackHelpers.isEmpty(realRemainder)) break;
                     }
 
-                    if (!ItemStackHelpers.isStackEmpty(realRemainder)) {
+                    if (!ItemStackHelpers.isEmpty(realRemainder)) {
                         ItemStack leftOver = sourceHandler.insertItem(srcSlot, realRemainder, false);
-                        if (!ItemStackHelpers.isStackEmpty(leftOver) && rejectedStacks != null) {
+                        if (!ItemStackHelpers.isEmpty(leftOver) && rejectedStacks != null) {
                             rejectedStacks.accept(leftOver);
                         }
                     }

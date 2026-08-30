@@ -73,7 +73,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
                 }
             })
             .flatMap(
-                itemStack -> ItemStackHelpers.getItemStackVariants(itemStack)
+                itemStack -> ItemStackHelpers.getVariants(itemStack)
                     .stream())
             .map(itemStack -> matcher.withQuantity(itemStack, getQuantity()))
             .map(itemStack -> new PrototypedIngredient<>(IngredientComponent.ITEMSTACK, itemStack, this.matchCondition))

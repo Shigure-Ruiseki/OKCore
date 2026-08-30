@@ -5,6 +5,8 @@ import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.okcore.helper.ItemStackHelpers;
+
 public class PlayerArmorInvWrapper extends RangedWrapper {
 
     private final InventoryPlayer inventoryPlayer;
@@ -19,7 +21,7 @@ public class PlayerArmorInvWrapper extends RangedWrapper {
     public ItemStack insertItem(int slot, @Nullable ItemStack stack, boolean simulate) {
         // check if it's valid for the armor slot
         if (slot >= 0 && slot <= 3
-            && stack != null
+            && ItemStackHelpers.isEmpty(stack)
             && stack.getItem()
                 .isValidArmor(stack, slot, getInventoryPlayer().player)) {
             return super.insertItem(slot, stack, simulate);

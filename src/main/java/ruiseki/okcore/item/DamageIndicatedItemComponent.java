@@ -10,6 +10,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
+import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**
  * A component that has to be added for classes that want to implement the DamageIndicator behaviour.
@@ -34,12 +35,13 @@ public class DamageIndicatedItemComponent {
     /**
      * Create a new DamageIndicatedItemComponent
      *
-     * @param item
-     *             The item class on which the behaviour will be added.
+     * @param item The item class on which the behaviour will be added.
      */
     public DamageIndicatedItemComponent(ItemFluidContainer item) {
         this.item = item;
-        item.setMaxStackSize(1);
+        if (this.item != null) {
+            this.item.setMaxStackSize(1);
+        }
     }
 
     /**
@@ -51,14 +53,20 @@ public class DamageIndicatedItemComponent {
      * @param meta     The meta data for the item to add.
      */
     public void getSubItems(CreativeTabs tab, List<ItemStack> itemList, Fluid fluid, int meta) {
+        if (itemList == null || this.item == null) {
+            return;
+        }
+
         // Add the 'full' container.
         ItemStack itemStackFull = new ItemStack(this.item, 1, meta);
-        IFluidHandlerItemCapacity fluidHanderFull = FluidHelpers.getFluidHandlerItemCapacity(itemStackFull);
-        fluidHanderFull.fill(new FluidStack(fluid, fluidHanderFull.getCapacity()), true);
+        IFluidHandlerItemCapacity fluidHandlerFull = FluidHelpers.getFluidHandlerItemCapacity(itemStackFull);
+        if (fluidHandlerFull != null) {
+            fluidHandlerFull.fill(new FluidStack(fluid, fluidHandlerFull.getCapacity()), true);
+        }
         itemList.add(itemStackFull);
 
         // Add the 'empty' container.
-        ItemStack itemStackEmpty = new ItemStack(item, 1, meta);
+        ItemStack itemStackEmpty = new ItemStack(this.item, 1, meta);
         itemList.add(itemStackEmpty);
     }
 
@@ -69,11 +77,18 @@ public class DamageIndicatedItemComponent {
      * @return The info for the item.
      */
     public String getInfo(ItemStack itemStack) {
+        if (ItemStackHelpers.isEmpty(itemStack)) {
+            return getInfo(null, 0, 0);
+        }
+
         int amount = 0;
-        IFluidHandlerItemCapacity fluidHander = FluidHelpers.getFluidHandlerItemCapacity(itemStack);
+        IFluidHandlerItemCapacity fluidHandler = FluidHelpers.getFluidHandlerItemCapacity(itemStack);
         FluidStack fluidStack = FluidHelpers.getFluidContained(itemStack);
-        if (fluidStack != null) amount = fluidStack.amount;
-        return getInfo(fluidStack, amount, fluidHander.getCapacity());
+        if (fluidStack != null) {
+            amount = fluidStack.amount;
+        }
+        int capacity = fluidHandler != null ? fluidHandler.getCapacity() : 0;
+        return getInfo(fluidStack, amount, capacity);
     }
 
     /**
@@ -86,7 +101,7 @@ public class DamageIndicatedItemComponent {
      */
     public static String getInfo(FluidStack fluidStack, int amount, int capacity) {
         String prefix = "";
-        if (fluidStack != null) {
+        if (fluidStack != null && fluidStack.getFluid() != null) {
             prefix = fluidStack.getFluid()
                 .getLocalizedName(fluidStack) + ": ";
         }
@@ -102,7 +117,13 @@ public class DamageIndicatedItemComponent {
      * @param flag      the tooltip flag
      */
     public void addInformation(ItemStack itemStack, EntityPlayer world, List<String> list, boolean flag) {
-        list.add(IInformationProvider.ITEM_PREFIX + ((IInformationProvider) itemStack.getItem()).getInfo(itemStack));
+        if (ItemStackHelpers.isEmpty(itemStack) || list == null) {
+            return;
+        }
+
+        if (itemStack.getItem() instanceof IInformationProvider provider) {
+            list.add(IInformationProvider.ITEM_PREFIX + provider.getInfo(itemStack));
+        }
     }
 
     /**
@@ -112,11 +133,18 @@ public class DamageIndicatedItemComponent {
      * @return The displayed durability.
      */
     public double getDurability(ItemStack itemStack) {
-        IFluidHandlerItemCapacity fluidHander = FluidHelpers.getFluidHandlerItemCapacity(itemStack);
+        if (ItemStackHelpers.isEmpty(itemStack)) {
+            return 1.0;
+        }
+
+        IFluidHandlerItemCapacity fluidHandler = FluidHelpers.getFluidHandlerItemCapacity(itemStack);
+        if (fluidHandler == null || fluidHandler.getCapacity() <= 0) {
+            return 1.0;
+        }
+
         FluidStack fluidStack = FluidHelpers.getFluidContained(itemStack);
-        double capacity = fluidHander.getCapacity();
+        double capacity = fluidHandler.getCapacity();
         double amount = FluidHelpers.getAmount(fluidStack);
         return (capacity - amount) / capacity;
     }
-
 }

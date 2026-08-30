@@ -43,6 +43,10 @@ public class ItemStackHelpers {
         return isEmpty(stack) ? null : stack.copy();
     }
 
+    public static int getItemStackSize(ItemStack stack) {
+        return isEmpty(stack) ? 0 : stack.getMaxStackSize();
+    }
+
     public static void grow(ItemStack stack, int amount) {
         if (isEmpty(stack)) return;
         stack.stackSize += amount;

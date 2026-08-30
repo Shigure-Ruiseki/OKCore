@@ -8,6 +8,7 @@ import net.minecraft.util.IIcon;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**
  * Slot that is used to hold armor.
@@ -43,7 +44,7 @@ public class SlotArmor extends SlotExtended {
 
     @Override
     public boolean isItemValid(ItemStack itemStack) {
-        if (itemStack == null) return false;
+        if (ItemStackHelpers.isEmpty(itemStack)) return false;
         return itemStack.getItem()
             .isValidArmor(itemStack, armorIndex, player);
     }

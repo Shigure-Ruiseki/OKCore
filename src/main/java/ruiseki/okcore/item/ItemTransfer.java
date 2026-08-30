@@ -73,11 +73,11 @@ public class ItemTransfer {
 
     public void push(Object self, ForgeDirection side, Object target) {
         source(self, side);
-        sink(target, side.getOpposite());
+        sink(target, side != null ? side.getOpposite() : ForgeDirection.UNKNOWN);
     }
 
     public void pull(Object self, ForgeDirection side, Object target) {
-        source(target, side.getOpposite());
+        source(target, side != null ? side.getOpposite() : ForgeDirection.UNKNOWN);
         sink(self, side);
     }
 
@@ -126,8 +126,8 @@ public class ItemTransfer {
 
                     if (filter != null && !filter.test(simulatedExtracted)) break;
 
-                    ItemStack remainder = simulatedExtracted.copy();
-                    int initialCount = remainder.stackSize;
+                    ItemStack remainder = ItemStackHelpers.copy(simulatedExtracted);
+                    int initialCount = ItemStackHelpers.getItemStackSize(remainder);
 
                     for (int dstSlot : sinkIndices) {
                         if (dstSlot < 0 || dstSlot >= sinkHandler.getSlots()) continue;
@@ -142,14 +142,14 @@ public class ItemTransfer {
                         if (ItemStackHelpers.isEmpty(remainder)) break;
                     }
 
-                    int acceptedCount = initialCount - (remainder == null ? 0 : remainder.stackSize);
+                    int acceptedCount = initialCount - ItemStackHelpers.getItemStackSize(remainder);
                     if (acceptedCount <= 0) break;
 
                     ItemStack actualExtracted = sourceHandler.extractItem(srcSlot, acceptedCount, false);
                     if (ItemStackHelpers.isEmpty(actualExtracted)) break;
 
                     availableCount -= actualExtracted.stackSize;
-                    ItemStack realRemainder = actualExtracted.copy();
+                    ItemStack realRemainder = ItemStackHelpers.copy(actualExtracted);
 
                     for (int dstSlot : sinkIndices) {
                         realRemainder = sinkHandler.insertItem(dstSlot, realRemainder, false);
@@ -163,7 +163,7 @@ public class ItemTransfer {
                         }
                     }
 
-                    int transferred = actualExtracted.stackSize - (realRemainder == null ? 0 : realRemainder.stackSize);
+                    int transferred = actualExtracted.stackSize - ItemStackHelpers.getItemStackSize(realRemainder);
                     if (transferred <= 0) break;
 
                     itemsTransferred += transferred;

@@ -6,6 +6,8 @@ import java.util.List;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import ruiseki.okcore.helper.ItemStackHelpers;
+
 public class WeightedOreStack extends WeightedStackBase {
 
     private final List<ItemStack> stacks;
@@ -29,24 +31,40 @@ public class WeightedOreStack extends WeightedStackBase {
 
     @Override
     public boolean isStackEqual(ItemStack stack) {
-        return this.stacks != null && !this.stacks.isEmpty() && ((ItemStack) this.stacks.get(0)).isItemEqual(stack);
+        ItemStack mainStack = getMainStack();
+        if (ItemStackHelpers.isEmpty(mainStack) || ItemStackHelpers.isEmpty(stack)) {
+            return false;
+        }
+        return ItemStackHelpers.areStacksEqual(mainStack, stack);
     }
 
     @Override
     public ItemStack getMainStack() {
-        return this.stacks != null && !this.stacks.isEmpty() ? (ItemStack) this.stacks.get(0) : null;
+        if (this.stacks != null && !this.stacks.isEmpty()) {
+            ItemStack firstStack = this.stacks.get(0);
+            return ItemStackHelpers.isEmpty(firstStack) ? ItemStackHelpers.EMPTY : firstStack;
+        }
+        return ItemStackHelpers.EMPTY;
     }
 
     @Override
     public WeightedStackBase copy() {
-        List<ItemStack> newStacks = new ArrayList<ItemStack>();
+        List<ItemStack> newStacks = new ArrayList<>();
 
         if (this.stacks != null) {
             for (ItemStack itemStack : this.stacks) {
-                newStacks.add(itemStack.copy());
+                newStacks.add(ItemStackHelpers.copy(itemStack));
             }
         }
 
         return new WeightedOreStack(this.oreName, newStacks, this.realWeight, this.realFocusedWeight);
+    }
+
+    public String getOreName() {
+        return oreName;
+    }
+
+    public List<ItemStack> getStacks() {
+        return stacks;
     }
 }

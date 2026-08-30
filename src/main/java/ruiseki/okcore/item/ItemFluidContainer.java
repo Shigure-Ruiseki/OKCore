@@ -3,14 +3,12 @@ package ruiseki.okcore.item;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidContainerItem;
 
 import ruiseki.okcore.capabilities.ICapabilityProvider;
-import ruiseki.okcore.capabilities.IItemCapability;
 import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.FluidHandlerItemStack;
 
@@ -19,7 +17,7 @@ import ruiseki.okcore.fluid.handler.FluidHandlerItemStack;
  * This fluid container may be set so that is can only completely filled or empty. (binary)
  * It may also be set so that it gets consumed when it is drained. (consumable)
  */
-public class ItemFluidContainer extends Item implements IItemCapability, IItemSharedTag, IFluidContainerItem {
+public class ItemFluidContainer extends ItemBase implements IFluidContainerItem {
 
     protected final int capacity;
 

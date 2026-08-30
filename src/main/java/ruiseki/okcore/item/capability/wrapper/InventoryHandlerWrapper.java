@@ -7,6 +7,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.item.handler.IItemHandler;
 
 public class InventoryHandlerWrapper implements IItemHandler {
@@ -21,15 +22,18 @@ public class InventoryHandlerWrapper implements IItemHandler {
 
     @Override
     public int getSlots() {
+        if (inventory == null) return 0;
         if (inventory instanceof ISidedInventory sidedInv) {
-            int[] slots = sidedInv.getAccessibleSlotsFromSide(side.ordinal());
+            int[] slots = side != null ? sidedInv.getAccessibleSlotsFromSide(side.ordinal()) : null;
             return slots != null ? slots.length : 0;
         }
         return inventory.getSizeInventory();
     }
 
     private int getSlotIndex(int slot) {
+        if (inventory == null) return -1;
         if (inventory instanceof ISidedInventory sidedInv) {
+            if (side == null) return -1;
             int[] slots = sidedInv.getAccessibleSlotsFromSide(side.ordinal());
             if (slots == null || slot < 0 || slot >= slots.length) {
                 return -1;
@@ -42,41 +46,43 @@ public class InventoryHandlerWrapper implements IItemHandler {
     @Override
     public @Nullable ItemStack getStackInSlot(int slot) {
         int realSlot = getSlotIndex(slot);
-        if (realSlot == -1) return null;
-        return inventory.getStackInSlot(realSlot);
+        if (realSlot == -1) return ItemStackHelpers.EMPTY;
+
+        ItemStack stack = inventory.getStackInSlot(realSlot);
+        return ItemStackHelpers.isEmpty(stack) ? ItemStackHelpers.EMPTY : stack;
     }
 
     @Override
     public @Nullable ItemStack insertItem(int slot, @Nullable ItemStack stack, boolean simulate) {
-        if (stack == null || stack.stackSize <= 0) return null;
+        if (ItemStackHelpers.isEmpty(stack)) return ItemStackHelpers.EMPTY;
 
         int realSlot = getSlotIndex(slot);
         if (realSlot == -1) return stack;
 
         if (!inventory.isItemValidForSlot(realSlot, stack)) return stack;
-        if (inventory instanceof ISidedInventory sidedInv && !sidedInv.canInsertItem(realSlot, stack, side.ordinal())) {
+        if (inventory instanceof ISidedInventory sidedInv && side != null
+            && !sidedInv.canInsertItem(realSlot, stack, side.ordinal())) {
             return stack;
         }
 
         ItemStack existing = inventory.getStackInSlot(realSlot);
         int limit = Math.min(inventory.getInventoryStackLimit(), stack.getMaxStackSize());
 
-        if (existing == null) {
+        if (ItemStackHelpers.isEmpty(existing)) {
             int accept = Math.min(stack.stackSize, limit);
             if (!simulate) {
-                ItemStack copy = stack.copy();
-                copy.stackSize = accept;
+                ItemStack copy = ItemStackHelpers.copyWithSize(stack, accept);
                 inventory.setInventorySlotContents(realSlot, copy);
                 inventory.markDirty();
             }
-            if (accept >= stack.stackSize) return null;
+            if (accept >= stack.stackSize) return ItemStackHelpers.EMPTY;
 
-            ItemStack remainder = stack.copy();
-            remainder.stackSize -= accept;
+            ItemStack remainder = ItemStackHelpers.copy(stack);
+            ItemStackHelpers.shrink(remainder, accept);
             return remainder;
         }
 
-        if (!existing.isItemEqual(stack) || !ItemStack.areItemStackTagsEqual(existing, stack)) {
+        if (!ItemStackHelpers.canStack(existing, stack)) {
             return stack;
         }
 
@@ -85,40 +91,39 @@ public class InventoryHandlerWrapper implements IItemHandler {
 
         int accept = Math.min(stack.stackSize, maxInsert);
         if (!simulate) {
-            existing.stackSize += accept;
+            ItemStackHelpers.grow(existing, accept);
             inventory.markDirty();
         }
 
-        if (accept >= stack.stackSize) return null;
+        if (accept >= stack.stackSize) return ItemStackHelpers.EMPTY;
 
-        ItemStack remainder = stack.copy();
-        remainder.stackSize -= accept;
+        ItemStack remainder = ItemStackHelpers.copy(stack);
+        ItemStackHelpers.shrink(remainder, accept);
         return remainder;
     }
 
     @Override
     public @Nullable ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if (amount <= 0) return null;
+        if (amount <= 0) return ItemStackHelpers.EMPTY;
 
         int realSlot = getSlotIndex(slot);
-        if (realSlot == -1) return null;
+        if (realSlot == -1) return ItemStackHelpers.EMPTY;
 
         ItemStack existing = inventory.getStackInSlot(realSlot);
-        if (existing == null || existing.stackSize <= 0) return null;
+        if (ItemStackHelpers.isEmpty(existing)) return ItemStackHelpers.EMPTY;
 
-        if (inventory instanceof ISidedInventory sidedInv
+        if (inventory instanceof ISidedInventory sidedInv && side != null
             && !sidedInv.canExtractItem(realSlot, existing, side.ordinal())) {
-            return null;
+            return ItemStackHelpers.EMPTY;
         }
 
         int toExtract = Math.min(existing.stackSize, amount);
-        ItemStack extracted = existing.copy();
-        extracted.stackSize = toExtract;
+        ItemStack extracted = ItemStackHelpers.copyWithSize(existing, toExtract);
 
         if (!simulate) {
-            existing.stackSize -= toExtract;
-            if (existing.stackSize <= 0) {
-                inventory.setInventorySlotContents(realSlot, null);
+            ItemStackHelpers.shrink(existing, toExtract);
+            if (ItemStackHelpers.isEmpty(existing)) {
+                inventory.setInventorySlotContents(realSlot, ItemStackHelpers.EMPTY);
             } else {
                 inventory.setInventorySlotContents(realSlot, existing);
             }
@@ -130,6 +135,6 @@ public class InventoryHandlerWrapper implements IItemHandler {
 
     @Override
     public int getSlotLimit(int slot) {
-        return inventory.getInventoryStackLimit();
+        return inventory != null ? inventory.getInventoryStackLimit() : 0;
     }
 }

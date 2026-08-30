@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.helper.CooldownHelpers;
+import ruiseki.okcore.helper.ItemStackHelpers;
 
 public class UseCooldown {
 
@@ -21,7 +22,7 @@ public class UseCooldown {
 
     public UseCooldown(float seconds, Optional<ResourceLocation> group) {
         this.seconds = seconds;
-        this.group = group != null ? group : Optional.empty();
+        this.group = group;
     }
 
     public int getTicks() {
@@ -29,7 +30,7 @@ public class UseCooldown {
     }
 
     public void apply(ItemStack stack, EntityPlayer player) {
-        if (player == null || stack == null) return;
+        if (player == null || ItemStackHelpers.isEmpty(stack)) return;
         CooldownHelpers.addCooldown(stack, player, this.getTicks());
     }
 

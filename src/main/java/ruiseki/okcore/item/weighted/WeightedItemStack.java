@@ -2,23 +2,28 @@ package ruiseki.okcore.item.weighted;
 
 import net.minecraft.item.ItemStack;
 
+import ruiseki.okcore.helper.ItemStackHelpers;
+
 public class WeightedItemStack extends WeightedStackBase {
 
     private final ItemStack stack;
 
     public WeightedItemStack(ItemStack stack, double weight) {
         super(weight, weight); // Default: focused weight = normal weight
-        this.stack = stack;
+        this.stack = ItemStackHelpers.isEmpty(stack) ? ItemStackHelpers.EMPTY : stack;
     }
 
     public WeightedItemStack(ItemStack stack, double weight, double focusedWeight) {
         super(weight, focusedWeight);
-        this.stack = stack;
+        this.stack = ItemStackHelpers.isEmpty(stack) ? ItemStackHelpers.EMPTY : stack;
     }
 
     @Override
     public boolean isStackEqual(ItemStack other) {
-        return this.stack != null && other != null && this.stack.isItemEqual(other);
+        if (ItemStackHelpers.isEmpty(this.stack) || ItemStackHelpers.isEmpty(other)) {
+            return false;
+        }
+        return ItemStackHelpers.areStacksEqual(this.stack, other);
     }
 
     public ItemStack getItemStack() {
@@ -32,6 +37,6 @@ public class WeightedItemStack extends WeightedStackBase {
 
     @Override
     public WeightedStackBase copy() {
-        return new WeightedItemStack(this.stack.copy(), this.realWeight, this.realFocusedWeight);
+        return new WeightedItemStack(ItemStackHelpers.copy(this.stack), this.realWeight, this.realFocusedWeight);
     }
 }

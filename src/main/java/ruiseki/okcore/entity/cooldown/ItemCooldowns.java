@@ -61,7 +61,7 @@ public class ItemCooldowns {
         if (item == null || item.getItem() == null) return null;
         if (!(item.getItem() instanceof IItemCooldown cooldown)) return null;
         UseCooldown useCooldown = cooldown.getUseCooldown(item);
-        if (useCooldown != null && useCooldown.cooldownGroup()
+        if (useCooldown.cooldownGroup()
             .isPresent()) {
             return useCooldown.cooldownGroup()
                 .get();

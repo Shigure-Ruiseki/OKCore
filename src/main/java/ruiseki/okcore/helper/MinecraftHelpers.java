@@ -229,15 +229,6 @@ public class MinecraftHelpers {
     public static void preDestroyBlock(Block block, World world, int x, int y, int z, boolean saveNBT) {
         TileEntity tile = world.getTileEntity(x, y, z);
 
-        if (block instanceof BlockOK blockOK && tile != null
-            && blockOK.shouldDropInventory(world, x, y, z)
-            && !world.isRemote) {
-            CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, ForgeDirection.UNKNOWN)
-                .ifPresent(handler -> {
-                    InventoryHelpers.dropItems(world, handler, new BlockPos(x, y, z));
-                    InventoryHelpers.clearInventory(handler);
-                });
-        }
         if (block instanceof BlockTile blockTile && blockTile.shouldDropInventory(world, x, y, z)
             && tile != null
             && !world.isRemote) {
@@ -252,7 +243,6 @@ public class MinecraftHelpers {
             // Cache
             TileEntityNBTStorage.TAG = teok.getNBTTagCompound();
             TileEntityNBTStorage.TILE = teok;
-            if (block instanceof BlockOK blockOK) blockOK.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
             if (block instanceof BlockTile cfgBlock) cfgBlock.writeAdditionalInfo(tile, TileEntityNBTStorage.TAG);
 
             teok.destroy();

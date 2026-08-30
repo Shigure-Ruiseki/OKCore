@@ -126,7 +126,7 @@ public class ItemStackHelpers {
      * @param player The player to direct the motion to
      */
     public static void spawnItemStackToPlayer(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
-        if (!world.isRemote) {
+        if (!world.isRemote && !isEmpty(stack)) {
             float f = 0.5F;
 
             double xo = (double) (world.rand.nextFloat() * f) + (double) (1.0F - f) * 0.5D;
@@ -161,6 +161,7 @@ public class ItemStackHelpers {
      * @return If the player has the item.
      */
     public static boolean hasPlayerItem(EntityPlayer player, Item item) {
+        if (player == null || item == null) return false;
         for (PlayerExtendedInventoryIterator it = new PlayerExtendedInventoryIterator(player); it.hasNext();) {
             ItemStack itemStack = it.next();
             if (!isEmpty(itemStack) && itemStack.getItem() == item) {
@@ -225,7 +226,9 @@ public class ItemStackHelpers {
      * @return If they are completely equal.
      */
     public static boolean areItemStacksIdentical(ItemStack a, ItemStack b) {
-        return ItemStack.areItemStacksEqual(a, b) && (a == null || !isEmpty(a) && a.stackSize == b.stackSize);
+        if (isEmpty(a)) return isEmpty(b);
+        if (isEmpty(b)) return false;
+        return ItemStack.areItemStacksEqual(a, b) && a.stackSize == b.stackSize;
     }
 
     /**
@@ -256,6 +259,7 @@ public class ItemStackHelpers {
      * @return If it can be displayed.
      */
     public static boolean isValidCreativeTab(Item item, @Nullable CreativeTabs creativeTab) {
+        if (item == null) return false;
         for (CreativeTabs itemTab : item.getCreativeTabs()) {
             if (itemTab == creativeTab) {
                 return true;
@@ -298,6 +302,7 @@ public class ItemStackHelpers {
     }
 
     public static void copyWSList(List<WeightedStackBase> dest, List<WeightedStackBase> src) {
+        if (src == null) return;
         if (dest == null) {
             dest = new ArrayList<>();
         }
@@ -308,7 +313,7 @@ public class ItemStackHelpers {
     }
 
     public static int getStackMeta(ItemStack stack) {
-        return stack.getItemDamage();
+        return isEmpty(stack) ? 0 : stack.getItemDamage();
     }
 
     public static boolean areStacksEqual(ItemStack stack1, ItemStack stack2) {
@@ -316,21 +321,22 @@ public class ItemStackHelpers {
     }
 
     public static boolean areStacksEqual(ItemStack stack1, ItemStack stack2, boolean ignoreNBT) {
-        return stack1 != null && stack2 != null
-            && stack1.getItem() == stack2.getItem()
-            && doStackMetasMatch(getStackMeta(stack1), getStackMeta(stack2))
+        if (isEmpty(stack1)) return isEmpty(stack2);
+        if (isEmpty(stack2)) return false;
+
+        return stack1.getItem() == stack2.getItem() && doStackMetasMatch(getStackMeta(stack1), getStackMeta(stack2))
             && (ignoreNBT || Objects.equals(stack1.getTagCompound(), stack2.getTagCompound()));
     }
 
     public static boolean doStackMetasMatch(int meta1, int meta2) {
-        if (meta1 == OreDictionary.WILDCARD_VALUE) return true;
-        if (meta2 == OreDictionary.WILDCARD_VALUE) return true;
-
+        if (meta1 == OreDictionary.WILDCARD_VALUE || meta2 == OreDictionary.WILDCARD_VALUE) {
+            return true;
+        }
         return meta1 == meta2;
     }
 
     public static boolean areStackMergable(ItemStack s1, ItemStack s2) {
-        if (s1 == null || s2 == null || !s1.isStackable() || !s2.isStackable()) {
+        if (isEmpty(s1) || isEmpty(s2) || !s1.isStackable() || !s2.isStackable()) {
             return false;
         }
         if (!s1.isItemEqual(s2)) {
@@ -340,9 +346,9 @@ public class ItemStackHelpers {
     }
 
     public static boolean areItemsEqualIgnoreDurability(ItemStack stack1, ItemStack stack2) {
-        if (stack1 == null || stack2 == null) {
-            return false;
-        }
+        if (isEmpty(stack1)) return isEmpty(stack2);
+        if (isEmpty(stack2)) return false;
+
         if (stack1.getItem() != stack2.getItem()) {
             return false;
         }
@@ -350,8 +356,8 @@ public class ItemStackHelpers {
     }
 
     public static boolean areItemStacksEqualUsingNBTShareTag(ItemStack stackA, ItemStack stackB) {
-        if (stackA == null) return stackB == null;
-        else return stackB != null && isItemStackEqualUsingNBTShareTag(stackA, stackB);
+        if (isEmpty(stackA)) return isEmpty(stackB);
+        return !isEmpty(stackB) && isItemStackEqualUsingNBTShareTag(stackA, stackB);
     }
 
     private static boolean isItemStackEqualUsingNBTShareTag(ItemStack self, ItemStack other) {
@@ -361,18 +367,22 @@ public class ItemStackHelpers {
     }
 
     public static boolean areItemStackShareTagsEqual(ItemStack stackA, ItemStack stackB) {
+        if (isEmpty(stackA)) return isEmpty(stackB);
+        if (isEmpty(stackB)) return false;
+
         NBTTagCompound shareTagA = stackA.getItem() instanceof IItemSharedTag sharedTagA
             ? sharedTagA.getNBTShareTag(stackA)
             : stackA.getTagCompound();
         NBTTagCompound shareTagB = stackB.getItem() instanceof IItemSharedTag sharedTagB
             ? sharedTagB.getNBTShareTag(stackB)
             : stackB.getTagCompound();
-        if (shareTagA == null) return shareTagB == null;
-        else return shareTagB != null && shareTagA.equals(shareTagB);
+
+        return Objects.equals(shareTagA, shareTagB);
     }
 
     public static ItemStack merge(ItemStack a, ItemStack b) {
         if (isEmpty(a)) return b;
+        if (isEmpty(b)) return a;
         a.stackSize += b.stackSize;
         return a;
     }
@@ -406,7 +416,7 @@ public class ItemStackHelpers {
         for (int i = 0; i < list.size(); ++i) {
             ItemStack itemstack = list.get(i);
 
-            if (itemstack != null && itemstack.getItem() != null) {
+            if (!isEmpty(itemstack)) {
                 NBTTagCompound nbttagcompound = new NBTTagCompound();
                 nbttagcompound.setByte("Slot", (byte) i);
                 itemstack.writeToNBT(nbttagcompound);

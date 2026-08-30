@@ -8,8 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**

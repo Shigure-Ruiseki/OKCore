@@ -13,15 +13,20 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 import ruiseki.okcore.item.IItemSharedTag;
+import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.weighted.WeightedStackBase;
 
 /**
@@ -64,6 +69,22 @@ public class ItemStackHelpers {
         itemstack.stackSize = i;
         shrink(stack, i);
         return itemstack;
+    }
+
+    public static LazyOptional<IItemHandler> getItemHandler(Object object, ForgeDirection side) {
+        return object instanceof TileEntity tile ? getItemHandler(tile, side) : LazyOptional.empty();
+    }
+
+    public static LazyOptional<IItemHandler> getItemHandler(TileEntity tile, ForgeDirection side) {
+        return CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, side);
+    }
+
+    public static LazyOptional<IItemHandler> getItemHandler(World world, BlockPos pos, ForgeDirection side) {
+        return getItemHandler(pos.getTileEntity(world), side);
+    }
+
+    public static LazyOptional<IItemHandler> getItemHandler(World world, int x, int y, int z, ForgeDirection side) {
+        return getItemHandler(world, new BlockPos(x, y, z), side);
     }
 
     /**

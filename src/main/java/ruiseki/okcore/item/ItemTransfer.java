@@ -56,7 +56,7 @@ public class ItemTransfer {
     }
 
     public void source(Object source, ForgeDirection side) {
-        this.sourceCap = ItemHelpers.getItemHandler(source, side);
+        this.sourceCap = ItemStackHelpers.getItemHandler(source, side);
     }
 
     public void sink(IItemHandler sink) {
@@ -68,7 +68,7 @@ public class ItemTransfer {
     }
 
     public void sink(Object sink, ForgeDirection side) {
-        this.sinkCap = ItemHelpers.getItemHandler(sink, side);
+        this.sinkCap = ItemStackHelpers.getItemHandler(sink, side);
     }
 
     public void push(Object self, ForgeDirection side, Object target) {

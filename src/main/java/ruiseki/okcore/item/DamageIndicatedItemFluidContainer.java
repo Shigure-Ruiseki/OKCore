@@ -16,9 +16,9 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.capabilities.IItemCapability;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.FluidHandlerItemCapacity;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**

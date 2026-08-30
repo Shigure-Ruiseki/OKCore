@@ -1,4 +1,4 @@
-package ruiseki.okcore.fluid;
+package ruiseki.okcore.helper;
 
 import java.util.List;
 
@@ -31,6 +31,7 @@ import com.google.common.base.Preconditions;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.fluid.FluidActionResult;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.capability.FluidHandlerItemCapacityConfig;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
@@ -40,10 +41,6 @@ import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
-import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.ItemHandlerHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
-import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 

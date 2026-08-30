@@ -6,6 +6,7 @@ import cofh.api.energy.IEnergyStorage;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.EnergyHelpers;
 
 public class EnergyTransfer {
 

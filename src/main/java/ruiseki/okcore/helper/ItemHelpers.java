@@ -102,10 +102,6 @@ public class ItemHelpers {
 
     // 2. EQUALITY & MERGE CHECKS
 
-    public static boolean areStacksEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2) {
-        return areItemsEqual(stack1, stack2, false);
-    }
-
     public static boolean areItemsEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2) {
         return areItemsEqual(stack1, stack2, false);
     }

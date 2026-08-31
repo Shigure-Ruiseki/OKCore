@@ -9,6 +9,7 @@ import lombok.Setter;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.helper.FluidHelpers;
 
 @SuppressWarnings({ "unused", "UnusedReturnValue" })
 public class FluidTransfer {

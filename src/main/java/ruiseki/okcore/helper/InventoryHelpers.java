@@ -13,6 +13,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
@@ -140,6 +141,17 @@ public class InventoryHelpers {
     }
 
     /**
+     * Set the item stack at the given index in the player inventory.
+     *
+     * @param player    The player.
+     * @param itemIndex The index of the item in the inventory.
+     * @param itemStack The new item stack.
+     */
+    public static void setItemAtIndex(EntityPlayer player, int itemIndex, ItemStack itemStack) {
+        player.inventory.setInventorySlotContents(itemIndex, itemStack);
+    }
+
+    /**
      * Drop an ItemStack into the world
      *
      * @param world    the world
@@ -220,5 +232,158 @@ public class InventoryHelpers {
         return CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, side)
             .map(handler -> insertStack(handler, stack, simulate))
             .orElse(stack);
+    }
+
+    /**
+     * Try to add the given item to the given slot.
+     *
+     * @param inventory The inventory.
+     * @param slot      The slot to add to.
+     * @param itemStack The item to try to put in the production slot.
+     * @return If the item could be added or joined in the production slot.
+     */
+    public static boolean addToSlot(IInventory inventory, int slot, ItemStack itemStack) {
+        return addToSlot(inventory, slot, itemStack, false);
+    }
+
+    /**
+     * Try to add the given item to the given slot.
+     *
+     * @param inventory The inventory.
+     * @param slot      The slot to add to.
+     * @param itemStack The item to try to put in the production slot.
+     * @param simulate  If the operation should be simulated.
+     * @return The remaining itemstack that could not be added anymore.
+     */
+    public static ItemStack fillSlot(IInventory inventory, int slot, ItemStack itemStack, boolean simulate) {
+        if (itemStack == null || itemStack.stackSize <= 0) {
+            return null;
+        }
+
+        ItemStack produceStack = inventory.getStackInSlot(slot);
+        if (produceStack == null) {
+            if (!simulate) {
+                inventory.setInventorySlotContents(slot, itemStack.copy());
+                inventory.markDirty();
+            }
+            return null;
+        } else {
+            ItemStack targetStack = produceStack.copy();
+            ItemStack remainder = addToStack(targetStack, itemStack);
+
+            if (!simulate && remainder != itemStack) {
+                inventory.setInventorySlotContents(slot, targetStack);
+                inventory.markDirty();
+            }
+            return remainder;
+        }
+    }
+
+    /**
+     * Tries to merge the given stacks.
+     *
+     * @param itemStack The stack to mutate and add to.
+     * @param toAdd     The stack to add.
+     * @return The remainder of the added stack, or null if completely merged.
+     */
+    public static ItemStack addToStack(ItemStack itemStack, ItemStack toAdd) {
+        if (toAdd == null || toAdd.stackSize <= 0) {
+            return null;
+        }
+        if (itemStack != null && ItemStack.areItemStackTagsEqual(toAdd, itemStack)
+            && ItemHelpers.areItemsEqual(toAdd, itemStack)
+            && itemStack.stackSize < itemStack.getMaxStackSize()) {
+
+            toAdd = toAdd.copy();
+            int toAddCount = Math.min(itemStack.getMaxStackSize() - itemStack.stackSize, toAdd.stackSize);
+            ItemHelpers.grow(itemStack, toAddCount);
+            ItemHelpers.shrink(toAdd, toAddCount);
+
+            if (toAdd.stackSize <= 0) {
+                return null;
+            }
+        }
+        return toAdd;
+    }
+
+    /**
+     * Try to add the given item to the given slot.
+     *
+     * @param inventory The inventory.
+     * @param slot      The slot to add to.
+     * @param itemStack The item to try to put in the production slot.
+     * @param simulate  If the operation should be simulated.
+     * @return If the item could be added or joined in the production slot.
+     */
+    public static boolean addToSlot(IInventory inventory, int slot, ItemStack itemStack, boolean simulate) {
+        return fillSlot(inventory, slot, itemStack, simulate) != null;
+    }
+
+    /**
+     * Try to add the given item to any of the given slots.
+     *
+     * @param inventory  The inventory.
+     * @param slots      The slots
+     * @param itemStacks The items to try to put in the inventory.
+     * @param simulate   If the operation should be simulated.
+     * @return The remaining itemstack that could not be added anymore.
+     */
+    public static NonNullList<ItemStack> addToInventory(IInventory inventory, int[] slots,
+        NonNullList<ItemStack> itemStacks, boolean simulate) {
+
+        NonNullList<ItemStack> remaining = NonNullList.create();
+        int[] availableSlots = slots.clone();
+
+        for (ItemStack stack : itemStacks) {
+            if (stack == null || stack.stackSize <= 0) continue;
+
+            ItemStack itemStack = stack.copy();
+
+            for (int i = 0; i < availableSlots.length; i++) {
+                int slot = availableSlots[i];
+                if (slot < 0) continue;
+
+                itemStack = fillSlot(inventory, slot, itemStack, simulate);
+
+                if (simulate && itemStack == null) {
+                    availableSlots[i] = -1;
+                }
+
+                if (itemStack == null || itemStack.stackSize <= 0) {
+                    break;
+                }
+            }
+
+            if (itemStack != null && itemStack.stackSize > 0) {
+                remaining.add(itemStack);
+            }
+        }
+        return remaining;
+    }
+
+    /**
+     * Add the given stack to the given list, by attempting
+     * to increase the stacksize of equal stacks that are already present.
+     *
+     * @param itemStacks The list of stacks.
+     * @param itemStack  The stack to add to the list.
+     */
+    public static void addStackToList(NonNullList<ItemStack> itemStacks, ItemStack itemStack) {
+        if (itemStack == null || itemStack.stackSize <= 0) {
+            return;
+        }
+
+        ItemStack toAdd = itemStack.copy();
+
+        for (ItemStack existingOutputStack : itemStacks) {
+            toAdd = addToStack(existingOutputStack, toAdd);
+            if (toAdd == null || toAdd.stackSize <= 0) {
+                return;
+            }
+        }
+
+        if (toAdd.stackSize > 0) {
+            itemStacks.add(toAdd);
+        }
     }
 }

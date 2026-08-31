@@ -5,8 +5,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.capability.VoidFluidHandler;
+import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * Wrapper around any block, only accounts for fluid placement, otherwise the block acts a void.

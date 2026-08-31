@@ -14,6 +14,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.NotNull;
+
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
@@ -33,7 +35,7 @@ public class ItemInventoryTest extends ItemBase implements IItemCooldown, IItemT
     }
 
     @Override
-    public UseCooldown getUseCooldown(ItemStack stack) {
+    public @NotNull UseCooldown getUseCooldown(ItemStack stack) {
         return new UseCooldown(1);
     }
 

@@ -4,6 +4,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 
+import ruiseki.okcore.helper.ItemHelpers;
+
 /**
  * Exposes the player inventory WITHOUT the armor inventory as IItemHandler. Also takes care of inserting/extracting
  * having the same logic as picking up items.
@@ -20,10 +22,10 @@ public class PlayerMainInvWrapper extends RangedWrapper {
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
         ItemStack rest = super.insertItem(slot, stack, simulate);
-        if (rest == null || rest.stackSize != stack.stackSize) {
+        if (ItemHelpers.isEmpty(rest) || rest.stackSize != stack.stackSize) {
             // the stack in the slot changed, animate it
             ItemStack inSlot = getStackInSlot(slot);
-            if (inSlot != null) {
+            if (!ItemHelpers.isEmpty(inSlot)) {
                 if (getInventoryPlayer().player.worldObj.isRemote) {
                     inSlot.animationsToGo = 5;
                 } else if (getInventoryPlayer().player instanceof EntityPlayerMP) {

@@ -1,4 +1,4 @@
-package ruiseki.okcore.fluid;
+package ruiseki.okcore.helper;
 
 import java.util.List;
 
@@ -31,6 +31,7 @@ import com.google.common.base.Preconditions;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.fluid.FluidActionResult;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.capability.FluidHandlerItemCapacityConfig;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
@@ -40,10 +41,6 @@ import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
-import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.ItemHandlerHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
-import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
@@ -51,14 +48,27 @@ public class FluidHelpers {
 
     public static final int BUCKET_VOLUME = FluidContainerRegistry.BUCKET_VOLUME;
 
-    /**
-     * Get the fluid amount of the given stack in a safe manner.
-     *
-     * @param fluidStack The fluid stack
-     * @return The fluid amount.
-     */
+    public static final FluidStack EMPTY = null;
+
+    public static boolean isEmpty(@Nullable FluidStack stack) {
+        return stack == null || stack.getFluid() == null || stack.amount <= 0;
+    }
+
+    @Nullable
+    public static FluidStack copy(@Nullable FluidStack stack) {
+        return isEmpty(stack) ? null : stack.copy();
+    }
+
+    @Nullable
+    public static FluidStack copyWithAmount(@Nullable FluidStack stack, int amount) {
+        if (isEmpty(stack)) return EMPTY;
+        FluidStack copy = stack.copy();
+        copy.amount = amount;
+        return copy;
+    }
+
     public static int getAmount(@Nullable FluidStack fluidStack) {
-        return fluidStack != null ? fluidStack.amount : 0;
+        return isEmpty(fluidStack) ? 0 : fluidStack.amount;
     }
 
     public static String getModId(Fluid fluid) {
@@ -68,17 +78,6 @@ public class FluidHelpers {
             return fullName.split(":")[0];
         }
         return null;
-    }
-
-    /**
-     * Copy the given fluid stack
-     *
-     * @param fluidStack The fluid stack to copy.
-     * @return A copy of the fluid stack.
-     */
-    public static FluidStack copy(@Nullable FluidStack fluidStack) {
-        if (fluidStack == null) return null;
-        return fluidStack.copy();
     }
 
     /**
@@ -173,7 +172,7 @@ public class FluidHelpers {
         Preconditions.checkNotNull(handler);
 
         ItemStack heldItem = player.getHeldItem();
-        if (heldItem == null) {
+        if (ItemHelpers.isEmpty(heldItem)) {
             return false;
         }
 
@@ -255,7 +254,7 @@ public class FluidHelpers {
             if (filledSimulated.isSuccess()) {
                 ItemStack remainder = ItemHandlerHelpers
                     .insertItemStacked(inventory, filledSimulated.getResult(), true);
-                if (remainder == null || player != null) {
+                if (ItemHelpers.isEmpty(remainder) || player != null) {
                     FluidActionResult filledReal = tryFillContainer(
                         container,
                         fluidSource,
@@ -266,12 +265,12 @@ public class FluidHelpers {
                     remainder = ItemHandlerHelpers.insertItemStacked(inventory, filledReal.getResult(), !doFill);
 
                     // give it to the player or drop it at their feet
-                    if (remainder != null && player != null && doFill) {
+                    if (!ItemHelpers.isEmpty(remainder) && player != null && doFill) {
                         ItemHandlerHelpers.giveItemToPlayer(player, remainder);
                     }
 
                     ItemStack containerCopy = container.copy();
-                    ItemStackHelpers.shrink(containerCopy, 1);
+                    ItemHelpers.shrink(containerCopy, 1);
                     return new FluidActionResult(containerCopy);
                 }
             }
@@ -340,7 +339,7 @@ public class FluidHelpers {
             if (emptiedSimulated.isSuccess()) {
                 ItemStack remainder = ItemHandlerHelpers
                     .insertItemStacked(inventory, emptiedSimulated.getResult(), true);
-                if (remainder == null || player != null) {
+                if (ItemHelpers.isEmpty(remainder) || player != null) {
                     FluidActionResult emptiedReal = tryEmptyContainer(
                         container,
                         fluidDestination,
@@ -351,12 +350,12 @@ public class FluidHelpers {
                     remainder = ItemHandlerHelpers.insertItemStacked(inventory, emptiedReal.getResult(), !doDrain);
 
                     // give it to the player or drop it at their feet
-                    if (remainder != null && player != null && doDrain) {
+                    if (!ItemHelpers.isEmpty(remainder) && player != null && doDrain) {
                         ItemHandlerHelpers.giveItemToPlayer(player, remainder);
                     }
 
                     ItemStack containerCopy = container.copy();
-                    ItemStackHelpers.shrink(containerCopy, 1);
+                    ItemHelpers.shrink(containerCopy, 1);
                     return new FluidActionResult(containerCopy);
                 }
             }
@@ -384,12 +383,12 @@ public class FluidHelpers {
     public static FluidActionResult tryEmptyContainer(@Nonnull ItemStack container, IFluidHandler fluidDestination,
         int maxAmount, @Nullable EntityPlayer player, ForgeDirection side, boolean doDrain) {
         ItemStack containerCopy = ItemHandlerHelpers.copyStackWithSize(container, 1); // do not modify the input
-        if (containerCopy == null) return FluidActionResult.FAILURE;
+        if (ItemHelpers.isEmpty(containerCopy)) return FluidActionResult.FAILURE;
 
         return getFluidHandler(containerCopy).map(containerFluidHandler -> {
             if (doDrain) {
                 FluidStack transfer = tryFluidTransfer(fluidDestination, containerFluidHandler, maxAmount, side, true);
-                if (transfer != null) {
+                if (!isEmpty(transfer)) {
                     if (player != null && player.worldObj != null) {
                         String soundName = transfer.getFluid()
                             .getName()
@@ -406,7 +405,7 @@ public class FluidHelpers {
                     maxAmount,
                     side,
                     false);
-                if (simulatedTransfer != null) {
+                if (!isEmpty(simulatedTransfer)) {
                     containerFluidHandler.drain(simulatedTransfer, true);
                     ItemStack resultContainer = containerFluidHandler.getContainer();
                     return new FluidActionResult(resultContainer);
@@ -433,11 +432,11 @@ public class FluidHelpers {
         int maxAmount, @Nullable EntityPlayer player, ForgeDirection side, boolean doFill) {
         ItemStack containerCopy = ItemHandlerHelpers.copyStackWithSize(container, 1); // do not modify the input
 
-        if (containerCopy == null) return FluidActionResult.FAILURE;
+        if (ItemHelpers.isEmpty(containerCopy)) return FluidActionResult.FAILURE;
         return getFluidHandler(containerCopy).map(containerFluidHandler -> {
             FluidStack simulatedTransfer = tryFluidTransfer(containerFluidHandler, fluidSource, maxAmount, side, false);
 
-            if (simulatedTransfer != null) {
+            if (!isEmpty(simulatedTransfer)) {
                 if (doFill) {
                     tryFluidTransfer(containerFluidHandler, fluidSource, maxAmount, side, true);
 
@@ -476,10 +475,10 @@ public class FluidHelpers {
     public static FluidStack tryFluidTransfer(IFluidHandler fluidDestination, IFluidHandler fluidSource, int maxAmount,
         ForgeDirection side, boolean doTransfer) {
         FluidStack drainable = fluidSource.drain(side, maxAmount, false);
-        if (drainable != null && drainable.amount > 0) {
+        if (!isEmpty(drainable) && drainable.amount > 0) {
             return tryFluidTransfer_Internal(fluidDestination, fluidSource, drainable, side, doTransfer);
         }
-        return null;
+        return EMPTY;
     }
 
     /**
@@ -496,10 +495,10 @@ public class FluidHelpers {
     public static FluidStack tryFluidTransfer(IFluidHandler fluidDestination, IFluidHandler fluidSource,
         FluidStack resource, ForgeDirection side, boolean doTransfer) {
         FluidStack drainable = fluidSource.drain(side, resource, false);
-        if (drainable != null && drainable.amount > 0 && resource.isFluidEqual(drainable)) {
+        if (!isEmpty(drainable) && drainable.amount > 0 && resource.isFluidEqual(drainable)) {
             return tryFluidTransfer_Internal(fluidDestination, fluidSource, drainable, side, doTransfer);
         }
-        return null;
+        return EMPTY;
     }
 
     /**
@@ -513,7 +512,7 @@ public class FluidHelpers {
         if (fillableAmount > 0) {
             if (doTransfer) {
                 FluidStack drained = fluidSource.drain(side, fillableAmount, true);
-                if (drained != null) {
+                if (!isEmpty(drainable)) {
                     drained.amount = fluidDestination.fill(side, drained, true);
                     return drained;
                 }
@@ -522,7 +521,7 @@ public class FluidHelpers {
                 return drainable;
             }
         }
-        return null;
+        return EMPTY;
     }
 
     public static LazyOptional<IFluidHandlerItem> getFluidHandler(@NotNull ItemStack stack) {
@@ -532,7 +531,7 @@ public class FluidHelpers {
     @Nullable
     public static FluidStack getFluidContained(@NotNull ItemStack container) {
         container = ItemHandlerHelpers.copyStackWithSize(container, 1);
-        if (container == null) return null;
+        if (ItemHelpers.isEmpty(container)) return EMPTY;
         LazyOptional<IFluidHandlerItem> cap = getFluidHandler(container);
         if (cap.isPresent()) {
             IFluidHandlerItem handler = cap.getOrNull();
@@ -541,7 +540,7 @@ public class FluidHelpers {
             }
         }
 
-        return null;
+        return EMPTY;
     }
 
     public static LazyOptional<IFluidHandler> getFluidHandler(Object object, ForgeDirection side) {
@@ -587,7 +586,7 @@ public class FluidHelpers {
     @Nonnull
     public static FluidActionResult tryPickUpFluid(ItemStack emptyContainer, @Nullable EntityPlayer playerIn,
         World worldIn, BlockPos pos, ForgeDirection side) {
-        if (emptyContainer == null || worldIn == null || pos == null) {
+        if (ItemHelpers.isEmpty(emptyContainer) || worldIn == null || pos == null) {
             return FluidActionResult.FAILURE;
         }
 
@@ -614,7 +613,7 @@ public class FluidHelpers {
     public static FluidActionResult tryPlaceFluid(@Nullable EntityPlayer player, World world, BlockPos pos,
         @Nonnull ItemStack container, FluidStack resource, ForgeDirection side) {
         ItemStack containerCopy = ItemHandlerHelpers.copyStackWithSize(container, 1);
-        if (containerCopy == null) return FluidActionResult.FAILURE;
+        if (ItemHelpers.isEmpty(containerCopy)) return FluidActionResult.FAILURE;
         return getFluidHandler(containerCopy).map(handler -> {
             if (!tryPlaceFluid(player, world, pos, handler, resource, side)) return FluidActionResult.FAILURE;
             return new FluidActionResult(handler.getContainer());
@@ -637,7 +636,7 @@ public class FluidHelpers {
      */
     public static boolean tryPlaceFluid(@Nullable EntityPlayer player, World world, BlockPos pos,
         IFluidHandler fluidSource, FluidStack resource, ForgeDirection side) {
-        if (world == null || resource == null || pos == null) {
+        if (world == null || isEmpty(resource) || pos == null) {
             return false;
         }
 
@@ -646,7 +645,7 @@ public class FluidHelpers {
             return false;
         }
 
-        if (fluidSource.drain(side, resource, false) == null) {
+        if (isEmpty(fluidSource.drain(side, resource, false))) {
             return false;
         }
 
@@ -665,7 +664,7 @@ public class FluidHelpers {
 
         if (world.provider.isHellWorld && destMaterial == Material.water) {
             FluidStack result = fluidSource.drain(side, resource, true);
-            if (result != null) {
+            if (!isEmpty(result)) {
                 world.playSoundEffect(
                     (double) x + 0.5D,
                     (double) y + 0.5D,
@@ -689,7 +688,7 @@ public class FluidHelpers {
             IFluidHandler handler = getFluidBlockHandler(fluid, world, pos);
             FluidStack result = tryFluidTransfer(handler, fluidSource, resource, side, true);
 
-            if (result != null) {
+            if (!isEmpty(result)) {
                 String soundName = fluid.getName()
                     .contains("lava") ? "liquid.lavapop" : "liquid.swim";
 
@@ -783,19 +782,19 @@ public class FluidHelpers {
     }
 
     public static FluidStack getFluidFromContainer(@Nullable ItemStack container) {
-        if (container == null || container.getItem() == null) {
-            return null;
+        if (ItemHelpers.isEmpty(container)) {
+            return EMPTY;
         }
 
         FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(container);
-        if (fluid != null) {
+        if (!isEmpty(fluid)) {
             return fluid;
         }
 
         if (container.getItem() instanceof IFluidContainerItem) {
             return ((IFluidContainerItem) container.getItem()).getFluid(container);
         }
-        return null;
+        return EMPTY;
     }
 
     /**
@@ -813,8 +812,7 @@ public class FluidHelpers {
         ItemStack dispensedStack = stackIn.copy();
         return getFluidHandler(dispensedStack).map(handler -> {
             FluidStack fluidStack = handler.drain(BUCKET_VOLUME, false);
-            if (fluidStack != null// && fluidStack.amount >= Fluid.BUCKET_VOLUME
-            ) {
+            if (!isEmpty(fluidStack)) {
                 FluidActionResult placementResult = tryPlaceFluid(
                     null,
                     world,
@@ -850,12 +848,12 @@ public class FluidHelpers {
 
     public static boolean isEmptyOfFluid(ItemStack returnMe) {
         FluidStack fs = getFluidContained(returnMe);
-        return fs == null || fs.amount == 0;
+        return isEmpty(fs);
     }
 
     public static Fluid getFluidType(ItemStack returnMe) {
-        FluidStack f = getFluidContained(returnMe);
-        return (f == null) ? null : f.getFluid();
+        FluidStack fs = getFluidContained(returnMe);
+        return (isEmpty(fs)) ? null : fs.getFluid();
     }
 
     public static boolean tryFillTankFromPosition(World world, BlockPos posSide, ForgeDirection sideOpp,
@@ -893,7 +891,7 @@ public class FluidHelpers {
                 // its not my facing dir
                 // SO: pull fluid from that into myself
                 FluidStack wasDrained = handler.drain(sideOpp, amount, false);
-                if (wasDrained == null) {
+                if (isEmpty(wasDrained)) {
                     return false;
                 }
                 if (!isStackInvalid(wasDrained, isWhitelist, allowedToMove)) {
@@ -903,7 +901,7 @@ public class FluidHelpers {
                 if (wasDrained.amount > 0 && filled > 0) {
                     int realAmt = Math.min(filled, wasDrained.amount);
                     wasDrained = handler.drain(sideOpp, realAmt, true);
-                    if (wasDrained == null) {
+                    if (isEmpty(wasDrained)) {
                         return false;
                     }
                     return tankTo.fill(wasDrained, true) > 0;
@@ -924,14 +922,14 @@ public class FluidHelpers {
                 // its not my facing dir
                 // SO: pull fluid from that into myself
                 FluidStack wasDrained = tankFrom.drain(amount, false);
-                if (wasDrained == null) {
+                if (isEmpty(wasDrained)) {
                     return false;
                 }
                 int filled = handler.fill(sideOpp, wasDrained, false);
                 if (wasDrained.amount > 0 && filled > 0) {
                     int realAmt = Math.min(filled, wasDrained.amount);
                     wasDrained = tankFrom.drain(realAmt, true);
-                    if (wasDrained == null) {
+                    if (isEmpty(wasDrained)) {
                         return false;
                     }
                     return handler.fill(sideOpp, wasDrained, true) > 0;

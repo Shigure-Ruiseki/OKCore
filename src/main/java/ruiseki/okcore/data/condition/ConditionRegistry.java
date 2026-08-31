@@ -26,6 +26,7 @@ public class ConditionRegistry {
         register(OrCondition.Serializer.INSTANCE);
         register(TrueCondition.Serializer.INSTANCE);
         register(ConfigCondition.Serializer.INSTANCE);
+        register(TagEmptyCondition.Serializer.INSTANCE);
     }
 
     public static IConditionSerializer<?> register(IConditionSerializer<?> serializer) {

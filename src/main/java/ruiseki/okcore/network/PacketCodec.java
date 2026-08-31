@@ -27,6 +27,7 @@ import com.google.common.collect.Maps;
 import io.netty.handler.codec.EncoderException;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.SingleCache;
 
 /**
@@ -459,6 +460,23 @@ public abstract class PacketCodec extends PacketBase {
                 return BlockPos.fromLong(input.readLong());
             }
         });
+        codecActions.put(DimPos.class, new PacketCodec.ICodecAction() {
+
+            @Override
+            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
+                DimPos dimPos = (DimPos) o;
+                extendedBuffer.writeInt(dimPos.getDimensionId());
+                extendedBuffer.writeLong(
+                    dimPos.getBlockPos()
+                        .toLong());
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer extendedBuffer) {
+                int dim = extendedBuffer.readInt();
+                return DimPos.of(dim, BlockPos.fromLong(extendedBuffer.readLong()));
+            }
+        });
 
         codecActions.put(List.class, new ICodecAction() {
 
@@ -552,6 +570,14 @@ public abstract class PacketCodec extends PacketBase {
         });
     }
 
+    public static void addCodedAction(Class<?> clazz, ICodecAction action) {
+        codecActions.put(clazz, action);
+    }
+
+    public static boolean hasCodecAction(Class<?> clazz) {
+        return codecActions.get(clazz) != null;
+    }
+
     protected SingleCache<Void, List<Field>> fieldCache = new SingleCache<Void, List<Field>>(
         new SingleCache.ICacheUpdater<Void, List<Field>>() {
 
@@ -616,7 +642,7 @@ public abstract class PacketCodec extends PacketBase {
         return action;
     }
 
-    protected static ICodecAction getAction(Class<?> clazz) {
+    public static ICodecAction getAction(Class<?> clazz) {
         ICodecAction action = getActionSuper(clazz);
         if (action == null) {
             System.err.println("No ICodecAction was found for " + clazz + ". You should add one in PacketCodec.");
@@ -667,7 +693,7 @@ public abstract class PacketCodec extends PacketBase {
         });
     }
 
-    private interface ICodecAction {
+    public interface ICodecAction {
 
         /**
          * Encode the given object.
@@ -687,7 +713,7 @@ public abstract class PacketCodec extends PacketBase {
 
     }
 
-    private interface ICodecRunnable {
+    public interface ICodecRunnable {
 
         /**
          * Run a type of codec.

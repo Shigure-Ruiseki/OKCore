@@ -2,28 +2,28 @@ package ruiseki.commoncapabilities.ingredient;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
-import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagLong;
 
 import ruiseki.commoncapabilities.api.ingredient.IIngredientSerializer;
 
 /**
  * Serializer for energy.
- * 
+ *
  * @author rubensworks
  */
-public class IngredientSerializerEnergy implements IIngredientSerializer<Integer, Boolean> {
+public class IngredientSerializerEnergy implements IIngredientSerializer<Long, Boolean> {
 
     @Override
-    public NBTBase serializeInstance(Integer instance) {
-        return new NBTTagInt(instance);
+    public NBTBase serializeInstance(Long instance) {
+        return new NBTTagLong(instance);
     }
 
     @Override
-    public Integer deserializeInstance(NBTBase tag) throws IllegalArgumentException {
-        if (!(tag instanceof NBTTagInt)) {
+    public Long deserializeInstance(NBTBase tag) throws IllegalArgumentException {
+        if (!(tag instanceof NBTTagLong)) {
             throw new IllegalArgumentException("This deserializer only accepts NBTTagInt");
         }
-        return ((NBTTagInt) tag).func_150287_d();
+        return ((NBTTagLong) tag).func_150291_c();
     }
 
     @Override

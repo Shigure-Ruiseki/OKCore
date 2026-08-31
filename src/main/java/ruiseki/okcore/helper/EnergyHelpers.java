@@ -1,4 +1,4 @@
-package ruiseki.okcore.energy;
+package ruiseki.okcore.helper;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -8,7 +8,6 @@ import cofh.api.energy.IEnergyStorage;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
-import ruiseki.okcore.helper.CapabilityHelpers;
 
 public class EnergyHelpers {
 

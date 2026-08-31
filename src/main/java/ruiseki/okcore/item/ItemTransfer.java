@@ -10,7 +10,7 @@ import com.gtnewhorizon.gtnhlib.item.ItemStackPredicate;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.handler.IItemHandler;
 
 @SuppressWarnings({ "unused", "UnusedReturnValue" })
@@ -73,11 +73,11 @@ public class ItemTransfer {
 
     public void push(Object self, ForgeDirection side, Object target) {
         source(self, side);
-        sink(target, side.getOpposite());
+        sink(target, side != null ? side.getOpposite() : ForgeDirection.UNKNOWN);
     }
 
     public void pull(Object self, ForgeDirection side, Object target) {
-        source(target, side.getOpposite());
+        source(target, side != null ? side.getOpposite() : ForgeDirection.UNKNOWN);
         sink(self, side);
     }
 
@@ -107,7 +107,7 @@ public class ItemTransfer {
                 if (srcSlot < 0 || srcSlot >= sourceHandler.getSlots()) continue;
 
                 ItemStack available = sourceHandler.getStackInSlot(srcSlot);
-                if (ItemStackHelpers.isStackEmpty(available)) continue;
+                if (ItemHelpers.isEmpty(available)) continue;
 
                 if (filter != null && !filter.test(available)) continue;
 
@@ -122,48 +122,48 @@ public class ItemTransfer {
                     int toExtract = Math.min(availableCount, toTransferThisOP);
 
                     ItemStack simulatedExtracted = sourceHandler.extractItem(srcSlot, toExtract, true);
-                    if (ItemStackHelpers.isStackEmpty(simulatedExtracted)) break;
+                    if (ItemHelpers.isEmpty(simulatedExtracted)) break;
 
                     if (filter != null && !filter.test(simulatedExtracted)) break;
 
-                    ItemStack remainder = simulatedExtracted.copy();
-                    int initialCount = remainder.stackSize;
+                    ItemStack remainder = ItemHelpers.copy(simulatedExtracted);
+                    int initialCount = ItemHelpers.getItemStackSize(remainder);
 
                     for (int dstSlot : sinkIndices) {
                         if (dstSlot < 0 || dstSlot >= sinkHandler.getSlots()) continue;
 
                         int currentSlotLimit = Math.min(sinkHandler.getSlotLimit(dstSlot), maxSinkSlotStackSize);
                         ItemStack currentInSink = sinkHandler.getStackInSlot(dstSlot);
-                        if (!ItemStackHelpers.isStackEmpty(currentInSink)) {
+                        if (!ItemHelpers.isEmpty(currentInSink)) {
                             if (currentInSink.stackSize >= currentSlotLimit) continue;
                         }
 
                         remainder = sinkHandler.insertItem(dstSlot, remainder, true);
-                        if (ItemStackHelpers.isStackEmpty(remainder)) break;
+                        if (ItemHelpers.isEmpty(remainder)) break;
                     }
 
-                    int acceptedCount = initialCount - (remainder == null ? 0 : remainder.stackSize);
+                    int acceptedCount = initialCount - ItemHelpers.getItemStackSize(remainder);
                     if (acceptedCount <= 0) break;
 
                     ItemStack actualExtracted = sourceHandler.extractItem(srcSlot, acceptedCount, false);
-                    if (ItemStackHelpers.isStackEmpty(actualExtracted)) break;
+                    if (ItemHelpers.isEmpty(actualExtracted)) break;
 
                     availableCount -= actualExtracted.stackSize;
-                    ItemStack realRemainder = actualExtracted.copy();
+                    ItemStack realRemainder = ItemHelpers.copy(actualExtracted);
 
                     for (int dstSlot : sinkIndices) {
                         realRemainder = sinkHandler.insertItem(dstSlot, realRemainder, false);
-                        if (ItemStackHelpers.isStackEmpty(realRemainder)) break;
+                        if (ItemHelpers.isEmpty(realRemainder)) break;
                     }
 
-                    if (!ItemStackHelpers.isStackEmpty(realRemainder)) {
+                    if (!ItemHelpers.isEmpty(realRemainder)) {
                         ItemStack leftOver = sourceHandler.insertItem(srcSlot, realRemainder, false);
-                        if (!ItemStackHelpers.isStackEmpty(leftOver) && rejectedStacks != null) {
+                        if (!ItemHelpers.isEmpty(leftOver) && rejectedStacks != null) {
                             rejectedStacks.accept(leftOver);
                         }
                     }
 
-                    int transferred = actualExtracted.stackSize - (realRemainder == null ? 0 : realRemainder.stackSize);
+                    int transferred = actualExtracted.stackSize - ItemHelpers.getItemStackSize(realRemainder);
                     if (transferred <= 0) break;
 
                     itemsTransferred += transferred;

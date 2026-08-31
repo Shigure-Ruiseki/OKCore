@@ -9,12 +9,13 @@ import net.minecraft.nbt.NBTTagList;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * A basic inventory implementation for Minecraft 1.7.10.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -34,7 +35,7 @@ public class SimpleInventory implements INBTInventory {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param size       The amount of slots in the inventory.
      * @param name       The name of the inventory, used for NBT storage.
      * @param stackLimit The stack limit for each slot.
@@ -42,15 +43,23 @@ public class SimpleInventory implements INBTInventory {
     public SimpleInventory(int size, String name, int stackLimit) {
         _contents = new ItemStack[size];
         for (int i = 0; i < _contents.length; i++) {
-            _contents[i] = null;
+            _contents[i] = ItemHelpers.EMPTY;
         }
         _name = name;
         _stackLimit = stackLimit;
     }
 
+    public SimpleInventory(int size, int stackLimit) {
+        this(size, "", stackLimit);
+    }
+
+    public SimpleInventory(int size) {
+        this(size, "", 64);
+    }
+
     /**
      * Add a dirty marking listener.
-     * 
+     *
      * @param dirtyMarkListener The dirty mark listener.
      */
     public synchronized void addDirtyMarkListener(IDirtyMarkListener dirtyMarkListener) {
@@ -59,7 +68,7 @@ public class SimpleInventory implements INBTInventory {
 
     /**
      * Remove a dirty marking listener.
-     * 
+     *
      * @param dirtyMarkListener The dirty mark listener.
      */
     public synchronized void removeDirtyMarkListener(IDirtyMarkListener dirtyMarkListener) {
@@ -74,7 +83,7 @@ public class SimpleInventory implements INBTInventory {
     @Override
     public ItemStack getStackInSlot(int slotId) {
         if (slotId < 0 || slotId >= _contents.length) {
-            return null;
+            return ItemHelpers.EMPTY;
         }
         return _contents[slotId];
     }
@@ -82,28 +91,28 @@ public class SimpleInventory implements INBTInventory {
     @Override
     public ItemStack decrStackSize(int slotId, int count) {
         ItemStack stack = getStackInSlot(slotId);
-        if (slotId < getSizeInventory() && stack != null) {
+        if (slotId < getSizeInventory() && !ItemHelpers.isEmpty(stack)) {
             if (stack.stackSize > count) {
                 ItemStack slotContents = stack.copy();
                 ItemStack result = slotContents.splitStack(count);
                 setInventorySlotContents(slotId, slotContents);
                 return result;
             }
-            setInventorySlotContents(slotId, null);
+            setInventorySlotContents(slotId, ItemHelpers.EMPTY);
             onInventoryChanged();
             return stack;
         }
-        return null;
+        return ItemHelpers.EMPTY;
     }
 
     @Override
     public ItemStack getStackInSlotOnClosing(int index) {
-        if (this._contents[index] != null) {
+        if (!ItemHelpers.isEmpty(this._contents[index])) {
             ItemStack itemstack = this._contents[index];
-            this._contents[index] = null;
+            this._contents[index] = ItemHelpers.EMPTY;
             return itemstack;
         } else {
-            return null;
+            return ItemHelpers.EMPTY;
         }
     }
 
@@ -112,11 +121,16 @@ public class SimpleInventory implements INBTInventory {
         if (slotId < 0 || slotId >= getSizeInventory()) {
             return;
         }
-        this._contents[slotId] = itemstack;
 
-        if (itemstack != null && itemstack.stackSize > this.getInventoryStackLimit()) {
-            itemstack.stackSize = this.getInventoryStackLimit();
+        if (ItemHelpers.isEmpty(itemstack)) {
+            this._contents[slotId] = ItemHelpers.EMPTY;
+        } else {
+            this._contents[slotId] = itemstack;
+            if (itemstack.stackSize > this.getInventoryStackLimit()) {
+                itemstack.stackSize = this.getInventoryStackLimit();
+            }
         }
+
         onInventoryChanged();
     }
 
@@ -161,7 +175,7 @@ public class SimpleInventory implements INBTInventory {
 
     /**
      * Read inventory data from the given NBT.
-     * 
+     *
      * @param data The NBT data containing inventory data.
      * @param tag  The NBT tag name where the info is located.
      */
@@ -169,7 +183,7 @@ public class SimpleInventory implements INBTInventory {
         NBTTagList nbttaglist = data.getTagList(tag, MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
 
         for (int j = 0; j < getSizeInventory(); ++j) {
-            _contents[j] = null;
+            _contents[j] = ItemHelpers.EMPTY;
         }
 
         for (int j = 0; j < nbttaglist.tagCount(); ++j) {
@@ -193,7 +207,7 @@ public class SimpleInventory implements INBTInventory {
 
     /**
      * Write inventory data to the given NBT.
-     * 
+     *
      * @param data The NBT tag that will receive inventory data.
      * @param tag  The NBT tag name where the info must be located.
      */
@@ -201,7 +215,7 @@ public class SimpleInventory implements INBTInventory {
         NBTTagList slots = new NBTTagList();
         for (byte index = 0; index < getSizeInventory(); ++index) {
             ItemStack itemStack = getStackInSlot(index);
-            if (itemStack != null && itemStack.stackSize > 0) {
+            if (!ItemHelpers.isEmpty(itemStack)) {
                 NBTTagCompound slot = new NBTTagCompound();
                 slots.appendTag(slot);
                 slot.setByte("Slot", index);
@@ -213,17 +227,17 @@ public class SimpleInventory implements INBTInventory {
 
     public ItemStack removeStackFromSlot(int slotId) {
         ItemStack stackToTake = getStackInSlot(slotId);
-        if (stackToTake == null) {
-            return null;
+        if (ItemHelpers.isEmpty(stackToTake)) {
+            return ItemHelpers.EMPTY;
         }
 
-        setInventorySlotContents(slotId, null);
+        setInventorySlotContents(slotId, ItemHelpers.EMPTY);
         return stackToTake;
     }
 
     /**
      * Get the array of {@link net.minecraft.item.ItemStack} inside this inventory.
-     * 
+     *
      * @return The items in this inventory.
      */
     public ItemStack[] getItemStacks() {
@@ -237,7 +251,7 @@ public class SimpleInventory implements INBTInventory {
 
     public void clear() {
         for (int i = 0; i < getSizeInventory(); i++) {
-            _contents[i] = null;
+            _contents[i] = ItemHelpers.EMPTY;
         }
         onInventoryChanged();
     }
@@ -256,8 +270,7 @@ public class SimpleInventory implements INBTInventory {
     @Override
     public boolean isEmpty() {
         for (int i = 0; i < getSizeInventory(); i++) {
-            ItemStack stack = getStackInSlot(i);
-            if (stack != null && stack.stackSize > 0) {
+            if (!ItemHelpers.isEmpty(getStackInSlot(i))) {
                 return false;
             }
         }

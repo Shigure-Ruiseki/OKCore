@@ -106,10 +106,18 @@ public abstract class InventoryContainer extends Container
         return new Slot(inventory, index, x, y);
     }
 
+    public static void setSlotPosX(Slot slot, int newValue) {
+        slot.xDisplayPosition = newValue;
+    }
+
+    public static void setSlotPosY(Slot slot, int newValue) {
+        slot.yDisplayPosition = newValue;
+    }
+
     @Override
     protected Slot addSlotToContainer(Slot slot) {
-        slot.xDisplayPosition += offsetX;
-        slot.yDisplayPosition += offsetY;
+        setSlotPosX(slot, slot.xDisplayPosition + offsetX);
+        setSlotPosY(slot, slot.yDisplayPosition + offsetY);
         return super.addSlotToContainer(slot);
     }
 

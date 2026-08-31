@@ -11,12 +11,7 @@ public interface IItemToggle {
 
     String TOGGLE_TAG = "on_off";
 
-    default void toggle(EntityPlayerMP player, ItemStack slotStack, int button) {
-        toggle(player, slotStack);
-    }
-
-    @Deprecated
-    default void toggle(EntityPlayer player, ItemStack slotStack) {}
+    void toggle(EntityPlayerMP player, ItemStack slotStack, int button);
 
     default boolean isOn(ItemStack held) {
         if (held == null || !held.hasTagCompound()) return false;

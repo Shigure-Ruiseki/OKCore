@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
@@ -47,6 +48,19 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
         IngredientComponent<T, M> ingredientComponent);
 
     /**
+     * If the input at the given index is reusable.
+     * If an ingredient is reusable, this means that a crafting job for this recipe will not (fully) consume this
+     * ingredient, and could potentially be reused in later crafting jobs.
+     * 
+     * @param ingredientComponent An ingredient component type.
+     * @param index               The index of an input, based on the order in {@link #getInputs(IngredientComponent)}.
+     * @param <T>                 The instance type.
+     * @param <M>                 The matching condition parameter, may be Void.
+     * @return If the input at this index is reusable.
+     */
+    public <T, M> boolean isInputReusable(IngredientComponent<T, M> ingredientComponent, int index);
+
+    /**
      * @return The output ingredients.
      */
     public IMixedIngredients getOutput();
@@ -61,6 +75,7 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
     public static NBTTagCompound serialize(IRecipeDefinition recipe) {
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagList inputList = new NBTTagList();
+        NBTTagCompound inputReusableTag = new NBTTagCompound();
 
         for (IngredientComponent<?, ?> component : recipe.getInputComponents()) {
             NBTTagCompound componentEntry = new NBTTagCompound();
@@ -69,20 +84,37 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
                 "component",
                 component.getRegistryName()
                     .toString());
+
             NBTTagList instances = new NBTTagList();
+            List<Byte> reusableBytes = Lists.newArrayList();
+            int index = 0;
+
             for (IPrototypedIngredientAlternatives ingredient : recipe.getInputs(component)) {
                 NBTTagCompound subTag = new NBTTagCompound();
                 IPrototypedIngredientAlternatives.ISerializer serializer = ingredient.getSerializer();
                 subTag.setTag("val", serializer.serialize(component, ingredient));
                 subTag.setByte("type", serializer.getId());
                 instances.appendTag(subTag);
+
+                reusableBytes.add((byte) (recipe.isInputReusable(component, index) ? 1 : 0));
+                index++;
             }
 
             componentEntry.setTag("instances", instances);
             inputList.appendTag(componentEntry);
+
+            byte[] byteArray = new byte[reusableBytes.size()];
+            for (int i = 0; i < reusableBytes.size(); i++) {
+                byteArray[i] = reusableBytes.get(i);
+            }
+            inputReusableTag.setTag(
+                component.getRegistryName()
+                    .toString(),
+                new NBTTagByteArray(byteArray));
         }
 
         tag.setTag("input", inputList);
+        tag.setTag("inputReusable", inputReusableTag);
         tag.setTag("output", IMixedIngredients.serialize(recipe.getOutput()));
         return tag;
     }
@@ -97,6 +129,7 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static RecipeDefinition deserialize(NBTTagCompound tag) throws IllegalArgumentException {
         Map<IngredientComponent<?, ?>, List<IPrototypedIngredientAlternatives<?, ?>>> inputs = new HashMap<>();
+        Map<IngredientComponent<?, ?>, List<Boolean>> inputsReusable = new HashMap<>();
 
         if (!tag.hasKey("input")) {
             throw new IllegalArgumentException("A recipe tag did not contain a valid input tag");
@@ -147,8 +180,32 @@ public interface IRecipeDefinition extends Comparable<IRecipeDefinition> {
                 inputs.put(component, instances);
             }
         }
+
+        if (tag.hasKey("inputReusable")) {
+            NBTTagCompound inputReusableTag = tag.getCompoundTag("inputReusable");
+            for (Object keyObj : inputReusableTag.func_150296_c()) {
+                String componentName = (String) keyObj;
+                IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
+                    .getValue(new ResourceLocation(componentName));
+                if (component == null) {
+                    throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
+                }
+                NBTBase subTag = inputReusableTag.getTag(componentName);
+                if (!(subTag instanceof NBTTagByteArray instancesReusable)) {
+                    throw new IllegalArgumentException(
+                        "The ingredient component type " + componentName
+                            + " did not contain a valid list of instance reusable bytes");
+                }
+                List<Boolean> inputReusable = Lists.newArrayList();
+                for (byte b : instancesReusable.func_150292_c()) {
+                    inputReusable.add(b == (byte) 1);
+                }
+                inputsReusable.put(component, inputReusable);
+            }
+        }
+
         IMixedIngredients output = IMixedIngredients.deserialize(tag.getCompoundTag("output"));
-        return new RecipeDefinition(inputs, output);
+        return new RecipeDefinition(inputs, inputsReusable, output);
     }
 
 }

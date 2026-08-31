@@ -4,11 +4,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
-import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * Temperature capability for the vanilla furnace tile entity.
- * 
+ *
  * @author rubensworks
  */
 public class VanillaUniversalBucketTemperature implements ITemperature {

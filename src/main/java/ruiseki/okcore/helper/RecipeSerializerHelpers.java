@@ -1,5 +1,6 @@
 package ruiseki.okcore.helper;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -14,7 +15,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.oredict.OreDictionary;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -112,10 +112,17 @@ public class RecipeSerializerHelpers {
     public static ItemStack getJsonItemStackFromTag(JsonObject json, String key, List<String> modPriorities) {
         String oreName = json.get(key)
             .getAsString();
-        List<ItemStack> matchingStacks = OreDictionary.getOres(oreName);
+        Collection<ItemStack> matchingStacks = Ingredient.valueFromJson(json)
+            .getItems();
 
-        if (matchingStacks.isEmpty()) {
-            throw new IllegalStateException("No OreDictionary entry found for tag: " + oreName);
+        // Safely check if the tag resolution returned any matching items
+        if (matchingStacks == null || matchingStacks.isEmpty()) {
+            ruiseki.okcore.OKCore.okLog(
+                org.apache.logging.log4j.Level.WARN,
+                "No OreDictionary/Tag entry found for tag key '{}' (value: '{}')",
+                key,
+                oreName);
+            return null;
         }
 
         final Map<String, Integer> modPriorityIndex = Maps.newHashMap();
@@ -141,6 +148,9 @@ public class RecipeSerializerHelpers {
         int count = 1;
         if (json.has("count")) {
             count = json.get("count")
+                .getAsInt();
+        } else if (json.has("amount")) {
+            count = json.get("amount")
                 .getAsInt();
         }
         outputStack.stackSize = count;

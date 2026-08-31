@@ -56,7 +56,7 @@ public final class IngredientComponent<T, M>
 
     public static IngredientComponent<ItemStack, Integer> ITEMSTACK = null;
     public static IngredientComponent<FluidStack, Integer> FLUIDSTACK = null;
-    public static IngredientComponent<Integer, Boolean> ENERGY = null;
+    public static IngredientComponent<Long, Boolean> ENERGY = null;
 
     @CapabilityInject(IIngredientComponentStorageHandler.class)
     private static Capability<IIngredientComponentStorageHandler> CAPABILITY_INGREDIENT_COMPONENT_STORAGE_HANDLER = null;

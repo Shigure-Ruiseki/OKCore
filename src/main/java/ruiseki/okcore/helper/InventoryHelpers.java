@@ -6,15 +6,12 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
@@ -207,31 +204,6 @@ public class InventoryHelpers {
                 handler.extractItem(i, stack.stackSize, false);
             }
         }
-    }
-
-    public static ItemStack insertStack(IItemHandler handler, ItemStack stack, boolean simulate) {
-        if (handler == null || stack == null || stack.stackSize <= 0) {
-            return stack;
-        }
-
-        ItemStack remainder = stack.copy();
-
-        for (int i = 0; i < handler.getSlots(); i++) {
-            remainder = handler.insertItem(i, remainder, simulate);
-
-            if (remainder == null || remainder.stackSize <= 0) {
-                return null;
-            }
-        }
-
-        return remainder;
-    }
-
-    public static ItemStack insertIntoTile(TileEntity tile, ForgeDirection side, ItemStack stack, boolean simulate) {
-        if (tile == null || stack == null) return stack;
-        return CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, side)
-            .map(handler -> insertStack(handler, stack, simulate))
-            .orElse(stack);
     }
 
     /**

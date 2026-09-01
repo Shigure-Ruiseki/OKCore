@@ -36,12 +36,17 @@ public class IngredientCollectionDiffManager<T, M> {
      */
     public IngredientCollectionDiff<T, M> onChange(Iterator<T> newInstances) {
         IngredientCollectionPrototypeMap<T, M> newInstancesCache = new IngredientCollectionPrototypeMap<>(
-            ingredientComponent,
-            true);
+            ingredientComponent, true);
         IngredientCollectionDiff<T, M> diff = IngredientCollectionDiffHelpers
             .getDiff(ingredientComponent, instancesCache, newInstancesCache, newInstances);
         this.instancesCache = newInstancesCache;
         return diff;
     }
 
+    public IngredientCollectionPrototypeMap<T, M> getInstancesCache() {
+        if (this.instancesCache == null) {
+            this.instancesCache = new IngredientCollectionPrototypeMap<>(this.ingredientComponent, true);
+        }
+        return this.instancesCache;
+    }
 }

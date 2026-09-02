@@ -41,18 +41,14 @@ public class Image implements IImage {
     }
 
     @Override
-    public void drawWorld(TextureManager textureManager, float x1, float x2, float y1, float y2, float z) {
-        drawWorldWithAlpha(textureManager, x1, x2, y1, y2, z, 1.0F);
-    }
-
-    @Override
-    public void drawWorld(TextureManager textureManager, float x1, float x2, float y1, float y2) {
-        drawWorldWithAlpha(textureManager, x1, x2, y1, y2, 1.0F);
-    }
-
-    @Override
-    public void drawWorld(TextureManager textureManager, float x2, float y2) {
-        drawWorldWithAlpha(textureManager, x2, y2, 1.0F);
+    public void drawWithColor(Gui gui, int x, int y, float r, float g, float b, float a) {
+        GlStateManager.enableBlend();
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glColor4f(r, g, b, a);
+        Minecraft.getMinecraft().renderEngine.bindTexture(this.resourceLocation);
+        gui.drawTexturedModalRect(x, y, this.sheetX, this.sheetY, this.sheetWidth, this.sheetHeight);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.disableBlend();
     }
 
     @Override
@@ -62,12 +58,12 @@ public class Image implements IImage {
 
         textureManager.bindTexture(getResourceLocation());
 
-        float u1 = (float) (getSheetX()) / 256F;
-        float u2 = (float) (getSheetX() + getSheetWidth()) / 256F;
-        float v1 = (float) (getSheetY()) / 256F;
-        float v2 = (float) (getSheetY() + getSheetHeight()) / 256F;
+        float u1 = (float) getSheetX() / 256.0F;
+        float u2 = (float) (getSheetX() + getSheetWidth()) / 256.0F;
+        float v1 = (float) getSheetY() / 256.0F;
+        float v2 = (float) (getSheetY() + getSheetHeight()) / 256.0F;
 
-        int a = Math.round(alpha * 255F);
+        int a = Math.round(alpha * 255.0F);
 
         GlStateManager.enableBlend();
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -85,16 +81,6 @@ public class Image implements IImage {
 
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
-    }
-
-    @Override
-    public void drawWorldWithAlpha(TextureManager textureManager, float x1, float x2, float y1, float y2, float alpha) {
-        this.drawWorldWithAlpha(textureManager, x1, x2, y1, y2, 0, alpha);
-    }
-
-    @Override
-    public void drawWorldWithAlpha(TextureManager textureManager, float x2, float y2, float alpha) {
-        this.drawWorldWithAlpha(textureManager, 0, x2, 0, y2, alpha);
     }
 
     @Override

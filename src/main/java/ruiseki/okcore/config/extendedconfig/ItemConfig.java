@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.init.ModBase;
 
@@ -77,4 +78,10 @@ public abstract class ItemConfig extends ExtendedConfig<ItemConfig, Item> {
         return getMod().getDefaultCreativeTab();
     }
 
+    /**
+     * return null to use ItemAction GuiType.
+     */
+    public GuiHandler.GuiType<?> getGuiType() {
+        return null;
+    }
 }

@@ -161,7 +161,7 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
             IGuiContainerProvider gui = (IGuiContainerProvider) block;
             eConfig.getMod()
                 .getGuiHandler()
-                .registerGUI(gui, guiType);
+                .registerGUI(gui, eConfig.getGuiType() != null ? eConfig.getGuiType() : guiType);
         }
 
         if (block instanceof IBlockPropertyProvider provider) {

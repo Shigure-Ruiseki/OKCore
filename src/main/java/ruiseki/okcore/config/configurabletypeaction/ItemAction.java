@@ -73,10 +73,13 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig, Item> {
 
         // Optionally register gui
         if (item instanceof IGuiContainerProvider) {
-            IGuiContainerProvider gui = (IGuiContainerProvider) item;
-            eConfig.getMod()
-                .getGuiHandler()
-                .registerGUI(gui, GuiHandler.GuiType.ITEM);
+            registerGui(eConfig, (IGuiContainerProvider) item);
         }
+    }
+
+    protected void registerGui(ItemConfig eConfig, IGuiContainerProvider gui) {
+        eConfig.getMod()
+            .getGuiHandler()
+            .registerGUI(gui, GuiHandler.GuiType.ITEM);
     }
 }

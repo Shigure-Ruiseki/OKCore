@@ -8,12 +8,12 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.MixedIngredients;
+import ruiseki.commoncapabilities.api.ingredient.MixedIngredientsAdapter;
 
 /**
  * A recipe definition based on maps.
@@ -78,8 +78,7 @@ public class RecipeDefinition implements IRecipeDefinition {
     public boolean equals(Object obj) {
         if (obj instanceof IRecipeDefinition) {
             IRecipeDefinition that = (IRecipeDefinition) obj;
-            if (Sets.newHashSet(this.getInputComponents())
-                .equals(Sets.newHashSet(that.getInputComponents()))
+            if (MixedIngredientsAdapter.identitySetsEqual(this.getInputComponents(), that.getInputComponents())
                 && this.getOutput()
                     .equals(that.getOutput())) {
                 for (IngredientComponent<?, ?> component : getInputComponents()) {
@@ -101,14 +100,8 @@ public class RecipeDefinition implements IRecipeDefinition {
 
     @Override
     public int hashCode() {
-        int inputsHash = 333;
-        for (List<IPrototypedIngredientAlternatives<?, ?>> values : inputs.values()) {
-            inputsHash |= values.hashCode();
-        }
-        for (List<Boolean> values : inputsReusable.values()) {
-            inputsHash |= values.hashCode();
-        }
-        return 578 | inputsHash << 2 | output.hashCode();
+        // Only hash output to keep things quick
+        return 578 | output.hashCode();
     }
 
     @Override
@@ -119,7 +112,7 @@ public class RecipeDefinition implements IRecipeDefinition {
 
     /**
      * Create a new recipe definition for a single component type input and a list of alternatives.
-     * 
+     *
      * @param component    A component type.
      * @param alternatives The alternatives for the given component type.
      * @param output       The recipe output.
@@ -138,7 +131,7 @@ public class RecipeDefinition implements IRecipeDefinition {
 
     /**
      * Create a new recipe definition for a single component type input and a list of instances.
-     * 
+     *
      * @param component   A component type.
      * @param ingredients The ingredients for the given component type.
      * @param output      The recipe output.
@@ -159,7 +152,7 @@ public class RecipeDefinition implements IRecipeDefinition {
 
     /**
      * Create a new recipe definittion for a single component type input and a single instance.
-     * 
+     *
      * @param component  A component type.
      * @param ingredient An ingredient for the given component type.
      * @param output     The recipe output.

@@ -109,30 +109,24 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     protected String getConfigPropertyPrefix() {
         return this.getNamedId();
     }
+
     /**
      * Save this config inside the correct element and inside the implementation of itself.
      */
     @SuppressWarnings("unchecked")
     public void save() {
         try {
-            if (this.instance != null) {
-                return;
+            // Save inside the self-implementation
+            try {
+                this.getClass()
+                    .getField("_instance")
+                    .set(null, this);
+            } catch (NoSuchFieldError e) {
+                throw new OKCoreConfigException(
+                    String.format("The config file for %s requires a static field _instance.", this.getNamedId()));
             }
 
-            Field field = this.getClass().getField("_instance");
-            Object currentInstance = field.get(null);
-
-            if (currentInstance != null) {
-                ExtendedConfig<?, ?> prevConfig = (ExtendedConfig<?, ?>) currentInstance;
-                if (prevConfig.getInstance() != null) {
-                    this.instance = (I) prevConfig.getInstance();
-                    return;
-                }
-            }
-
-            field.set(null, this);
-
-            if (this.factory != null && this.instance == null) {
+            if (this.factory != null) {
                 this.instance = this.factory.apply(downCast());
             }
         } catch (IllegalAccessException | NoSuchFieldException | RuntimeException e) {

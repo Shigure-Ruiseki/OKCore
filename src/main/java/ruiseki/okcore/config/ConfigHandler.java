@@ -132,11 +132,12 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
                         if (loc.isSyncToServer()) {
                             syncedElements.put(configProperty.getName(), configProperty);
                         }
-
-                        eConfig.getHolderType()
-                            .getElementTypeAction()
-                            .commonRun(eConfig, targetConfig);
                     }
+
+                    Configuration defaultConfig = getConfig(ConfigLocation.COMMON);
+                    eConfig.getHolderType()
+                        .getElementTypeAction()
+                        .commonRun(eConfig, defaultConfig);
 
                     if (eConfig.isEnabled()) {
                         eConfig.onRegistered();

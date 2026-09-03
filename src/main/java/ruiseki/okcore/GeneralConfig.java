@@ -2,6 +2,7 @@ package ruiseki.okcore;
 
 import org.apache.logging.log4j.Level;
 
+import ruiseki.okcore.config.ConfigLocation;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
@@ -39,7 +40,10 @@ public class GeneralConfig extends DummyConfig {
         requiresMcRestart = true)
     public static boolean crashOnModCompatCrash = false;
 
-    @ConfigurableProperty(category = "core", comment = "If the version checker should be enabled.")
+    @ConfigurableProperty(
+        category = "core",
+        comment = "If the version checker should be enabled.",
+        configLocation = ConfigLocation.SERVER)
     public static boolean versionChecker = true;
 
     @ConfigurableProperty(

@@ -11,14 +11,15 @@ import ruiseki.okcore.event.handler.RecipeRemainingItemsHandler;
 import ruiseki.okcore.event.handler.TileEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
-import ruiseki.okcore.network.packet.ButtonClickPacket;
+import ruiseki.okcore.network.packet.PacketButtonClick;
 import ruiseki.okcore.network.packet.PacketCooldown;
 import ruiseki.okcore.network.packet.PacketItemToggle;
 import ruiseki.okcore.network.packet.PacketSound;
+import ruiseki.okcore.network.packet.PacketSyncConfig;
 import ruiseki.okcore.network.packet.PacketSyncCursorStack;
 import ruiseki.okcore.network.packet.PacketUpdateRecipes;
 import ruiseki.okcore.network.packet.PacketUpdateTags;
-import ruiseki.okcore.network.packet.ValueNotifyPacket;
+import ruiseki.okcore.network.packet.PacketValueNotify;
 
 public class CommonProxy extends CommonProxyComponent {
 
@@ -38,8 +39,9 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(PacketUpdateRecipes.class);
         packetHandler.register(PacketUpdateTags.class);
         packetHandler.register(PacketSyncCursorStack.class);
-        packetHandler.register(ValueNotifyPacket.class);
-        packetHandler.register(ButtonClickPacket.class);
+        packetHandler.register(PacketValueNotify.class);
+        packetHandler.register(PacketButtonClick.class);
+        packetHandler.register(PacketSyncConfig.class);
     }
 
     @Override

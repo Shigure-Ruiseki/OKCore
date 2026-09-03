@@ -11,10 +11,7 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * A holder class for properties that go inside the config file.
- * Used inside the {@link ConfigHandler} for configuring the settings of the
- * {@link ruiseki.okcore.config.configurable.IConfigurable}.
- * Do no confuse with {@link ConfigurableProperty} which is an annotation an is internally used to
- * make new instances of {@link ConfigProperty}.
+ * Used inside the {@link ConfigHandler} for configuring the settings
  *
  * @author rubensworks
  *
@@ -34,6 +31,8 @@ public final class ConfigProperty {
     private boolean showInGui;
     private int minValue;
     private int maxValue;
+    private ConfigLocation location;
+    private Object clientLocalValue;
 
     /**
      * Define a new configurable property.
@@ -49,7 +48,7 @@ public final class ConfigProperty {
      *                      refers to.
      */
     public ConfigProperty(ModBase mod, String category, String name, Object value, String comment,
-        ConfigPropertyCallback callback, boolean isCommandable, Field field) {
+        ConfigPropertyCallback callback, boolean isCommandable, ConfigLocation location, Field field) {
         this.mod = mod;
         this.category = category;
         this.name = name;
@@ -57,6 +56,7 @@ public final class ConfigProperty {
         this.comment = comment;
         this.callback = callback;
         this.isCommandable = isCommandable;
+        this.location = location;
         this.field = field;
         callback.setConfigProperty(this);
     }
@@ -74,8 +74,8 @@ public final class ConfigProperty {
      *                      refers to.
      */
     public ConfigProperty(ModBase mod, String category, String name, Object value, ConfigPropertyCallback callback,
-        boolean isCommandable, Field field) {
-        this(mod, category, name, value, null, callback, isCommandable, field);
+        boolean isCommandable, ConfigLocation location, Field field) {
+        this(mod, category, name, value, null, callback, isCommandable, location, field);
     }
 
     /**
@@ -192,11 +192,14 @@ public final class ConfigProperty {
         this.isCommandable = isCommandable;
     }
 
-    /**
-     * Save this property in the given config file.
-     *
-     * @param config The config file to save to.
-     */
+    public ConfigLocation getLocation() {
+        return location;
+    }
+
+    public void setLocation(ConfigLocation location) {
+        this.location = location;
+    }
+
     public void save(Configuration config) {
         save(config, false);
     }
@@ -208,8 +211,6 @@ public final class ConfigProperty {
      * @param forceUpdate If the value in the config file has to be overwritten.
      */
     public void save(Configuration config, boolean forceUpdate) {
-        // Sorry, no cleaner solution for this...
-        // Reflection could solve it partially, but it'd be still quite ugly...
         String category = getCategory();
         String name = getName();
         Object value = getValue();
@@ -238,7 +239,6 @@ public final class ConfigProperty {
             } else {
                 getCallback().run(additionalProperty.getBoolean((Boolean) value));
             }
-
         } else if (value instanceof Double) {
             additionalProperty = config.get(category, name, (Double) value, comment);
             if (forceUpdate) {
@@ -289,19 +289,52 @@ public final class ConfigProperty {
         if (additionalProperty != null) {
             additionalProperty.setRequiresWorldRestart(isRequiresWorldRestart());
             additionalProperty.setRequiresMcRestart(isRequiresMcRestart());
-        }
 
-        if (value instanceof Integer || value instanceof Double) {
-            additionalProperty.setMinValue(getMinValue());
-            additionalProperty.setMaxValue(getMaxValue());
-        }
+            if (value instanceof Integer || value instanceof Double) {
+                additionalProperty.setMinValue(getMinValue());
+                additionalProperty.setMaxValue(getMaxValue());
+            }
 
-        additionalProperty.setShowInGui(showInGui());
+            additionalProperty.setShowInGui(showInGui());
+        }
     }
 
-    /**
-     * @return the requiresWorldRestart
-     */
+    public void setSyncedValue(String stringValue) {
+        if (this.clientLocalValue == null) {
+            this.clientLocalValue = this.value;
+        }
+
+        if (value instanceof Integer) {
+            setValue(Integer.parseInt(stringValue));
+        } else if (value instanceof Boolean) {
+            setValue(Boolean.parseBoolean(stringValue));
+        } else if (value instanceof Double) {
+            setValue(Double.parseDouble(stringValue));
+        } else if (value instanceof String) {
+            setValue(stringValue);
+        } else if (value instanceof String[]) {
+            setValue(stringValue.isEmpty() ? new String[0] : stringValue.split(";"));
+        } else if (value instanceof int[]) {
+            if (stringValue.isEmpty()) {
+                setValue(new int[0]);
+            } else {
+                String[] parts = stringValue.split(";");
+                int[] arr = new int[parts.length];
+                for (int i = 0; i < parts.length; i++) {
+                    arr[i] = Integer.parseInt(parts[i]);
+                }
+                setValue(arr);
+            }
+        }
+    }
+
+    public void restoreLocalValue() {
+        if (this.clientLocalValue != null) {
+            setValue(this.clientLocalValue);
+            this.clientLocalValue = null;
+        }
+    }
+
     public boolean isRequiresWorldRestart() {
         return requiresWorldRestart;
     }

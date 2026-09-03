@@ -10,7 +10,6 @@ import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.commoncapabilities.ingredient.NBTBaseComparator;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableType;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.IChangedCallback;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
 import ruiseki.okcore.init.ModBase;
@@ -32,7 +31,7 @@ public class GeneralConfig extends DummyConfig {
      * warn the player accordingly.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "Config version for " + Reference.MOD_NAME + ".\nDO NOT EDIT MANUALLY!",
         showInGui = false)
     public static String version = Reference.MOD_VERSION;
@@ -41,7 +40,7 @@ public class GeneralConfig extends DummyConfig {
      * If the debug mode should be enabled. @see Debug
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "Set 'true' to enable development debug mode. This will result in a lower performance!",
         requiresMcRestart = true)
     public static boolean debug = false;
@@ -50,7 +49,7 @@ public class GeneralConfig extends DummyConfig {
      * If the recipe loader should crash when finding invalid recipes.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "If the recipe loader should crash when finding invalid recipes.",
         requiresMcRestart = true)
     public static boolean crashOnInvalidRecipe = false;
@@ -59,7 +58,7 @@ public class GeneralConfig extends DummyConfig {
      * If mod compatibility loader should crash hard if errors occur in that process.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "If mod compatibility loader should crash hard if errors occur in that process.",
         requiresMcRestart = true)
     public static boolean crashOnModCompatCrash = false;
@@ -68,7 +67,7 @@ public class GeneralConfig extends DummyConfig {
      * The NBT Paths that should be filtered away when checking equality.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = "machine",
         comment = "The NBT Paths that should be filtered away when checking equality.",
         changedCallback = IgnoreNbtPathsForEqualityChangedCallback.class)
     public static String[] ignoreNbtPathsForEqualityFilters = { "$.ForgeCaps[\"astralsorcery:cap_item_amulet_holder\"]", // Astral

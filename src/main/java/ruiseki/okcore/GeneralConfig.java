@@ -4,7 +4,6 @@ import org.apache.logging.log4j.Level;
 
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableType;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.tracking.Versions;
@@ -17,55 +16,34 @@ import ruiseki.okcore.tracking.Versions;
  */
 public class GeneralConfig extends DummyConfig {
 
-    /**
-     * The current mod version, will be used to check if the player's config isn't out of date and
-     * warn the player accordingly.
-     */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "Config version for " + Reference.MOD_NAME + ".\nDO NOT EDIT MANUALLY!")
     public static String version = Reference.MOD_VERSION;
 
-    /**
-     * If the debug mode should be enabled. @see Debug
-     */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "Set 'true' to enable development debug mode. This will result in a lower performance!",
         requiresMcRestart = true)
     public static boolean debug = false;
 
-    /**
-     * If the recipe loader should crash when finding invalid recipes.
-     */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "If the recipe loader should crash when finding invalid recipes.",
         requiresMcRestart = true)
     public static boolean crashOnInvalidRecipe = false;
 
-    /**
-     * If mod compatibility loader should crash hard if errors occur in that process.
-     */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "If mod compatibility loader should crash hard if errors occur in that process.",
         requiresMcRestart = true)
     public static boolean crashOnModCompatCrash = false;
 
-    /**
-     * If the version checker should be enabled.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
-        comment = "If the version checker should be enabled.")
+    @ConfigurableProperty(category = "core", comment = "If the version checker should be enabled.")
     public static boolean versionChecker = true;
 
-    /**
-     * The minimum array size of potion types, increase to allow for more potion types.
-     */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core.potion",
         comment = "The minimum array size of potion types, increase to allow for more potion types.",
         requiresMcRestart = true)
     public static int minimumPotionTypesArraySize = 256;

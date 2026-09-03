@@ -12,20 +12,20 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for notifying the server of a button click.
- * 
+ *
  * @author rubensworks
  *
  */
-public class ButtonClickPacket extends PacketCodec {
+public class PacketButtonClick extends PacketCodec {
 
     @CodecField
     private int buttonId;
 
-    public ButtonClickPacket() {
+    public PacketButtonClick() {
 
     }
 
-    public ButtonClickPacket(int buttonId) {
+    public PacketButtonClick(int buttonId) {
         this.buttonId = buttonId;
     }
 

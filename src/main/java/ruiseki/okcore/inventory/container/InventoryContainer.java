@@ -27,7 +27,7 @@ import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 import ruiseki.okcore.inventory.container.button.IButtonClickAcceptorServer;
 import ruiseki.okcore.inventory.slot.SlotArmor;
 import ruiseki.okcore.inventory.slot.SlotExtended;
-import ruiseki.okcore.network.packet.ValueNotifyPacket;
+import ruiseki.okcore.network.packet.PacketValueNotify;
 
 /**
  * A container with inventory for Minecraft 1.7.10.
@@ -487,11 +487,11 @@ public abstract class InventoryContainer extends Container
             if (!player.worldObj.isRemote) { // server -> client
                 OKCore._instance.getPacketHandler()
                     .sendToPlayer(
-                        new ValueNotifyPacket(getGuiModId(), getGuiId(), valueId, value),
+                        new PacketValueNotify(getGuiModId(), getGuiId(), valueId, value),
                         (EntityPlayerMP) player);
             } else { // client -> server
                 OKCore._instance.getPacketHandler()
-                    .sendToServer(new ValueNotifyPacket(getGuiModId(), getGuiId(), valueId, value));
+                    .sendToServer(new PacketValueNotify(getGuiModId(), getGuiId(), valueId, value));
             }
             values.put(valueId, value);
         }

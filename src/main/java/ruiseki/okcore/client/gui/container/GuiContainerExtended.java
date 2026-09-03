@@ -24,7 +24,7 @@ import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 import ruiseki.okcore.inventory.container.button.IButtonClickAcceptorClient;
 import ruiseki.okcore.inventory.slot.SlotExtended;
-import ruiseki.okcore.network.packet.ButtonClickPacket;
+import ruiseki.okcore.network.packet.PacketButtonClick;
 
 /**
  * An extended GUI container.
@@ -237,7 +237,7 @@ public abstract class GuiContainerExtended extends GuiContainer
         if (getContainer().requiresAction(button.id)) {
             getContainer().onButtonClick(button.id);
             OKCore._instance.getPacketHandler()
-                .sendToServer(new ButtonClickPacket(button.id));
+                .sendToServer(new PacketButtonClick(button.id));
         }
     }
 

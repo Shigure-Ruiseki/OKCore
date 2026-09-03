@@ -22,7 +22,7 @@ import ruiseki.okcore.registries.IForgeRegistryEntry;
  *
  * @author rubensworks
  * @param <C> The subclass of ExtendedConfig
- * @see ConfigHandler
+ * @param <I> The instance type
  */
 public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C, I>, I> {
 
@@ -30,12 +30,13 @@ public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C, I>, I> 
      * The common run method for all the subtypes of {@link ConfigurableTypeAction}.
      *
      * @param eConfig The config to be registered.
-     * @param config  The config file reference.
+     * @param config  The target config file reference (matched with eConfig.getConfigLocation()).
      */
     public void commonRun(C eConfig, Configuration config) {
         if (eConfig.isDisableable()) {
             preRun(eConfig, config, true);
         }
+
         if (eConfig.isEnabled()) {
             postRun(eConfig, config);
         } else if (!eConfig.isDisableable()) {
@@ -60,10 +61,10 @@ public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C, I>, I> 
     public abstract void preRun(C eConfig, Configuration config, boolean startup);
 
     /**
-     * Logic to register the eConfig target.
+     * Logic to register the eConfig target into Forge Registries / Game engine.
      *
      * @param eConfig configuration holder.
-     * @param config  configuration from the config file.
+     * @param config  configuration from the target config file.
      */
     public abstract void postRun(C eConfig, Configuration config);
 

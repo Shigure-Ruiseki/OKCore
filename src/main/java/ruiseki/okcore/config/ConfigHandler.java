@@ -76,12 +76,6 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
 
     @Override
     public boolean add(ExtendedConfig<?, ?> e) {
-        if (configDictionary.containsKey(e.getNamedId())) {
-            mod.log(
-                Level.WARN,
-                "Config with ID " + e.getNamedId() + " already exists! Skipping duplicate registration.");
-            return false;
-        }
         addToConfigDictionary(e);
         return super.add(e);
     }

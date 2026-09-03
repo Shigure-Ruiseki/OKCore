@@ -115,17 +115,21 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
      */
     public void save() {
         try {
-            // Save inside the self-implementation
-            try {
-                this.getClass()
-                    .getField("_instance")
-                    .set(null, this);
-            } catch (NoSuchFieldError e) {
-                throw new OKCoreConfigException(
-                    String.format("The config file for %s requires a static field _instance.", this.getNamedId()));
+            Field field = this.getClass()
+                .getField("_instance");
+            Object currentInstance = field.get(null);
+
+            if (currentInstance != null && currentInstance != this) {
+                ExtendedConfig<?, ?> prevConfig = (ExtendedConfig<?, ?>) currentInstance;
+                if (prevConfig.getInstance() != null) {
+                    this.instance = (I) prevConfig.getInstance();
+                    return;
+                }
             }
 
-            if (this.factory != null) {
+            field.set(null, this);
+
+            if (this.factory != null && this.instance == null) {
                 this.instance = this.factory.apply(downCast());
             }
         } catch (IllegalAccessException | NoSuchFieldException | RuntimeException e) {
@@ -265,5 +269,18 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     @Nullable
     public IForgeRegistry<?> getRegistry() {
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ExtendedConfig<?, ?> that = (ExtendedConfig<?, ?>) o;
+        return getNamedId().equals(that.getNamedId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getNamedId().hashCode();
     }
 }

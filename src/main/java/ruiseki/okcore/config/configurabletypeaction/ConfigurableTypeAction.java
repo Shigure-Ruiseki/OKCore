@@ -52,27 +52,13 @@ public abstract class ConfigurableTypeAction<C extends ExtendedConfig<C, I>, I> 
     }
 
     /**
-     * Logic that constructs or loads settings for eConfig from the target config file.
+     * Logic that constructs the eConfig from for example a config file.
      *
      * @param eConfig configuration holder.
-     * @param config  configuration from the target config file.
+     * @param config  configuration from the config file.
      * @param startup If this is currently being run at the mod startup.
      */
-    public void preRun(C eConfig, Configuration config, boolean startup) {
-        String category = eConfig.getHolderType()
-            .getCategory();
-        boolean enabled = config.get(category, eConfig.getNamedId() + ".enabled", true, eConfig.getComment())
-            .getBoolean(true);
-
-        if (!eConfig.isDisableable()) {
-            enabled = true;
-        }
-
-        eConfig.setEnabled(enabled);
-        if (enabled) {
-            eConfig.save();
-        }
-    }
+    public abstract void preRun(C eConfig, Configuration config, boolean startup);
 
     /**
      * Logic to register the eConfig target into Forge Registries / Game engine.

@@ -109,17 +109,20 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     protected String getConfigPropertyPrefix() {
         return this.getNamedId();
     }
-
     /**
      * Save this config inside the correct element and inside the implementation of itself.
      */
+    @SuppressWarnings("unchecked")
     public void save() {
         try {
-            Field field = this.getClass()
-                .getField("_instance");
+            if (this.instance != null) {
+                return;
+            }
+
+            Field field = this.getClass().getField("_instance");
             Object currentInstance = field.get(null);
 
-            if (currentInstance != null && currentInstance != this) {
+            if (currentInstance != null) {
                 ExtendedConfig<?, ?> prevConfig = (ExtendedConfig<?, ?>) currentInstance;
                 if (prevConfig.getInstance() != null) {
                     this.instance = (I) prevConfig.getInstance();

@@ -82,11 +82,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
                         e.printStackTrace();
                     }
                 }
-                String category = annotation.categoryRaw()
-                    .equals("")
-                        ? annotation.category()
-                            .toString()
-                        : annotation.categoryRaw();
+                String category = annotation.category();
                 ConfigProperty configProperty = new ConfigProperty(
                     getMod(),
                     category,
@@ -95,6 +91,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
                     annotation.comment(),
                     new ConfigPropertyCallback(changedCallback),
                     annotation.isCommandable(),
+                    annotation.configLocation(),
                     field);
                 configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
                 configProperty.setRequiresMcRestart(annotation.requiresMcRestart());

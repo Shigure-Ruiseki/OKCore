@@ -6,15 +6,12 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
@@ -48,12 +45,15 @@ public class InventoryHelpers {
      * @param newStackPart  The new item stack.
      */
     public static void tryReAddToStack(EntityPlayer player, @Nullable ItemStack originalStack, ItemStack newStackPart) {
+        if (player == null || ItemHelpers.isEmpty(newStackPart)) return;
+
         if (!player.capabilities.isCreativeMode) {
-            if (originalStack != null && --originalStack.copy().stackSize == 0) {
+            if (!ItemHelpers.isEmpty(originalStack) && originalStack.stackSize == 1) {
+                ItemHelpers.shrink(originalStack, 1);
                 player.inventory.setInventorySlotContents(player.inventory.currentItem, newStackPart);
             } else {
-                if (originalStack != null) {
-                    --originalStack.stackSize;
+                if (!ItemHelpers.isEmpty(originalStack)) {
+                    ItemHelpers.shrink(originalStack, 1);
                 }
                 if (!player.inventory.addItemStackToInventory(newStackPart)) {
                     player.dropPlayerItemWithRandomChoice(newStackPart, false);
@@ -71,6 +71,8 @@ public class InventoryHelpers {
      * @param tagName   The tag name to read from.
      */
     public static void validateNBTStorage(IItemHandler handler, ItemStack itemStack, String tagName) {
+        if (ItemHelpers.isEmpty(itemStack)) return;
+
         NBTTagCompound tag = itemStack.getTagCompound();
         if (tag == null) {
             tag = new NBTTagCompound();
@@ -90,20 +92,19 @@ public class InventoryHelpers {
      * @param tagName The tag name to read from.
      */
     public static void readFromNBT(IItemHandler handler, NBTTagCompound data, String tagName) {
+        if (handler == null || data == null) return;
+
         NBTTagList nbttaglist = data.getTagList(tagName, MinecraftHelpers.NBTTag_Types.NBTTagCompound.getId());
         clearInventory(handler);
 
         for (int j = 0; j < nbttaglist.tagCount(); j++) {
             NBTTagCompound slot = nbttaglist.getCompoundTagAt(j);
-            int index;
-            if (slot.hasKey("index")) {
-                index = slot.getInteger("index");
-            } else {
-                index = slot.getByte("Slot");
-            }
+            int index = slot.hasKey("index") ? slot.getInteger("index") : slot.getByte("Slot");
+
             if (index >= 0 && index < handler.getSlots()) {
-                if (handler instanceof IItemHandlerModifiable modifiable)
+                if (handler instanceof IItemHandlerModifiable modifiable) {
                     modifiable.setStackInSlot(index, ItemStack.loadItemStackFromNBT(slot));
+                }
             }
         }
     }
@@ -116,10 +117,12 @@ public class InventoryHelpers {
      * @param tagName The tag name to write into.
      */
     public static void writeToNBT(IItemHandler handler, NBTTagCompound data, String tagName) {
+        if (handler == null || data == null) return;
+
         NBTTagList slots = new NBTTagList();
         for (byte index = 0; index < handler.getSlots(); ++index) {
             ItemStack itemStack = handler.getStackInSlot(index);
-            if (itemStack != null && itemStack.stackSize > 0) {
+            if (!ItemHelpers.isEmpty(itemStack)) {
                 NBTTagCompound slot = new NBTTagCompound();
                 slot.setInteger("index", index);
                 slots.appendTag(slot);
@@ -137,6 +140,9 @@ public class InventoryHelpers {
      * @return The item stack.
      */
     public static ItemStack getItemFromIndex(EntityPlayer player, int itemIndex) {
+        if (player == null || itemIndex < 0 || itemIndex >= player.inventory.mainInventory.length) {
+            return ItemHelpers.EMPTY;
+        }
         return player.inventory.mainInventory[itemIndex];
     }
 
@@ -147,7 +153,8 @@ public class InventoryHelpers {
      * @param itemIndex The index of the item in the inventory.
      * @param itemStack The new item stack.
      */
-    public static void setItemAtIndex(EntityPlayer player, int itemIndex, ItemStack itemStack) {
+    public static void setItemAtIndex(EntityPlayer player, int itemIndex, @Nullable ItemStack itemStack) {
+        if (player == null) return;
         player.inventory.setInventorySlotContents(itemIndex, itemStack);
     }
 
@@ -158,22 +165,22 @@ public class InventoryHelpers {
      * @param stack    ItemStack to drop
      * @param blockPos The position.
      */
-    public static void dropItems(World world, ItemStack stack, BlockPos blockPos) {
-        if (stack.stackSize > 0) {
-            float offsetMultiply = 0.7F;
-            double offsetX = (world.rand.nextFloat() * offsetMultiply) + (1.0F - offsetMultiply) * 0.5D;
-            double offsetY = (world.rand.nextFloat() * offsetMultiply) + (1.0F - offsetMultiply) * 0.5D;
-            double offsetZ = (world.rand.nextFloat() * offsetMultiply) + (1.0F - offsetMultiply) * 0.5D;
-            EntityItem entityitem = new EntityItem(
-                world,
-                blockPos.getX() + offsetX,
-                blockPos.getY() + offsetY,
-                blockPos.getZ() + offsetZ,
-                stack);
-            entityitem.delayBeforeCanPickup = 10;
+    public static void dropItems(World world, @Nullable ItemStack stack, BlockPos blockPos) {
+        if (world == null || blockPos == null || ItemHelpers.isEmpty(stack)) return;
 
-            world.spawnEntityInWorld(entityitem);
-        }
+        float offsetMultiply = 0.7F;
+        double offsetX = (world.rand.nextFloat() * offsetMultiply) + (1.0F - offsetMultiply) * 0.5D;
+        double offsetY = (world.rand.nextFloat() * offsetMultiply) + (1.0F - offsetMultiply) * 0.5D;
+        double offsetZ = (world.rand.nextFloat() * offsetMultiply) + (1.0F - offsetMultiply) * 0.5D;
+        EntityItem entityitem = new EntityItem(
+            world,
+            blockPos.getX() + offsetX,
+            blockPos.getY() + offsetY,
+            blockPos.getZ() + offsetZ,
+            stack);
+        entityitem.delayBeforeCanPickup = 10;
+
+        world.spawnEntityInWorld(entityitem);
     }
 
     /**
@@ -195,43 +202,18 @@ public class InventoryHelpers {
      * Core Method: Drop ItemStacks from a specific slot range
      */
     public static void dropItems(World world, IItemHandler handler, BlockPos pos, int startingSlot, int maxSlot) {
-        if (handler == null || world.isRemote) return;
+        if (handler == null || world == null || world.isRemote) return;
 
         int endSlot = Math.min(maxSlot, handler.getSlots());
         int startSlot = Math.max(0, startingSlot);
 
         for (int i = startSlot; i < endSlot; i++) {
             ItemStack stack = handler.getStackInSlot(i);
-            if (stack != null && stack.stackSize > 0) {
-                dropItems(world, stack.copy(), pos);
+            if (!ItemHelpers.isEmpty(stack)) {
+                dropItems(world, ItemHelpers.copy(stack), pos);
                 handler.extractItem(i, stack.stackSize, false);
             }
         }
-    }
-
-    public static ItemStack insertStack(IItemHandler handler, ItemStack stack, boolean simulate) {
-        if (handler == null || stack == null || stack.stackSize <= 0) {
-            return stack;
-        }
-
-        ItemStack remainder = stack.copy();
-
-        for (int i = 0; i < handler.getSlots(); i++) {
-            remainder = handler.insertItem(i, remainder, simulate);
-
-            if (remainder == null || remainder.stackSize <= 0) {
-                return null;
-            }
-        }
-
-        return remainder;
-    }
-
-    public static ItemStack insertIntoTile(TileEntity tile, ForgeDirection side, ItemStack stack, boolean simulate) {
-        if (tile == null || stack == null) return stack;
-        return CapabilityHelpers.getCapability(tile, CapabilityItemHandler.ITEM_HANDLER, side)
-            .map(handler -> insertStack(handler, stack, simulate))
-            .orElse(stack);
     }
 
     /**
@@ -256,19 +238,19 @@ public class InventoryHelpers {
      * @return The remaining itemstack that could not be added anymore.
      */
     public static ItemStack fillSlot(IInventory inventory, int slot, ItemStack itemStack, boolean simulate) {
-        if (itemStack == null || itemStack.stackSize <= 0) {
-            return null;
+        if (inventory == null || ItemHelpers.isEmpty(itemStack)) {
+            return ItemHelpers.EMPTY;
         }
 
         ItemStack produceStack = inventory.getStackInSlot(slot);
-        if (produceStack == null) {
+        if (ItemHelpers.isEmpty(produceStack)) {
             if (!simulate) {
-                inventory.setInventorySlotContents(slot, itemStack.copy());
+                inventory.setInventorySlotContents(slot, ItemHelpers.copy(itemStack));
                 inventory.markDirty();
             }
-            return null;
+            return ItemHelpers.EMPTY;
         } else {
-            ItemStack targetStack = produceStack.copy();
+            ItemStack targetStack = ItemHelpers.copy(produceStack);
             ItemStack remainder = addToStack(targetStack, itemStack);
 
             if (!simulate && remainder != itemStack) {
@@ -287,20 +269,20 @@ public class InventoryHelpers {
      * @return The remainder of the added stack, or null if completely merged.
      */
     public static ItemStack addToStack(ItemStack itemStack, ItemStack toAdd) {
-        if (toAdd == null || toAdd.stackSize <= 0) {
-            return null;
+        if (ItemHelpers.isEmpty(toAdd)) {
+            return ItemHelpers.EMPTY;
         }
-        if (itemStack != null && ItemStack.areItemStackTagsEqual(toAdd, itemStack)
+        if (!ItemHelpers.isEmpty(itemStack) && ItemStack.areItemStackTagsEqual(toAdd, itemStack)
             && ItemHelpers.areItemsEqual(toAdd, itemStack)
             && itemStack.stackSize < itemStack.getMaxStackSize()) {
 
-            toAdd = toAdd.copy();
+            toAdd = ItemHelpers.copy(toAdd);
             int toAddCount = Math.min(itemStack.getMaxStackSize() - itemStack.stackSize, toAdd.stackSize);
             ItemHelpers.grow(itemStack, toAddCount);
             ItemHelpers.shrink(toAdd, toAddCount);
 
-            if (toAdd.stackSize <= 0) {
-                return null;
+            if (ItemHelpers.isEmpty(toAdd)) {
+                return ItemHelpers.EMPTY;
             }
         }
         return toAdd;
@@ -316,7 +298,7 @@ public class InventoryHelpers {
      * @return If the item could be added or joined in the production slot.
      */
     public static boolean addToSlot(IInventory inventory, int slot, ItemStack itemStack, boolean simulate) {
-        return fillSlot(inventory, slot, itemStack, simulate) != null;
+        return fillSlot(inventory, slot, itemStack, simulate) != ItemHelpers.EMPTY;
     }
 
     /**
@@ -332,12 +314,14 @@ public class InventoryHelpers {
         NonNullList<ItemStack> itemStacks, boolean simulate) {
 
         NonNullList<ItemStack> remaining = NonNullList.create();
+        if (inventory == null || slots == null || itemStacks == null) return remaining;
+
         int[] availableSlots = slots.clone();
 
         for (ItemStack stack : itemStacks) {
-            if (stack == null || stack.stackSize <= 0) continue;
+            if (ItemHelpers.isEmpty(stack)) continue;
 
-            ItemStack itemStack = stack.copy();
+            ItemStack itemStack = ItemHelpers.copy(stack);
 
             for (int i = 0; i < availableSlots.length; i++) {
                 int slot = availableSlots[i];
@@ -345,16 +329,16 @@ public class InventoryHelpers {
 
                 itemStack = fillSlot(inventory, slot, itemStack, simulate);
 
-                if (simulate && itemStack == null) {
+                if (simulate && ItemHelpers.isEmpty(itemStack)) {
                     availableSlots[i] = -1;
                 }
 
-                if (itemStack == null || itemStack.stackSize <= 0) {
+                if (ItemHelpers.isEmpty(itemStack)) {
                     break;
                 }
             }
 
-            if (itemStack != null && itemStack.stackSize > 0) {
+            if (!ItemHelpers.isEmpty(itemStack)) {
                 remaining.add(itemStack);
             }
         }
@@ -369,20 +353,20 @@ public class InventoryHelpers {
      * @param itemStack  The stack to add to the list.
      */
     public static void addStackToList(NonNullList<ItemStack> itemStacks, ItemStack itemStack) {
-        if (itemStack == null || itemStack.stackSize <= 0) {
+        if (itemStacks == null || ItemHelpers.isEmpty(itemStack)) {
             return;
         }
 
-        ItemStack toAdd = itemStack.copy();
+        ItemStack toAdd = ItemHelpers.copy(itemStack);
 
         for (ItemStack existingOutputStack : itemStacks) {
             toAdd = addToStack(existingOutputStack, toAdd);
-            if (toAdd == null || toAdd.stackSize <= 0) {
+            if (ItemHelpers.isEmpty(toAdd)) {
                 return;
             }
         }
 
-        if (toAdd.stackSize > 0) {
+        if (!ItemHelpers.isEmpty(toAdd)) {
             itemStacks.add(toAdd);
         }
     }

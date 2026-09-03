@@ -44,4 +44,10 @@ public class IngredientCollectionDiffManager<T, M> {
         return diff;
     }
 
+    public IngredientCollectionPrototypeMap<T, M> getInstancesCache() {
+        if (this.instancesCache == null) {
+            this.instancesCache = new IngredientCollectionPrototypeMap<>(this.ingredientComponent, true);
+        }
+        return this.instancesCache;
+    }
 }

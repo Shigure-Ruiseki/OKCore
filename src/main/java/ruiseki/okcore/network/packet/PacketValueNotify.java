@@ -13,13 +13,13 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for sending a value from server to client.
- * 
+ *
  * @see ruiseki.okcore.inventory.IValueNotifier
  * @see IValueNotifiable
  * @author rubensworks
  *
  */
-public class ValueNotifyPacket extends PacketCodec {
+public class PacketValueNotify extends PacketCodec {
 
     @CodecField
     private String guiModId;
@@ -30,11 +30,11 @@ public class ValueNotifyPacket extends PacketCodec {
     @CodecField
     private NBTTagCompound value;
 
-    public ValueNotifyPacket() {
+    public PacketValueNotify() {
 
     }
 
-    public ValueNotifyPacket(String guiModId, int guiId, int valueId, NBTTagCompound value) {
+    public PacketValueNotify(String guiModId, int guiId, int valueId, NBTTagCompound value) {
         this.guiModId = guiModId;
         this.guiId = guiId;
         this.valueId = valueId;

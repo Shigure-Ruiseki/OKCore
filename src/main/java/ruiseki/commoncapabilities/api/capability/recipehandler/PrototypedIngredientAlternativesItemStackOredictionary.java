@@ -100,6 +100,14 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
         return 1235 | this.keys.hashCode() << 2 | matchCondition | (int) quantity;
     }
 
+    public List<String> getKeys() {
+        return keys;
+    }
+
+    public Integer getMatchCondition() {
+        return matchCondition;
+    }
+
     public long getQuantity() {
         return quantity;
     }

@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.MixedIngredients;
 
 /**
  * An IRecipeHandler is able to process recipes.
@@ -33,7 +34,7 @@ public interface IRecipeHandler {
 
     /**
      * Check if the given size of recipe component instances are valid for the given recipe component type.
-     *
+     * 
      * @param component The component type.
      * @param size      A certain length of recipe component instances.
      * @return If the given size of recipe component instances can be used by this recipe handler.
@@ -58,5 +59,20 @@ public interface IRecipeHandler {
      */
     @Nullable
     public IMixedIngredients simulate(IMixedIngredients input);
+
+    /**
+     * Test if the given recipe can be handled by this handler.
+     *
+     * This method is mainly meant to be indicative.
+     * No actual crafting processes should be crafted because of this,
+     * i.e., calling this method should not have any effects on the state of this recipe handler.
+     *
+     * @param recipe A recipe.
+     * @return The simulated output, or null if no valid recipe for the given input was found.
+     */
+    @Nullable
+    public default IMixedIngredients simulate(IRecipeDefinition recipe) {
+        return this.simulate(MixedIngredients.fromRecipeInput(recipe));
+    }
 
 }

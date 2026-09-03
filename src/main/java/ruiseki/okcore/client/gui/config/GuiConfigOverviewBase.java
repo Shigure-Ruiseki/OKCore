@@ -5,39 +5,19 @@ import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.common.config.ConfigElement;
+import net.minecraftforge.common.config.Configuration;
 
 import cpw.mods.fml.client.config.DummyConfigElement;
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.IConfigElement;
+import ruiseki.okcore.config.ConfigLocation;
 import ruiseki.okcore.init.ModBase;
 
-/**
- * Overview config screen.
- * Extend this class and make sure that this new class has a constructor with single parameter {@link GuiScreen}
- * 
- * @author rubensworks
- *
- */
 public abstract class GuiConfigOverviewBase extends GuiConfig {
 
-    /**
-     * Make a new instance.
-     * 
-     * @param mod          The mod.
-     * @param parentScreen the parent GuiScreen object
-     */
     public GuiConfigOverviewBase(ModBase mod, GuiScreen parentScreen) {
-        super(
-            parentScreen,
-            getConfigElements(mod),
-            mod.getModId(),
-            false,
-            false,
-            GuiConfig.getAbridgedConfigPath(
-                mod.getConfigHandler()
-                    .getConfig()
-                    .toString()));
+        super(parentScreen, getConfigElements(mod), mod.getModId(), false, false, mod.getModName() + " Configuration");
     }
 
     public abstract ModBase getMod();
@@ -45,60 +25,53 @@ public abstract class GuiConfigOverviewBase extends GuiConfig {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private static List<IConfigElement> getConfigElements(ModBase mod) {
         List<IConfigElement> list = new ArrayList<>();
-        for (String category : mod.getConfigHandler()
-            .getCategories()) {
-            list.add(new DummyConfigElement.DummyCategoryElement(category, category, ExtendedCategoryEntry.class));
+
+        for (ConfigLocation location : ConfigLocation.values()) {
+            String locationName = location.name()
+                .toUpperCase();
+
+            list.add(
+                new DummyConfigElement.DummyCategoryElement(
+                    locationName,
+                    "config." + mod.getModId()
+                        + "."
+                        + location.name()
+                            .toLowerCase(),
+                    LocationCategoryEntry.class));
         }
         return list;
     }
 
-    /**
-     * A category entry for {@link ruiseki.okcore.config.ConfigurableTypeCategory}.
-     * 
-     * @author rubensworks
-     *
-     */
-    public static class ExtendedCategoryEntry extends GuiConfigEntries.CategoryEntry {
+    public static class LocationCategoryEntry extends GuiConfigEntries.CategoryEntry {
 
-        private String category;
-
-        /**
-         * Make a new instance.
-         * 
-         * @param config  The config gui.
-         * @param entries The gui entries.
-         * @param element The config element for this category.
-         */
-        @SuppressWarnings("rawtypes")
-        public ExtendedCategoryEntry(GuiConfig config, GuiConfigEntries entries, IConfigElement element) {
+        public LocationCategoryEntry(GuiConfig config, GuiConfigEntries entries, IConfigElement element) {
             super(config, entries, element);
         }
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         protected GuiScreen buildChildScreen() {
             ModBase mod = ((GuiConfigOverviewBase) this.owningScreen).getMod();
 
-            // Cheaty way of getting the current ConfigurableTypeCategory.
-            this.category = configElement.getName();
-            // Get all the elements inside this category
-            List<IConfigElement> elements = (new ConfigElement(
-                mod.getConfigHandler()
-                    .getConfig()
-                    .getCategory(category))).getChildElements();
+            ConfigLocation location = ConfigLocation.valueOf(this.configElement.getName());
+            Configuration targetConfig = mod.getConfigHandler()
+                .getConfig(location);
+
+            List<IConfigElement> childElements = new ArrayList<>();
+
+            for (String categoryName : targetConfig.getCategoryNames()) {
+                if (!categoryName.contains(Configuration.CATEGORY_SPLITTER)) {
+                    childElements.add(new ConfigElement(targetConfig.getCategory(categoryName)));
+                }
+            }
+
             return new GuiConfig(
                 this.owningScreen,
-                elements,
+                childElements,
                 this.owningScreen.modID,
-                category,
+                location.name(),
                 this.configElement.requiresWorldRestart() || this.owningScreen.allRequireWorldRestart,
                 this.configElement.requiresMcRestart() || this.owningScreen.allRequireMcRestart,
-                GuiConfig.getAbridgedConfigPath(
-                    mod.getConfigHandler()
-                        .getConfig()
-                        .toString()));
+                GuiConfig.getAbridgedConfigPath(targetConfig.toString()));
         }
-
     }
-
 }

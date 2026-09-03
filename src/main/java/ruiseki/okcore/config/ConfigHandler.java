@@ -1,11 +1,16 @@
 package ruiseki.okcore.config;
 
+import java.io.File;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 
@@ -20,28 +25,29 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Data;
+import ruiseki.okcore.OKCore;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.network.packet.PacketSyncConfig;
 import ruiseki.okcore.registries.IForgeRegistry;
 import ruiseki.okcore.registries.IForgeRegistryEntry;
 import ruiseki.okcore.registries.RegistryEvent;
 
-/**
- * Create config file and register items and blocks from the given ExtendedConfigs.
- *
- * @author rubensworks
- *
- */
 @SuppressWarnings("rawtypes")
 @Data
 public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
 
     private final ModBase mod;
-    private Configuration config;
+    private final Map<ConfigLocation, Configuration> configs = new EnumMap<>(ConfigLocation.class);
+
     private final LinkedHashSet<ExtendedConfig<?, ?>> processedConfigs = new LinkedHashSet<ExtendedConfig<?, ?>>();
     private final Map<String, ExtendedConfig<?, ?>> configDictionary = Maps.newHashMap();
     private final Set<String> categories = Sets.newHashSet();
@@ -57,9 +63,15 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
     private boolean registryEventPassed = false;
     private final Set<Class<? extends ExtendedConfig<?, ?>>> enabledConfigs = Sets.newIdentityHashSet();
 
+    static final Map<String, ConfigProperty> syncedElements = new Object2ObjectOpenHashMap<>();
+    private static boolean hasSyncedValues = false;
+
     public ConfigHandler(ModBase mod) {
         this.mod = mod;
         MinecraftForge.EVENT_BUS.register(this);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(this);
     }
 
     @Override
@@ -72,39 +84,25 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
         configDictionary.put(e.getNamedId(), e);
     }
 
-    /**
-     * Iterate over the given ExtendedConfigs to read/write the config and register the given elements
-     * This also sets the config of this instance.
-     *
-     * @param event the event from the init methods
-     */
     public void handle(FMLPreInitializationEvent event) {
-        if (getConfig() == null) {
-            // You will be able to find the config file in .minecraft/config/ and it will be named EvilCraft.cfg
-            // here our Configuration has been instantiated, and saved under the name "config"
-            // If the file doesn't already exist, it will be created.
-            Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-            setConfig(config);
+        if (configs.isEmpty()) {
+            File baseConfigDir = new File(event.getModConfigurationDirectory(), mod.getModId());
 
-            // Loading the configuration from its file
-            config.load();
+            for (ConfigLocation location : ConfigLocation.values()) {
+                File configFile = new File(baseConfigDir, mod.getModId() + "-" + location.extension() + ".cfg");
+                Configuration config = new Configuration(configFile);
+                config.load();
+                configs.put(location, config);
+            }
         }
 
         loadConfig();
     }
 
-    /**
-     * Add a config category.
-     *
-     * @param category The category to add.
-     */
     public void addCategory(String category) {
         categories.add(category);
     }
 
-    /**
-     * Iterate over the given ExtendedConfigs to read/write the config and register the given elements.
-     */
     @SuppressWarnings("unchecked")
     public void loadConfig() {
         enabledConfigs.clear();
@@ -114,49 +112,45 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
                     eConfig.getHolderType()
                         .getCategory());
                 if (!eConfig.isHardDisabled()) {
-                    // Save additional properties
                     for (ConfigProperty configProperty : eConfig.configProperties) {
                         categories.add(configProperty.getCategory());
-                        configProperty.save(config);
+
+                        ConfigLocation loc = configProperty.getLocation();
+                        Configuration targetConfig = getConfig(loc);
+
+                        configProperty.save(targetConfig);
+
                         if (configProperty.isCommandable()) {
                             commandableProperties.put(configProperty.getName(), configProperty);
                         }
+                        if (loc.isSyncToServer()) {
+                            syncedElements.put(configProperty.getName(), configProperty);
+                        }
+
+                        eConfig.getHolderType()
+                            .getElementTypeAction()
+                            .commonRun(eConfig, targetConfig);
                     }
 
-                    // Register the element depending on the type.
-                    eConfig.getHolderType()
-                        .getElementTypeAction()
-                        .commonRun(eConfig, config);
-
                     if (eConfig.isEnabled()) {
-                        // Call the listener
                         eConfig.onRegistered();
-
                         mod.log(Level.TRACE, "Registered " + eConfig.getNamedId());
                         processedConfigs.add(eConfig);
 
-                        // Register as init listener.
                         mod.addInitListeners(new ConfigInitListener(eConfig));
                         enabledConfigs.add((Class<? extends ExtendedConfig<?, ?>>) eConfig.getClass());
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace(); // Forge seems to silently ignore these errors, so let's print them manually.
+                e.printStackTrace();
                 throw e;
             }
         }
 
-        // Empty the configs so they won't be loaded again later
         this.removeAll(this);
-
-        // Saving the configuration to its file
-        config.save();
+        saveAllConfigs();
     }
 
-    /**
-     * Polish the enabled configs during the initialization phase.
-     */
-    @SuppressWarnings("unchecked")
     public void polishConfigs() {
         for (ExtendedConfig<?, ?> eConfig : processedConfigs) {
             ConfigurableType type = eConfig.getHolderType();
@@ -165,66 +159,49 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
         }
     }
 
-    /**
-     * Sync the config values that were already loaded.
-     * This will update the values in-game and in the config file.
-     */
     @SuppressWarnings("unchecked")
     public void syncProcessedConfigs() {
         for (ExtendedConfig<?, ?> eConfig : processedConfigs) {
-            // Re-save additional properties
             for (ConfigProperty configProperty : eConfig.configProperties) {
-                configProperty.save(config, false);
-            }
+                ConfigLocation loc = configProperty.getLocation();
+                Configuration targetConfig = getConfig(loc);
 
-            // Register the element depending on the type.
-            ConfigurableType type = eConfig.getHolderType();
-            type.getElementTypeAction()
-                .preRun(eConfig, config, false);
+                configProperty.save(targetConfig, false);
+
+                ConfigurableType type = eConfig.getHolderType();
+                type.getElementTypeAction()
+                    .preRun(eConfig, targetConfig, false);
+            }
         }
 
-        // Update the config file.
-        getConfig().save();
+        saveAllConfigs();
+    }
+
+    public Configuration getConfig(ConfigLocation location) {
+        return configs.get(location);
     }
 
     /**
-     * @return the config
+     * Phương thức tương thích ngược - trả về file COMMON config.
      */
     public Configuration getConfig() {
-        return config;
+        return getConfig(ConfigLocation.COMMON);
     }
 
-    /**
-     * @param config the config to set
-     */
-    public void setConfig(Configuration config) {
-        this.config = config;
+    public void saveAllConfigs() {
+        for (Configuration config : configs.values()) {
+            config.save();
+        }
     }
 
-    /**
-     * Get the map of config nameid to config.
-     *
-     * @return The dictionary.
-     */
     public Map<String, ExtendedConfig<?, ?>> getDictionary() {
         return configDictionary;
     }
 
-    /**
-     * Init listener for configs.
-     *
-     * @author rubensworks
-     *
-     */
     public static class ConfigInitListener implements IInitListener {
 
         private ExtendedConfig<?, ?> config;
 
-        /**
-         * Make a new instance.
-         *
-         * @param config The config.
-         */
         public ConfigInitListener(ExtendedConfig<?, ?> config) {
             this.config = config;
         }
@@ -242,28 +219,12 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
                 }
             }
         }
-
     }
 
-    /**
-     * ExtendedConfig#isEnabled()
-     *
-     * @param config The config to check.
-     * @return If the given config is enabled.
-     */
     public boolean isConfigEnabled(Class<? extends ExtendedConfig<?, ?>> config) {
         return enabledConfigs.contains(config);
     }
 
-    /**
-     * Register the given entry to the given registry.
-     * This method will safely wait until the correct registry event for registering the entry.
-     *
-     * @param registry The registry.
-     * @param entry    The entry.
-     * @param callback A callback that will be called when the entry is registered.
-     * @param <V>      The entry type.
-     */
     public <V extends IForgeRegistryEntry<V>> void registerToRegistry(IForgeRegistry<V> registry,
         IForgeRegistryEntry<V> entry, @Nullable Callable<?> callback) {
         if (this.registryEventPassed) {
@@ -273,14 +234,6 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
         registryEntriesHolder.put(registry.getRegistrySuperType(), Pair.of(entry, callback));
     }
 
-    /**
-     * Register the given entry to the given registry.
-     * This method will safely wait until the correct registry event for registering the entry.
-     *
-     * @param registry The registry.
-     * @param entry    The entry.
-     * @param <V>      The entry type.
-     */
     public <V extends IForgeRegistryEntry<V>> void registerToRegistry(IForgeRegistry<V> registry,
         IForgeRegistryEntry<V> entry) {
         registerToRegistry(registry, entry, null);
@@ -304,6 +257,41 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
             });
     }
 
+    @SubscribeEvent
+    public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.player instanceof EntityPlayerMP playerMP)) return;
+        MinecraftServer server = MinecraftServer.getServer();
+        if (server.isSinglePlayer() && !((IntegratedServer) server).getPublic()) {
+            return;
+        }
+        OKCore._instance.getPacketHandler()
+            .sendToPlayer(new PacketSyncConfig(syncedElements), playerMP);
+    }
+
+    @SubscribeEvent
+    public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        if (!hasSyncedValues) return;
+        hasSyncedValues = false;
+        for (ConfigProperty element : syncedElements.values()) {
+            element.restoreLocalValue();
+        }
+    }
+
+    public static void onSync(PacketSyncConfig packet) {
+        for (Map.Entry<String, String> entry : packet.getSyncedProperties()
+            .entrySet()) {
+            ConfigProperty element = syncedElements.get(entry.getKey());
+            if (element != null) {
+                try {
+                    hasSyncedValues = true;
+                    element.setSyncedValue(entry.getValue());
+                } catch (Exception e) {
+                    OKCore.okLog(Level.ERROR, "Failed to sync element " + element.getName(), e);
+                }
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         return o instanceof ConfigHandler && ((ConfigHandler) o).getMod()
@@ -315,5 +303,4 @@ public class ConfigHandler extends LinkedHashSet<ExtendedConfig<?, ?>> {
         return 1 + this.getMod()
             .hashCode();
     }
-
 }

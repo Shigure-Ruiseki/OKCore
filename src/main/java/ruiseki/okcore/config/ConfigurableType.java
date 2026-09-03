@@ -28,7 +28,6 @@ import ruiseki.okcore.config.extendedconfig.RecipeConfig;
 import ruiseki.okcore.config.extendedconfig.RecipeTypeConfig;
 
 /**
- * The different types of {@link IConfigurable}.
  *
  * @author rubensworks
  *
@@ -38,11 +37,7 @@ public class ConfigurableType {
     /**
      * Item type.
      */
-    public static final ConfigurableType ITEM = new ConfigurableType(
-        true,
-        ItemConfig.class,
-        new ItemAction(),
-        ConfigurableTypeCategory.ITEM);
+    public static final ConfigurableType ITEM = new ConfigurableType(true, ItemConfig.class, new ItemAction(), "item");
     /**
      * Block type.
      */
@@ -50,7 +45,7 @@ public class ConfigurableType {
         true,
         BlockConfig.class,
         new BlockAction(),
-        ConfigurableTypeCategory.BLOCK);
+        "block");
     /**
      * Block type with containers.
      */
@@ -58,16 +53,12 @@ public class ConfigurableType {
         true,
         BlockConfig.class,
         new BlockAction(),
-        ConfigurableTypeCategory.BLOCK);
+        "block");
 
     /**
      * Mob type.
      */
-    public static final ConfigurableType MOB = new ConfigurableType(
-        false,
-        MobConfig.class,
-        new MobAction(),
-        ConfigurableTypeCategory.MOB);
+    public static final ConfigurableType MOB = new ConfigurableType(false, MobConfig.class, new MobAction(), "mob");
     /**
      * Regular entity type.
      */
@@ -75,7 +66,7 @@ public class ConfigurableType {
         false,
         EntityConfig.class,
         new EntityAction(),
-        ConfigurableTypeCategory.ENTITY);
+        "entity");
     /**
      * Fluid type.
      */
@@ -83,7 +74,7 @@ public class ConfigurableType {
         true,
         FluidConfig.class,
         new FluidAction(),
-        ConfigurableTypeCategory.FLUID);
+        "fluid");
     /**
      * Enchantment type.
      */
@@ -91,15 +82,7 @@ public class ConfigurableType {
         true,
         EnchantmentConfig.class,
         new EnchantmentAction(),
-        ConfigurableTypeCategory.ENCHANTMENT);
-    /**
-     * Villager type.
-     */
-    // public static final ConfigurableType VILLAGER = new ConfigurableType(
-    // true,
-    // VillagerConfig.class,
-    // new VillagerAction(),
-    // ConfigurableTypeCategory.MOB);
+        "enchantment");
     /**
      * Biome type.
      */
@@ -107,7 +90,7 @@ public class ConfigurableType {
         true,
         BiomeConfig.class,
         new BiomeAction(),
-        ConfigurableTypeCategory.BIOME);
+        "biome");
     /**
      * Potion effect type.
      */
@@ -115,7 +98,7 @@ public class ConfigurableType {
         true,
         PotionConfig.class,
         new PotionAction(),
-        ConfigurableTypeCategory.POTION);
+        "potion");
     /**
      * Potion effect type.
      */
@@ -123,7 +106,7 @@ public class ConfigurableType {
         true,
         RecipeConfig.class,
         new RecipeAction(),
-        ConfigurableTypeCategory.RECIPE);
+        "recipe");
     /**
      * Potion effect type.
      */
@@ -131,7 +114,7 @@ public class ConfigurableType {
         true,
         RecipeTypeConfig.class,
         new RecipeTypeAction(),
-        ConfigurableTypeCategory.RECIPE_TYPE);
+        "recipe_type");
     /**
      * Capability type.
      */
@@ -148,32 +131,15 @@ public class ConfigurableType {
         false,
         DummyConfig.class,
         new DummyAction(),
-        ConfigurableTypeCategory.GENERAL);
+        "general");
 
     private final boolean uniqueInstance;
     @SuppressWarnings("rawtypes")
     private final Class<? extends ExtendedConfig> configClass;
     @SuppressWarnings("rawtypes")
     private final ConfigurableTypeAction action;
-    private ConfigurableTypeCategory category = null;
+    private String category;
     private String categoryRaw;
-
-    /**
-     * Make a new instance.
-     *
-     * @param uniqueInstance If this type has a unique instance for each config.
-     * @param configClass    The config class.
-     * @param action         The action instance that helps with saving of the config and optional instance.
-     * @param category       The category in which the configs should be saved.
-     */
-    @SuppressWarnings("rawtypes")
-    public ConfigurableType(boolean uniqueInstance, Class<? extends ExtendedConfig> configClass,
-        ConfigurableTypeAction action, ConfigurableTypeCategory category) {
-        this.uniqueInstance = uniqueInstance;
-        this.configClass = configClass;
-        this.action = action;
-        this.category = category;
-    }
 
     /**
      * Make a new instance with a raw category.
@@ -193,8 +159,6 @@ public class ConfigurableType {
     }
 
     /**
-     * If this type should refer to a {@link ruiseki.okcore.config.configurable.IConfigurable} with a unique instance.
-     * If this is true, the {@link ruiseki.okcore.config.configurable.IConfigurable} should have a public static void
      * initInstance(ExtendedConfig eConfig) method and also a public static
      * (? extends IConfigurable) getInstance() method.
      *
@@ -215,9 +179,6 @@ public class ConfigurableType {
     }
 
     /**
-     * The action for this type after the the {@link ruiseki.okcore.config.configurable.IConfigurable} has configured so
-     * it can be registered.
-     *
      * @return The action for this type.
      */
     @SuppressWarnings("rawtypes")

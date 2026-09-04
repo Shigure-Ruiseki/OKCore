@@ -1,7 +1,6 @@
 package ruiseki.okcore.config.extendedconfig;
 
 import java.lang.reflect.Field;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
@@ -54,11 +53,6 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     public List<ConfigProperty> configProperties = Lists.newLinkedList();
 
     /**
-     * Store scanned configurable fields to avoid repeated reflection and hierarchy scans.
-     */
-    private final List<Field> configurableFields;
-
-    /**
      * Create a new config using a Function Factory
      */
     public ExtendedConfig(ModBase mod, boolean enabled, String namedId, String comment, Function<C, I> factory) {
@@ -67,9 +61,6 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
         this.namedId = namedId.toLowerCase(Locale.ROOT);
         this.comment = comment;
         this.factory = factory;
-
-        this.configurableFields = generateConfigurableFields(this.getClass());
-
         try {
             generateConfigProperties();
         } catch (IllegalArgumentException | IllegalAccessException e1) {
@@ -77,62 +68,51 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
         }
     }
 
-    private List<Field> generateConfigurableFields(Class<?> clazz) {
-        List<Field> fields = new LinkedList<>();
-
-        for (Class<?> current = clazz; current != null && current != Object.class; current = current.getSuperclass()) {
-            for (Field field : current.getDeclaredFields()) {
-                try {
-                    ConfigurableProperty anno = field.getAnnotation(ConfigurableProperty.class);
-                    if (anno != null) {
-                        field.setAccessible(true);
-                        fields.add(field);
-                    }
-                } catch (Throwable ignored) {
-                    mod.getLoggerHelper()
-                        .log(Level.ERROR, ignored.getMessage());
-                }
-            }
-        }
-
-        return fields;
-    }
-
     private void generateConfigProperties() throws IllegalArgumentException, IllegalAccessException {
-        for (Field field : configurableFields) {
+        for (Field field : this.getClass()
+            .getDeclaredFields()) {
             try {
-                ConfigurableProperty annotation = field.getAnnotation(ConfigurableProperty.class);
-                if (annotation == null) continue;
+                if (field.isAnnotationPresent(ConfigurableProperty.class)) {
+                    ConfigurableProperty annotation = field.getAnnotation(ConfigurableProperty.class);
+                    if (annotation == null) continue;
 
-                IChangedCallback changedCallback = null;
-                try {
-                    if (annotation.changedCallback() != IChangedCallback.class) {
-                        changedCallback = annotation.changedCallback()
-                            .newInstance();
+                    IChangedCallback changedCallback = null;
+                    try {
+                        if (annotation.changedCallback() != IChangedCallback.class) {
+                            changedCallback = annotation.changedCallback()
+                                .newInstance();
+                        }
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        e.printStackTrace();
                     }
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
+
+                    String category = annotation.category();
+                    if (category == null) {
+                        category = "general";
+                    }
+
+                    field.setAccessible(true);
+                    Object fieldValue = field.get(null);
+
+                    ConfigProperty configProperty = new ConfigProperty(
+                        getMod(),
+                        category,
+                        getConfigPropertyPrefix() + "." + field.getName(),
+                        fieldValue,
+                        annotation.comment(),
+                        new ConfigPropertyCallback(changedCallback),
+                        annotation.isCommandable(),
+                        annotation.configLocation(),
+                        field);
+
+                    configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
+                    configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
+                    configProperty.setShowInGui(annotation.showInGui());
+                    configProperty.setMinValue(annotation.minimalValue());
+                    configProperty.setMaxValue(annotation.maximalValue());
+
+                    configProperties.add(configProperty);
                 }
-
-                ConfigProperty configProperty = new ConfigProperty(
-                    getMod(),
-                    annotation.category(),
-                    getConfigPropertyPrefix() + "." + field.getName(),
-                    field.get(null),
-                    annotation.comment(),
-                    new ConfigPropertyCallback(changedCallback),
-                    annotation.isCommandable(),
-                    annotation.configLocation(),
-                    field);
-
-                configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
-                configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
-                configProperty.setShowInGui(annotation.showInGui());
-                configProperty.setMinValue(annotation.minimalValue());
-                configProperty.setMaxValue(annotation.maximalValue());
-
-                configProperties.add(configProperty);
-
             } catch (Throwable t) {
                 if (mod != null && mod.getLoggerHelper() != null) {
                     mod.getLoggerHelper()

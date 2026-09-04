@@ -32,8 +32,12 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.data.condition.ConditionContext;
+import ruiseki.okcore.data.condition.ICondition;
 import ruiseki.okcore.datastructure.Resource;
 import ruiseki.okcore.event.data.AddReloadListenerEvent;
+import ruiseki.okcore.recipe.RecipeManager;
+import ruiseki.okcore.tag.TagManager;
 
 public class DatapackLoader {
 
@@ -97,49 +101,44 @@ public class DatapackLoader {
     private static CompletableFuture<Void> prepareListeners(DatapackManager datapackManager, Executor ioExecutor,
         Executor startupAppExecutor, BlockingQueue<Runnable> startupTaskQueue, long startTime) {
 
-        AddReloadListenerEvent event = new AddReloadListenerEvent();
-        MinecraftForge.EVENT_BUS.post(event);
-
-        List<PreparableReloadListener> listeners = event.getListeners();
+        SimplePreparationBarrier barrier = new SimplePreparationBarrier();
 
         OKCore.okLog(
             Level.INFO,
-            "DataLoader: Core Scan done in {} ms. " + "Initiating parallel preparation for {} listeners...",
-            System.currentTimeMillis() - startTime,
-            listeners.size());
+            "DataLoader: Core Scan done in {} ms. Starting phased execution...",
+            System.currentTimeMillis() - startTime);
 
-        SimplePreparationBarrier barrier = new SimplePreparationBarrier();
+        CompletableFuture<Void> tagFuture = TagManager.getManager()
+            .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
 
-        List<CompletableFuture<Void>> listenerFutures = new ArrayList<>(listeners.size());
+        ICondition.IContext context = new ConditionContext(TagManager.getManager());
 
-        for (PreparableReloadListener listener : listeners) {
-            try {
-                CompletableFuture<Void> future = listener
-                    .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
-                if (future == null) {
-                    OKCore.okLog(
-                        Level.WARN,
-                        "DataLoader: Reload listener {} returned null future.",
-                        listener.getClass()
-                            .getName());
+        RecipeManager.getManager()
+            .setContext(context);
+        CompletableFuture<Void> recipeFuture = tagFuture.thenComposeAsync(
+            ignored -> RecipeManager.getManager()
+                .reload(barrier, datapackManager, ioExecutor, startupAppExecutor),
+            ioExecutor);
 
-                    future = CompletableFuture.completedFuture(null);
-                }
+        CompletableFuture<Void> externalListenersFuture = recipeFuture.thenComposeAsync(ignored -> {
+            AddReloadListenerEvent event = new AddReloadListenerEvent();
+            MinecraftForge.EVENT_BUS.post(event);
 
-                listenerFutures.add(future);
+            List<PreparableReloadListener> listeners = event.getListeners();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-            } catch (Throwable t) {
-                listenerFutures.add(CompletableFuture.failedFuture(t));
+            for (PreparableReloadListener listener : listeners) {
+                CompletableFuture<Void> f = listener.reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
+                if (f != null) futures.add(f);
             }
-        }
 
-        CompletableFuture<Void> allPreparationsFuture = CompletableFuture
-            .allOf(listenerFutures.toArray(new CompletableFuture[0]));
+            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        }, ioExecutor);
 
         CompletableFuture<Void> startupFuture = CompletableFuture
-            .runAsync(() -> drainStartupTasks(allPreparationsFuture, startupTaskQueue), ioExecutor);
+            .runAsync(() -> drainStartupTasks(externalListenersFuture, startupTaskQueue), ioExecutor);
 
-        return CompletableFuture.allOf(allPreparationsFuture, startupFuture);
+        return CompletableFuture.allOf(externalListenersFuture, startupFuture);
     }
 
     private static CompletableFuture<Void> scanModJars(DatapackManager datapackManager,

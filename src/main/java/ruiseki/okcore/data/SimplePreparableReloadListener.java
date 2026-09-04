@@ -6,7 +6,7 @@ import java.util.concurrent.Executor;
 public abstract class SimplePreparableReloadListener<T> implements PreparableReloadListener {
 
     @Override
-    public final CompletableFuture<Void> reload(PreparationBarrier barrier, DataManager manager, Executor bgExecutor,
+    public CompletableFuture<Void> reload(PreparationBarrier barrier, DataManager manager, Executor bgExecutor,
         Executor gameExecutor) {
         return CompletableFuture.supplyAsync(() -> { return this.prepare(manager); }, bgExecutor)
             .thenCompose(barrier::wait)

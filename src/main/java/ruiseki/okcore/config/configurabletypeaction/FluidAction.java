@@ -1,6 +1,7 @@
 package ruiseki.okcore.config.configurabletypeaction;
 
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 
@@ -16,7 +17,18 @@ public class FluidAction extends ConfigurableTypeAction<FluidConfig, Fluid> {
 
     @Override
     public void preRun(FluidConfig eConfig, Configuration config, boolean startup) {
+        // Get property in config file and set comment
+        Property property = config.get(
+            eConfig.getHolderType().getCategory(),
+            eConfig.getNamedId(),
+            eConfig.isEnabled());
+        property.setRequiresMcRestart(true);
+        property.comment = eConfig.getComment();
 
+        if (startup) {
+            // Update the ID, it could've changed
+            eConfig.setEnabled(property.getBoolean(true));
+        }
     }
 
     @Override
@@ -24,7 +36,10 @@ public class FluidAction extends ConfigurableTypeAction<FluidConfig, Fluid> {
         // Save the config inside the correct element
         eConfig.save();
 
-        // Register
-        FluidRegistry.registerFluid(eConfig.getInstance());
+        Fluid fluid = eConfig.getInstance();
+        if (fluid != null) {
+            fluid.setUnlocalizedName(eConfig.getUnlocalizedName());
+            FluidRegistry.registerFluid(fluid);
+        }
     }
 }

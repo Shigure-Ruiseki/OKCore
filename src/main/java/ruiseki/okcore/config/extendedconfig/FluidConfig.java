@@ -44,6 +44,11 @@ public abstract class FluidConfig extends ExtendedConfig<FluidConfig, Fluid> {
     }
 
     @Override
+    public String getFullUnlocalizedName() {
+        return "fluid." + getUnlocalizedName() + ".name";
+    }
+
+    @Override
     public ConfigurableType getHolderType() {
         return ConfigurableType.FLUID;
     }

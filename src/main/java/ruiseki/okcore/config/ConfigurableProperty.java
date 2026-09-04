@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
  * Property inside configs that can be configured in the config file.
  *
  * @author rubensworks
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
@@ -76,7 +75,7 @@ public @interface ConfigurableProperty {
     /**
      * @return The location of this config property.
      */
-    ConfigLocation configLocation();
+    ConfigLocation configLocation() default ConfigLocation.COMMON;
 
     /**
      * @return The optional callback when the property has been changed.

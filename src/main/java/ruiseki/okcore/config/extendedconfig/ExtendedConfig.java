@@ -71,34 +71,58 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     private void generateConfigProperties() throws IllegalArgumentException, IllegalAccessException {
         for (Field field : this.getClass()
             .getDeclaredFields()) {
-            if (field.isAnnotationPresent(ConfigurableProperty.class)) {
-                ConfigurableProperty annotation = field.getAnnotation(ConfigurableProperty.class);
-                IChangedCallback changedCallback = null;
-                if (annotation.changedCallback() != IChangedCallback.class) {
+            try {
+                if (field.isAnnotationPresent(ConfigurableProperty.class)) {
+                    ConfigurableProperty annotation = field.getAnnotation(ConfigurableProperty.class);
+                    if (annotation == null) continue;
+
+                    IChangedCallback changedCallback = null;
                     try {
-                        changedCallback = annotation.changedCallback()
-                            .newInstance();
-                    } catch (InstantiationException e) {
+                        if (annotation.changedCallback() != IChangedCallback.class) {
+                            changedCallback = annotation.changedCallback()
+                                .newInstance();
+                        }
+                    } catch (InstantiationException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
+
+                    String category = annotation.category();
+                    if (category == null) {
+                        category = "general";
+                    }
+
+                    field.setAccessible(true);
+                    Object fieldValue = field.get(null);
+
+                    ConfigProperty configProperty = new ConfigProperty(
+                        getMod(),
+                        category,
+                        getConfigPropertyPrefix() + "." + field.getName(),
+                        fieldValue,
+                        annotation.comment(),
+                        new ConfigPropertyCallback(changedCallback),
+                        annotation.isCommandable(),
+                        annotation.configLocation(),
+                        field);
+
+                    configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
+                    configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
+                    configProperty.setShowInGui(annotation.showInGui());
+                    configProperty.setMinValue(annotation.minimalValue());
+                    configProperty.setMaxValue(annotation.maximalValue());
+
+                    configProperties.add(configProperty);
                 }
-                String category = annotation.category();
-                ConfigProperty configProperty = new ConfigProperty(
-                    getMod(),
-                    category,
-                    getConfigPropertyPrefix() + "." + field.getName(),
-                    field.get(null),
-                    annotation.comment(),
-                    new ConfigPropertyCallback(changedCallback),
-                    annotation.isCommandable(),
-                    annotation.configLocation(),
-                    field);
-                configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
-                configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
-                configProperty.setShowInGui(annotation.showInGui());
-                configProperty.setMinValue(annotation.minimalValue());
-                configProperty.setMaxValue(annotation.maximalValue());
-                configProperties.add(configProperty);
+            } catch (Throwable t) {
+                if (mod != null && mod.getLoggerHelper() != null) {
+                    mod.getLoggerHelper()
+                        .getLogger()
+                        .warn("Failed to process field " + field.getName() + " in " + getClass().getName(), t);
+                } else {
+                    System.err.println(
+                        "Failed to process field " + field
+                            .getName() + " in " + getClass().getName() + ": " + t.getMessage());
+                }
             }
         }
     }
@@ -164,7 +188,6 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     /**
      * Get the instance created by this config.
      */
-
     public I getInstance() {
         return this.instance;
     }

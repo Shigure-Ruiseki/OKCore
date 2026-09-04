@@ -1,5 +1,6 @@
 package ruiseki.okcore.config.extendedconfig;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Locale;
@@ -72,47 +73,55 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
         for (Field field : this.getClass()
             .getDeclaredFields()) {
             try {
-                if (field.isAnnotationPresent(ConfigurableProperty.class)) {
-                    ConfigurableProperty annotation = field.getAnnotation(ConfigurableProperty.class);
-                    if (annotation == null) continue;
+                ConfigurableProperty annotation = null;
 
-                    IChangedCallback changedCallback = null;
-                    try {
-                        if (annotation.changedCallback() != IChangedCallback.class) {
-                            changedCallback = annotation.changedCallback()
-                                .newInstance();
-                        }
-                    } catch (InstantiationException | IllegalAccessException e) {
-                        e.printStackTrace();
+                Annotation[] annotations = field.getAnnotations();
+                for (Annotation ann : annotations) {
+                    if (ann.annotationType()
+                        .getName()
+                        .equals(ConfigurableProperty.class.getName())) {
+                        annotation = (ConfigurableProperty) ann;
+                        break;
                     }
-
-                    String category = annotation.category();
-                    if (category == null) {
-                        category = "general";
-                    }
-
-                    field.setAccessible(true);
-                    Object fieldValue = field.get(null);
-
-                    ConfigProperty configProperty = new ConfigProperty(
-                        getMod(),
-                        category,
-                        getConfigPropertyPrefix() + "." + field.getName(),
-                        fieldValue,
-                        annotation.comment(),
-                        new ConfigPropertyCallback(changedCallback),
-                        annotation.isCommandable(),
-                        annotation.configLocation(),
-                        field);
-
-                    configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
-                    configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
-                    configProperty.setShowInGui(annotation.showInGui());
-                    configProperty.setMinValue(annotation.minimalValue());
-                    configProperty.setMaxValue(annotation.maximalValue());
-
-                    configProperties.add(configProperty);
                 }
+
+                if (annotation == null) continue;
+
+                IChangedCallback changedCallback = null;
+                try {
+                    Class<? extends IChangedCallback> callbackClass = annotation.changedCallback();
+                    if (callbackClass != IChangedCallback.class) {
+                        changedCallback = callbackClass.newInstance();
+                    }
+                } catch (Throwable ignored) {}
+
+                String category = annotation.category();
+                if (category == null || category.isEmpty()) {
+                    category = "general";
+                }
+
+                field.setAccessible(true);
+                Object fieldValue = field.get(null);
+
+                ConfigProperty configProperty = new ConfigProperty(
+                    getMod(),
+                    category,
+                    getConfigPropertyPrefix() + "." + field.getName(),
+                    fieldValue,
+                    annotation.comment(),
+                    new ConfigPropertyCallback(changedCallback),
+                    annotation.isCommandable(),
+                    annotation.configLocation(),
+                    field);
+
+                configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
+                configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
+                configProperty.setShowInGui(annotation.showInGui());
+                configProperty.setMinValue(annotation.minimalValue());
+                configProperty.setMaxValue(annotation.maximalValue());
+
+                configProperties.add(configProperty);
+
             } catch (Throwable t) {
                 if (mod != null && mod.getLoggerHelper() != null) {
                     mod.getLoggerHelper()

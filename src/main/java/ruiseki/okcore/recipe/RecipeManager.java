@@ -18,6 +18,7 @@ import net.minecraft.world.World;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.ApiStatus;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,7 +48,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
 
     protected Map<IRecipeType<?>, Map<ResourceLocation, IRecipeOK<?>>> recipes = Collections.emptyMap();
     private Map<ResourceLocation, IRecipeOK<?>> byName = Collections.emptyMap();
-    private final ICondition.IContext context;
+    private ICondition.IContext context;
 
     public RecipeManager() {
         this(ICondition.IContext.EMPTY);
@@ -60,6 +61,11 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
 
     public static RecipeManager getManager() {
         return INSTANCE;
+    }
+
+    @ApiStatus.Internal
+    public void setContext(ICondition.IContext context) {
+        this.context = context;
     }
 
     @Override

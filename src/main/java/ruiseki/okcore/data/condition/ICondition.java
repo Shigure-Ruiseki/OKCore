@@ -22,6 +22,15 @@ public interface ICondition {
             }
         };
 
+        IContext TAGS_INVALID = new IContext() {
+
+            @Override
+            public Map<ResourceLocation, Collection<?>> getAllTags(ResourceLocation registryKey) {
+                throw new UnsupportedOperationException(
+                    "Usage of tag-based conditions is not permitted in this context!");
+            }
+        };
+
         Map<ResourceLocation, Collection<?>> getAllTags(ResourceLocation registryKey);
 
         default Collection<?> getTag(ResourceLocation registryKey, ResourceLocation tagLocation) {

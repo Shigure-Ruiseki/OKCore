@@ -86,19 +86,11 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
                         e.printStackTrace();
                     }
 
-                    String category = annotation.category();
-                    if (category == null) {
-                        category = "general";
-                    }
-
-                    field.setAccessible(true);
-                    Object fieldValue = field.get(null);
-
                     ConfigProperty configProperty = new ConfigProperty(
                         getMod(),
-                        category,
+                        annotation.category(),
                         getConfigPropertyPrefix() + "." + field.getName(),
-                        fieldValue,
+                        field.get(null),
                         annotation.comment(),
                         new ConfigPropertyCallback(changedCallback),
                         annotation.isCommandable(),
@@ -118,10 +110,6 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
                     mod.getLoggerHelper()
                         .getLogger()
                         .warn("Failed to process field " + field.getName() + " in " + getClass().getName(), t);
-                } else {
-                    System.err.println(
-                        "Failed to process field " + field
-                            .getName() + " in " + getClass().getName() + ": " + t.getMessage());
                 }
             }
         }

@@ -76,7 +76,7 @@ public @interface ConfigurableProperty {
     /**
      * @return The location of this config property.
      */
-    ConfigLocation configLocation() default ConfigLocation.COMMON;
+    ConfigLocation configLocation();
 
     /**
      * @return The optional callback when the property has been changed.

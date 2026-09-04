@@ -1,7 +1,7 @@
 package ruiseki.okcore;
 
+import ruiseki.okcore.config.ConfigLocation;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
 import ruiseki.okcore.tracking.Versions;
 
@@ -13,23 +13,19 @@ import ruiseki.okcore.tracking.Versions;
  */
 public class GeneralConfig extends DummyConfig {
 
-    @ConfigurableProperty(category = "core", comment = "If the version checker should be enabled.")
+    @ConfigurableProperty(
+        category = "core",
+        comment = "If the version checker should be enabled.",
+        configLocation = ConfigLocation.COMMON)
     public static boolean versionChecker = true;
 
     @ConfigurableProperty(
         category = "core.potion",
         comment = "The minimum array size of potion types, increase to allow for more potion types.",
-        requiresMcRestart = true)
+        requiresMcRestart = true,
+        configLocation = ConfigLocation.COMMON)
     public static int minimumPotionTypesArraySize = 256;
 
-    /**
-     * The type of this config.
-     */
-    public static ConfigurableType TYPE = ConfigurableType.DUMMY;
-
-    /**
-     * Create a new instance.
-     */
     public GeneralConfig() {
         super(OKCore._instance, true, "general", null);
     }

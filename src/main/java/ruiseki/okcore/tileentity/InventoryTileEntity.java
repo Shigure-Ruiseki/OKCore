@@ -29,7 +29,7 @@ public abstract class InventoryTileEntity extends InventoryTileEntityBase {
      * @param stackSize     The maximum stacksize each slot can have
      */
     public InventoryTileEntity(int inventorySize, String inventoryName, int stackSize) {
-        this.inventory = new SimpleInventory(inventorySize, inventoryName, stackSize);
+        this.inventory = createInventory(inventorySize, inventoryName, stackSize);
         this.slotSides = Maps.newHashMap();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             this.slotSides.put(side, new int[0]);
@@ -44,6 +44,10 @@ public abstract class InventoryTileEntity extends InventoryTileEntityBase {
      */
     public InventoryTileEntity(int inventorySize, String inventoryName) {
         this(inventorySize, inventoryName, 64);
+    }
+
+    protected SimpleInventory createInventory(int inventorySize, String inventoryName, int stackSize) {
+        return new SimpleInventory(inventorySize, inventoryName, stackSize);
     }
 
     /**

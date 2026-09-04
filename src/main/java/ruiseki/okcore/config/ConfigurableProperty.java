@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
  * Property inside configs that can be configured in the config file.
  *
  * @author rubensworks
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

@@ -1,6 +1,5 @@
 package ruiseki.okcore.config.extendedconfig;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Locale;
@@ -72,62 +71,34 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     private void generateConfigProperties() throws IllegalArgumentException, IllegalAccessException {
         for (Field field : this.getClass()
             .getDeclaredFields()) {
-            try {
-                ConfigurableProperty annotation = null;
-
-                Annotation[] annotations = field.getAnnotations();
-                for (Annotation ann : annotations) {
-                    if (ann.annotationType()
-                        .getName()
-                        .equals(ConfigurableProperty.class.getName())) {
-                        annotation = (ConfigurableProperty) ann;
-                        break;
-                    }
-                }
-
-                if (annotation == null) continue;
-
+            if (field.isAnnotationPresent(ConfigurableProperty.class)) {
+                ConfigurableProperty annotation = field.getAnnotation(ConfigurableProperty.class);
                 IChangedCallback changedCallback = null;
-                try {
-                    Class<? extends IChangedCallback> callbackClass = annotation.changedCallback();
-                    if (callbackClass != IChangedCallback.class) {
-                        changedCallback = callbackClass.newInstance();
+                if (annotation.changedCallback() != IChangedCallback.class) {
+                    try {
+                        changedCallback = annotation.changedCallback()
+                            .newInstance();
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
                     }
-                } catch (Throwable ignored) {}
-
-                String category = annotation.category();
-                if (category == null || category.isEmpty()) {
-                    category = "general";
                 }
-
-                field.setAccessible(true);
-                Object fieldValue = field.get(null);
-
+                String category = annotation.category();
                 ConfigProperty configProperty = new ConfigProperty(
                     getMod(),
                     category,
                     getConfigPropertyPrefix() + "." + field.getName(),
-                    fieldValue,
+                    field.get(null),
                     annotation.comment(),
                     new ConfigPropertyCallback(changedCallback),
                     annotation.isCommandable(),
                     annotation.configLocation(),
                     field);
-
                 configProperty.setRequiresWorldRestart(annotation.requiresWorldRestart());
                 configProperty.setRequiresMcRestart(annotation.requiresMcRestart());
                 configProperty.setShowInGui(annotation.showInGui());
                 configProperty.setMinValue(annotation.minimalValue());
                 configProperty.setMaxValue(annotation.maximalValue());
-
                 configProperties.add(configProperty);
-
-            } catch (Throwable t) {
-                if (mod != null && mod.getLoggerHelper() != null) {
-                    mod.getLoggerHelper()
-                        .getLogger()
-                        .warn("Failed to process field " + field.getName() + " in " + getClass().getName(), t);
-                }
             }
         }
     }
@@ -193,6 +164,7 @@ public abstract class ExtendedConfig<C extends ExtendedConfig<C, I>, I>
     /**
      * Get the instance created by this config.
      */
+
     public I getInstance() {
         return this.instance;
     }

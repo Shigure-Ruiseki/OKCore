@@ -19,7 +19,8 @@ public class FluidAction extends ConfigurableTypeAction<FluidConfig, Fluid> {
     public void preRun(FluidConfig eConfig, Configuration config, boolean startup) {
         // Get property in config file and set comment
         Property property = config.get(
-            eConfig.getHolderType().getCategory(),
+            eConfig.getHolderType()
+                .getCategory(),
             eConfig.getNamedId(),
             eConfig.isEnabled());
         property.setRequiresMcRestart(true);

@@ -8,7 +8,8 @@ import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.commoncapabilities.ingredient.NBTBaseComparator;
-import ruiseki.okcore.config.ConfigurableType;
+import ruiseki.okcore.config.ConfigLocation;
+import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.IChangedCallback;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
 import ruiseki.okcore.nbt.path.NbtParseException;
@@ -24,10 +25,15 @@ import ruiseki.okcore.nbt.path.navigate.NbtPathNavigationList;
  */
 public class GeneralConfig extends DummyConfig {
 
-    /**
-     * The type of this config.
-     */
-    public static ConfigurableType TYPE = ConfigurableType.DUMMY;
+    @ConfigurableProperty(
+        category = "machine",
+        comment = "The NBT Paths that should be filtered away when checking equality.",
+        changedCallback = IgnoreNbtPathsForEqualityChangedCallback.class,
+        configLocation = ConfigLocation.SERVER)
+    public static List<String> ignoreNbtPathsForEqualityFilters = Lists.newArrayList(
+        "$.ForgeCaps[\"astralsorcery:cap_item_amulet_holder\"]", // Astral Sorcery
+        "$.binding" // Blood Magic Blood Orb player bindings
+    );
 
     /**
      * Create a new instance.

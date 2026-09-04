@@ -1,12 +1,8 @@
 package ruiseki.okcore;
 
-import org.apache.logging.log4j.Level;
-
-import ruiseki.okcore.config.ConfigLocation;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
-import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.tracking.Versions;
 
 /**
@@ -17,33 +13,7 @@ import ruiseki.okcore.tracking.Versions;
  */
 public class GeneralConfig extends DummyConfig {
 
-    @ConfigurableProperty(
-        category = "core",
-        comment = "Config version for " + Reference.MOD_NAME + ".\nDO NOT EDIT MANUALLY!")
-    public static String version = Reference.MOD_VERSION;
-
-    @ConfigurableProperty(
-        category = "core",
-        comment = "Set 'true' to enable development debug mode. This will result in a lower performance!",
-        requiresMcRestart = true)
-    public static boolean debug = false;
-
-    @ConfigurableProperty(
-        category = "core",
-        comment = "If the recipe loader should crash when finding invalid recipes.",
-        requiresMcRestart = true)
-    public static boolean crashOnInvalidRecipe = false;
-
-    @ConfigurableProperty(
-        category = "core",
-        comment = "If mod compatibility loader should crash hard if errors occur in that process.",
-        requiresMcRestart = true)
-    public static boolean crashOnModCompatCrash = false;
-
-    @ConfigurableProperty(
-        category = "core",
-        comment = "If the version checker should be enabled.",
-        configLocation = ConfigLocation.SERVER)
+    @ConfigurableProperty(category = "core", comment = "If the version checker should be enabled.")
     public static boolean versionChecker = true;
 
     @ConfigurableProperty(
@@ -66,18 +36,6 @@ public class GeneralConfig extends DummyConfig {
 
     @Override
     public void onRegistered() {
-        // Check version of config file
-        if (!version.equals(Reference.MOD_VERSION)) {
-            getMod().log(
-                Level.WARN,
-                "The config file of " + Reference.MOD_NAME
-                    + " is out of date and might cause problems, please remove it so it can be regenerated.");
-        }
-
-        getMod().putGenericReference(ModBase.REFKEY_CRASH_ON_INVALID_RECIPE, GeneralConfig.crashOnInvalidRecipe);
-        getMod().putGenericReference(ModBase.REFKEY_DEBUGCONFIG, GeneralConfig.debug);
-        getMod().putGenericReference(ModBase.REFKEY_CRASH_ON_MODCOMPAT_CRASH, GeneralConfig.crashOnModCompatCrash);
-
         if (versionChecker) {
             Versions.registerMod(getMod(), OKCore._instance, Reference.VERSION_URL);
         }

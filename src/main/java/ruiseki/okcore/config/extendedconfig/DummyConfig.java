@@ -24,11 +24,6 @@ public class DummyConfig extends ExtendedConfig<DummyConfig, Void> {
         super(mod, enabled, namedId, comment, (c) -> null);
     }
 
-    @Deprecated
-    public DummyConfig(ModBase mod, boolean enabled, String namedId, String comment, Class empty) {
-        super(mod, enabled, namedId, comment, (c) -> null);
-    }
-
     @Override
     public ConfigurableType getHolderType() {
         return ConfigurableType.DUMMY;

@@ -1,22 +1,42 @@
 {
 	"modListVersion": 2,
 	"modList": [{
-		"modid": "${modId}",
-		"name": "${modName}",
-		"description": "",
-		"version": "${modVersion}",
-		"mcversion": "${minecraftVersion}",
+      "modid": "${modId}",
+      "name": "${modName}",
+      "description": "",
+      "version": "${modVersion}",
+      "mcversion": "${minecraftVersion}",
+      "url": "https://github.com/Shigure-Ruiseki/OKCore",
+      "updateUrl": "",
+      "authorList": [
+        "rubensworks (aka kroeserr)", "Shigure Ruiseki"
+      ],
+      "credits": "",
+      "logoFile": "assets/${modId}/logo.png",
+      "screenshots": [],
+      "requiredMods": [],
+      "dependencies": [],
+      "dependants": [],
+      "useDependencyInformation": false
+    },
+    {
+    "modid": "commoncapabilities",
+    "name": "Common Capabilities",
+    "description": "",
+    "version": "${modVersion}",
+    "mcversion": "${minecraftVersion}",
     "url": "https://github.com/Shigure-Ruiseki/OKCore",
-		"updateUrl": "",
+    "updateUrl": "",
     "authorList": [
-      "Ruiseki"
+      "rubensworks (aka kroeserr)", "Shigure Ruiseki"
     ],
-		"credits": "",
-    "logoFile": "assets/${modId}/pack.png",
-		"screenshots": [],
-		"requiredMods": [],
-		"dependencies": [],
-		"dependants": [],
-		"useDependencyInformation": false
-	}]
+    "credits": "",
+    "logoFile": "assets/commoncapabilities/logo.png",
+    "screenshots": [],
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "useDependencyInformation": false
+    }
+  ]
 }

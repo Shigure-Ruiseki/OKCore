@@ -51,29 +51,48 @@ public final class ItemMatch {
         boolean aNull = a == null || a.getItem() == null;
         boolean bNull = b == null || b.getItem() == null;
 
+        if (aNull && bNull) return true;
+        if (aNull || bNull) return false;
+
         boolean item = (matchFlags & ITEM) > 0;
-        boolean damage = (matchFlags & DAMAGE) > 0 && !aNull
-            && !bNull
-            && !(a.getItemDamage() == OreDictionary.WILDCARD_VALUE
-                || b.getItemDamage() == OreDictionary.WILDCARD_VALUE);
+        boolean damage = (matchFlags & DAMAGE) > 0;
         boolean nbt = (matchFlags & NBT) > 0;
         boolean stackSize = (matchFlags & STACKSIZE) > 0;
 
-        return a == b || (aNull && bNull)
-            || (!aNull && !bNull
-                && (!item || a.getItem() == b.getItem())
-                && (!damage || a.getItemDamage() == b.getItemDamage())
-                && (!stackSize || a.stackSize == b.stackSize)
-                && (!nbt || areItemStackTagsEqual(a, b)));
+        if (item && a.getItem() != b.getItem()) {
+            return false;
+        }
+
+        if (damage) {
+            int damageA = a.getItemDamage();
+            int damageB = b.getItemDamage();
+            boolean hasWildcard = damageA == OreDictionary.WILDCARD_VALUE || damageB == OreDictionary.WILDCARD_VALUE;
+            if (!hasWildcard && damageA != damageB) {
+                return false;
+            }
+        }
+
+        if (stackSize && a.stackSize != b.stackSize) {
+            return false;
+        }
+
+        if (nbt && !areItemStackTagsEqual(a, b)) {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean areItemStackTagsEqual(ItemStack a, ItemStack b) {
+        if (a == null || b == null) {
+            return a == b;
+        }
+
         if ((a.getTagCompound() == null && b.getTagCompound() != null)
-            || a.getTagCompound() != null && b.getTagCompound() == null) {
+            || (a.getTagCompound() != null && b.getTagCompound() == null)) {
             return false;
         } else {
             return (a.getTagCompound() == null || NBT_COMPARATOR.compare(a.getTagCompound(), b.getTagCompound()) == 0);
-            // We don't include a.areCapsCompatible(b), because we expect that differing caps have different NBT tags.
         }
     }
 

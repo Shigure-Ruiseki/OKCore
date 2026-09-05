@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,12 +26,6 @@ import ruiseki.okcore.event.OKEventFactory;
 @Implements({ @Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"),
     @Interface(iface = ICapabilityInternal.class, prefix = "okcoreinternal$") })
 public abstract class MixinTileEntity {
-
-    @Shadow
-    public abstract void writeToNBT(NBTTagCompound tag);
-
-    @Shadow
-    public abstract void readFromNBT(NBTTagCompound tag);
 
     @Unique
     private CapabilityDispatcher okcore$capabilities;
@@ -72,15 +65,22 @@ public abstract class MixinTileEntity {
 
     public NBTTagCompound okcorecap$serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
-        this.writeToNBT(tag);
+        this.okcore$getThis()
+            .writeToNBT(tag);
         return tag;
     }
 
     public void okcorecap$deserializeNBT(NBTTagCompound tag) {
-        this.readFromNBT(tag);
+        this.okcore$getThis()
+            .readFromNBT(tag);
     }
 
     public CapabilityDispatcher okcoreinternal$getCapabilities() {
         return okcore$capabilities;
+    }
+
+    @Unique
+    private TileEntity okcore$getThis() {
+        return (TileEntity) (Object) this;
     }
 }

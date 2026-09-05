@@ -9,11 +9,9 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import ruiseki.okcore.capabilities.Capability;
@@ -29,12 +27,6 @@ import ruiseki.okcore.event.OKEventFactory;
     @Interface(iface = ICapabilityInternal.class, prefix = "okcoreinternal$") })
 public abstract class MixinEntityCap {
 
-    @Shadow
-    public abstract void writeToNBT(NBTTagCompound tagCompund);
-
-    @Shadow
-    public abstract void readFromNBT(NBTTagCompound tagCompund);
-
     @Unique
     private CapabilityDispatcher okcore$capabilities;
 
@@ -47,11 +39,8 @@ public abstract class MixinEntityCap {
         method = "writeToNBT",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/nbt/NBTTagCompound;setTag(Ljava/lang/String;Lnet/minecraft/nbt/NBTBase;)V",
-            shift = At.Shift.AFTER),
-        slice = @Slice(from = @At(value = "CONSTANT", args = "stringValue=ForgeData")))
-    private void okcore$writeCapsAfterForgeData(NBTTagCompound tag, CallbackInfo ci) {
-
+            target = "Lnet/minecraft/entity/Entity;writeEntityToNBT(Lnet/minecraft/nbt/NBTTagCompound;)V"))
+    private void okcore$writeCapsBeforeWriteEntity(NBTTagCompound tag, CallbackInfo ci) {
         if (this.okcore$capabilities != null) {
             tag.setTag("OKCaps", this.okcore$capabilities.serializeNBT());
         }
@@ -61,10 +50,9 @@ public abstract class MixinEntityCap {
         method = "readFromNBT",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/nbt/NBTTagCompound;getCompoundTag(Ljava/lang/String;)Lnet/minecraft/nbt/NBTTagCompound;",
-            shift = At.Shift.AFTER),
-        slice = @Slice(from = @At(value = "CONSTANT", args = "stringValue=ForgeData")))
-    private void okcore$readCapsAfterForgeData(NBTTagCompound tag, CallbackInfo ci) {
+            target = "Lnet/minecraft/entity/Entity;readEntityFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)V"),
+        require = 0)
+    private void okcore$readCapsBeforeReadEntity(NBTTagCompound tag, CallbackInfo ci) {
         if (this.okcore$capabilities != null && tag.hasKey("OKCaps")) {
             this.okcore$capabilities.deserializeNBT(tag.getCompoundTag("OKCaps"));
         }
@@ -85,15 +73,22 @@ public abstract class MixinEntityCap {
 
     public NBTTagCompound okcorecap$serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
-        this.writeToNBT(tag);
+        this.okcore$getThis()
+            .writeToNBT(tag);
         return tag;
     }
 
     public void okcorecap$deserializeNBT(NBTTagCompound tag) {
-        this.readFromNBT(tag);
+        this.okcore$getThis()
+            .readFromNBT(tag);
     }
 
     public CapabilityDispatcher okcoreinternal$getCapabilities() {
         return okcore$capabilities;
+    }
+
+    @Unique
+    private Entity okcore$getThis() {
+        return (Entity) (Object) this;
     }
 }

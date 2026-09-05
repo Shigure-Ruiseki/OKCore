@@ -1,13 +1,11 @@
 package ruiseki.okcore.mixins.early.event.gui;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,9 +19,6 @@ import ruiseki.okcore.event.input.MouseInputEvent;
 @Mixin(GuiScreen.class)
 @Implements(@Interface(iface = IGuiInputHandle.class, prefix = "okcoregui$"))
 public abstract class MixinGuiScreen {
-
-    @Shadow
-    public Minecraft mc;
 
     @Unique
     private boolean okcore$keyHandled;
@@ -48,7 +43,7 @@ public abstract class MixinGuiScreen {
             target = "Lnet/minecraft/client/gui/GuiScreen;handleMouseInput()V",
             shift = At.Shift.AFTER))
     private void okcore$postMouseInput(CallbackInfo ci) {
-        if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcoregui$isMouseHandled()) {
+        if (okcore$getThis().equals(okcore$getThis().mc.currentScreen) && !this.okcoregui$isMouseHandled()) {
             MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Post(okcore$getThis()));
         }
     }
@@ -71,7 +66,7 @@ public abstract class MixinGuiScreen {
             target = "Lnet/minecraft/client/gui/GuiScreen;handleKeyboardInput()V",
             shift = At.Shift.AFTER))
     private void okcore$postKeyInput(CallbackInfo ci) {
-        if (okcore$getThis().equals(this.mc.currentScreen) && !this.okcoregui$isKeyHandled()) {
+        if (okcore$getThis().equals(okcore$getThis().mc.currentScreen) && !this.okcoregui$isKeyHandled()) {
             MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(okcore$getThis()));
         }
     }

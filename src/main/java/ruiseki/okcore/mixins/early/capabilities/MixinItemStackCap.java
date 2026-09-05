@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,12 +29,6 @@ import ruiseki.okcore.event.OKEventFactory;
 @Implements({ @Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"),
     @Interface(iface = ICapabilityInternal.class, prefix = "okcoreinternal$") })
 public abstract class MixinItemStackCap {
-
-    @Shadow
-    public abstract NBTTagCompound writeToNBT(NBTTagCompound p_77955_1_);
-
-    @Shadow
-    public abstract void readFromNBT(NBTTagCompound p_77963_1_);
 
     @Unique
     private CapabilityDispatcher okcore$capabilities;
@@ -103,15 +96,22 @@ public abstract class MixinItemStackCap {
 
     public NBTTagCompound okcorecap$serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
-        this.writeToNBT(tag);
+        this.okcore$getThis()
+            .writeToNBT(tag);
         return tag;
     }
 
     public void okcorecap$deserializeNBT(NBTTagCompound tag) {
-        this.readFromNBT(tag);
+        this.okcore$getThis()
+            .readFromNBT(tag);
     }
 
     public CapabilityDispatcher okcoreinternal$getCapabilities() {
         return okcore$capabilities;
+    }
+
+    @Unique
+    private ItemStack okcore$getThis() {
+        return (ItemStack) (Object) this;
     }
 }

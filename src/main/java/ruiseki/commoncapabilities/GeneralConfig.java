@@ -43,7 +43,9 @@ public class GeneralConfig extends DummyConfig {
     }
 
     @Override
-    public void onRegistered() {}
+    public void onRegistered() {
+
+    }
 
     @Override
     public boolean isEnabled() {
@@ -52,10 +54,21 @@ public class GeneralConfig extends DummyConfig {
 
     public static class IgnoreNbtPathsForEqualityChangedCallback implements IChangedCallback {
 
-        @Override
-        public void onChanged(Object value) {
+        private static void updateNbtComparator(Object value) {
             List<INbtPathNavigation> navigations = Lists.newArrayList();
-            for (String path : (String[]) value) {
+
+            String[] paths;
+            if (value instanceof String[]) {
+                paths = (String[]) value;
+            } else if (value instanceof List) {
+                paths = ((List<?>) value).stream()
+                    .map(Object::toString)
+                    .toArray(String[]::new);
+            } else {
+                paths = ignoreNbtPathsForEqualityFilters.toArray(new String[0]);
+            }
+
+            for (String path : paths) {
                 try {
                     navigations.add(
                         NbtPath.parse(path)
@@ -69,8 +82,13 @@ public class GeneralConfig extends DummyConfig {
         }
 
         @Override
-        public void onRegisteredPostInit(Object value) {
+        public void onChanged(Object value) {
+            updateNbtComparator(value);
+        }
 
+        @Override
+        public void onRegisteredPostInit(Object value) {
+            updateNbtComparator(value);
         }
     }
 }

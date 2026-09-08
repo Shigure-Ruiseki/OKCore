@@ -27,7 +27,7 @@ public class ItemGasTest extends ItemBase {
             ForgeDirection direction = ForgeDirection.getOrientation(side);
             return CapabilityHelpers.getCapability(te, GasHandlerConfig.CAPABILITY, direction)
                 .map(handler -> {
-                    GasStack extracted = handler.drawGas(direction, 1000, true);
+                    GasStack extracted = handler.extractGas(1000, true);
                     return extracted != null;
                 })
                 .orElse(false);

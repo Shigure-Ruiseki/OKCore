@@ -1,7 +1,7 @@
 package ruiseki.commoncapabilities.modcompat.mekansim.capability.gashandler;
 
-import mekanism.api.gas.IGasHandler;
 import ruiseki.commoncapabilities.CommonCapabilities;
+import ruiseki.commoncapabilities.modcompat.mekansim.api.gas.IGasHandler;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.config.extendedconfig.CapabilityConfig;

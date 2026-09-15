@@ -9,12 +9,13 @@ public class GuiButtonCheckbox extends GuiButtonExtended {
 
     private boolean checked;
 
-    public GuiButtonCheckbox(int id, int x, int y, int width, int height, String string, boolean background) {
-        super(id, x, y, width, height, string, background);
+    public GuiButtonCheckbox(int id, int x, int y, int width, int height, String string, OnPress onPress,
+        boolean background) {
+        super(id, x, y, width, height, string, onPress, background);
     }
 
-    public GuiButtonCheckbox(int id, int x, int y, String string) {
-        this(id, x, y, 10, 10, string, false);
+    public GuiButtonCheckbox(int id, int x, int y, String string, OnPress onPress) {
+        this(id, x, y, 10, 10, string, onPress, false);
     }
 
     public void setChecked(boolean checked) {

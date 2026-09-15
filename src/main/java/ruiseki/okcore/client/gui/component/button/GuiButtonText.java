@@ -19,8 +19,8 @@ public class GuiButtonText extends GuiButtonExtended {
      * @param y      Y
      * @param string The string to print.
      */
-    public GuiButtonText(int id, int x, int y, String string) {
-        this(id, x, y, Minecraft.getMinecraft().fontRenderer.getStringWidth(string) + 6, 16, string, true);
+    public GuiButtonText(int id, int x, int y, String string, OnPress onPress) {
+        this(id, x, y, Minecraft.getMinecraft().fontRenderer.getStringWidth(string) + 6, 16, string, onPress, true);
     }
 
     /**
@@ -34,8 +34,9 @@ public class GuiButtonText extends GuiButtonExtended {
      * @param string     The string to print.
      * @param background If the button background should be rendered.
      */
-    public GuiButtonText(int id, int x, int y, int width, int height, String string, boolean background) {
-        super(id, x, y, width, height, string, background);
+    public GuiButtonText(int id, int x, int y, int width, int height, String string, OnPress onPress,
+        boolean background) {
+        super(id, x, y, width, height, string, onPress, background);
     }
 
     protected void drawButtonInner(Minecraft minecraft, int i, int j, boolean mouseOver) {

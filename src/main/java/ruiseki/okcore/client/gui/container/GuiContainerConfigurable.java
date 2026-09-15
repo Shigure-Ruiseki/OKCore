@@ -9,7 +9,8 @@ import ruiseki.okcore.inventory.container.InventoryContainerConfigurable;
  *
  * @author rubensworks
  */
-public abstract class GuiContainerConfigurable<C extends InventoryContainerConfigurable> extends GuiContainerExtended {
+public abstract class GuiContainerConfigurable<C extends InventoryContainerConfigurable>
+    extends GuiContainerExtended<C> {
 
     /**
      * Make a new instance.
@@ -18,10 +19,6 @@ public abstract class GuiContainerConfigurable<C extends InventoryContainerConfi
      */
     public GuiContainerConfigurable(C container) {
         super(container);
-    }
-
-    protected C getContainer() {
-        return (C) super.getContainer();
     }
 
     @Override

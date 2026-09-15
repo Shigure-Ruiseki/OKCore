@@ -19,7 +19,7 @@ import ruiseki.okcore.inventory.container.ScrollingInventoryContainer;
  *
  * @author rubensworks
  */
-public abstract class ScrollingGuiContainer extends GuiContainerExtended {
+public abstract class ScrollingGuiContainer<T extends ScrollingInventoryContainer<?>> extends GuiContainerExtended<T> {
 
     private static final ResourceLocation SCROLLBUTTON = new ResourceLocation(
         "textures/gui/container/creative_inventory/tabs.png");
@@ -41,10 +41,6 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
     public ScrollingGuiContainer(ScrollingInventoryContainer<?> container) {
         super(container);
         this.allowUserInput = true;
-    }
-
-    protected ScrollingInventoryContainer<?> getScrollingInventoryContainer() {
-        return (ScrollingInventoryContainer<?>) this.inventorySlots;
     }
 
     @Override
@@ -84,9 +80,9 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
 
         // Initial element load.
         if (resetFilter) {
-            getScrollingInventoryContainer().updateFilter("");
+            getContainer().updateFilter("");
         }
-        getScrollingInventoryContainer().scrollTo(currentScroll);
+        getContainer().scrollTo(currentScroll);
     }
 
     @Override
@@ -106,15 +102,13 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
     }
 
     protected int getScrollStep() {
-        return getScrollingInventoryContainer().getFilteredItemCount() / getScrollingInventoryContainer().getColumns()
-            - getScrollingInventoryContainer().getPageSize()
-            + 1;
+        return getContainer().getFilteredItemCount() / getContainer().getColumns() - getContainer().getPageSize() + 1;
     }
 
     protected void scrollRelative(int step) {
         this.currentScroll = (float) ((double) this.currentScroll - (double) step / (double) getScrollStep());
         this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
-        getScrollingInventoryContainer().scrollTo(this.currentScroll);
+        getContainer().scrollTo(this.currentScroll);
     }
 
     @Override
@@ -161,23 +155,21 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
         if (this.isScrolling) {
             this.currentScroll = ((float) (mouseY - j1) - 7.5F) / ((float) (l1 - j1) - 15.0F);
             this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
-            getScrollingInventoryContainer().scrollTo(this.currentScroll);
+            getContainer().scrollTo(this.currentScroll);
         }
 
         if (isSubsetRenderSlots()) {
             // Temporarily swap slot list, to avoid rendering all slots (which would include the hidden ones)
             List<Slot> oldSlots = this.inventorySlots.inventorySlots;
-            int startIndex = getScrollingInventoryContainer().getFirstElement();
+            int startIndex = getContainer().getFirstElement();
             List<Slot> newSlots = Lists.newArrayList();
             newSlots.addAll(
                 oldSlots.subList(
                     startIndex,
                     Math.min(
                         oldSlots.size(),
-                        startIndex + (getScrollingInventoryContainer().getPageSize()
-                            * getScrollingInventoryContainer().getColumns()))));
-            newSlots
-                .addAll(oldSlots.subList(getScrollingInventoryContainer().getUnfilteredItemCount(), oldSlots.size()));
+                        startIndex + (getContainer().getPageSize() * getContainer().getColumns()))));
+            newSlots.addAll(oldSlots.subList(getContainer().getUnfilteredItemCount(), oldSlots.size()));
             this.inventorySlots.inventorySlots = newSlots;
             super.drawScreen(mouseX, mouseY, partialTicks);
             this.inventorySlots.inventorySlots = oldSlots;
@@ -213,11 +205,11 @@ public abstract class ScrollingGuiContainer extends GuiContainerExtended {
 
     protected void updateSearch(String searchString) {
         this.currentScroll = 0;
-        getScrollingInventoryContainer().updateFilter(searchString);
+        getContainer().updateFilter(searchString);
     }
 
     protected boolean needsScrollBars() {
-        return getScrollingInventoryContainer().getFilteredItemCount() > getScrollingInventoryContainer().getPageSize();
+        return getContainer().getFilteredItemCount() > getContainer().getPageSize();
     }
 
     public GuiTextField getSearchField() {

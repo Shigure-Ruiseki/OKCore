@@ -9,7 +9,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A number field which by default only accepts positive numbers.
- * 
+ *
  * @author rubensworks
  */
 public class GuiNumberField extends GuiTextFieldExtended {
@@ -27,9 +27,14 @@ public class GuiNumberField extends GuiTextFieldExtended {
         this.arrows = arrows;
 
         if (this.arrows) {
-            arrowUp = new GuiButtonArrow(0, x, y + height / 2, GuiButtonArrow.Direction.NORTH);
-            arrowDown = new GuiButtonArrow(1, x, y + height / 2, GuiButtonArrow.Direction.SOUTH);
-            arrowUp.yPosition -= arrowUp.height;
+            this.arrowUp = new GuiButtonArrow(0, x, y + height / 2, GuiButtonArrow.Direction.NORTH, btn -> increase());
+            this.arrowDown = new GuiButtonArrow(
+                1,
+                x,
+                y + height / 2,
+                GuiButtonArrow.Direction.SOUTH,
+                btn -> decrease());
+            this.arrowUp.yPosition -= this.arrowUp.height;
         }
         setEnableBackgroundDrawing(true);
         setText("0");
@@ -37,9 +42,14 @@ public class GuiNumberField extends GuiTextFieldExtended {
 
     @Override
     public void setEnabled(boolean enabled) {
-        arrowUp.enabled = enabled;
-        arrowDown.enabled = enabled;
-        isEnabled = enabled;
+        this.isEnabled = enabled;
+        if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
+            this.arrowUp.enabled = enabled;
+            this.arrowDown.enabled = enabled;
+            if (enabled) {
+                updateArrowsState();
+            }
+        }
         super.setEnabled(enabled);
     }
 
@@ -53,7 +63,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public int getMinValue() {
-        return minValue;
+        return this.minValue;
     }
 
     /**
@@ -64,7 +74,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public int getMaxValue() {
-        return maxValue;
+        return this.maxValue;
     }
 
     /**
@@ -90,17 +100,17 @@ public class GuiNumberField extends GuiTextFieldExtended {
     public void drawTextBox(Minecraft minecraft, int mouseX, int mouseY) {
         int offsetX = 0;
         GlStateManager.color(1, 1, 1, 1);
-        if (arrows) {
-            arrowUp.drawButton(minecraft, mouseX, mouseY);
-            arrowDown.drawButton(minecraft, mouseX, mouseY);
-            offsetX = arrowUp.width;
-            xPosition += offsetX;
-            width -= offsetX;
+        if (this.arrows) {
+            if (this.arrowUp != null) this.arrowUp.drawButton(minecraft, mouseX, mouseY);
+            if (this.arrowDown != null) this.arrowDown.drawButton(minecraft, mouseX, mouseY);
+            offsetX = this.arrowUp != null ? this.arrowUp.width : 0;
+            this.xPosition += offsetX;
+            this.width -= offsetX;
         }
         super.drawTextBox(minecraft, mouseX, mouseY);
-        if (arrows) {
-            xPosition -= offsetX;
-            width += offsetX;
+        if (this.arrows) {
+            this.xPosition -= offsetX;
+            this.width += offsetX;
         }
     }
 
@@ -113,7 +123,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public float validateNumber(float number) {
-        return Math.max(this.minValue, Math.min(this.maxValue, number));
+        return Math.max((float) this.minValue, Math.min((float) this.maxValue, number));
     }
 
     protected int getDiffAmount() {
@@ -139,13 +149,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     @Override
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if (this.isEnabled) {
-            if (this.arrows && arrowUp.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
-                increase();
-            } else if (this.arrows && arrowDown.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
-                decrease();
-            } else {
-                super.mouseClicked(mouseX, mouseY, mouseButton);
-            }
+            super.mouseClicked(mouseX, mouseY, mouseButton);
             updateArrowsState();
         }
     }
@@ -164,15 +168,18 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     protected void updateArrowsState() {
-        if (this.arrows) {
-            arrowDown.enabled = true;
-            arrowUp.enabled = true;
+        if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
+            this.arrowDown.enabled = this.isEnabled;
+            this.arrowUp.enabled = this.isEnabled;
+            if (!this.isEnabled) return;
+
             try {
-                if (getInt() <= this.minValue) {
-                    arrowDown.enabled = false;
+                int currentVal = getInt();
+                if (currentVal <= this.minValue) {
+                    this.arrowDown.enabled = false;
                 }
-                if (getInt() >= this.maxValue) {
-                    arrowUp.enabled = false;
+                if (currentVal >= this.maxValue) {
+                    this.arrowUp.enabled = false;
                 }
             } catch (NumberFormatException e) {
 

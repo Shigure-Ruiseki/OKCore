@@ -25,8 +25,8 @@ public class GuiButtonArrow extends GuiButtonExtended {
      * @param y         Y
      * @param direction The direction of the arrow to draw.
      */
-    public GuiButtonArrow(int id, int x, int y, GuiButtonArrow.Direction direction) {
-        super(id, x, y, direction.width, direction.height, "", true);
+    public GuiButtonArrow(int id, int x, int y, GuiButtonArrow.Direction direction, OnPress onPress) {
+        super(id, x, y, direction.width, direction.height, "", onPress, true);
         this.direction = direction;
         this.directionImages = getDirectionImage(direction);
     }

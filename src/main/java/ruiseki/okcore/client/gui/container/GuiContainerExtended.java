@@ -114,7 +114,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     }
 
     public void drawTexturedModalRectScalable(int destX, int destY, int destWidth, int destHeight, int srcX, int srcY,
-                                              int srcWidth, int srcHeight) {
+        int srcWidth, int srcHeight) {
         float f = 0.00390625F; // 1 / 256.0F
         float f1 = 0.00390625F;
 

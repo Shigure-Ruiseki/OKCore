@@ -9,7 +9,6 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
  * An extended {@link net.minecraft.client.gui.GuiButton} which is better resizable.
- * Based on chickenbones' GuiNEIButton.
  *
  * @author rubensworks
  *

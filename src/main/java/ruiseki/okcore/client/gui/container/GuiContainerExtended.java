@@ -1,7 +1,5 @@
 package ruiseki.okcore.client.gui.container;
 
-import static ruiseki.okcore.helper.GuiHelpers.getSlotUnderMouse;
-
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
@@ -11,11 +9,8 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
 
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.Lists;
@@ -26,12 +21,8 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
-import ruiseki.okcore.event.input.IGuiInputHandle;
-import ruiseki.okcore.event.input.KeyboardInputEvent;
-import ruiseki.okcore.event.input.MouseInputEvent;
 import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.network.packet.PacketButtonClick;
 
 /**
@@ -40,10 +31,7 @@ import ruiseki.okcore.network.packet.PacketButtonClick;
  * @author rubensworks
  */
 public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer> extends GuiContainer
-    implements IValueNotifiable, IRenderable, IContainerEventHandler, IGuiInputHandle {
-
-    private boolean keyHandled;
-    private boolean mouseHandled;
+    implements IValueNotifiable, IRenderable, IContainerEventHandler {
 
     protected T container;
     protected ResourceLocation texture;
@@ -343,17 +331,13 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         return getContainer().getGuiId();
     }
 
-    protected boolean hasClickedOutside(int mouseX, int mouseY, int guiLeft, int guiTop) {
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop) {
         return mouseX < guiLeft || mouseY < guiTop || mouseX >= guiLeft + this.xSize || mouseY >= guiTop + this.ySize;
     }
 
-    @Override
-    protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long time) {
-        Slot slot = getSlotUnderMouse(this);
-        if (mouseButton == 1 && slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {
-            return;
-        }
-        super.mouseClickMove(mouseX, mouseY, mouseButton, time);
+    @Nullable
+    public Slot getSlotUnderMouse() {
+        return this.theSlot;
     }
 
     protected <T extends IGuiEventListener & IRenderable> T addRenderableWidget(T widget) {
@@ -412,61 +396,5 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         }
 
         this.focused = focused;
-    }
-
-    /**
-     * Delegates mouse and keyboard input.
-     */
-    @Override
-    public void handleInput() {
-        if (Mouse.isCreated()) {
-            while (Mouse.next()) {
-                this.mouseHandled = false;
-                if (MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Pre(this))) continue;
-                this.handleMouseInput();
-                if (this.equals(this.mc.currentScreen) && !this.mouseHandled)
-                    MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Post(this));
-            }
-        }
-
-        if (Keyboard.isCreated()) {
-            while (Keyboard.next()) {
-                this.keyHandled = false;
-                if (MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Pre(this))) continue;
-                this.handleKeyboardInput();
-                if (this.equals(this.mc.currentScreen) && !this.keyHandled)
-                    MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(this));
-            }
-        }
-    }
-
-    @Override
-    public void setMouseHandled(boolean mouseHandled) {
-        this.mouseHandled = mouseHandled;
-    }
-
-    @Override
-    public boolean isMouseHandled() {
-        return mouseHandled;
-    }
-
-    @Override
-    public void setKeyHandled(boolean keyHandled) {
-        this.keyHandled = keyHandled;
-    }
-
-    @Override
-    public boolean isKeyHandled() {
-        return keyHandled;
-    }
-
-    @Override
-    public void handleKeyboardInput() {
-        super.handleKeyboardInput();
-    }
-
-    @Override
-    public void handleMouseInput() {
-        super.handleMouseInput();
     }
 }

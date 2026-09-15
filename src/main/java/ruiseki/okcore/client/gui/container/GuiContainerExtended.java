@@ -241,9 +241,9 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
             String line = lines.get(stringIndex);
 
             if (stringIndex == 0) {
-                line = "\u00a7" + Integer.toHexString(15) + line;
+                line = "§" + Integer.toHexString(15) + line;
             } else {
-                line = "\u00a77" + line;
+                line = "§7" + line;
             }
 
             this.fontRendererObj.drawStringWithShadow(line, xStart, yStart, -1);
@@ -297,7 +297,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
 
     @Override
     public void onButtonClick(int buttonId) {
-        IButtonActionClient action;
+        IButtonActionClient<GuiContainerExtended<T>, T> action;
         if ((action = buttonActions.get(buttonId)) != null) {
             action.onAction(buttonId, this, getContainer());
         }

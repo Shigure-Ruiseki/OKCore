@@ -331,7 +331,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         return getContainer().getGuiId();
     }
 
-    protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop) {
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int button) {
         return mouseX < guiLeft || mouseY < guiTop || mouseX >= guiLeft + this.xSize || mouseY >= guiTop + this.ySize;
     }
 

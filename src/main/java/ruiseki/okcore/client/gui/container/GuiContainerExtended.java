@@ -9,6 +9,7 @@ import java.util.Map;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -31,10 +32,10 @@ import ruiseki.okcore.network.packet.PacketButtonClick;
  *
  * @author rubensworks
  */
-public abstract class GuiContainerExtended extends GuiContainer
-    implements IButtonClickAcceptorClient<GuiContainerExtended, ExtendedInventoryContainer>, IValueNotifiable {
+public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer> extends GuiContainer
+    implements IButtonClickAcceptorClient<GuiContainerExtended<T>, T>, IValueNotifiable {
 
-    private final Map<Integer, IButtonActionClient> buttonActions = Maps.newHashMap();
+    private final Map<Integer, IButtonActionClient<GuiContainerExtended<T>, T>> buttonActions = Maps.newHashMap();
 
     protected ExtendedInventoryContainer container;
     protected ResourceLocation texture;
@@ -53,8 +54,9 @@ public abstract class GuiContainerExtended extends GuiContainer
         this.texture = constructResourceLocation();
     }
 
-    protected ExtendedInventoryContainer getContainer() {
-        return this.container;
+    @SuppressWarnings("unchecked")
+    protected T getContainer() {
+        return (T) this.container;
     }
 
     protected ResourceLocation constructResourceLocation() {
@@ -94,6 +96,10 @@ public abstract class GuiContainerExtended extends GuiContainer
         drawTexturedModalRect(guiLeft + offsetX, guiTop + offsetY, 0, 0, xSize - 2 * offsetX, ySize - 2 * offsetY);
     }
 
+    public boolean isPointInRegion(int left, int top, int right, int bottom, int pointX, int pointY) {
+        return func_146978_c(left, top, right, bottom, pointX, pointY);
+    }
+
     @Override
     public boolean func_146978_c(int left, int top, int right, int bottom, int pointX, int pointY) {
         int k1 = this.guiLeft;
@@ -105,6 +111,44 @@ public abstract class GuiContainerExtended extends GuiContainer
 
     public boolean isPointInRegion(Rectangle region, Point mouse) {
         return func_146978_c(region.x, region.y, region.width, region.height, mouse.x, mouse.y);
+    }
+
+    public void drawTexturedModalRectScalable(int destX, int destY, int destWidth, int destHeight, int srcX, int srcY,
+                                              int srcWidth, int srcHeight) {
+        float f = 0.00390625F; // 1 / 256.0F
+        float f1 = 0.00390625F;
+
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+
+        // Vertex 1: Bottom-Left
+        tessellator.addVertexWithUV(
+            destX,
+            destY + destHeight,
+            this.zLevel,
+            (double) (srcX * f),
+            (double) ((srcY + srcHeight) * f1));
+
+        // Vertex 2: Bottom-Right
+        tessellator.addVertexWithUV(
+            destX + destWidth,
+            destY + destHeight,
+            this.zLevel,
+            (double) ((srcX + srcWidth) * f),
+            (double) ((srcY + srcHeight) * f1));
+
+        // Vertex 3: Top-Right
+        tessellator.addVertexWithUV(
+            destX + destWidth,
+            destY,
+            this.zLevel,
+            (double) ((srcX + srcWidth) * f),
+            (double) (srcY * f1));
+
+        // Vertex 4: Top-Left
+        tessellator.addVertexWithUV(destX, destY, this.zLevel, (double) (srcX * f), (double) (srcY * f1));
+
+        tessellator.draw();
     }
 
     public void drawTooltip(List<String> lines, int x, int y) {
@@ -242,8 +286,7 @@ public abstract class GuiContainerExtended extends GuiContainer
     }
 
     @Override
-    public void putButtonAction(int buttonId,
-        IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer> action) {
+    public void putButtonAction(int buttonId, IButtonActionClient<GuiContainerExtended<T>, T> action) {
         buttonActions.put(buttonId, action);
     }
 

@@ -5,25 +5,32 @@ import static ruiseki.okcore.helper.GuiHelpers.getSlotUnderMouse;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
-import java.util.Map;
 
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.client.IContainerEventHandler;
+import ruiseki.okcore.client.gui.IGuiEventListener;
+import ruiseki.okcore.client.gui.IRenderable;
+import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.event.input.IGuiInputHandle;
+import ruiseki.okcore.event.input.KeyboardInputEvent;
+import ruiseki.okcore.event.input.MouseInputEvent;
 import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionClient;
-import ruiseki.okcore.inventory.container.button.IButtonClickAcceptorClient;
 import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.network.packet.PacketButtonClick;
 
@@ -33,46 +40,49 @@ import ruiseki.okcore.network.packet.PacketButtonClick;
  * @author rubensworks
  */
 public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer> extends GuiContainer
-    implements IButtonClickAcceptorClient<GuiContainerExtended<T>, T>, IValueNotifiable {
+    implements IValueNotifiable, IRenderable, IContainerEventHandler, IGuiInputHandle {
 
-    private final Map<Integer, IButtonActionClient<GuiContainerExtended<T>, T>> buttonActions = Maps.newHashMap();
+    private boolean keyHandled;
+    private boolean mouseHandled;
 
-    protected ExtendedInventoryContainer container;
+    protected T container;
     protected ResourceLocation texture;
     protected int offsetX = 0;
     protected int offsetY = 0;
+
+    @Nullable
+    private IGuiEventListener focused;
+    private boolean isDragging;
+
+    private final List<IGuiEventListener> children = Lists.newArrayList();
+    public final List<IRenderable> renderables = Lists.newArrayList();
 
     /**
      * Make a new instance.
      *
      * @param container The container to make the GUI for.
      */
-    public GuiContainerExtended(ExtendedInventoryContainer container) {
+    public GuiContainerExtended(T container) {
         super(container);
         container.setGuiValueListener(this);
         this.container = container;
-        this.texture = constructResourceLocation();
+        this.texture = constructGuiTexture();
     }
 
-    @SuppressWarnings("unchecked")
     protected T getContainer() {
-        return (T) this.container;
+        return this.container;
     }
 
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(
-            container.getGuiProvider()
-                .getModGui()
-                .getModId(),
-            getGuiTexture());
-    }
+    protected abstract ResourceLocation constructGuiTexture();
 
     /**
      * Get the texture path of the GUI.
      *
      * @return The path of the GUI for this block.
      */
-    public abstract String getGuiTexture();
+    public ResourceLocation getGuiTexture() {
+        return this.texture;
+    }
 
     @Override
     public void initGui() {
@@ -90,6 +100,14 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     }
 
     @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        super.drawScreen(mouseX, mouseY, partialTicks);
+        for (IRenderable renderable : this.renderables) {
+            renderable.drawScreen(mouseX, mouseY, partialTicks);
+        }
+    }
+
+    @Override
     protected void drawGuiContainerBackgroundLayer(float f, int x, int y) {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         mc.renderEngine.bindTexture(texture);
@@ -97,11 +115,6 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     }
 
     public boolean isPointInRegion(int left, int top, int right, int bottom, int pointX, int pointY) {
-        return func_146978_c(left, top, right, bottom, pointX, pointY);
-    }
-
-    @Override
-    public boolean func_146978_c(int left, int top, int right, int bottom, int pointX, int pointY) {
         int k1 = this.guiLeft;
         int l1 = this.guiTop;
         pointX -= k1;
@@ -109,8 +122,13 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         return pointX >= left && pointX < left + right && pointY >= top && pointY < top + bottom;
     }
 
+    @Override
+    public final boolean func_146978_c(int left, int top, int right, int bottom, int pointX, int pointY) {
+        return isPointInRegion(left, top, right, bottom, pointX, pointY);
+    }
+
     public boolean isPointInRegion(Rectangle region, Point mouse) {
-        return func_146978_c(region.x, region.y, region.width, region.height, mouse.x, mouse.y);
+        return isPointInRegion(region.x, region.y, region.width, region.height, mouse.x, mouse.y);
     }
 
     public void drawTexturedModalRectScalable(int destX, int destY, int destWidth, int destHeight, int srcX, int srcY,
@@ -264,43 +282,27 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         itemRender.zLevel = 0.0F;
     }
 
-    @Override
-    protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long time) {
-        Slot slot = getSlotUnderMouse(this);
-        if (mouseButton == 1 && slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {
-            return;
-        }
-        super.mouseClickMove(mouseX, mouseY, mouseButton, time);
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        if (requiresAction(button.id)) {
-            onButtonClick(button.id);
-        }
-        if (getContainer().requiresAction(button.id)) {
-            getContainer().onButtonClick(button.id);
-            OKCore._instance.getPacketHandler()
-                .sendToServer(new PacketButtonClick(button.id));
-        }
-    }
-
-    @Override
-    public void putButtonAction(int buttonId, IButtonActionClient<GuiContainerExtended<T>, T> action) {
-        buttonActions.put(buttonId, action);
-    }
-
-    @Override
-    public boolean requiresAction(int buttonId) {
-        return buttonActions.containsKey(buttonId);
-    }
-
-    @Override
-    public void onButtonClick(int buttonId) {
-        IButtonActionClient<GuiContainerExtended<T>, T> action;
-        if ((action = buttonActions.get(buttonId)) != null) {
-            action.onAction(buttonId, this, getContainer());
-        }
+    /**
+     * Call this to create a button pressable callback so that the container is notified as well,
+     * assuming it has a corresponding registered
+     * {@link ruiseki.okcore.inventory.container.button.IContainerButtonAction} registered in the container
+     * by the same button id.
+     *
+     * @param buttonId        The button id.
+     * @param clientPressable An optional pressable that should be called client-side.
+     * @return The created pressable.
+     */
+    protected GuiButtonExtended.OnPress createServerPressable(String buttonId,
+        @Nullable GuiButtonExtended.OnPress clientPressable) {
+        return (button) -> {
+            if (clientPressable != null) {
+                clientPressable.onPress(button);
+            }
+            if (getContainer().onButtonClick(buttonId)) {
+                OKCore._instance.getPacketHandler()
+                    .sendToServer(new PacketButtonClick(buttonId));
+            }
+        };
     }
 
     @Override
@@ -343,5 +345,128 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
 
     protected boolean hasClickedOutside(int mouseX, int mouseY, int guiLeft, int guiTop) {
         return mouseX < guiLeft || mouseY < guiTop || mouseX >= guiLeft + this.xSize || mouseY >= guiTop + this.ySize;
+    }
+
+    @Override
+    protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long time) {
+        Slot slot = getSlotUnderMouse(this);
+        if (mouseButton == 1 && slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {
+            return;
+        }
+        super.mouseClickMove(mouseX, mouseY, mouseButton, time);
+    }
+
+    protected <T extends IGuiEventListener & IRenderable> T addRenderableWidget(T widget) {
+        this.renderables.add(widget);
+        return this.addWidget(widget);
+    }
+
+    protected <T extends IRenderable> T addRenderableOnly(T widget) {
+        this.renderables.add(widget);
+        return widget;
+    }
+
+    protected <T extends IGuiEventListener> T addWidget(T widget) {
+        this.children.add(widget);
+        return widget;
+    }
+
+    protected void removeWidget(IGuiEventListener widget) {
+        if (widget instanceof IRenderable) {
+            this.renderables.remove(widget);
+        }
+
+        this.children.remove(widget);
+    }
+
+    protected void clearWidgets() {
+        this.renderables.clear();
+        this.children.clear();
+    }
+
+    @Override
+    public List<IGuiEventListener> getChildren() {
+        return children;
+    }
+
+    public final boolean isDragging() {
+        return this.isDragging;
+    }
+
+    public final void setDragging(boolean dragging) {
+        this.isDragging = dragging;
+    }
+
+    @Nullable
+    public IGuiEventListener getFocused() {
+        return this.focused;
+    }
+
+    public void setFocused(@Nullable IGuiEventListener focused) {
+        if (this.focused != null) {
+            this.focused.setFocused(false);
+        }
+
+        if (focused != null) {
+            focused.setFocused(true);
+        }
+
+        this.focused = focused;
+    }
+
+    /**
+     * Delegates mouse and keyboard input.
+     */
+    @Override
+    public void handleInput() {
+        if (Mouse.isCreated()) {
+            while (Mouse.next()) {
+                this.mouseHandled = false;
+                if (MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Pre(this))) continue;
+                this.handleMouseInput();
+                if (this.equals(this.mc.currentScreen) && !this.mouseHandled)
+                    MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Post(this));
+            }
+        }
+
+        if (Keyboard.isCreated()) {
+            while (Keyboard.next()) {
+                this.keyHandled = false;
+                if (MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Pre(this))) continue;
+                this.handleKeyboardInput();
+                if (this.equals(this.mc.currentScreen) && !this.keyHandled)
+                    MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(this));
+            }
+        }
+    }
+
+    @Override
+    public void setMouseHandled(boolean mouseHandled) {
+        this.mouseHandled = mouseHandled;
+    }
+
+    @Override
+    public boolean isMouseHandled() {
+        return mouseHandled;
+    }
+
+    @Override
+    public void setKeyHandled(boolean keyHandled) {
+        this.keyHandled = keyHandled;
+    }
+
+    @Override
+    public boolean isKeyHandled() {
+        return keyHandled;
+    }
+
+    @Override
+    public void handleKeyboardInput() {
+        super.handleKeyboardInput();
+    }
+
+    @Override
+    public void handleMouseInput() {
+        super.handleMouseInput();
     }
 }

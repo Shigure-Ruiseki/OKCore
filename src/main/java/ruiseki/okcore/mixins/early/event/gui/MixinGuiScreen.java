@@ -11,6 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+
 import ruiseki.okcore.event.gui.BackgroundDrawnEvent;
 import ruiseki.okcore.event.input.IGuiInputHandle;
 import ruiseki.okcore.event.input.KeyboardInputEvent;
@@ -25,47 +28,34 @@ public abstract class MixinGuiScreen {
     @Unique
     private boolean okcore$mouseHandled;
 
-    @Inject(
+    @WrapOperation(
         method = "handleInput",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiScreen;handleMouseInput()V"),
-        cancellable = true)
-    private void okcore$preMouseInput(CallbackInfo ci) {
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiScreen;handleMouseInput()V"))
+    private void okcore$wrapMouseInput(GuiScreen instance, Operation<Void> original) {
         this.okcore$mouseHandled = false;
         if (MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Pre(okcore$getThis()))) {
-            ci.cancel();
+            return;
         }
-    }
 
-    @Inject(
-        method = "handleInput",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/GuiScreen;handleMouseInput()V",
-            shift = At.Shift.AFTER))
-    private void okcore$postMouseInput(CallbackInfo ci) {
+        original.call(instance);
+
         if (okcore$getThis().equals(okcore$getThis().mc.currentScreen) && !this.okcoregui$isMouseHandled()) {
             MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Post(okcore$getThis()));
         }
     }
 
-    @Inject(
+    @WrapOperation(
         method = "handleInput",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiScreen;handleKeyboardInput()V"),
-        cancellable = true)
-    private void okcore$preKeyInput(CallbackInfo ci) {
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiScreen;handleKeyboardInput()V"))
+    private void okcore$wrapKeyInput(GuiScreen instance, Operation<Void> original) {
         this.okcore$keyHandled = false;
         if (MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Pre(okcore$getThis()))) {
-            ci.cancel();
+            return;
         }
-    }
 
-    @Inject(
-        method = "handleInput",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/GuiScreen;handleKeyboardInput()V",
-            shift = At.Shift.AFTER))
-    private void okcore$postKeyInput(CallbackInfo ci) {
+        original.call(instance);
+
+        // Post Event
         if (okcore$getThis().equals(okcore$getThis().mc.currentScreen) && !this.okcoregui$isKeyHandled()) {
             MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Post(okcore$getThis()));
         }

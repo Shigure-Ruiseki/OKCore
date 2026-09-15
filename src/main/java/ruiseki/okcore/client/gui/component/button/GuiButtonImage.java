@@ -1,7 +1,5 @@
 package ruiseki.okcore.client.gui.component.button;
 
-import net.minecraft.client.Minecraft;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.image.IImage;
@@ -20,7 +18,6 @@ public class GuiButtonImage extends GuiButtonExtended {
     /**
      * Make a new instance.
      *
-     * @param id         The ID.
      * @param x          X
      * @param y          Y
      * @param width      Width
@@ -31,9 +28,9 @@ public class GuiButtonImage extends GuiButtonExtended {
      * @param onPress    The click handler.
      * @param background If the button background should be rendered.
      */
-    public GuiButtonImage(int id, int x, int y, int width, int height, IImage[] images, int offsetX, int offsetY,
+    public GuiButtonImage(int x, int y, int width, int height, IImage[] images, int offsetX, int offsetY,
         OnPress onPress, boolean background) {
-        super(id, x, y, width, height, "", onPress, background);
+        super(x, y, width, height, "", onPress, background);
         this.images = images != null ? images : new IImage[0];
         this.offsetX = offsetX;
         this.offsetY = offsetY;
@@ -42,15 +39,13 @@ public class GuiButtonImage extends GuiButtonExtended {
     /**
      * Make a new instance.
      *
-     * @param id      The ID.
      * @param x       X
      * @param y       Y
      * @param images  The images to render
      * @param onPress The click handler.
      */
-    public GuiButtonImage(int id, int x, int y, IImage[] images, OnPress onPress) {
+    public GuiButtonImage(int x, int y, IImage[] images, OnPress onPress) {
         this(
-            id,
             x,
             y,
             (images != null && images.length > 0 && images[0] != null) ? images[0].getWidth() : 0,
@@ -65,7 +60,6 @@ public class GuiButtonImage extends GuiButtonExtended {
     /**
      * Make a new instance.
      *
-     * @param id         The ID.
      * @param x          X
      * @param y          Y
      * @param width      Width
@@ -76,23 +70,21 @@ public class GuiButtonImage extends GuiButtonExtended {
      * @param onPress    The click handler.
      * @param background If the button background should be rendered.
      */
-    public GuiButtonImage(int id, int x, int y, int width, int height, IImage image, int offsetX, int offsetY,
-        OnPress onPress, boolean background) {
-        this(id, x, y, width, height, new IImage[] { image }, offsetX, offsetY, onPress, background);
+    public GuiButtonImage(int x, int y, int width, int height, IImage image, int offsetX, int offsetY, OnPress onPress,
+        boolean background) {
+        this(x, y, width, height, new IImage[] { image }, offsetX, offsetY, onPress, background);
     }
 
     /**
      * Make a new instance.
      *
-     * @param id      The ID.
      * @param x       X
      * @param y       Y
      * @param image   The image to render
      * @param onPress The click handler.
      */
-    public GuiButtonImage(int id, int x, int y, IImage image, OnPress onPress) {
+    public GuiButtonImage(int x, int y, IImage image, OnPress onPress) {
         this(
-            id,
             x,
             y,
             image != null ? image.getWidth() : 0,
@@ -105,7 +97,7 @@ public class GuiButtonImage extends GuiButtonExtended {
     }
 
     @Override
-    protected void drawButtonInner(Minecraft minecraft, int mouseX, int mouseY, boolean mouseOver) {
+    protected void drawButtonInner(int mouseX, int mouseY, boolean mouseOver) {
         if (this.images != null) {
             for (IImage image : this.images) {
                 if (image != null) {

@@ -1,7 +1,8 @@
 package ruiseki.okcore.client.gui.container;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.container.InventoryContainerConfigurable;
 
 /**
@@ -22,14 +23,14 @@ public abstract class GuiContainerConfigurable<C extends InventoryContainerConfi
     }
 
     @Override
-    public String getGuiTexture() {
-        return getContainer().getGuiProvider()
-            .getModGui()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-            + getContainer().getGuiProvider()
+    public ResourceLocation getGuiTexture() {
+        return new ResourceLocation(
+            getContainer().getGuiProvider()
+                .getModGui()
+                .getModId(),
+            getContainer().getGuiProvider()
                 .getConfig()
-                .getNamedId()
-            + ".png";
+                .getNamedId() + ".png");
     }
 
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {

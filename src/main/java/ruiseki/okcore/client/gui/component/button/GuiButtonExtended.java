@@ -5,104 +5,88 @@ import net.minecraft.client.gui.GuiButton;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.client.gui.IGuiEventListener;
+import ruiseki.okcore.client.gui.IRenderable;
+import ruiseki.okcore.client.gui.component.IWidgetEventListener;
+import ruiseki.okcore.client.gui.component.IWidgetRenderable;
+import ruiseki.okcore.helper.RenderHelpers;
 
 /**
- * An extended {@link net.minecraft.client.gui.GuiButton} which is better resizable.
+ * An extended {@link net.minecraft.client.gui.GuiButton} which is better resizable
+ * and implements {@link IGuiEventListener} for enhanced event handling.
  *
  * @author rubensworks
- *
  */
-public abstract class GuiButtonExtended extends GuiButton {
+@SideOnly(Side.CLIENT)
+public abstract class GuiButtonExtended extends GuiButton
+    implements IWidgetEventListener, IGuiEventListener, IWidgetRenderable, IRenderable {
 
     private final boolean background;
     protected final OnPress onPress;
+    private boolean focused;
 
     /**
-     * Make a new instance.
-     *
-     * @param id         The ID.
-     * @param x          X
-     * @param y          Y
-     * @param width      Width
-     * @param height     Height
-     * @param string     The string to print.
-     * @param onPress    The click action handler.
-     * @param background If the background of the button should be rendered.
+     * @param x          X position
+     * @param y          Y position
+     * @param width      Width of the button
+     * @param height     Height of the button
+     * @param string     The string to print
+     * @param onPress    The click action handler
+     * @param background If the background of the button should be rendered
      */
-    public GuiButtonExtended(int id, int x, int y, int width, int height, String string, OnPress onPress,
-        boolean background) {
-        super(id, x, y, width, height, string);
+    public GuiButtonExtended(int x, int y, int width, int height, String string, OnPress onPress, boolean background) {
+        super(0, x, y, width, height, string);
         this.background = background;
         this.onPress = onPress;
     }
 
-    protected void drawBackground(Minecraft minecraft, int hoverState) {
-        minecraft.renderEngine.bindTexture(buttonTextures);
-        GlStateManager.color(1, 1, 1, 1);
-
-        int halfW = this.width / 2;
-        int halfH = this.height / 2;
-
-        // Top Left
-        drawTexturedModalRect(this.xPosition, this.yPosition, 0, 46 + hoverState * 20, halfW, halfH);
-        // Top Right
-        drawTexturedModalRect(this.xPosition + halfW, this.yPosition, 200 - halfW, 46 + hoverState * 20, halfW, halfH);
-        // Bottom Left
+    protected void drawBackground() {
+        RenderHelpers.bindTexture(buttonTextures);
+        int textureY = getTextureY();
+        drawTexturedModalRect(getX(), getY(), 0, textureY, width / 2, height / 2);// Top Left
+        drawTexturedModalRect(getX() + width / 2, getY(), 200 - width / 2, textureY, width / 2, height / 2);// Top Right
+        drawTexturedModalRect(getX(), getY() + height / 2, 0, textureY + 20 - height / 2, width / 2, height / 2);// Bottom
+                                                                                                                 // Left
         drawTexturedModalRect(
-            this.xPosition,
-            this.yPosition + halfH,
-            0,
-            46 + hoverState * 20 + 20 - halfH,
-            halfW,
-            halfH);
-        // Bottom Right
-        drawTexturedModalRect(
-            this.xPosition + halfW,
-            this.yPosition + halfH,
-            200 - halfW,
-            46 + hoverState * 20 + 20 - halfH,
-            halfW,
-            halfH);
+            getX() + width / 2,
+            getY() + height / 2,
+            200 - width / 2,
+            textureY + 20 - height / 2,
+            width / 2,
+            height / 2);// Bottom Right
     }
 
     @Override
     public void drawButton(Minecraft minecraft, int mouseX, int mouseY) {
+        drawScreen(mouseX, mouseY, 0);
+    }
+
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
-            this.field_146123_n = mouseX >= this.xPosition && mouseY >= this.yPosition
-                && mouseX < this.xPosition + this.width
-                && mouseY < this.yPosition + this.height;
-
-            int hoverState = this.getHoverState(this.field_146123_n);
-
-            if (this.background) {
-                this.drawBackground(minecraft, hoverState);
-            }
-
-            this.drawButtonInner(minecraft, mouseX, mouseY, this.field_146123_n);
-            this.mouseDragged(minecraft, mouseX, mouseY);
+            this.field_146123_n = mouseX >= this.getX() && mouseY >= this.getY()
+                && mouseX < this.getX() + this.width
+                && mouseY < this.getY() + this.height;
+            this.drawWidget(mouseX, mouseY, partialTicks);
         }
     }
 
     @Override
-    public boolean mousePressed(Minecraft minecraft, int mouseX, int mouseY) {
-        if (super.mousePressed(minecraft, mouseX, mouseY)) {
-            this.func_146113_a(minecraft.getSoundHandler());
-
-            // Triggers callback
-            this.onClick(mouseX, mouseY);
-            return true;
-        }
-        return false;
-    }
-
-    public void onClick(int mouseX, int mouseY) {
-        if (this.onPress != null) {
-            this.onPress.onPress(this);
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
+        if (this.visible) {
+            if (this.background) {
+                this.drawBackground();
+            }
+            this.drawButtonInner(mouseX, mouseY, this.field_146123_n);
         }
     }
 
-    protected abstract void drawButtonInner(Minecraft minecraft, int mouseX, int mouseY, boolean mouseOver);
+    protected abstract void drawButtonInner(int mouseX, int mouseY, boolean mouseOver);
+
+    @Override
+    public void onClick(double mouseX, double mouseY) {
+        this.onPress();
+    }
 
     public boolean isHovered() {
         return this.field_146123_n;
@@ -112,9 +96,138 @@ public abstract class GuiButtonExtended extends GuiButton {
         return this.background;
     }
 
+    public void onPress() {
+        if (this.enabled) {
+            this.onPress.onPress(this);
+        }
+    }
+
+    protected int getYImage() {
+        int i = 1;
+        if (!this.enabled) {
+            i = 0;
+        } else if (this.isHoveredOrFocused()) {
+            i = 2;
+        }
+
+        return i;
+    }
+
+    protected int getTextureY() { // Copy from AbstractButton
+        int i = 1;
+        if (!this.enabled) {
+            i = 0;
+        } else if (this.isHoveredOrFocused()) {
+            i = 2;
+        }
+
+        return 46 + i * 20;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.enabled && this.visible) {
+            if (this.isValidClickButton(button)) {
+                boolean flag = this.isMouseOver(mouseX, mouseY);
+                if (flag) {
+                    this.func_146113_a(
+                        Minecraft.getMinecraft()
+                            .getSoundHandler());
+                    this.onClick(mouseX, mouseY);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (this.isValidClickButton(button)) {
+            this.onRelease(mouseX, mouseY);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean isValidClickButton(int button) {
+        return button == 0;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.isValidClickButton(button)) {
+            this.onDrag(mouseX, mouseY, dragX, dragY);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return this.visible && mouseX >= this.xPosition
+            && mouseY >= this.yPosition
+            && mouseX < this.xPosition + this.width
+            && mouseY < this.yPosition + this.height;
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        this.focused = focused;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return this.focused;
+    }
+
+    public boolean isHoveredOrFocused() {
+        return this.isHovered() || this.isFocused();
+    }
+
+    @Override
+    public int getX() {
+        return xPosition;
+    }
+
+    @Override
+    public int getY() {
+        return yPosition;
+    }
+
+    @Override
+    public void setX(int x) {
+        xPosition = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        yPosition = y;
+    }
+
     @SideOnly(Side.CLIENT)
     public interface OnPress {
 
         void onPress(GuiButtonExtended button);
+    }
+
+    @Override
+    @Deprecated
+    protected final void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
+
+    }
+
+    @Override
+    @Deprecated
+    public final void mouseReleased(int mouseX, int mouseY) {
+
+    }
+
+    @Override
+    @Deprecated
+    public final boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+        return false;
     }
 }

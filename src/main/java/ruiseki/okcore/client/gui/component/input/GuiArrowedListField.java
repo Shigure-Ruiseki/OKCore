@@ -2,7 +2,6 @@ package ruiseki.okcore.client.gui.component.input;
 
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
@@ -22,14 +21,14 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     private int activeElement = -1;
     private IInputListener listener;
 
-    public GuiArrowedListField(int componentId, FontRenderer fontrenderer, int x, int y, int width, int height,
-        boolean arrows, boolean background, List<E> elements) {
-        super(componentId, fontrenderer, x, y, width, height, background);
+    public GuiArrowedListField(FontRenderer fontrenderer, int x, int y, int width, int height, boolean arrows,
+        boolean background, List<E> elements) {
+        super(fontrenderer, x, y, width, height, background);
         this.arrows = arrows;
 
         if (this.arrows) {
-            this.arrowLeft = new GuiButtonArrow(0, x, y - 1, GuiButtonArrow.Direction.WEST, btn -> decrease());
-            this.arrowRight = new GuiButtonArrow(1, x + width, y - 1, GuiButtonArrow.Direction.EAST, btn -> increase());
+            this.arrowLeft = new GuiButtonArrow(x, y - 1, btn -> decrease(), GuiButtonArrow.Direction.WEST);
+            this.arrowRight = new GuiButtonArrow(x + width, y - 1, btn -> increase(), GuiButtonArrow.Direction.EAST);
             this.arrowRight.xPosition -= this.arrowRight.width;
         }
         setEnableBackgroundDrawing(true);
@@ -81,16 +80,16 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     }
 
     @Override
-    public void drawTextBox(Minecraft minecraft, int mouseX, int mouseY) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         int offsetX = 0;
         if (this.arrows) {
-            if (this.arrowLeft != null) this.arrowLeft.drawButton(minecraft, mouseX, mouseY);
-            if (this.arrowRight != null) this.arrowRight.drawButton(minecraft, mouseX, mouseY);
+            if (this.arrowLeft != null) this.arrowLeft.drawScreen(mouseX, mouseY, partialTicks);
+            if (this.arrowRight != null) this.arrowRight.drawScreen(mouseX, mouseY, partialTicks);
             offsetX = this.arrowLeft != null ? this.arrowLeft.width : 0;
             this.xPosition += offsetX + 1;
             this.width -= offsetX * 2;
         }
-        super.drawTextBox(minecraft, mouseX, mouseY);
+        super.drawWidget(mouseX, mouseY, partialTicks);
         if (this.arrows) {
             this.xPosition -= offsetX + 1;
             this.width += offsetX * 2;
@@ -107,5 +106,12 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
         if (this.elements == null || this.elements.isEmpty()) return;
         int prevIndex = (this.activeElement <= 0) ? this.elements.size() - 1 : this.activeElement - 1;
         setActiveElement(prevIndex);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return arrowLeft.mouseClicked(mouseX, mouseY, mouseButton)
+            || arrowRight.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 }

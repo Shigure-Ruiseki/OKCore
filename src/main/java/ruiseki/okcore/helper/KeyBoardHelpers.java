@@ -31,4 +31,20 @@ public class KeyBoardHelpers {
     public static boolean isAltKeyDown() {
         return Keyboard.isKeyDown(56) || Keyboard.isKeyDown(184);
     }
+
+    public static boolean isCut(int keyCode) {
+        return keyCode == 88 && isCtrlKeyDown() && !isShiftKeyDown() && !isAltKeyDown();
+    }
+
+    public static boolean isPaste(int keyCode) {
+        return keyCode == 86 && isCtrlKeyDown() && !isShiftKeyDown() && !isAltKeyDown();
+    }
+
+    public static boolean isCopy(int keyCode) {
+        return keyCode == 67 && isCtrlKeyDown() && !isShiftKeyDown() && !isAltKeyDown();
+    }
+
+    public static boolean isSelectAll(int keyCode) {
+        return keyCode == 65 && isCtrlKeyDown() && !isShiftKeyDown() && !isAltKeyDown();
+    }
 }

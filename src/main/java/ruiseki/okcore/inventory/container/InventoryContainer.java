@@ -23,8 +23,8 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.inventory.IValueNotifier;
-import ruiseki.okcore.inventory.container.button.IButtonActionServer;
-import ruiseki.okcore.inventory.container.button.IButtonClickAcceptorServer;
+import ruiseki.okcore.inventory.container.button.IContainerButtonAction;
+import ruiseki.okcore.inventory.container.button.IContainerButtonClickAcceptorServer;
 import ruiseki.okcore.inventory.slot.SlotArmor;
 import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.network.packet.PacketValueNotify;
@@ -35,11 +35,11 @@ import ruiseki.okcore.network.packet.PacketValueNotify;
  * @author rubensworks
  */
 public abstract class InventoryContainer extends Container
-    implements IButtonClickAcceptorServer<InventoryContainer>, IValueNotifier, IValueNotifiable {
+    implements IValueNotifier, IValueNotifiable, IContainerButtonClickAcceptorServer<InventoryContainer> {
 
     protected static final int ITEMBOX = 18;
 
-    private final Map<Integer, IButtonActionServer<InventoryContainer>> buttonActions = Maps.newHashMap();
+    private final Map<String, IContainerButtonAction<InventoryContainer>> buttonActions = Maps.newHashMap();
     private final Map<Integer, NBTTagCompound> values = Maps.newHashMap();
     private final List<SyncedGuiVariable<?>> syncedGuiVariables = Lists.newArrayList();
     private int nextValueId = 0;
@@ -124,6 +124,7 @@ public abstract class InventoryContainer extends Container
     protected void addInventory(IInventory inventory, int indexOffset, int offsetX, int offsetY, int rows, int cols) {
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
+                // Slot params: id, x-coord, y-coord (coords are relative to gui box)
                 addSlotToContainer(
                     createNewSlot(inventory, x + y * cols + indexOffset, offsetX + x * ITEMBOX, offsetY + y * ITEMBOX));
             }
@@ -284,6 +285,11 @@ public abstract class InventoryContainer extends Container
         return successful;
     }
 
+    /**
+     * Get the inventory of the player for which this container is instantiated.
+     * 
+     * @return The player inventory.
+     */
     public IInventory getPlayerIInventory() {
         return playerIInventory;
     }
@@ -347,13 +353,14 @@ public abstract class InventoryContainer extends Container
                             remainingCount -= calculatedStack.stackSize - currentSlotCount;
                             targetSlot.putStack(calculatedStack);
 
+                            // --- Added ---
                             if (targetSlot instanceof SlotExtended && ((SlotExtended) targetSlot).isPhantom()) {
                                 phantomCount += calculatedStack.stackSize - currentSlotCount;
                             }
                         }
                     }
 
-                    originalHeld.stackSize = remainingCount + phantomCount;
+                    originalHeld.stackSize = remainingCount + phantomCount; // Changed
                     if (originalHeld.stackSize <= 0) {
                         inventoryplayer.setItemStack(null);
                     } else {
@@ -369,9 +376,10 @@ public abstract class InventoryContainer extends Container
         } else if (this.dragEvent != 0) {
             this.func_94533_d();
             return null;
-        } else if (slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {
+        } else if (slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {// Phantom slot logic added
             return slotClickPhantom(slot, clickedButton, mode, player);
         } else {
+            // All other cases are delegated to the original code
             return super.slotClick(slotId, clickedButton, mode, player);
         }
     }
@@ -459,21 +467,18 @@ public abstract class InventoryContainer extends Container
     }
 
     @Override
-    public void putButtonAction(int buttonId, IButtonActionServer<InventoryContainer> action) {
+    public void putButtonAction(String buttonId, IContainerButtonAction<InventoryContainer> action) {
         buttonActions.put(buttonId, action);
     }
 
     @Override
-    public boolean requiresAction(int buttonId) {
-        return buttonActions.containsKey(buttonId);
-    }
-
-    @Override
-    public void onButtonClick(int buttonId) {
-        IButtonActionServer<InventoryContainer> action;
+    public boolean onButtonClick(String buttonId) {
+        IContainerButtonAction<InventoryContainer> action;
         if ((action = buttonActions.get(buttonId)) != null) {
             action.onAction(buttonId, this);
+            return true;
         }
+        return false;
     }
 
     protected int getNextValueId() {
@@ -515,6 +520,18 @@ public abstract class InventoryContainer extends Container
         }
     }
 
+    /**
+     * Register the given variable for automatically sychronizing between client and server.
+     *
+     * This method should be called in the constructor of a container,
+     * and the resulting supplier should be stored.
+     * This resulting supplier can be called at any time by the client to lookup values.
+     *
+     * @param clazz               The class of the variable to sync.
+     * @param serverValueSupplier A supplier for the server-side variable value.
+     * @param <T>                 The variable type.
+     * @return A supplier that can be called for retrieving the value.
+     */
     public <T> Supplier<T> registerSyncedVariable(Class<T> clazz, Supplier<T> serverValueSupplier) {
         SyncedGuiVariable<T> variable = new SyncedGuiVariable<>(this, clazz, serverValueSupplier);
         this.syncedGuiVariables.add(variable);

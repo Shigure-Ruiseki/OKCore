@@ -1,10 +1,8 @@
 package ruiseki.okcore.client.gui.component.input;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
-import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -21,19 +19,14 @@ public class GuiNumberField extends GuiTextFieldExtended {
     private int maxValue = Integer.MAX_VALUE;
     private boolean isEnabled = true;
 
-    public GuiNumberField(int componentId, FontRenderer fontrenderer, int x, int y, int width, int height,
-        boolean arrows, boolean background) {
-        super(componentId, fontrenderer, x, y, width, height, background);
+    public GuiNumberField(FontRenderer fontrenderer, int x, int y, int width, int height, boolean arrows,
+        boolean background) {
+        super(fontrenderer, x, y, width, height, background);
         this.arrows = arrows;
 
         if (this.arrows) {
-            this.arrowUp = new GuiButtonArrow(0, x, y + height / 2, GuiButtonArrow.Direction.NORTH, btn -> increase());
-            this.arrowDown = new GuiButtonArrow(
-                1,
-                x,
-                y + height / 2,
-                GuiButtonArrow.Direction.SOUTH,
-                btn -> decrease());
+            this.arrowUp = new GuiButtonArrow(x, y + height / 2, btn -> increase(), GuiButtonArrow.Direction.NORTH);
+            this.arrowDown = new GuiButtonArrow(x, y + height / 2, btn -> decrease(), GuiButtonArrow.Direction.SOUTH);
             this.arrowUp.yPosition -= this.arrowUp.height;
         }
         setEnableBackgroundDrawing(true);
@@ -97,17 +90,16 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     @Override
-    public void drawTextBox(Minecraft minecraft, int mouseX, int mouseY) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         int offsetX = 0;
-        GlStateManager.color(1, 1, 1, 1);
         if (this.arrows) {
-            if (this.arrowUp != null) this.arrowUp.drawButton(minecraft, mouseX, mouseY);
-            if (this.arrowDown != null) this.arrowDown.drawButton(minecraft, mouseX, mouseY);
+            if (this.arrowUp != null) this.arrowUp.drawScreen(mouseX, mouseY, partialTicks);
+            if (this.arrowDown != null) this.arrowDown.drawScreen(mouseX, mouseY, partialTicks);
             offsetX = this.arrowUp != null ? this.arrowUp.width : 0;
             this.xPosition += offsetX;
             this.width -= offsetX;
         }
-        super.drawTextBox(minecraft, mouseX, mouseY);
+        super.drawWidget(mouseX, mouseY, partialTicks);
         if (this.arrows) {
             this.xPosition -= offsetX;
             this.width += offsetX;
@@ -147,22 +139,24 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (this.isEnabled) {
-            super.mouseClicked(mouseX, mouseY, mouseButton);
-            updateArrowsState();
-        }
-    }
-
-    @Override
-    public void setText(String value) {
-        super.setText(value);
+    public boolean charTyped(char typedChar, int keyCode) {
+        boolean ret = super.charTyped(typedChar, keyCode);
         updateArrowsState();
+        return ret;
     }
 
     @Override
-    public boolean textboxKeyTyped(char typedChar, int keyCode) {
-        boolean ret = super.textboxKeyTyped(typedChar, keyCode);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        boolean ret = super.keyPressed(typedChar, keyCode, modifiers);
+        updateArrowsState();
+        return ret;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        boolean ret = arrowUp.mouseClicked(mouseX, mouseY, mouseButton)
+            || arrowDown.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
         updateArrowsState();
         return ret;
     }

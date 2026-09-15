@@ -6,7 +6,7 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.inventory.container.button.IButtonClickAcceptor;
+import ruiseki.okcore.inventory.container.button.IContainerButtonClickAcceptorServer;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -19,13 +19,13 @@ import ruiseki.okcore.network.PacketCodec;
 public class PacketButtonClick extends PacketCodec {
 
     @CodecField
-    private int buttonId;
+    private String buttonId;
 
     public PacketButtonClick() {
 
     }
 
-    public PacketButtonClick(int buttonId) {
+    public PacketButtonClick(String buttonId) {
         this.buttonId = buttonId;
     }
 
@@ -42,8 +42,8 @@ public class PacketButtonClick extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof IButtonClickAcceptor<?>acceptor) {
-            acceptor.onButtonClick(buttonId);
+        if (player.openContainer instanceof IContainerButtonClickAcceptorServer<?>acceptorServer) {
+            acceptorServer.onButtonClick(buttonId);
         }
     }
 

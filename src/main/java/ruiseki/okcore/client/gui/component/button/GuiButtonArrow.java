@@ -1,7 +1,5 @@
 package ruiseki.okcore.client.gui.component.button;
 
-import net.minecraft.client.Minecraft;
-
 import lombok.Getter;
 import ruiseki.okcore.client.gui.image.Image;
 import ruiseki.okcore.client.gui.image.Images;
@@ -20,13 +18,12 @@ public class GuiButtonArrow extends GuiButtonExtended {
     /**
      * Make a new instance.
      *
-     * @param id        The ID.
      * @param x         X
      * @param y         Y
      * @param direction The direction of the arrow to draw.
      */
-    public GuiButtonArrow(int id, int x, int y, GuiButtonArrow.Direction direction, OnPress onPress) {
-        super(id, x, y, direction.width, direction.height, "", onPress, true);
+    public GuiButtonArrow(int x, int y, OnPress onPress, GuiButtonArrow.Direction direction) {
+        super(x, y, direction.width, direction.height, "", onPress, true);
         this.direction = direction;
         this.directionImages = getDirectionImage(direction);
     }
@@ -45,12 +42,12 @@ public class GuiButtonArrow extends GuiButtonExtended {
     }
 
     @Override
-    protected void drawBackground(Minecraft minecraft, int hoverState) {
-        directionImages[hoverState].draw(this, xPosition, yPosition);
+    protected void drawBackground() {
+        directionImages[getYImage()].draw(this, getX(), getY());
     }
 
     @Override
-    protected void drawButtonInner(Minecraft minecraft, int i, int j, boolean mouseOver) {
+    protected void drawButtonInner(int mouseX, int mouseY, boolean mouseOver) {
 
     }
 

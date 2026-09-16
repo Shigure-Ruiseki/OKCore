@@ -18,19 +18,20 @@ public class GuiButtonImage extends GuiButtonExtended {
     /**
      * Make a new instance.
      *
-     * @param x          X
-     * @param y          Y
-     * @param width      Width
-     * @param height     Height
-     * @param images     The images to render. First images are rendered behind later images.
-     * @param offsetX    The x coordinate for the image inside the button.
-     * @param offsetY    The y coordinate for the image inside the button.
-     * @param onPress    The click handler.
-     * @param background If the button background should be rendered.
+     * @param x                X
+     * @param y                Y
+     * @param width            Width
+     * @param height           Height
+     * @param narrationMessage The string to print.
+     * @param onPress          The click handler.
+     * @param images           The images to render. First images are rendered behind later images.
+     * @param background       If the button background should be rendered.
+     * @param offsetX          The x coordinate for the image inside the button.
+     * @param offsetY          The y coordinate for the image inside the button.
      */
-    public GuiButtonImage(int x, int y, int width, int height, IImage[] images, int offsetX, int offsetY,
-        OnPress onPress, boolean background) {
-        super(x, y, width, height, "", onPress, background);
+    public GuiButtonImage(int x, int y, int width, int height, String narrationMessage, OnPress onPress,
+        IImage[] images, boolean background, int offsetX, int offsetY) {
+        super(x, y, width, height, narrationMessage, onPress, background);
         this.images = images != null ? images : new IImage[0];
         this.offsetX = offsetX;
         this.offsetY = offsetY;
@@ -39,84 +40,58 @@ public class GuiButtonImage extends GuiButtonExtended {
     /**
      * Make a new instance.
      *
-     * @param x       X
-     * @param y       Y
-     * @param images  The images to render
-     * @param onPress The click handler.
+     * @param x                X
+     * @param y                Y
+     * @param width            Width
+     * @param height           Height
+     * @param narrationMessage The string to print.
+     * @param pressCallback    A callback for when this button was pressed.
+     * @param background       If the button background should be rendered.
+     * @param image            The image to render
+     * @param offsetX          The x coordinate for the image inside the button.
+     * @param offsetY          The y coordinate for the image inside the button.
      */
-    public GuiButtonImage(int x, int y, IImage[] images, OnPress onPress) {
+    public GuiButtonImage(int x, int y, int width, int height, String narrationMessage, OnPress pressCallback,
+        boolean background, IImage image, int offsetX, int offsetY) {
         this(
             x,
             y,
-            (images != null && images.length > 0 && images[0] != null) ? images[0].getWidth() : 0,
-            (images != null && images.length > 0 && images[0] != null) ? images[0].getHeight() : 0,
-            images,
-            0,
-            0,
-            onPress,
-            false);
+            width,
+            height,
+            narrationMessage,
+            pressCallback,
+            new IImage[] { image },
+            background,
+            offsetX,
+            offsetY);
     }
 
     /**
      * Make a new instance.
      *
-     * @param x          X
-     * @param y          Y
-     * @param width      Width
-     * @param height     Height
-     * @param image      The image to render
-     * @param offsetX    The x coordinate for the image inside the button.
-     * @param offsetY    The y coordinate for the image inside the button.
-     * @param onPress    The click handler.
-     * @param background If the button background should be rendered.
+     * @param x                X
+     * @param y                Y
+     * @param narrationMessage The string to print.
+     * @param pressCallback    A callback for when this button was pressed.
+     * @param image            The image to render
      */
-    public GuiButtonImage(int x, int y, int width, int height, IImage image, int offsetX, int offsetY, OnPress onPress,
-        boolean background) {
-        this(x, y, width, height, new IImage[] { image }, offsetX, offsetY, onPress, background);
-    }
-
-    /**
-     * Make a new instance.
-     *
-     * @param x       X
-     * @param y       Y
-     * @param image   The image to render
-     * @param onPress The click handler.
-     */
-    public GuiButtonImage(int x, int y, IImage image, OnPress onPress) {
-        this(
-            x,
-            y,
-            image != null ? image.getWidth() : 0,
-            image != null ? image.getHeight() : 0,
-            image,
-            0,
-            0,
-            onPress,
-            false);
+    public GuiButtonImage(int x, int y, String narrationMessage, OnPress pressCallback, IImage image) {
+        this(x, y, image.getWidth(), image.getHeight(), narrationMessage, pressCallback, false, image, 0, 0);
     }
 
     @Override
     protected void drawButtonInner(int mouseX, int mouseY, boolean mouseOver) {
-        if (this.images != null) {
-            for (IImage image : this.images) {
-                if (image != null) {
-                    image.draw(this, this.xPosition + this.offsetX, this.yPosition + this.offsetY);
-                }
-            }
+        for (IImage image : this.images) {
+            image.draw(this, getX() + offsetX, getY() + offsetY);
         }
     }
 
     public void setImage(IImage image) {
-        if (this.images == null || this.images.length == 0) {
-            this.images = new IImage[] { image };
-        } else {
-            this.images[0] = image;
-        }
+        this.images[0] = image;
     }
 
     public void setImages(IImage[] images) {
-        this.images = images != null ? images : new IImage[0];
+        this.images = images;
     }
 
     public IImage[] getImages() {

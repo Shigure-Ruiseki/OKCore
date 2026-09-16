@@ -209,14 +209,4 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
     protected int getSearchWidth() {
         return SEARCH_WIDTH;
     }
-
-    @Override
-    protected final void keyTyped(char typedChar, int keyCode) {
-
-    }
-
-    @Override
-    protected final void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-
-    }
 }

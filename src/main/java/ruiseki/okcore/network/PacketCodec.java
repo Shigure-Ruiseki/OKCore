@@ -1,6 +1,5 @@
 package ruiseki.okcore.network;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -12,9 +11,7 @@ import java.util.Set;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTSizeTracker;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ResourceLocation;

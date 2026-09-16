@@ -99,7 +99,7 @@ public class ValueNotifierHelpers {
      * @param value    The unlocalized string
      */
     public static void setValueUnlocalizedString(IValueNotifier notifier, int valueId,
-                                                 LangHelpers.UnlocalizedString value) {
+        LangHelpers.UnlocalizedString value) {
         NBTTagCompound tag = new NBTTagCompound();
         if (value != null) {
             tag.setTag(KEY, value.serializeNBT());
@@ -115,7 +115,7 @@ public class ValueNotifierHelpers {
      * @param values   The unlocalized strings list
      */
     public static void setValueUnlocalizedStringList(IValueNotifier notifier, int valueId,
-                                                     List<LangHelpers.UnlocalizedString> values) {
+        List<LangHelpers.UnlocalizedString> values) {
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagList list = new NBTTagList();
         if (values != null) {
@@ -242,7 +242,7 @@ public class ValueNotifierHelpers {
      */
     @Nullable
     public static List<LangHelpers.UnlocalizedString> getValueUnlocalizedStringList(IValueNotifier notifier,
-                                                                                    int valueId) {
+        int valueId) {
         NBTTagCompound tag = notifier.getValue(valueId);
         if (tag != null) {
             NBTTagList listTag = tag.getTagList(KEY, Constants.NBT.TAG_COMPOUND);

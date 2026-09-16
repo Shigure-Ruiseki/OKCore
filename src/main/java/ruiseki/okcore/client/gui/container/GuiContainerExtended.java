@@ -57,7 +57,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         this.texture = constructGuiTexture();
     }
 
-    protected T getContainer() {
+    public T getContainer() {
         return this.container;
     }
 

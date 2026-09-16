@@ -39,6 +39,19 @@ public class GuiButtonImage extends GuiButtonExtended {
 
     /**
      * Make a new instance.
+     * 
+     * @param x                X
+     * @param y                Y
+     * @param narrationMessage The string to print.
+     * @param pressCallback    A callback for when this button was pressed.
+     * @param images           The images to render
+     */
+    public GuiButtonImage(int x, int y, String narrationMessage, OnPress pressCallback, IImage... images) {
+        this(x, y, images[0].getWidth(), images[0].getHeight(), narrationMessage, pressCallback, images, false, 0, 0);
+    }
+
+    /**
+     * Make a new instance.
      *
      * @param x                X
      * @param y                Y

@@ -281,6 +281,18 @@ public class GuiTextFieldExtended extends GuiTextField
         this.width = width;
     }
 
+    public boolean isEnable() {
+        return isEnabled;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public FontRenderer getFontRenderer() {
+        return field_146211_a;
+    }
+
     @Override
     @Deprecated
     public final void drawTextBox() {

@@ -98,7 +98,8 @@ public class ValueNotifierHelpers {
      * @param valueId  The value id
      * @param values   The unlocalized strings list
      */
-    public static void setValueUnlocalizedStringList(IValueNotifier notifier, int valueId, List<LangHelpers.UnlocalizedString> values) {
+    public static void setValueUnlocalizedStringList(IValueNotifier notifier, int valueId,
+        List<LangHelpers.UnlocalizedString> values) {
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagList list = new NBTTagList();
         if (values != null) {
@@ -205,7 +206,8 @@ public class ValueNotifierHelpers {
      * @return The list of unlocalized strings
      */
     @Nullable
-    public static List<LangHelpers.UnlocalizedString> getValueUnlocalizedStringList(IValueNotifier notifier, int valueId) {
+    public static List<LangHelpers.UnlocalizedString> getValueUnlocalizedStringList(IValueNotifier notifier,
+        int valueId) {
         NBTTagCompound tag = notifier.getValue(valueId);
         if (tag != null) {
             NBTTagList listTag = tag.getTagList(KEY, Constants.NBT.TAG_COMPOUND);

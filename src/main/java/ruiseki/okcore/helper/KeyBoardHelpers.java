@@ -32,6 +32,10 @@ public class KeyBoardHelpers {
         return Keyboard.isKeyDown(56) || Keyboard.isKeyDown(184);
     }
 
+    public static boolean isMetaDown() {
+        return Keyboard.isKeyDown(Keyboard.KEY_LMETA) || Keyboard.isKeyDown(Keyboard.KEY_RMETA);
+    }
+
     public static boolean isCut(int keyCode) {
         return keyCode == 88 && isCtrlKeyDown() && !isShiftKeyDown() && !isAltKeyDown();
     }
@@ -46,5 +50,26 @@ public class KeyBoardHelpers {
 
     public static boolean isSelectAll(int keyCode) {
         return keyCode == 65 && isCtrlKeyDown() && !isShiftKeyDown() && !isAltKeyDown();
+    }
+
+    public static int getModifiers() {
+        int modifiers = 0;
+        if (isShiftKeyDown()) {
+            modifiers |= 1; // Shift mask
+        }
+        if (isCtrlKeyDown()) {
+            modifiers |= 2; // Ctrl mask
+        }
+        if (isAltKeyDown()) {
+            modifiers |= 4; // Alt mask
+        }
+        if (isMetaDown()) {
+            modifiers |= 8; // Cmd/Windows Key mask
+        }
+        return modifiers;
+    }
+
+    public static boolean isValidChar(char c) {
+        return c >= 32 && c != 127 || c == '\b' || c == '\r' || c == '\n' || c == '\t';
     }
 }

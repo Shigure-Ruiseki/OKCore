@@ -3,6 +3,7 @@ package ruiseki.okcore.helper;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -25,7 +26,7 @@ public class ValueNotifierHelpers {
     /**
      * Set the NBT value
      */
-    public static void setValue(IValueNotifier notifier, int valueId, NBTTagCompound value) {
+    public static void setValue(IValueNotifier notifier, int valueId, NBTBase value) {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setTag(KEY, value);
         notifier.setValue(valueId, tag);
@@ -137,10 +138,10 @@ public class ValueNotifierHelpers {
      * @return The value
      */
     @Nullable
-    public static NBTTagCompound getValueNbt(IValueNotifier notifier, int valueId) {
+    public static NBTBase getValueNbt(IValueNotifier notifier, int valueId) {
         NBTTagCompound tag = notifier.getValue(valueId);
         if (tag != null) {
-            return tag.getCompoundTag(KEY);
+            return tag.getTag(KEY);
         }
         return null;
     }

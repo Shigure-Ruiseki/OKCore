@@ -92,6 +92,22 @@ public class ValueNotifierHelpers {
     }
 
     /**
+     * Set the {@link LangHelpers.UnlocalizedString} value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @param value    The unlocalized string
+     */
+    public static void setValueUnlocalizedString(IValueNotifier notifier, int valueId,
+                                                 LangHelpers.UnlocalizedString value) {
+        NBTTagCompound tag = new NBTTagCompound();
+        if (value != null) {
+            tag.setTag(KEY, value.serializeNBT());
+        }
+        notifier.setValue(valueId, tag);
+    }
+
+    /**
      * Set the {@link LangHelpers.UnlocalizedString} list value
      *
      * @param notifier The notifier instance
@@ -99,7 +115,7 @@ public class ValueNotifierHelpers {
      * @param values   The unlocalized strings list
      */
     public static void setValueUnlocalizedStringList(IValueNotifier notifier, int valueId,
-        List<LangHelpers.UnlocalizedString> values) {
+                                                     List<LangHelpers.UnlocalizedString> values) {
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagList list = new NBTTagList();
         if (values != null) {
@@ -199,6 +215,25 @@ public class ValueNotifierHelpers {
     }
 
     /**
+     * Get the {@link LangHelpers.UnlocalizedString} value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @return The unlocalized string
+     */
+    @Nullable
+    public static LangHelpers.UnlocalizedString getValueUnlocalizedString(IValueNotifier notifier, int valueId) {
+        NBTTagCompound tag = notifier.getValue(valueId);
+        if (tag != null && tag.hasKey(KEY, Constants.NBT.TAG_COMPOUND)) {
+            NBTTagCompound compound = tag.getCompoundTag(KEY);
+            LangHelpers.UnlocalizedString unlocalizedString = new LangHelpers.UnlocalizedString();
+            unlocalizedString.deserializeNBT(compound);
+            return unlocalizedString;
+        }
+        return null;
+    }
+
+    /**
      * Get the {@link LangHelpers.UnlocalizedString} list value
      *
      * @param notifier The notifier instance
@@ -207,7 +242,7 @@ public class ValueNotifierHelpers {
      */
     @Nullable
     public static List<LangHelpers.UnlocalizedString> getValueUnlocalizedStringList(IValueNotifier notifier,
-        int valueId) {
+                                                                                    int valueId) {
         NBTTagCompound tag = notifier.getValue(valueId);
         if (tag != null) {
             NBTTagList listTag = tag.getTagList(KEY, Constants.NBT.TAG_COMPOUND);

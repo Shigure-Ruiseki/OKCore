@@ -92,6 +92,27 @@ public class ValueNotifierHelpers {
     }
 
     /**
+     * Set the {@link LangHelpers.UnlocalizedString} list value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @param values   The unlocalized strings list
+     */
+    public static void setValueUnlocalizedStringList(IValueNotifier notifier, int valueId, List<LangHelpers.UnlocalizedString> values) {
+        NBTTagCompound tag = new NBTTagCompound();
+        NBTTagList list = new NBTTagList();
+        if (values != null) {
+            for (LangHelpers.UnlocalizedString value : values) {
+                if (value != null) {
+                    list.appendTag(value.serializeNBT());
+                }
+            }
+        }
+        tag.setTag(KEY, list);
+        notifier.setValue(valueId, tag);
+    }
+
+    /**
      * get the NBT value
      *
      * @param notifier The notifier instance
@@ -175,4 +196,29 @@ public class ValueNotifierHelpers {
         }
         return null;
     }
+
+    /**
+     * Get the {@link LangHelpers.UnlocalizedString} list value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @return The list of unlocalized strings
+     */
+    @Nullable
+    public static List<LangHelpers.UnlocalizedString> getValueUnlocalizedStringList(IValueNotifier notifier, int valueId) {
+        NBTTagCompound tag = notifier.getValue(valueId);
+        if (tag != null) {
+            NBTTagList listTag = tag.getTagList(KEY, Constants.NBT.TAG_COMPOUND);
+            List<LangHelpers.UnlocalizedString> list = new ArrayList<>();
+            for (int i = 0; i < listTag.tagCount(); i++) {
+                NBTTagCompound compound = listTag.getCompoundTagAt(i);
+                LangHelpers.UnlocalizedString unlocalizedString = new LangHelpers.UnlocalizedString();
+                unlocalizedString.deserializeNBT(compound);
+                list.add(unlocalizedString);
+            }
+            return list;
+        }
+        return null;
+    }
+
 }

@@ -24,6 +24,19 @@ public class MouseInputEvent extends GuiScreenEvent {
     }
 
     /**
+     * This event fires during the input handling chain (between Pre and Post).
+     * Ideal for custom container element handlers (e.g., IContainerEventHandler)
+     * to intercept mouse events before fallback post-processing.
+     */
+    @Cancelable
+    public static class Process extends MouseInputEvent {
+
+        public Process(GuiScreen gui) {
+            super(gui);
+        }
+    }
+
+    /**
      * This event fires after {@link GuiScreen#handleMouseInput()} provided that the active
      * screen has not been changed as a result of {@link GuiScreen#handleMouseInput()} and
      * the mouse handled flag has not been set via {@link IGuiInputHandle#setMouseHandled(boolean)}.

@@ -88,7 +88,7 @@ public class InputEventHandler {
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
-    public void onMouseInputGuiScreen(MouseInputEvent.Pre event) {
+    public void onMouseInputGuiScreen(MouseInputEvent.Process event) {
         if (event.gui instanceof IContainerEventHandler handler) {
             Minecraft mc = Minecraft.getMinecraft();
             GuiScreen gui = event.gui;
@@ -141,7 +141,7 @@ public class InputEventHandler {
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
-    public void onKeyboardInputGuiScreen(KeyboardInputEvent.Pre event) {
+    public void onKeyboardInputGuiScreen(KeyboardInputEvent.Process event) {
         if (event.gui instanceof IContainerEventHandler handler) {
             boolean keyState = Keyboard.getEventKeyState();
             int keyCode = Keyboard.getEventKey();

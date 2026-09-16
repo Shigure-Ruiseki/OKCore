@@ -37,6 +37,10 @@ public abstract class MixinGuiScreen {
             return;
         }
 
+        if (MinecraftForge.EVENT_BUS.post(new MouseInputEvent.Process(okcore$getThis()))) {
+            return;
+        }
+
         original.call(instance);
 
         if (okcore$getThis().equals(okcore$getThis().mc.currentScreen) && !this.okcoregui$isMouseHandled()) {
@@ -50,6 +54,10 @@ public abstract class MixinGuiScreen {
     private void okcore$wrapKeyInput(GuiScreen instance, Operation<Void> original) {
         this.okcore$keyHandled = false;
         if (MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Pre(okcore$getThis()))) {
+            return;
+        }
+
+        if (MinecraftForge.EVENT_BUS.post(new KeyboardInputEvent.Process(okcore$getThis()))) {
             return;
         }
 

@@ -38,7 +38,7 @@ public class TileHelpers {
      * Safely cast a tile entity.
      *
      * @param world       The world.
-     * @param x, y, z     The position of the block providing the tile entity.
+     * @param x,          y, z The position of the block providing the tile entity.
      * @param targetClazz The class to cast to.
      * @param <T>         The type of tile to cast at.
      * @return The tile entity or null.

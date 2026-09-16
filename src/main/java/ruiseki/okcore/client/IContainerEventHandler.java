@@ -131,15 +131,22 @@ public interface IContainerEventHandler extends IGuiEventListener {
             }
         } else {
             // 3. Drag & Move
-            if (isDragging() && getFocused() != null) {
+            if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0) {
                 double dragX = (double) Mouse.getEventDX() * gui.width / mc.displayWidth;
                 double dragY = (double) (-Mouse.getEventDY()) * gui.height / mc.displayHeight;
 
-                if (mouseDragged(x, y, 0, dragX, dragY)) {
-                    handled = true;
+                if (isDragging() && getFocused() != null) {
+                    if (mouseDragged(x, y, 0, dragX, dragY)) {
+                        handled = true;
+                    }
+                } else if (Mouse.isButtonDown(0) || Mouse.isButtonDown(1) || Mouse.isButtonDown(2)) {
+                    int activeBtn = Mouse.isButtonDown(0) ? 0 : (Mouse.isButtonDown(1) ? 1 : 2);
+                    if (mouseDragged(x, y, activeBtn, dragX, dragY)) {
+                        handled = true;
+                    }
+                } else {
+                    mouseMoved(x, y);
                 }
-            } else {
-                mouseMoved(x, y);
             }
         }
 

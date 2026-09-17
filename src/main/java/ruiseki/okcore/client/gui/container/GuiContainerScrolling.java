@@ -152,8 +152,8 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        if (isSearchEnabled()) this.searchField.drawScreen(this, mouseX, mouseY, partialTicks);
-        this.scrollbar.drawScreen(this, mouseX, mouseY, partialTicks);
+        if (isSearchEnabled()) this.searchField.drawScreen(mouseX, mouseY, partialTicks);
+        this.scrollbar.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override

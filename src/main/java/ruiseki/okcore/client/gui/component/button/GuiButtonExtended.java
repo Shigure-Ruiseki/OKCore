@@ -1,10 +1,7 @@
 package ruiseki.okcore.client.gui.component.button;
 
-import java.util.Collections;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.inventory.GuiContainer;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -12,7 +9,6 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.renderer.GlStateManager;
-import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
@@ -62,31 +58,18 @@ public abstract class GuiButtonExtended extends GuiButton
     }
 
     @Override
-    public void drawScreen(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             this.field_146123_n = mouseX >= this.getX() && mouseY >= this.getY()
                 && mouseX < this.getX() + this.width
                 && mouseY < this.getY() + this.height;
-            this.drawWidget(gui, mouseX, mouseY, partialTicks);
+            this.drawWidget(mouseX, mouseY, partialTicks);
 
         }
     }
 
     @Override
-    public void drawToolTips(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
-        GuiHelpers.renderTooltip(
-            gui,
-            getX(),
-            getY(),
-            width,
-            height,
-            mouseX,
-            mouseY,
-            () -> Collections.singletonList(displayString));
-    }
-
-    @Override
-    public void drawWidget(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             GlStateManager.enableBlend();
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

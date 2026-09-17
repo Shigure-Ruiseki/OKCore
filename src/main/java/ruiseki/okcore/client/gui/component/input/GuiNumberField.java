@@ -1,7 +1,6 @@
 package ruiseki.okcore.client.gui.component.input;
 
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.inventory.GuiContainer;
 
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -91,16 +90,16 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     @Override
-    public void drawWidget(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         int offsetX = 0;
         if (this.arrows) {
-            if (this.arrowUp != null) this.arrowUp.drawScreen(gui, mouseX, mouseY, partialTicks);
-            if (this.arrowDown != null) this.arrowDown.drawScreen(gui, mouseX, mouseY, partialTicks);
+            if (this.arrowUp != null) this.arrowUp.drawScreen(mouseX, mouseY, partialTicks);
+            if (this.arrowDown != null) this.arrowDown.drawScreen(mouseX, mouseY, partialTicks);
             offsetX = this.arrowUp != null ? this.arrowUp.width : 0;
             this.xPosition += offsetX;
             this.width -= offsetX;
         }
-        super.drawWidget(gui, mouseX, mouseY, partialTicks);
+        super.drawWidget(mouseX, mouseY, partialTicks);
         if (this.arrows) {
             this.xPosition -= offsetX;
             this.width += offsetX;

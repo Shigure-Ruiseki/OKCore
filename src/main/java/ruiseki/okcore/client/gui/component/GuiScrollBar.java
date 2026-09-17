@@ -2,17 +2,14 @@ package ruiseki.okcore.client.gui.component;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Collections;
 
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.client.gui.IGuiEventListener;
-import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
@@ -20,7 +17,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * The using screen must add this as a child
  * and call the following method from its respective method:
- * * {@link #drawWidget(GuiContainer, int, int, float)}
+ * * {@link #drawScreen(int, int, float)}
  * * {@link #mouseDragged(double, double, int, double, double)} (@see
  * {@link ruiseki.okcore.client.gui.container.GuiContainerScrolling} for an example)
  *
@@ -134,12 +131,12 @@ public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEvent
     }
 
     @Override
-    public void drawScreen(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
-        drawWidget(gui, mouseX, mouseY, partialTicks);
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        drawWidget(mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public void drawWidget(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         int scrollX = x;
         int scrollMinY = y;
         int scrollMaxY = scrollMinY + height;
@@ -151,19 +148,6 @@ public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEvent
             0,
             SCROLL_BUTTON_WIDTH,
             SCROLL_BUTTON_HEIGHT);
-    }
-
-    @Override
-    public void drawToolTips(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
-        GuiHelpers.renderTooltip(
-            gui,
-            getX(),
-            getY(),
-            width,
-            height,
-            mouseX,
-            mouseY,
-            () -> Collections.singletonList(narrationMessage));
     }
 
     protected boolean needsScrollBars() {

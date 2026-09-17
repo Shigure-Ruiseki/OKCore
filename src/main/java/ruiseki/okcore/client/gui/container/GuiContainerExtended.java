@@ -152,7 +152,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         GL11.glDisable(GL11.GL_DEPTH_TEST);
 
         for (IWidgetRenderable renderable : this.renderables) {
-            renderable.drawScreen(this, mouseX, mouseY, partialTicks);
+            renderable.drawScreen(mouseX, mouseY, partialTicks);
         }
 
         RenderHelper.enableGUIStandardItemLighting();
@@ -189,10 +189,6 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         // incorrectly be applied based on items that are in the inventory.
         GL11.glDisable(GL11.GL_LIGHTING);
         this.drawGuiContainerForegroundLayer(mouseX, mouseY);
-
-        for (IWidgetRenderable renderable : this.renderables) {
-            renderable.drawToolTips(this, mouseX, mouseY, partialTicks);
-        }
 
         GL11.glEnable(GL11.GL_LIGHTING);
         InventoryPlayer inventoryplayer = this.mc.thePlayer.inventory;

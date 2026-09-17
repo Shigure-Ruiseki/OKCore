@@ -49,6 +49,11 @@ public enum Mixins implements IMixins {
         .addCommonMixins("capabilities.MixinChunk", "capabilities.MixinAnvilChunkLoader")
         .setPhase(Phase.EARLY)),
 
+    NETWORK(new MixinBuilder("Allow registering more than one handler of the same type")
+        .addCommonMixins("network.MixinSimpleNetworkWrapper")
+        .addExcludedMod(TargetMods.MUI2)
+        .setPhase(Phase.EARLY)),
+
     NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")
         .addCommonMixins("recipe.MixinShapedRecipeHandler", "recipe.MixinShapelessRecipeHandler")
         .addRequiredMod(TargetMods.NotEnoughItems)

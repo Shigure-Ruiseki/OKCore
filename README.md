@@ -5,7 +5,6 @@
 Just a core mod extracted to use in other mod
 
 ## Required Dependencies:
-*   [ModularUI2 (>= 2.3.87)](https://github.com/GTNewHorizons/ModularUI2)
 *   [GTNHLib (>= 0.11.43)](https://github.com/GTNewHorizons/GTNHLib)
 
 ## Note:

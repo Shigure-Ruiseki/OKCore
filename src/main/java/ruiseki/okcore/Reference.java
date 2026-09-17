@@ -7,7 +7,7 @@ public class Reference {
     public static final String MOD_VERSION = Tags.VERSION;
     public static final String MOD_MC_VERSION = Tags.MC_VERSION;
     public static final String MOD_DEPENDENCIES = "required-after:gtnhlib@[0.11.41,);"
-        + "required-after:modularui2@[2.3.79-1.7.10,);"
+        + "after:modularui2@[2.3.79-1.7.10,);"
         + "after:Baubles|Expanded;"
         + "after:Baubles;"
         + "after:controlling@[2.1.0,);"

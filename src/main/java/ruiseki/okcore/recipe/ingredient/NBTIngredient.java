@@ -24,6 +24,13 @@ public class NBTIngredient extends Ingredient {
         this.stack = stack;
     }
 
+    /**
+     * Creates a new ingredient matching the given stack and tag
+     */
+    public static NBTIngredient of(ItemStack stack) {
+        return new NBTIngredient(stack);
+    }
+
     @Override
     public boolean test(@Nullable ItemStack input) {
         if (input == null) return false;

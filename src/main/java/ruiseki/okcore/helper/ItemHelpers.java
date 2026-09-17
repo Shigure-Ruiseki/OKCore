@@ -43,7 +43,7 @@ public class ItemHelpers {
     // 1. STACK BASIC OPERATIONS & CHECKS
 
     public static boolean isEmpty(@Nullable ItemStack stack) {
-        return stack == null || stack.getItem() == null || stack.stackSize <= 0;
+        return stack == null || stack.getItem() == null;
     }
 
     @Nullable

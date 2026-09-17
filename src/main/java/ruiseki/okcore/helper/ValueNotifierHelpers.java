@@ -3,6 +3,7 @@ package ruiseki.okcore.helper;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -25,7 +26,7 @@ public class ValueNotifierHelpers {
     /**
      * Set the NBT value
      */
-    public static void setValue(IValueNotifier notifier, int valueId, NBTTagCompound value) {
+    public static void setValue(IValueNotifier notifier, int valueId, NBTBase value) {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setTag(KEY, value);
         notifier.setValue(valueId, tag);
@@ -92,6 +93,44 @@ public class ValueNotifierHelpers {
     }
 
     /**
+     * Set the {@link LangHelpers.UnlocalizedString} value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @param value    The unlocalized string
+     */
+    public static void setValueUnlocalizedString(IValueNotifier notifier, int valueId,
+        LangHelpers.UnlocalizedString value) {
+        NBTTagCompound tag = new NBTTagCompound();
+        if (value != null) {
+            tag.setTag(KEY, value.serializeNBT());
+        }
+        notifier.setValue(valueId, tag);
+    }
+
+    /**
+     * Set the {@link LangHelpers.UnlocalizedString} list value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @param values   The unlocalized strings list
+     */
+    public static void setValueUnlocalizedStringList(IValueNotifier notifier, int valueId,
+        List<LangHelpers.UnlocalizedString> values) {
+        NBTTagCompound tag = new NBTTagCompound();
+        NBTTagList list = new NBTTagList();
+        if (values != null) {
+            for (LangHelpers.UnlocalizedString value : values) {
+                if (value != null) {
+                    list.appendTag(value.serializeNBT());
+                }
+            }
+        }
+        tag.setTag(KEY, list);
+        notifier.setValue(valueId, tag);
+    }
+
+    /**
      * get the NBT value
      *
      * @param notifier The notifier instance
@@ -99,10 +138,10 @@ public class ValueNotifierHelpers {
      * @return The value
      */
     @Nullable
-    public static NBTTagCompound getValueNbt(IValueNotifier notifier, int valueId) {
+    public static NBTBase getValueNbt(IValueNotifier notifier, int valueId) {
         NBTTagCompound tag = notifier.getValue(valueId);
         if (tag != null) {
-            return tag.getCompoundTag(KEY);
+            return tag.getTag(KEY);
         }
         return null;
     }
@@ -175,4 +214,49 @@ public class ValueNotifierHelpers {
         }
         return null;
     }
+
+    /**
+     * Get the {@link LangHelpers.UnlocalizedString} value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @return The unlocalized string
+     */
+    @Nullable
+    public static LangHelpers.UnlocalizedString getValueUnlocalizedString(IValueNotifier notifier, int valueId) {
+        NBTTagCompound tag = notifier.getValue(valueId);
+        if (tag != null && tag.hasKey(KEY, Constants.NBT.TAG_COMPOUND)) {
+            NBTTagCompound compound = tag.getCompoundTag(KEY);
+            LangHelpers.UnlocalizedString unlocalizedString = new LangHelpers.UnlocalizedString();
+            unlocalizedString.deserializeNBT(compound);
+            return unlocalizedString;
+        }
+        return null;
+    }
+
+    /**
+     * Get the {@link LangHelpers.UnlocalizedString} list value
+     *
+     * @param notifier The notifier instance
+     * @param valueId  The value id
+     * @return The list of unlocalized strings
+     */
+    @Nullable
+    public static List<LangHelpers.UnlocalizedString> getValueUnlocalizedStringList(IValueNotifier notifier,
+        int valueId) {
+        NBTTagCompound tag = notifier.getValue(valueId);
+        if (tag != null) {
+            NBTTagList listTag = tag.getTagList(KEY, Constants.NBT.TAG_COMPOUND);
+            List<LangHelpers.UnlocalizedString> list = new ArrayList<>();
+            for (int i = 0; i < listTag.tagCount(); i++) {
+                NBTTagCompound compound = listTag.getCompoundTagAt(i);
+                LangHelpers.UnlocalizedString unlocalizedString = new LangHelpers.UnlocalizedString();
+                unlocalizedString.deserializeNBT(compound);
+                list.add(unlocalizedString);
+            }
+            return list;
+        }
+        return null;
+    }
+
 }

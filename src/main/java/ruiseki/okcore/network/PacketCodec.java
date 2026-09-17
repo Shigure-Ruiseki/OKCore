@@ -11,6 +11,7 @@ import java.util.Set;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ResourceLocation;
@@ -355,6 +356,32 @@ public abstract class PacketCodec extends PacketBase {
                     e.printStackTrace();
                 }
                 return map;
+            }
+        });
+
+        codecActions.put(NBTBase.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) throws IOException {
+                NBTBase nbt = (NBTBase) object;
+                NBTTagCompound wrapper = new NBTTagCompound();
+                if (nbt != null) {
+                    wrapper.setTag("value", nbt);
+                }
+                output.writeNBTTagCompoundToBuffer(wrapper);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                try {
+                    NBTTagCompound wrapper = input.readNBTTagCompoundFromBuffer();
+                    if (wrapper != null && wrapper.hasKey("value")) {
+                        return wrapper.getTag("value");
+                    }
+                    return null;
+                } catch (IOException ioexception) {
+                    throw new EncoderException(ioexception);
+                }
             }
         });
 

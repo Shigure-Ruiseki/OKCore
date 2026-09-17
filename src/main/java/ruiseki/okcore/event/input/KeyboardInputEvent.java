@@ -24,6 +24,19 @@ public class KeyboardInputEvent extends GuiScreenEvent {
     }
 
     /**
+     * This event fires during the input handling chain (between Pre and Post).
+     * Ideal for custom container element handlers (e.g., IContainerEventHandler)
+     * to intercept key events before fallback post-processing.
+     */
+    @Cancelable
+    public static class Process extends KeyboardInputEvent {
+
+        public Process(GuiScreen gui) {
+            super(gui);
+        }
+    }
+
+    /**
      * This event fires after {@link GuiScreen#handleKeyboardInput()} provided that the active
      * screen has not been changed as a result of {@link GuiScreen#handleKeyboardInput()} and
      * the key handled flag has not been set via {@link IGuiInputHandle#setKeyHandled(boolean)}.

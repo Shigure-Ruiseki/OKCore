@@ -1,15 +1,13 @@
 package ruiseki.okcore.client.gui.component.input;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
-import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A number field which by default only accepts positive numbers.
- * 
+ *
  * @author rubensworks
  */
 public class GuiNumberField extends GuiTextFieldExtended {
@@ -21,15 +19,15 @@ public class GuiNumberField extends GuiTextFieldExtended {
     private int maxValue = Integer.MAX_VALUE;
     private boolean isEnabled = true;
 
-    public GuiNumberField(int componentId, FontRenderer fontrenderer, int x, int y, int width, int height,
-        boolean arrows, boolean background) {
-        super(componentId, fontrenderer, x, y, width, height, background);
+    public GuiNumberField(FontRenderer fontrenderer, int x, int y, int width, int height, boolean arrows,
+        String narrationMessage, boolean background) {
+        super(fontrenderer, x, y, width, height, narrationMessage, background);
         this.arrows = arrows;
 
         if (this.arrows) {
-            arrowUp = new GuiButtonArrow(0, x, y + height / 2, GuiButtonArrow.Direction.NORTH);
-            arrowDown = new GuiButtonArrow(1, x, y + height / 2, GuiButtonArrow.Direction.SOUTH);
-            arrowUp.yPosition -= arrowUp.height;
+            this.arrowUp = new GuiButtonArrow(x, y + height / 2, btn -> increase(), GuiButtonArrow.Direction.NORTH);
+            this.arrowDown = new GuiButtonArrow(x, y + height / 2, btn -> decrease(), GuiButtonArrow.Direction.SOUTH);
+            this.arrowUp.yPosition -= this.arrowUp.height;
         }
         setEnableBackgroundDrawing(true);
         setText("0");
@@ -37,9 +35,14 @@ public class GuiNumberField extends GuiTextFieldExtended {
 
     @Override
     public void setEnabled(boolean enabled) {
-        arrowUp.enabled = enabled;
-        arrowDown.enabled = enabled;
-        isEnabled = enabled;
+        this.isEnabled = enabled;
+        if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
+            this.arrowUp.enabled = enabled;
+            this.arrowDown.enabled = enabled;
+            if (enabled) {
+                updateArrowsState();
+            }
+        }
         super.setEnabled(enabled);
     }
 
@@ -53,7 +56,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public int getMinValue() {
-        return minValue;
+        return this.minValue;
     }
 
     /**
@@ -64,7 +67,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public int getMaxValue() {
-        return maxValue;
+        return this.maxValue;
     }
 
     /**
@@ -87,20 +90,19 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     @Override
-    public void drawTextBox(Minecraft minecraft, int mouseX, int mouseY) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         int offsetX = 0;
-        GlStateManager.color(1, 1, 1, 1);
-        if (arrows) {
-            arrowUp.drawButton(minecraft, mouseX, mouseY);
-            arrowDown.drawButton(minecraft, mouseX, mouseY);
-            offsetX = arrowUp.width;
-            xPosition += offsetX;
-            width -= offsetX;
+        if (this.arrows) {
+            if (this.arrowUp != null) this.arrowUp.drawScreen(mouseX, mouseY, partialTicks);
+            if (this.arrowDown != null) this.arrowDown.drawScreen(mouseX, mouseY, partialTicks);
+            offsetX = this.arrowUp != null ? this.arrowUp.width : 0;
+            this.xPosition += offsetX;
+            this.width -= offsetX;
         }
-        super.drawTextBox(minecraft, mouseX, mouseY);
-        if (arrows) {
-            xPosition -= offsetX;
-            width += offsetX;
+        super.drawWidget(mouseX, mouseY, partialTicks);
+        if (this.arrows) {
+            this.xPosition -= offsetX;
+            this.width += offsetX;
         }
     }
 
@@ -113,7 +115,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public float validateNumber(float number) {
-        return Math.max(this.minValue, Math.min(this.maxValue, number));
+        return Math.max((float) this.minValue, Math.min((float) this.maxValue, number));
     }
 
     protected int getDiffAmount() {
@@ -137,42 +139,41 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (this.isEnabled) {
-            if (this.arrows && arrowUp.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
-                increase();
-            } else if (this.arrows && arrowDown.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
-                decrease();
-            } else {
-                super.mouseClicked(mouseX, mouseY, mouseButton);
-            }
-            updateArrowsState();
-        }
-    }
-
-    @Override
-    public void setText(String value) {
-        super.setText(value);
+    public boolean charTyped(char typedChar, int keyCode) {
+        boolean ret = super.charTyped(typedChar, keyCode);
         updateArrowsState();
+        return ret;
     }
 
     @Override
-    public boolean textboxKeyTyped(char typedChar, int keyCode) {
-        boolean ret = super.textboxKeyTyped(typedChar, keyCode);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        boolean ret = super.keyPressed(typedChar, keyCode, modifiers);
+        updateArrowsState();
+        return ret;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        boolean ret = arrowUp.mouseClicked(mouseX, mouseY, mouseButton)
+            || arrowDown.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
         updateArrowsState();
         return ret;
     }
 
     protected void updateArrowsState() {
-        if (this.arrows) {
-            arrowDown.enabled = true;
-            arrowUp.enabled = true;
+        if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
+            this.arrowDown.enabled = this.isEnabled;
+            this.arrowUp.enabled = this.isEnabled;
+            if (!this.isEnabled) return;
+
             try {
-                if (getInt() <= this.minValue) {
-                    arrowDown.enabled = false;
+                int currentVal = getInt();
+                if (currentVal <= this.minValue) {
+                    this.arrowDown.enabled = false;
                 }
-                if (getInt() >= this.maxValue) {
-                    arrowUp.enabled = false;
+                if (currentVal >= this.maxValue) {
+                    this.arrowUp.enabled = false;
                 }
             } catch (NumberFormatException e) {
 

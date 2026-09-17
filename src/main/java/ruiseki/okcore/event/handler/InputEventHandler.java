@@ -14,7 +14,9 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.client.IContainerEventHandler;
 import ruiseki.okcore.event.input.IGuiInputHandle;
+import ruiseki.okcore.event.input.KeyboardInputEvent;
 import ruiseki.okcore.event.input.MouseInputEvent;
 import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.network.packet.PacketItemToggle;
@@ -81,4 +83,33 @@ public class InputEventHandler {
             }
         }
     }
+
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent
+    public void onMouseInputGuiScreen(MouseInputEvent.Process event) {
+        if (event.gui instanceof IContainerEventHandler handler) {
+            boolean handled = handler.handleMouseInput(event);
+            if (handled) {
+                event.setCanceled(true);
+                if (event.gui instanceof IGuiInputHandle inputHandle) {
+                    inputHandle.setMouseHandled(true);
+                }
+            }
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent
+    public void onKeyboardInputGuiScreen(KeyboardInputEvent.Process event) {
+        if (event.gui instanceof IContainerEventHandler handler) {
+            boolean handled = handler.handleKeyboardInput(event);
+            if (handled) {
+                event.setCanceled(true);
+                if (event.gui instanceof IGuiInputHandle inputHandle) {
+                    inputHandle.setKeyHandled(true);
+                }
+            }
+        }
+    }
+
 }

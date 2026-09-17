@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.okcore.client.gui.component.GuiScrollBar;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
@@ -21,10 +22,11 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * visible: Currently on-screen by the user, maximum amount of elements is determined by the pageSize
  * filtered: All items that are browsable by the user, might be more than the pageSize allows what leads to a scrollbar.
  * unfiltered: All items, pattern searching will happen in this list.
- * 
+ *
  * @author rubensworks
  */
-public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryContainer {
+public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryContainer
+    implements GuiScrollBar.IScrollCallback {
 
     private final List<E> unfilteredItems;
     private List<Pair<Integer, E>> filteredItems; // Pair: original index - item
@@ -88,16 +90,9 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
         return getColumns();
     }
 
-    /**
-     * Scroll to the given relative position.
-     * 
-     * @param scroll A value between 0 and 1.
-     */
-    public void scrollTo(float scroll) {
-        onScroll();
-        int elements = (getFilteredItemCount() + getColumns() - 1) - getPageSize() * getColumns();
-        firstElement = (int) ((double) (scroll * (float) elements) + 0.5D);
-        firstElement -= firstElement % getScrollStepSize();
+    @Override
+    public void onScroll(int firstRow) {
+        firstElement = firstRow * getScrollStepSize();
         if (firstElement < 0) firstElement = 0;
         for (int i = 0; i < getPageSize(); i++) {
             for (int j = 0; j < getColumns(); j++) {
@@ -112,10 +107,6 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
         }
     }
 
-    protected void onScroll() {
-
-    }
-
     /**
      * @return The allowed page size.
      */
@@ -123,7 +114,7 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
 
     /**
      * After scrolling, this will be called to make items visible.
-     * 
+     *
      * @param visibleIndex The visible item index.
      * @param elementIndex The absolute element index.
      * @param element      The element to show.
@@ -134,7 +125,7 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
 
     /**
      * Check if the given element is visible.
-     * 
+     *
      * @param row The row the the given element is at.
      * @return If it is visible.
      */
@@ -144,7 +135,7 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
 
     /**
      * Get the currently visible element at the given row.
-     * 
+     *
      * @param row The row the the given element is at.
      * @return The elements
      */
@@ -159,7 +150,7 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
 
     /**
      * Update the filtered items.
-     * 
+     *
      * @param searchString The input string to search by.
      */
     public void updateFilter(String searchString) {
@@ -171,7 +162,7 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
             pattern = Pattern.compile(".*");
         }
         this.filteredItems = filter(getUnfilteredItems(), itemSearchPredicate, pattern);
-        scrollTo(0); // Reset scroll, will also refresh items on-screen.
+        onScroll(0); // Reset scroll, will also refresh items on-screen.
     }
 
     protected List<Pair<Integer, E>> filter(List<E> input, IItemPredicate<E> predicate, Pattern pattern) {
@@ -188,7 +179,7 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
 
     /**
      * An additional conditional that can be added for filtering items.
-     * 
+     *
      * @param item The item to check.
      * @return If the item should be shown.
      */
@@ -198,14 +189,14 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
 
     /**
      * Predicate for matching items used to search.
-     * 
+     *
      * @param <E> The type of item.
      */
     public static interface IItemPredicate<E> {
 
         /**
          * Check if the given item matches a string pattern.
-         * 
+         *
          * @param item    The item to check.
          * @param pattern The pattern to check.
          * @return If the item matches

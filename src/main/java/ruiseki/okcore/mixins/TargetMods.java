@@ -10,6 +10,7 @@ import ruiseki.okcore.enums.Mods;
 public enum TargetMods implements ITargetMod {
 
     JFMUY(Mods.JFMUY),
+    MUI2("com.cleanroommc.modularui.core.ModularUICore", Mods.MUI2),
     NotEnoughItems(Mods.NotEnoughItems);
 
     private final TargetModBuilder builder;

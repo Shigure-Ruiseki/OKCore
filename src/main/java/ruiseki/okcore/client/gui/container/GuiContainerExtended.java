@@ -113,7 +113,6 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
 
-        super.drawScreen(mouseX, mouseY, partialTicks);
         for (IRenderable renderable : this.renderables) {
             renderable.drawScreen(mouseX, mouseY, partialTicks);
         }

@@ -57,6 +57,8 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     private final List<IGuiEventListener> children = Lists.newArrayList();
     public final List<IWidgetRenderable> renderables = Lists.newArrayList();
 
+    // 1. CONSTRUCTORS & BASIC GETTERS
+
     /**
      * Make a new instance.
      *
@@ -84,13 +86,6 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         return this.texture;
     }
 
-    @Override
-    public void initGui() {
-        this.xSize = getBaseXSize() + offsetX * 2;
-        this.ySize = getBaseYSize() + offsetY * 2;
-        super.initGui();
-    }
-
     protected int getBaseXSize() {
         return 176;
     }
@@ -98,6 +93,49 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     protected int getBaseYSize() {
         return 166;
     }
+
+    public int getGuiLeftTotal() {
+        return this.guiLeft + offsetX;
+    }
+
+    public int getGuiTopTotal() {
+        return this.guiTop + offsetY;
+    }
+
+    @Override
+    public String getGuiModId() {
+        return getContainer().getGuiModId();
+    }
+
+    @Override
+    public int getGuiId() {
+        return getContainer().getGuiId();
+    }
+
+    // 2. INIT & LIFECYCLE
+
+    @Override
+    public void initGui() {
+        this.xSize = getBaseXSize() + offsetX * 2;
+        this.ySize = getBaseYSize() + offsetY * 2;
+        super.initGui();
+    }
+
+    @Override
+    public void onUpdate(int valueId, NBTTagCompound value) {
+
+    }
+
+    /**
+     * Will send client-side onUpdate events for all stored values
+     */
+    protected void refreshValues() {
+        for (int id : getContainer().getValueIds()) {
+            onUpdate(id, getContainer().getValue(id));
+        }
+    }
+
+    // 3. RENDERING & DRAWING
 
     /**
      * Draws the screen and all the components in it.
@@ -212,23 +250,6 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         mc.renderEngine.bindTexture(texture);
         drawTexturedModalRect(guiLeft + offsetX, guiTop + offsetY, 0, 0, xSize - 2 * offsetX, ySize - 2 * offsetY);
-    }
-
-    public boolean isPointInRegion(int left, int top, int right, int bottom, int pointX, int pointY) {
-        int k1 = this.guiLeft;
-        int l1 = this.guiTop;
-        pointX -= k1;
-        pointY -= l1;
-        return pointX >= left && pointX < left + right && pointY >= top && pointY < top + bottom;
-    }
-
-    @Override
-    public final boolean func_146978_c(int left, int top, int right, int bottom, int pointX, int pointY) {
-        return isPointInRegion(left, top, right, bottom, pointX, pointY);
-    }
-
-    public boolean isPointInRegion(Rectangle region, Point mouse) {
-        return isPointInRegion(region.x, region.y, region.width, region.height, mouse.x, mouse.y);
     }
 
     public void drawTexturedModalRectScalable(int destX, int destY, int destWidth, int destHeight, int srcX, int srcY,
@@ -382,75 +403,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         itemRender.zLevel = 0.0F;
     }
 
-    /**
-     * Call this to create a button pressable callback so that the container is notified as well,
-     * assuming it has a corresponding registered
-     * {@link ruiseki.okcore.inventory.container.button.IContainerButtonAction} registered in the container
-     * by the same button id.
-     *
-     * @param buttonId        The button id.
-     * @param clientPressable An optional pressable that should be called client-side.
-     * @return The created pressable.
-     */
-    protected GuiButtonExtended.OnPress createServerPressable(String buttonId,
-        @Nullable GuiButtonExtended.OnPress clientPressable) {
-        return (button) -> {
-            if (clientPressable != null) {
-                clientPressable.onPress(button);
-            }
-            if (getContainer().onButtonClick(buttonId)) {
-                OKCore._instance.getPacketHandler()
-                    .sendToServer(new PacketButtonClick(buttonId));
-            }
-        };
-    }
-
-    @Override
-    public void onUpdate(int valueId, NBTTagCompound value) {
-
-    }
-
-    /**
-     * Will send client-side onUpdate events for all stored values
-     */
-    protected void refreshValues() {
-        for (int id : getContainer().getValueIds()) {
-            onUpdate(id, getContainer().getValue(id));
-        }
-    }
-
-    /**
-     * @return The total gui left offset.
-     */
-    public int getGuiLeftTotal() {
-        return this.guiLeft + offsetX;
-    }
-
-    /**
-     * @return The total gui top offset.
-     */
-    public int getGuiTopTotal() {
-        return this.guiTop + offsetY;
-    }
-
-    @Override
-    public String getGuiModId() {
-        return getContainer().getGuiModId();
-    }
-
-    @Override
-    public int getGuiId() {
-        return getContainer().getGuiId();
-    }
-
-    protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int button) {
-        return mouseX < guiLeft || mouseY < guiTop || mouseX >= guiLeft + this.xSize || mouseY >= guiTop + this.ySize;
-    }
-
-    @Nullable
-    public Slot getSlotUnderMouse() {
-        return this.theSlot;
-    }
+    // 4. WIDGET & CHILDREN MANAGEMENT
 
     protected <T extends IGuiEventListener & IWidgetRenderable> T addRenderableWidget(T widget) {
         this.renderables.add(widget);
@@ -485,6 +438,57 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         return children;
     }
 
+    /**
+     * Call this to create a button pressable callback so that the container is notified as well,
+     * assuming it has a corresponding registered
+     * {@link ruiseki.okcore.inventory.container.button.IContainerButtonAction} registered in the container
+     * by the same button id.
+     *
+     * @param buttonId        The button id.
+     * @param clientPressable An optional pressable that should be called client-side.
+     * @return The created pressable.
+     */
+    protected GuiButtonExtended.OnPress createServerPressable(String buttonId,
+        @Nullable GuiButtonExtended.OnPress clientPressable) {
+        return (button) -> {
+            if (clientPressable != null) {
+                clientPressable.onPress(button);
+            }
+            if (getContainer().onButtonClick(buttonId)) {
+                OKCore._instance.getPacketHandler()
+                    .sendToServer(new PacketButtonClick(buttonId));
+            }
+        };
+    }
+
+    // 5. STATE & HELPERS
+
+    public boolean isPointInRegion(int left, int top, int right, int bottom, int pointX, int pointY) {
+        int k1 = this.guiLeft;
+        int l1 = this.guiTop;
+        pointX -= k1;
+        pointY -= l1;
+        return pointX >= left && pointX < left + right && pointY >= top && pointY < top + bottom;
+    }
+
+    public boolean isPointInRegion(Rectangle region, Point mouse) {
+        return isPointInRegion(region.x, region.y, region.width, region.height, mouse.x, mouse.y);
+    }
+
+    @Override
+    public final boolean func_146978_c(int left, int top, int right, int bottom, int pointX, int pointY) {
+        return isPointInRegion(left, top, right, bottom, pointX, pointY);
+    }
+
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int button) {
+        return mouseX < guiLeft || mouseY < guiTop || mouseX >= guiLeft + this.xSize || mouseY >= guiTop + this.ySize;
+    }
+
+    @Nullable
+    public Slot getSlotUnderMouse() {
+        return this.theSlot;
+    }
+
     public final boolean isDragging() {
         return this.isDragging;
     }
@@ -510,46 +514,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         this.focused = focused;
     }
 
-    /**
-     *
-     * @deprecated {@link #mouseClicked(double, double, int)}.
-     */
-    @Override
-    @Deprecated
-    protected final void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-
-    }
-
-    /**
-     *
-     * @deprecated {@link #mouseDragged(double, double, int, double, double)}.
-     */
-    @Override
-    @Deprecated
-    protected final void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-
-    }
-
-    /**
-     *
-     * @deprecated {@link #mouseMoved(double, double)} and {@link #mouseReleased(double, double, int)}.
-     */
-    @Override
-    @Deprecated
-    protected final void mouseMovedOrUp(int mouseX, int mouseY, int state) {
-
-    }
-
-    /**
-     * Legacy key typed entry point from Vanilla 1.7.10.
-     *
-     * @deprecated {@link #charTyped(char, int)}.
-     */
-    @Override
-    @Deprecated
-    protected final void keyTyped(char typedChar, int keyCode) {
-
-    }
+    // 6. EVENT HANDLING (MOUSE & KEYBOARD)
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -695,7 +660,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
 
             boolean isValidPlacement;
 
-            // 4. Touchscreen Mode Drag Release Handling
+            // Touchscreen Mode Drag Release Handling
             if (this.clickedSlot != null && this.mc.gameSettings.touchscreen) {
                 if (button == 0 || button == 1) {
                     if (this.draggedStack == null && slot != this.clickedSlot) {
@@ -843,5 +808,47 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         return IContainerEventHandler.super.charTyped(codePoint, modifiers);
+    }
+
+    // ==========================================
+    // 7. DEPRECATED / LEGACY OVERRIDES
+    // ==========================================
+
+    /**
+     * @deprecated {@link #mouseClicked(double, double, int)}.
+     */
+    @Override
+    @Deprecated
+    protected final void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+
+    }
+
+    /**
+     * @deprecated {@link #mouseDragged(double, double, int, double, double)}.
+     */
+    @Override
+    @Deprecated
+    protected final void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+
+    }
+
+    /**
+     * @deprecated {@link #mouseMoved(double, double)} and {@link #mouseReleased(double, double, int)}.
+     */
+    @Override
+    @Deprecated
+    protected final void mouseMovedOrUp(int mouseX, int mouseY, int state) {
+
+    }
+
+    /**
+     * Legacy key typed entry point from Vanilla 1.7.10.
+     *
+     * @deprecated {@link #charTyped(char, int)}.
+     */
+    @Override
+    @Deprecated
+    protected final void keyTyped(char typedChar, int keyCode) {
+
     }
 }

@@ -52,7 +52,7 @@ public class Ingredient implements Predicate<ItemStack> {
     private ItemStack[] itemStacks;
     @Nullable
     private IntList stackingIds;
-    private int invalidationCounter;
+    private int invalidationCounter = -1;
 
     protected Ingredient(Stream<? extends IItemList> stream) {
         this.values = stream.toArray(IItemList[]::new);
@@ -66,7 +66,6 @@ public class Ingredient implements Predicate<ItemStack> {
                         return list.getItems()
                             .stream();
                     })
-                .distinct()
                 .toArray(ItemStack[]::new);
         }
 

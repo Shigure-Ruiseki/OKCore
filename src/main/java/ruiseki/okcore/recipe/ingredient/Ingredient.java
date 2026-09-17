@@ -59,16 +59,20 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public ItemStack[] getItems() {
-        if (this.itemStacks == null) {
+        if (this.itemStacks == null || this.itemStacks.length == 0 || checkInvalidation()) {
+            this.markValid();
             this.itemStacks = Arrays.stream(this.values)
-                .flatMap(
-                    (list) -> {
-                        return list.getItems()
-                            .stream();
-                    })
+                .map(IItemList::getItems)
+                .<ItemStack>mapMulti((items, consumer) -> {
+                    for (ItemStack stack : items) {
+                        if (!ItemHelpers.isEmpty(stack)) {
+                            consumer.accept(stack);
+                        }
+                    }
+                })
+                .distinct()
                 .toArray(ItemStack[]::new);
         }
-
         return this.itemStacks;
     }
 
@@ -292,9 +296,6 @@ public class Ingredient implements Predicate<ItemStack> {
         }
     }
 
-    // Merges several vanilla Ingredients together. As a quirk of how the json is structured, we can't tell if its a
-    // single Ingredient type or multiple so we split per item and re-merge here.
-    // Only public for internal use, so we can access a private field in here.
     public static Ingredient merge(Collection<Ingredient> parts) {
         return fromValues(
             parts.stream()
@@ -318,7 +319,7 @@ public class Ingredient implements Predicate<ItemStack> {
 
         @Override
         public Collection<ItemStack> getItems() {
-            return Collections.singleton(this.stack);
+            return Collections.singletonList(this.stack);
         }
 
         @Override

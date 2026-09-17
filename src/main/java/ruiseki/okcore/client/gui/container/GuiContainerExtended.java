@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.client.IContainerEventHandler;
 import ruiseki.okcore.client.gui.IGuiEventListener;
-import ruiseki.okcore.client.gui.IRenderable;
+import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.KeyBoardHelpers;
@@ -43,7 +43,7 @@ import ruiseki.okcore.network.packet.PacketButtonClick;
  * @author rubensworks
  */
 public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer> extends GuiContainer
-    implements IValueNotifiable, IRenderable, IContainerEventHandler {
+    implements IValueNotifiable, IContainerEventHandler {
 
     protected T container;
     protected ResourceLocation texture;
@@ -55,7 +55,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     private boolean isDragging;
 
     private final List<IGuiEventListener> children = Lists.newArrayList();
-    public final List<IRenderable> renderables = Lists.newArrayList();
+    public final List<IWidgetRenderable> renderables = Lists.newArrayList();
 
     /**
      * Make a new instance.
@@ -113,8 +113,8 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
 
-        for (IRenderable renderable : this.renderables) {
-            renderable.drawScreen(mouseX, mouseY, partialTicks);
+        for (IWidgetRenderable renderable : this.renderables) {
+            renderable.drawScreen(this, mouseX, mouseY, partialTicks);
         }
 
         RenderHelper.enableGUIStandardItemLighting();
@@ -151,6 +151,11 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         // incorrectly be applied based on items that are in the inventory.
         GL11.glDisable(GL11.GL_LIGHTING);
         this.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
+        for (IWidgetRenderable renderable : this.renderables) {
+            renderable.drawToolTips(this, mouseX, mouseY, partialTicks);
+        }
+
         GL11.glEnable(GL11.GL_LIGHTING);
         InventoryPlayer inventoryplayer = this.mc.thePlayer.inventory;
         ItemStack itemstack = this.draggedStack == null ? inventoryplayer.getItemStack() : this.draggedStack;
@@ -447,12 +452,12 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         return this.theSlot;
     }
 
-    protected <T extends IGuiEventListener & IRenderable> T addRenderableWidget(T widget) {
+    protected <T extends IGuiEventListener & IWidgetRenderable> T addRenderableWidget(T widget) {
         this.renderables.add(widget);
         return this.addWidget(widget);
     }
 
-    protected <T extends IRenderable> T addRenderableOnly(T widget) {
+    protected <T extends IWidgetRenderable> T addRenderableOnly(T widget) {
         this.renderables.add(widget);
         return widget;
     }
@@ -463,7 +468,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
     }
 
     protected void removeWidget(IGuiEventListener widget) {
-        if (widget instanceof IRenderable) {
+        if (widget instanceof IWidgetRenderable) {
             this.renderables.remove(widget);
         }
 

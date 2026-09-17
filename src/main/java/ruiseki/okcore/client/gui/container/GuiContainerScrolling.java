@@ -11,6 +11,7 @@ import org.lwjgl.input.Keyboard;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.inventory.container.ScrollingInventoryContainer;
 
 /**
@@ -48,7 +49,8 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
                     this.guiLeft + searchX,
                     this.guiTop + searchY,
                     searchWidth,
-                    this.fontRendererObj.FONT_HEIGHT);
+                    this.fontRendererObj.FONT_HEIGHT,
+                    LangHelpers.localize("gui.okcore.search"));
                 this.searchField.setMaxStringLength(15);
                 this.searchField.setEnableBackgroundDrawing(false);
                 this.searchField.setVisible(true);
@@ -72,6 +74,7 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
                 this.guiLeft + getScrollX(),
                 this.guiTop + getScrollY(),
                 getScrollHeight(),
+                LangHelpers.localize("gui.okcore.scrollbar"),
                 getContainer(),
                 getContainer().getPageSize(),
                 getScrollRegion());
@@ -149,8 +152,8 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        if (isSearchEnabled()) this.searchField.drawScreen(mouseX, mouseY, partialTicks);
-        this.scrollbar.drawWidget(mouseX, mouseY, partialTicks);
+        if (isSearchEnabled()) this.searchField.drawScreen(this, mouseX, mouseY, partialTicks);
+        this.scrollbar.drawScreen(this, mouseX, mouseY, partialTicks);
     }
 
     @Override

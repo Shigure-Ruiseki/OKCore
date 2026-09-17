@@ -36,6 +36,7 @@ public class GuiButtonText extends GuiButtonExtended {
         super(x, y, width, height, string, onPress, background);
     }
 
+    @Override
     protected void drawButtonInner(int i, int j, boolean mouseOver) {
         FontRenderer fontrenderer = Minecraft.getMinecraft().fontRenderer;
 

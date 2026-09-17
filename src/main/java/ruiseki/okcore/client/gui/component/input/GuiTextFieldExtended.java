@@ -1,18 +1,21 @@
 package ruiseki.okcore.client.gui.component.input;
 
+import java.util.Collections;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.MathHelper;
 
 import ruiseki.okcore.client.gui.IGuiEventListener;
-import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.component.IWidgetEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.KeyBoardHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
@@ -22,18 +25,22 @@ import ruiseki.okcore.helper.RenderHelpers;
  * @author rubensworks
  */
 public class GuiTextFieldExtended extends GuiTextField
-    implements IWidgetEventListener, IWidgetRenderable, IGuiEventListener, IRenderable {
+    implements IWidgetEventListener, IWidgetRenderable, IGuiEventListener {
 
     private final boolean background;
     private IInputListener listener;
+    private final String narrationMessage;
 
-    public GuiTextFieldExtended(FontRenderer fontrenderer, int x, int y, int width, int height, boolean background) {
+    public GuiTextFieldExtended(FontRenderer fontrenderer, int x, int y, int width, int height, String narrationMessage,
+        boolean background) {
         super(fontrenderer, x, y, width, height);
         this.background = background;
+        this.narrationMessage = narrationMessage;
     }
 
-    public GuiTextFieldExtended(FontRenderer fontrenderer, int x, int y, int width, int height) {
-        this(fontrenderer, x, y, width, height, false);
+    public GuiTextFieldExtended(FontRenderer fontrenderer, int x, int y, int width, int height,
+        String narrationMessage) {
+        this(fontrenderer, x, y, width, height, narrationMessage, false);
     }
 
     public void setListener(IInputListener listener) {
@@ -74,18 +81,31 @@ public class GuiTextFieldExtended extends GuiTextField
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+    public void drawScreen(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
         if (this.getVisible()) {
-            this.drawWidget(mouseX, mouseY, partialTicks);
+            this.drawWidget(gui, mouseX, mouseY, partialTicks);
         }
     }
 
     @Override
-    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
+    public void drawWidget(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
         if (this.background) {
             this.drawBackground(mouseX, mouseY, partialTicks);
         }
         this.drawTextBox();
+    }
+
+    @Override
+    public void drawToolTips(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
+        GuiHelpers.renderTooltip(
+            gui,
+            getX(),
+            getY(),
+            width,
+            height,
+            mouseX,
+            mouseY,
+            () -> Collections.singletonList(narrationMessage));
     }
 
     @Override

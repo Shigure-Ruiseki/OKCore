@@ -3,6 +3,7 @@ package ruiseki.okcore.client.gui.component.input;
 import java.util.List;
 
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.inventory.GuiContainer;
 
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
 
@@ -22,8 +23,8 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     private IInputListener listener;
 
     public GuiArrowedListField(FontRenderer fontrenderer, int x, int y, int width, int height, boolean arrows,
-        boolean background, List<E> elements) {
-        super(fontrenderer, x, y, width, height, background);
+        String narrationMessage, boolean background, List<E> elements) {
+        super(fontrenderer, x, y, width, height, narrationMessage, background);
         this.arrows = arrows;
 
         if (this.arrows) {
@@ -80,16 +81,16 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     }
 
     @Override
-    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
+    public void drawWidget(GuiContainer gui, int mouseX, int mouseY, float partialTicks) {
         int offsetX = 0;
         if (this.arrows) {
-            if (this.arrowLeft != null) this.arrowLeft.drawScreen(mouseX, mouseY, partialTicks);
-            if (this.arrowRight != null) this.arrowRight.drawScreen(mouseX, mouseY, partialTicks);
+            if (this.arrowLeft != null) this.arrowLeft.drawScreen(gui, mouseX, mouseY, partialTicks);
+            if (this.arrowRight != null) this.arrowRight.drawScreen(gui, mouseX, mouseY, partialTicks);
             offsetX = this.arrowLeft != null ? this.arrowLeft.width : 0;
             this.xPosition += offsetX + 1;
             this.width -= offsetX * 2;
         }
-        super.drawWidget(mouseX, mouseY, partialTicks);
+        super.drawWidget(gui, mouseX, mouseY, partialTicks);
         if (this.arrows) {
             this.xPosition -= offsetX + 1;
             this.width += offsetX * 2;

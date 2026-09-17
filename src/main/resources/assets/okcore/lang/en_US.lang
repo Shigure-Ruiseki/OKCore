@@ -11,10 +11,12 @@ gui.waila.okcore.logConfig=Logs
 
 item.guide_book.name=Guide Book
 
-button.back.name=Back
-button.next.name=Next
-button.prev.name=Previous
-button.search.name=Search
+gui.okcore.scrollbar=Scroll
+gui.okcore.search=Search
+gui.okcore.left=Left
+gui.okcore.right=Right
+gui.okcore.up=Up
+gui.okcore.down=Down
 
 # Redstone mode
 gui.button.redstone_mode.always_on=Always on

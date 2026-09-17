@@ -1,5 +1,7 @@
 package ruiseki.okcore.client.gui.component;
 
+import net.minecraft.client.gui.inventory.GuiContainer;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -14,5 +16,9 @@ public interface IWidgetRenderable {
 
     public void setY(int y);
 
-    public void drawWidget(int mouseX, int mouseY, float partialTicks);
+    public void drawScreen(GuiContainer gui, int mouseX, int mouseY, float partialTicks);
+
+    public void drawWidget(GuiContainer gui, int mouseX, int mouseY, float partialTicks);
+
+    public void drawToolTips(GuiContainer gui, int mouseX, int mouseY, float partialTicks);
 }

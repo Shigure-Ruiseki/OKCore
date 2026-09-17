@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
@@ -109,6 +111,25 @@ public class ExtendedBuffer extends PacketBuffer {
             this.writeString(location.getResourceDomain());
             this.writeString(location.getResourcePath());
         }
+    }
+
+    public <T> void writeCollection(Collection<T> collection, BiConsumer<ExtendedBuffer, T> consumer) {
+        this.writeVarIntToBuffer(collection.size());
+
+        for (T t : collection) {
+            consumer.accept(this, t);
+        }
+    }
+
+    public <T> List<T> readCollection(Function<ExtendedBuffer, T> reader) {
+        int size = this.readVarIntFromBuffer();
+
+        List<T> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            list.add(reader.apply(this));
+        }
+
+        return list;
     }
 
     /**

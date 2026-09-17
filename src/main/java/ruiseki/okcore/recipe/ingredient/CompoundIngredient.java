@@ -1,5 +1,6 @@
 package ruiseki.okcore.recipe.ingredient;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.minecraft.item.ItemStack;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
@@ -37,6 +40,27 @@ public class CompoundIngredient extends AbstractIngredient {
             .allMatch(Ingredient::isSimple);
     }
 
+    /**
+     * Creates a compound ingredient from the given list of ingredients
+     */
+    public static Ingredient of(Ingredient... children) {
+        // if 0 or 1 ingredient, can save effort
+        if (children.length == 0) throw new IllegalArgumentException(
+            "Cannot create a compound ingredient with no children, use Ingredient.of() to create an empty ingredient");
+        if (children.length == 1) return children[0];
+
+        // need to merge vanilla ingredients, as otherwise the JSON produced by this ingredient could be invalid
+        List<Ingredient> vanillaIngredients = new ArrayList<>();
+        List<Ingredient> allIngredients = new ArrayList<>();
+        for (Ingredient child : children) {
+            if (child.getSerializer() == VanillaIngredientSerializer.INSTANCE) vanillaIngredients.add(child);
+            else allIngredients.add(child);
+        }
+        if (!vanillaIngredients.isEmpty()) allIngredients.add(merge(vanillaIngredients));
+        if (allIngredients.size() == 1) return allIngredients.get(0);
+        return new CompoundIngredient(allIngredients);
+    }
+
     @Override
     @Nonnull
     public ItemStack[] getItems() {
@@ -50,10 +74,14 @@ public class CompoundIngredient extends AbstractIngredient {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public IntList getStackingIds() {
-        // TODO: Add a child.isInvalid()?
-        if (this.itemIds == null) {
+        boolean childrenNeedInvalidation = false;
+        for (Ingredient child : children) {
+            childrenNeedInvalidation |= child.checkInvalidation();
+        }
+        if (childrenNeedInvalidation || this.itemIds == null || checkInvalidation()) {
+            this.markValid();
             this.itemIds = new IntArrayList();
             for (Ingredient child : children) this.itemIds.addAll(child.getStackingIds());
             this.itemIds.sort(IntComparators.NATURAL_COMPARATOR);
@@ -74,7 +102,6 @@ public class CompoundIngredient extends AbstractIngredient {
     protected void invalidate() {
         this.itemIds = null;
         this.stacks = null;
-        // Shouldn't need to invalidate children as this is only called form invalidateAll..
     }
 
     @Override

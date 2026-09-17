@@ -6,8 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -41,80 +40,62 @@ import ruiseki.okcore.tag.TagKey;
 
 public class Ingredient implements Predicate<ItemStack> {
 
-    private static final Set<Ingredient> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
+    private static final AtomicInteger INVALIDATION_COUNTER = new AtomicInteger();
 
     public static void invalidateAll() {
-        Ingredient[] ingredients;
-        synchronized (INSTANCES) {
-            ingredients = INSTANCES.toArray(new Ingredient[0]);
-        }
-        for (Ingredient ingredient : ingredients) {
-            if (ingredient != null) {
-                ingredient.invalidate();
-            }
-        }
+        INVALIDATION_COUNTER.incrementAndGet();
     }
 
     public static final Ingredient EMPTY = new Ingredient(Stream.empty());
     private final Ingredient.IItemList[] values;
+    @Nullable
     private ItemStack[] itemStacks;
+    @Nullable
     private IntList stackingIds;
-    private final boolean isSimple;
+    private int invalidationCounter;
 
     protected Ingredient(Stream<? extends IItemList> stream) {
         this.values = stream.toArray(IItemList[]::new);
-        this.isSimple = Arrays.stream(values)
-            .noneMatch(
-                list -> list.getItems()
-                    .stream()
-                    .anyMatch(
-                        stack -> !ItemHelpers.isEmpty(stack) && stack.getItem()
-                            .isDamageable()));
-        Ingredient.INSTANCES.add(this);
     }
 
     public ItemStack[] getItems() {
-        this.dissolve();
-        return this.itemStacks;
-    }
-
-    private void dissolve() {
-        if (this.itemStacks == null || this.itemStacks.length == 0) {
+        if (this.itemStacks == null) {
             this.itemStacks = Arrays.stream(this.values)
                 .flatMap(
-                    itemList -> itemList.getItems()
-                        .stream())
-                .filter(stack -> !ItemHelpers.isEmpty(stack))
+                    (list) -> {
+                        return list.getItems()
+                            .stream();
+                    })
                 .distinct()
                 .toArray(ItemStack[]::new);
         }
+
+        return this.itemStacks;
     }
 
     public boolean test(@Nullable ItemStack stack) {
         if (ItemHelpers.isEmpty(stack)) {
             return false;
+        } else if (this.isEmpty()) {
+            return ItemHelpers.isEmpty(stack);
         } else {
-            this.dissolve();
-            if (this.itemStacks.length == 0) {
-                return false;
-            } else {
-                for (ItemStack itemstack : this.itemStacks) {
-                    if (ItemHelpers.areItemsEqual(itemstack, stack)) {
-                        return true;
-                    }
+            for (ItemStack itemstack : this.getItems()) {
+                if (ItemHelpers.areItemsEqual(stack, itemstack)) {
+                    return true;
                 }
-
-                return false;
             }
+
+            return false;
         }
     }
 
     public IntList getStackingIds() {
-        if (this.stackingIds == null || this.stackingIds.isEmpty()) {
-            this.dissolve();
-            this.stackingIds = new IntArrayList(this.itemStacks.length);
+        if (this.stackingIds == null || checkInvalidation()) {
+            this.markValid();
+            ItemStack[] aitemstack = this.getItems();
+            this.stackingIds = new IntArrayList(aitemstack.length);
 
-            for (ItemStack itemstack : this.itemStacks) {
+            for (ItemStack itemstack : aitemstack) {
                 this.stackingIds.add(RecipeItemHelpers.getStackingIndex(itemstack));
             }
 
@@ -125,20 +106,18 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public final void toNetwork(ExtendedBuffer buffer) {
-        this.dissolve();
         if (!this.isVanilla()) {
             RecipeRegistry.toNetwork(buffer, this);
             return;
         }
-        buffer.writeVarIntToBuffer(this.itemStacks.length);
 
-        for (int i = 0; i < this.itemStacks.length; ++i) {
+        buffer.writeCollection(Arrays.asList(this.getItems()), (writer, stack) -> {
             try {
-                buffer.writeItemStackToBuffer(this.itemStacks[i]);
+                writer.writeItemStackToBuffer(stack);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
+        });
     }
 
     public JsonElement toJson() {
@@ -147,8 +126,8 @@ public class Ingredient implements Predicate<ItemStack> {
         } else {
             JsonArray jsonarray = new JsonArray();
 
-            for (Ingredient.IItemList itemList : this.values) {
-                jsonarray.add(itemList.serialize());
+            for (Ingredient.IItemList ingredient$value : this.values) {
+                jsonarray.add(ingredient$value.serialize());
             }
 
             return jsonarray;
@@ -156,8 +135,20 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public boolean isEmpty() {
-        return this.values.length == 0 && (this.itemStacks == null || this.itemStacks.length == 0)
-            && (this.stackingIds == null || this.stackingIds.isEmpty());
+        return this.values.length == 0;
+    }
+
+    public final boolean checkInvalidation() {
+        int currentInvalidationCounter = INVALIDATION_COUNTER.get();
+        if (this.invalidationCounter != currentInvalidationCounter) {
+            invalidate();
+            return true;
+        }
+        return false;
+    }
+
+    protected final void markValid() {
+        this.invalidationCounter = INVALIDATION_COUNTER.get();
     }
 
     protected void invalidate() {
@@ -166,7 +157,7 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public boolean isSimple() {
-        return isSimple || this == EMPTY;
+        return true;
     }
 
     private final boolean isVanilla = this.getClass() == Ingredient.class;
@@ -183,7 +174,11 @@ public class Ingredient implements Predicate<ItemStack> {
 
     public static Ingredient fromValues(Stream<? extends Ingredient.IItemList> list) {
         Ingredient ingredient = new Ingredient(list);
-        return ingredient.values.length == 0 ? EMPTY : ingredient;
+        return ingredient.isEmpty() ? EMPTY : ingredient;
+    }
+
+    public static Ingredient of() {
+        return EMPTY;
     }
 
     public static Ingredient of(Object input) {

@@ -68,7 +68,7 @@ public class Ingredient implements Predicate<ItemStack> {
                 list -> list.getItems()
                     .stream()
                     .anyMatch(
-                        stack -> stack.getItem() != null && stack.getItem()
+                        stack -> !ItemHelpers.isEmpty(stack) && stack.getItem()
                             .isDamageable()));
         Ingredient.INSTANCES.add(this);
     }
@@ -79,20 +79,19 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     private void dissolve() {
-        if (this.itemStacks == null) {
+        if (this.itemStacks == null || this.itemStacks.length == 0) {
             this.itemStacks = Arrays.stream(this.values)
                 .flatMap(
-                    (itemList) -> {
-                        return itemList.getItems()
-                            .stream();
-                    })
+                    itemList -> itemList.getItems()
+                        .stream())
+                .filter(stack -> !ItemHelpers.isEmpty(stack))
                 .distinct()
                 .toArray(ItemStack[]::new);
         }
     }
 
     public boolean test(@Nullable ItemStack stack) {
-        if (stack == null) {
+        if (ItemHelpers.isEmpty(stack)) {
             return false;
         } else {
             this.dissolve();
@@ -111,7 +110,7 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public IntList getStackingIds() {
-        if (this.stackingIds == null) {
+        if (this.stackingIds == null || this.stackingIds.isEmpty()) {
             this.dissolve();
             this.stackingIds = new IntArrayList(this.itemStacks.length);
 
@@ -248,7 +247,7 @@ public class Ingredient implements Predicate<ItemStack> {
                 throw new RuntimeException(e);
             }
         })
-            .limit((long) i));
+            .limit(i));
     }
 
     public static Ingredient fromJson(@Nullable JsonElement jsonElement) {
@@ -323,10 +322,12 @@ public class Ingredient implements Predicate<ItemStack> {
             this.stack = stack;
         }
 
+        @Override
         public Collection<ItemStack> getItems() {
             return Collections.singleton(this.stack);
         }
 
+        @Override
         public JsonObject serialize() {
             JsonObject jsonobject = new JsonObject();
             jsonobject.addProperty(
@@ -373,8 +374,9 @@ public class Ingredient implements Predicate<ItemStack> {
 
         @Override
         public Collection<ItemStack> getItems() {
+            if (!OreDictionary.doesOreNameExist(this.ore)) return Collections.emptyList();
             List<ItemStack> list = OreDictionary.getOres(this.ore);
-            if (list.isEmpty()) return Collections.emptyList();
+            if (list == null || list.isEmpty()) return Collections.emptyList();
             return list;
         }
 

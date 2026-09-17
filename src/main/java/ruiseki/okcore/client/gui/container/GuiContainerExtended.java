@@ -2,6 +2,7 @@ package ruiseki.okcore.client.gui.container;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -32,6 +33,7 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.KeyBoardHelpers;
 import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
@@ -246,6 +248,21 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         mc.renderEngine.bindTexture(texture);
         drawTexturedModalRect(guiLeft + offsetX, guiTop + offsetY, 0, 0, xSize - 2 * offsetX, ySize - 2 * offsetY);
+    }
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        for (IWidgetRenderable renderable : this.renderables) {
+            GuiHelpers.renderTooltip(
+                this,
+                renderable.getX(),
+                renderable.getY(),
+                renderable.getWidth(),
+                renderable.getHeight(),
+                mouseX,
+                mouseY,
+                () -> Collections.singletonList(renderable.getTooltip()));
+        }
     }
 
     public void drawTexturedModalRectScalable(int destX, int destY, int destWidth, int destHeight, int srcX, int srcY,

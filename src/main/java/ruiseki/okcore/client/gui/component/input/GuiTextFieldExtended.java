@@ -260,6 +260,21 @@ public class GuiTextFieldExtended extends GuiTextField
         this.yPosition = y;
     }
 
+    @Override
+    public int getWidth() {
+        return super.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
+    public String getTooltip() {
+        return narrationMessage;
+    }
+
     public void setWidth(int width) {
         this.width = width;
     }

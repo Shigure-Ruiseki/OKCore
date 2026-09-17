@@ -207,6 +207,21 @@ public abstract class GuiButtonExtended extends GuiButton
         yPosition = y;
     }
 
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
+    public String getTooltip() {
+        return displayString;
+    }
+
     @SideOnly(Side.CLIENT)
     public interface OnPress {
 

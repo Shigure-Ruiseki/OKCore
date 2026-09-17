@@ -228,6 +228,21 @@ public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEvent
         this.y = y;
     }
 
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public String getTooltip() {
+        return narrationMessage;
+    }
+
     public static interface IScrollCallback {
 
         public void onScroll(int firstRow);

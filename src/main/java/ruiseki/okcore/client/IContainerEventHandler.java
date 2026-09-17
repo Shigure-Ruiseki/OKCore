@@ -67,22 +67,26 @@ public interface IContainerEventHandler extends IGuiEventListener {
 
     void setDragging(boolean dragging);
 
+    @Override
     default boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         return this.getChildAt(mouseX, mouseY)
-            .filter((child) -> { return child.mouseScrolled(mouseX, mouseY, delta); })
+            .filter((child) -> child.mouseScrolled(mouseX, mouseY, delta))
             .isPresent();
     }
 
+    @Override
     default boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         return this.getFocused() != null && this.getFocused()
             .keyPressed(keyCode, scanCode, modifiers);
     }
 
+    @Override
     default boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         return this.getFocused() != null && this.getFocused()
             .keyReleased(keyCode, scanCode, modifiers);
     }
 
+    @Override
     default boolean charTyped(char codePoint, int modifiers) {
         return this.getFocused() != null && this.getFocused()
             .charTyped(codePoint, modifiers);
@@ -102,55 +106,45 @@ public interface IContainerEventHandler extends IGuiEventListener {
     default boolean handleMouseInput(MouseInputEvent.Process event) {
         Minecraft mc = Minecraft.getMinecraft();
         GuiScreen gui = event.gui;
-        int button = Mouse.getEventButton();
+
         final int x = Mouse.getEventX() * gui.width / mc.displayWidth;
         final int y = gui.height - Mouse.getEventY() * gui.height / mc.displayHeight - 1;
-        boolean buttonState = Mouse.getEventButtonState();
-        boolean handled = false;
 
-        // 1. Mouse Scroll
+        int button = Mouse.getEventButton();
+        boolean buttonState = Mouse.getEventButtonState();
+
         int dWheel = Mouse.getEventDWheel();
         if (dWheel != 0) {
             double delta = Math.signum(dWheel);
-            if (mouseScrolled(x, y, delta)) {
-                handled = true;
+            if (this.mouseScrolled(x, y, delta)) {
+                return true;
             }
         }
 
         if (button != -1) {
             if (buttonState) {
-                // Click
-                if (mouseClicked(x, y, button)) {
-                    handled = true;
-                }
+                return this.mouseClicked(x, y, button);
             } else {
-                // Released
-                if (mouseReleased(x, y, button)) {
-                    handled = true;
-                }
-            }
-        } else {
-            // 3. Drag & Move
-            if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0) {
-                double dragX = (double) Mouse.getEventDX() * gui.width / mc.displayWidth;
-                double dragY = (double) (-Mouse.getEventDY()) * gui.height / mc.displayHeight;
-
-                if (isDragging() && getFocused() != null) {
-                    if (mouseDragged(x, y, 0, dragX, dragY)) {
-                        handled = true;
-                    }
-                } else if (Mouse.isButtonDown(0) || Mouse.isButtonDown(1) || Mouse.isButtonDown(2)) {
-                    int activeBtn = Mouse.isButtonDown(0) ? 0 : (Mouse.isButtonDown(1) ? 1 : 2);
-                    if (mouseDragged(x, y, activeBtn, dragX, dragY)) {
-                        handled = true;
-                    }
-                } else {
-                    mouseMoved(x, y);
-                }
+                return this.mouseReleased(x, y, button);
             }
         }
 
-        return handled;
+        if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0) {
+            double dragX = (double) Mouse.getEventDX() * gui.width / mc.displayWidth;
+            double dragY = (double) (-Mouse.getEventDY()) * gui.height / mc.displayHeight;
+
+            if (this.isDragging() && this.getFocused() != null) {
+                return this.mouseDragged(x, y, 0, dragX, dragY);
+            } else if (Mouse.isButtonDown(0) || Mouse.isButtonDown(1) || Mouse.isButtonDown(2)) {
+                int activeBtn = Mouse.isButtonDown(0) ? 0 : (Mouse.isButtonDown(1) ? 1 : 2);
+                return this.mouseDragged(x, y, activeBtn, dragX, dragY);
+            } else {
+                this.mouseMoved(x, y);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     default boolean handleKeyboardInput(KeyboardInputEvent.Process event) {
@@ -158,31 +152,28 @@ public interface IContainerEventHandler extends IGuiEventListener {
         int keyCode = Keyboard.getEventKey();
         char eventChar = Keyboard.getEventCharacter();
         boolean isRepeat = Keyboard.isRepeatEvent();
-
         int modifiers = KeyBoardHelpers.getModifiers();
-
-        boolean handled = false;
 
         if (keyState || isRepeat) {
             if (keyCode != Keyboard.KEY_NONE) {
-                if (keyPressed(keyCode, 0, modifiers)) {
-                    handled = true;
+                if (this.keyPressed(keyCode, 0, modifiers)) {
+                    return true;
                 }
             }
 
             if (KeyBoardHelpers.isValidChar(eventChar)) {
-                if (charTyped(eventChar, modifiers)) {
-                    handled = true;
+                if (this.charTyped(eventChar, modifiers)) {
+                    return true;
                 }
             }
         } else {
             if (keyCode != Keyboard.KEY_NONE) {
-                if (keyReleased(keyCode, 0, modifiers)) {
-                    handled = true;
+                if (this.keyReleased(keyCode, 0, modifiers)) {
+                    return true;
                 }
             }
         }
 
-        return handled;
+        return false;
     }
 }

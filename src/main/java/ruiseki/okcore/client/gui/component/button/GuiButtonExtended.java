@@ -9,6 +9,7 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.component.IWidgetEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
+import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
@@ -42,6 +43,7 @@ public abstract class GuiButtonExtended extends GuiButton
 
     protected void drawBackground() {
         RenderHelpers.bindTexture(buttonTextures);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         int textureY = getTextureY();
         drawTexturedModalRect(getX(), getY(), 0, textureY, width / 2, height / 2);// Top Left
         drawTexturedModalRect(getX() + width / 2, getY(), 200 - width / 2, textureY, width / 2, height / 2);// Top Right
@@ -74,6 +76,9 @@ public abstract class GuiButtonExtended extends GuiButton
     @Override
     public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
+            GlStateManager.enableBlend();
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
             if (this.background) {
                 this.drawBackground();
             }

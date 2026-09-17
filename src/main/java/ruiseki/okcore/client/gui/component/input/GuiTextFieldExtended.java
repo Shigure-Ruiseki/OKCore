@@ -7,8 +7,6 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.MathHelper;
 
-import org.lwjgl.input.Keyboard;
-
 import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.component.IWidgetEventListener;
@@ -73,17 +71,6 @@ public class GuiTextFieldExtended extends GuiTextField
         if (this.listener != null) {
             this.listener.onChanged();
         }
-    }
-
-    @Override
-    public boolean textboxKeyTyped(char typedChar, int keyCode) {
-        String oldText = this.getText();
-        boolean result = super.textboxKeyTyped(typedChar, keyCode);
-        if (result && !this.getText()
-            .equals(oldText) && this.listener != null) {
-            this.listener.onChanged();
-        }
-        return result;
     }
 
     @Override
@@ -153,75 +140,68 @@ public class GuiTextFieldExtended extends GuiTextField
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!this.canConsumeInput()) {
             return false;
-        }
-
-        String oldText = this.getText();
-
-        if (KeyBoardHelpers.isSelectAll(keyCode)) {
-            this.setCursorPositionZero();
-            this.setSelectionPos(
-                this.getText()
-                    .length());
-            return true;
-        } else if (KeyBoardHelpers.isCopy(keyCode)) {
-            GuiScreen.setClipboardString(this.getSelectedText());
-            return true;
-        } else if (KeyBoardHelpers.isPaste(keyCode)) {
-            if (this.isEnabled) {
-                this.writeText(GuiScreen.getClipboardString());
-                this.notifyListenerIfChanged(oldText);
-            }
-            return true;
-        } else if (KeyBoardHelpers.isCut(keyCode)) {
-            GuiScreen.setClipboardString(this.getSelectedText());
-            if (this.isEnabled) {
-                this.writeText("");
-                this.notifyListenerIfChanged(oldText);
-            }
-            return true;
-        }
-
-        switch (keyCode) {
-            case Keyboard.KEY_BACK: // Backspace (14)
-                if (this.isEnabled) {
-                    this.deleteWords(-1);
-                    this.notifyListenerIfChanged(oldText);
-                }
-                return true;
-
-            case Keyboard.KEY_DELETE: // Delete (211)
-                if (this.isEnabled) {
-                    this.deleteWords(1);
-                    this.notifyListenerIfChanged(oldText);
-                }
-                return true;
-
-            case Keyboard.KEY_RIGHT: // Arrow right (205)
-                if (KeyBoardHelpers.isCtrlKeyDown()) {
-                    this.setCursorPosition(this.getNthWordFromCursor(1));
-                } else {
-                    this.moveCursorBy(1);
-                }
-                return true;
-
-            case Keyboard.KEY_LEFT: // Arrow left (203)
-                if (KeyBoardHelpers.isCtrlKeyDown()) {
-                    this.setCursorPosition(this.getNthWordFromCursor(-1));
-                } else {
-                    this.moveCursorBy(-1);
-                }
-                return true;
-
-            case Keyboard.KEY_HOME: // Home (199)
+        } else {
+            String oldText = this.getText();
+            if (KeyBoardHelpers.isSelectAll(keyCode)) {
                 this.setCursorPositionZero();
+                this.setSelectionPos(
+                    this.getText()
+                        .length());
                 return true;
-
-            case Keyboard.KEY_END: // End (207)
-                this.setCursorPositionEnd();
+            } else if (KeyBoardHelpers.isCopy(keyCode)) {
+                GuiScreen.setClipboardString(this.getSelectedText());
                 return true;
-
-            default:
-                return false;
+            } else if (KeyBoardHelpers.isPaste(keyCode)) {
+                if (this.isEnabled) {
+                    this.writeText(GuiScreen.getClipboardString());
+                    this.notifyListenerIfChanged(oldText);
+                }
+                return true;
+            } else if (KeyBoardHelpers.isCut(keyCode)) {
+                GuiScreen.setClipboardString(this.getSelectedText());
+                if (this.isEnabled) {
+                    this.writeText("");
+                    this.notifyListenerIfChanged(oldText);
+                }
+                return true;
+            } else {
+                switch (keyCode) {
+                    case 14: // Backspace
+                        if (this.isEnabled) {
+                            this.deleteFromCursor(-1);
+                            this.notifyListenerIfChanged(oldText);
+                        }
+                        return true;
+                    case 199: // Home
+                        this.setCursorPositionZero();
+                        return true;
+                    case 203: // Left Arrow
+                        if (KeyBoardHelpers.isCtrlKeyDown()) {
+                            this.setCursorPosition(this.getNthWordFromCursor(-1));
+                        } else {
+                            this.moveCursorBy(-1);
+                        }
+                        return true;
+                    case 205: // Right Arrow
+                        if (KeyBoardHelpers.isCtrlKeyDown()) {
+                            this.setCursorPosition(this.getNthWordFromCursor(1));
+                        } else {
+                            this.moveCursorBy(1);
+                        }
+                        return true;
+                    case 207: // End
+                        this.setCursorPositionEnd();
+                        return true;
+                    case 211: // Delete
+                        if (this.isEnabled) {
+                            this.deleteFromCursor(1);
+                            this.notifyListenerIfChanged(oldText);
+                        }
+                        return true;
+                    default:
+                        return false;
+                }
+            }
         }
     }
 
@@ -303,5 +283,11 @@ public class GuiTextFieldExtended extends GuiTextField
     @Deprecated
     public final void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         // Unused legacy method
+    }
+
+    @Override
+    @Deprecated
+    public final boolean textboxKeyTyped(char typedChar, int keyCode) {
+        return false;
     }
 }

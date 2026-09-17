@@ -10,6 +10,7 @@ public class Reference {
         + "required-after:modularui2@[2.3.79-1.7.10,);"
         + "after:Baubles|Expanded;"
         + "after:Baubles;"
+        + "after:controlling@[2.1.0,);"
         + "after:NotEnoughItems;"
         + "after:Waila;"
         + "after:Botania;"

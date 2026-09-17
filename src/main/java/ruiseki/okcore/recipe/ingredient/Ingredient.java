@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparators;
 import it.unimi.dsi.fastutil.ints.IntList;
 import ruiseki.okcore.helper.GsonHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.RecipeItemHelpers;
@@ -99,7 +100,7 @@ public class Ingredient implements Predicate<ItemStack> {
                 return false;
             } else {
                 for (ItemStack itemstack : this.itemStacks) {
-                    if (itemstack.getItem() == stack.getItem()) {
+                    if (ItemHelpers.areItemsEqual(itemstack, stack)) {
                         return true;
                     }
                 }

@@ -11,10 +11,7 @@ import net.minecraftforge.fluids.IFluidHandler;
 
 import org.jetbrains.annotations.Nullable;
 
-import cpw.mods.fml.common.Optional;
-
-@Optional.Interface(iface = "com.cleanroommc.modularui.utils.item.IItemHandler", modid = "modularui2", striprefs = true)
-public interface IItemHandler extends com.cleanroommc.modularui.utils.item.IItemHandler {
+public interface IItemHandler {
 
     /**
      * Returns the number of slots available

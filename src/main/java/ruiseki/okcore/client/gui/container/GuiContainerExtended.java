@@ -502,10 +502,12 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         return this.theSlot;
     }
 
+    @Override
     public final boolean isDragging() {
         return this.isDragging;
     }
 
+    @Override
     public final void setDragging(boolean dragging) {
         this.isDragging = dragging;
     }

@@ -1,11 +1,19 @@
 package ruiseki.okcore.client.gui.component.input;
 
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetEventListener;
@@ -26,6 +34,12 @@ public class GuiTextFieldExtended extends GuiTextField
     private final boolean background;
     private IInputListener listener;
     private final String narrationMessage;
+    @Nullable
+    private String suggestion;
+    @Nullable
+    private Consumer<String> responder;
+    @Nullable
+    private String hint;
 
     public GuiTextFieldExtended(FontRenderer fontrenderer, int x, int y, int width, int height, String narrationMessage,
         boolean background) {
@@ -39,12 +53,42 @@ public class GuiTextFieldExtended extends GuiTextField
         this(fontrenderer, x, y, width, height, narrationMessage, false);
     }
 
+    public void setResponder(Consumer<String> responder) {
+        this.responder = responder;
+    }
+
     public void setListener(IInputListener listener) {
         this.listener = listener;
     }
 
     public int getInnerWidth() {
         return this.width - 7;
+    }
+
+    @Override
+    public void writeText(String string) {
+        super.writeText(string);
+        this.onValueChange(string);
+    }
+
+    @Override
+    public void moveCursorBy(int p_146182_1_) {
+        super.moveCursorBy(p_146182_1_);
+        this.onValueChange(this.text);
+    }
+
+    @Override
+    public void setMaxStringLength(int length) {
+        super.setMaxStringLength(length);
+        if (this.text.length() > length) {
+            this.onValueChange(this.text);
+        }
+    }
+
+    private void onValueChange(String p_94175_) {
+        if (this.responder != null) {
+            this.responder.accept(p_94175_);
+        }
     }
 
     protected void drawBackground(int mouseX, int mouseY, float partialTicks) {
@@ -291,10 +335,88 @@ public class GuiTextFieldExtended extends GuiTextField
         return field_146211_a;
     }
 
+    public void setSuggestion(@Nullable String suggestion) {
+        this.suggestion = suggestion;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
+    }
+
     @Override
-    @Deprecated
     public final void drawTextBox() {
-        super.drawTextBox();
+        if (this.isVisible()) {
+            if (this.getEnableBackgroundDrawing()) {
+                drawRect(
+                    this.xPosition - 1,
+                    this.yPosition - 1,
+                    this.xPosition + this.width + 1,
+                    this.yPosition + this.height + 1,
+                    -6250336);
+                drawRect(
+                    this.xPosition,
+                    this.yPosition,
+                    this.xPosition + this.width,
+                    this.yPosition + this.height,
+                    -16777216);
+            }
+
+            int i = this.isEnabled ? this.enabledColor : this.disabledColor;
+            int j = this.cursorPosition - this.lineScrollOffset;
+            int k = this.selectionEnd - this.lineScrollOffset;
+            String s = this.field_146211_a
+                .trimStringToWidth(this.text.substring(this.lineScrollOffset), this.getWidth());
+            boolean flag = j >= 0 && j <= s.length();
+            boolean flag1 = this.isFocused && this.cursorCounter / 6 % 2 == 0 && flag;
+            int l = this.enableBackgroundDrawing ? this.xPosition + 4 : this.xPosition;
+            int i1 = this.enableBackgroundDrawing ? this.yPosition + (this.height - 8) / 2 : this.yPosition;
+            int j1 = l;
+
+            if (k > s.length()) {
+                k = s.length();
+            }
+
+            if (!s.isEmpty()) {
+                String s1 = flag ? s.substring(0, j) : s;
+                j1 = this.field_146211_a.drawStringWithShadow(s1, l, i1, i);
+            }
+
+            boolean flag2 = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
+            int k1 = j1;
+
+            if (!flag) {
+                k1 = j > 0 ? l + this.width : l;
+            } else if (flag2) {
+                k1 = j1 - 1;
+                --j1;
+            }
+
+            if (!s.isEmpty() && flag && j < s.length()) {
+                this.field_146211_a.drawStringWithShadow(s.substring(j), j1, i1, i);
+            }
+
+            if (this.hint != null && s.isEmpty() && !this.isFocused()) {
+                this.field_146211_a.drawStringWithShadow(this.hint, j1, i1, i);
+            }
+
+            if (!flag2 && this.suggestion != null) {
+                this.field_146211_a.drawStringWithShadow(this.suggestion, k1 - 1, i1, -8355712);
+            }
+
+            if (flag1) {
+                if (flag2) {
+                    Gui.drawRect(k1, i1 - 1, k1 + 1, i1 + 1 + this.field_146211_a.FONT_HEIGHT, -3092272);
+                } else {
+                    this.field_146211_a.drawStringWithShadow("_", k1, i1, i);
+                }
+            }
+
+            if (k != j) {
+                int l1 = l + this.field_146211_a.getStringWidth(s.substring(0, k));
+                this.drawCursorVertical(k1, i1 - 1, l1 - 1, i1 + 1 + this.field_146211_a.FONT_HEIGHT);
+            }
+
+        }
     }
 
     @Override
@@ -308,4 +430,9 @@ public class GuiTextFieldExtended extends GuiTextField
     public final boolean textboxKeyTyped(char typedChar, int keyCode) {
         return false;
     }
+
+    public void playDownSound(SoundHandler soundHandlerIn) {
+        soundHandlerIn.playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+    }
+
 }

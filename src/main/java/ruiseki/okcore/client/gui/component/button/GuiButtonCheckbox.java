@@ -15,6 +15,10 @@ public class GuiButtonCheckbox extends GuiButtonExtended {
         this(x, y, 10, 10, string, onPress, false);
     }
 
+    public GuiButtonCheckbox(int x, int y, OnPress onPress) {
+        this(x, y, 10, 10, "", onPress, false);
+    }
+
     public void setChecked(boolean checked) {
         this.checked = checked;
     }

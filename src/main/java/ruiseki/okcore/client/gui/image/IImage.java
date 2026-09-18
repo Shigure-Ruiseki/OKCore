@@ -20,6 +20,17 @@ public interface IImage {
     public void draw(Gui gui, int x, int y);
 
     /**
+     * Draw this image with custom width and height.
+     *
+     * @param gui    The gui helper object.
+     * @param x      The x position.
+     * @param y      The y position.
+     * @param width  Target width.
+     * @param height Target height.
+     */
+    public void draw(Gui gui, int x, int y, int width, int height);
+
+    /**
      * Draw this image with color tinting.
      *
      * @param gui The gui helper object.
@@ -31,6 +42,21 @@ public interface IImage {
      * @param a   Alpha
      */
     public void drawWithColor(Gui gui, int x, int y, float r, float g, float b, float a);
+
+    /**
+     * Draw this image with custom width, height and color tinting.
+     *
+     * @param gui    The gui helper object.
+     * @param x      The x position.
+     * @param y      The y position.
+     * @param width  Target width.
+     * @param height Target height.
+     * @param r      Red
+     * @param g      Green
+     * @param b      Blue
+     * @param a      Alpha
+     */
+    public void drawWithColor(Gui gui, int x, int y, int width, int height, float r, float g, float b, float a);
 
     /**
      * Draw the image in the world.

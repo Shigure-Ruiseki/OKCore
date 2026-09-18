@@ -4,14 +4,7 @@ import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
-import cpw.mods.fml.common.Optional;
-
-@Optional.Interface(
-    iface = "com.cleanroommc.modularui.utils.item.IItemHandlerModifiable",
-    modid = "modularui2",
-    striprefs = true)
-public interface IItemHandlerModifiable
-    extends IItemHandler, com.cleanroommc.modularui.utils.item.IItemHandlerModifiable {
+public interface IItemHandlerModifiable extends IItemHandler {
 
     /**
      * Overrides the stack in the given slot. This method is used by the

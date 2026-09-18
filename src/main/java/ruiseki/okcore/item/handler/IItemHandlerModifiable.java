@@ -4,10 +4,7 @@ import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
-import cpw.mods.fml.common.Optional;
-
-public interface IItemHandlerModifiable
-    extends IItemHandler {
+public interface IItemHandlerModifiable extends IItemHandler {
 
     /**
      * Overrides the stack in the given slot. This method is used by the

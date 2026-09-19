@@ -6,7 +6,6 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 
 import ruiseki.okcore.config.ConfigurableType;
-import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.init.ModBase;
 
 /**
@@ -66,7 +65,6 @@ public abstract class BiomeConfig extends ExtendedConfig<BiomeConfig, BiomeGenBa
      * @see BiomeDictionary
      */
     public void registerBiomeDictionary() {
-        getInstance().setBiomeName(LangHelpers.localize(this.getUnlocalizedName()));
         BiomeDictionary.makeBestGuess(getInstance());
     }
 

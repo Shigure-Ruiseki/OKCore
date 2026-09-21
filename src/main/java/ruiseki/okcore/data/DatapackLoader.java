@@ -69,7 +69,11 @@ public class DatapackLoader {
 
         CompletableFuture<Void> scanModJarsFuture = scanModJars(datapackManager, openedFileSystems, ioExecutor);
 
-        CompletableFuture<Void> scanDatapacksFuture = scanWorldDatapacks(realWorldDir, datapackManager, ioExecutor);
+        CompletableFuture<Void> scanDatapacksFuture = scanWorldDatapacks(
+            server,
+            realWorldDir,
+            datapackManager,
+            ioExecutor);
 
         return CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
             .thenComposeAsync(
@@ -266,27 +270,39 @@ public class DatapackLoader {
         }
     }
 
-    private static CompletableFuture<Void> scanWorldDatapacks(File realWorldDir, DatapackManager datapackManager,
-        Executor ioExecutor) {
+    private static CompletableFuture<Void> scanWorldDatapacks(MinecraftServer server, File realWorldDir,
+        DatapackManager datapackManager, Executor ioExecutor) {
 
-        File datapacksDir = new File(realWorldDir, "datapacks");
+        List<File> datapackDirsToScan = new ArrayList<>();
 
-        if (!datapacksDir.exists() && !datapacksDir.mkdirs()) {
-
-            return CompletableFuture.completedFuture(null);
+        // 1. Default <worldDir>/datapacks
+        File worldDatapacksDir = new File(realWorldDir, "datapacks");
+        if (worldDatapacksDir.exists() || worldDatapacksDir.mkdirs()) {
+            datapackDirsToScan.add(worldDatapacksDir);
         }
 
-        File[] packs = datapacksDir.listFiles();
-
-        if (packs == null || packs.length == 0) {
-            return CompletableFuture.completedFuture(null);
+        // 2. Single Player or LAN <gameDir>/datapacks
+        if (!server.isDedicatedServer()) {
+            File gameRootDir = FMLCommonHandler.instance()
+                .getSavesDirectory()
+                .getParentFile();
+            if (gameRootDir != null && gameRootDir.exists()) {
+                File rootDatapacksDir = new File(gameRootDir, "datapacks");
+                if (rootDatapacksDir.exists() || rootDatapacksDir.mkdirs()) {
+                    datapackDirsToScan.add(rootDatapacksDir);
+                }
+            }
         }
 
         List<File> validPackDirs = new ArrayList<>();
-
-        for (File packDir : packs) {
-            if (packDir.isDirectory()) {
-                validPackDirs.add(packDir);
+        for (File datapacksDir : datapackDirsToScan) {
+            File[] packs = datapacksDir.listFiles();
+            if (packs != null) {
+                for (File packDir : packs) {
+                    if (packDir.isDirectory()) {
+                        validPackDirs.add(packDir);
+                    }
+                }
             }
         }
 

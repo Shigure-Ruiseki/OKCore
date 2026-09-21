@@ -4,7 +4,7 @@ import com.cleanroommc.modularui.screen.viewport.ModularGuiContext;
 import com.cleanroommc.modularui.theme.WidgetThemeEntry;
 import com.cleanroommc.modularui.widgets.TextWidget;
 
-import ruiseki.okcore.client.OKCGuiTextures;
+import ruiseki.okcore.client.mui.OKCGuiTextures;
 
 public class TitleWidget extends TextWidget<TitleWidget> {
 

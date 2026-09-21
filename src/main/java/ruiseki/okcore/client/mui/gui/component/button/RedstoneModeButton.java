@@ -6,7 +6,7 @@ import java.util.List;
 import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.value.sync.EnumSyncValue;
 
-import ruiseki.okcore.client.OKCGuiTextures;
+import ruiseki.okcore.client.mui.OKCGuiTextures;
 import ruiseki.okcore.enums.RedstoneMode;
 
 public class RedstoneModeButton extends CyclicVariantButton {

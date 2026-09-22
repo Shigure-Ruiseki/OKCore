@@ -67,8 +67,10 @@ public class DatapackLoader {
 
         Executor startupAppExecutor = startupTaskQueue::add;
 
+        // Step 1: Scan Mod JAR
         CompletableFuture<Void> scanModJarsFuture = scanModJars(datapackManager, openedFileSystems, ioExecutor);
 
+        // Step 2: Scan World Datapacks
         CompletableFuture<Void> scanDatapacksFuture = scanWorldDatapacks(
             server,
             realWorldDir,
@@ -112,6 +114,7 @@ public class DatapackLoader {
             "DataLoader: Core Scan done in {} ms. Starting phased execution...",
             System.currentTimeMillis() - startTime);
 
+        // Step 3: Load Tag Data
         CompletableFuture<Void> tagFuture = TagManager.getManager()
             .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
 
@@ -119,11 +122,14 @@ public class DatapackLoader {
 
         RecipeManager.getManager()
             .setContext(context);
+
+        // Step 4: Load Recipe Data
         CompletableFuture<Void> recipeFuture = tagFuture.thenComposeAsync(
             ignored -> RecipeManager.getManager()
                 .reload(barrier, datapackManager, ioExecutor, startupAppExecutor),
             ioExecutor);
 
+        // Step 5: Load External Reload Listeners
         CompletableFuture<Void> externalListenersFuture = recipeFuture.thenComposeAsync(ignored -> {
             AddReloadListenerEvent event = new AddReloadListenerEvent();
             MinecraftForge.EVENT_BUS.post(event);

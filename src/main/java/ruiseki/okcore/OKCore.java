@@ -95,7 +95,8 @@ public class OKCore extends ModBaseVersionable {
     @Mod.EventHandler
     public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
         super.onServerAboutToStart(event);
-        DatapackLoader.loadAllData(event.getServer());
+        DatapackLoader.loadAllData(event.getServer())
+            .join();
     }
 
     @Override

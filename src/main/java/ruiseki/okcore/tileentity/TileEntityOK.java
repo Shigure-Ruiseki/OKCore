@@ -172,6 +172,7 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
     protected void afterSendUpdate() {
 
     }
+
     @Override
     public Packet getDescriptionPacket() {
         NBTTagCompound tag = new NBTTagCompound();

@@ -64,12 +64,19 @@ public class CompoundIngredient extends AbstractIngredient {
     @Override
     @Nonnull
     public ItemStack[] getItems() {
-        if (stacks == null) {
+        // An empty result is recomputed rather than cached, because a child may only be unresolved and become
+        // available once the entries it refers to are registered.
+        if (stacks == null || stacks.length == 0) {
             List<ItemStack> tmp = Lists.newArrayList();
             for (Ingredient child : children) Collections.addAll(tmp, child.getItems());
-            stacks = tmp.toArray(new ItemStack[tmp.size()]);
+            ItemStack[] resolved = tmp.toArray(new ItemStack[tmp.size()]);
 
+            // Only a non empty result is cached, so a compound whose children resolve later is not stuck empty.
+            stacks = resolved.length > 0 ? resolved : null;
+
+            return resolved;
         }
+
         return stacks;
     }
 
@@ -80,11 +87,18 @@ public class CompoundIngredient extends AbstractIngredient {
         for (Ingredient child : children) {
             childrenNeedInvalidation |= child.checkInvalidation();
         }
-        if (childrenNeedInvalidation || this.itemIds == null || checkInvalidation()) {
+
+        // An empty result is recomputed rather than cached, matching getItems, so a compound whose children
+        // resolve later is not stuck without ids.
+        if (childrenNeedInvalidation || this.itemIds == null || this.itemIds.isEmpty() || checkInvalidation()) {
             this.markValid();
-            this.itemIds = new IntArrayList();
-            for (Ingredient child : children) this.itemIds.addAll(child.getStackingIds());
-            this.itemIds.sort(IntComparators.NATURAL_COMPARATOR);
+            IntList ids = new IntArrayList();
+            for (Ingredient child : children) ids.addAll(child.getStackingIds());
+            ids.sort(IntComparators.NATURAL_COMPARATOR);
+
+            this.itemIds = ids.isEmpty() ? null : ids;
+
+            return ids;
         }
 
         return this.itemIds;

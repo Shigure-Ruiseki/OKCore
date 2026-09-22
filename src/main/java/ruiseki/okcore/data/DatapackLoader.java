@@ -37,6 +37,7 @@ import ruiseki.okcore.data.condition.ICondition;
 import ruiseki.okcore.datastructure.Resource;
 import ruiseki.okcore.event.data.AddReloadListenerEvent;
 import ruiseki.okcore.recipe.RecipeManager;
+import ruiseki.okcore.recipe.RecipeRegistry;
 import ruiseki.okcore.tag.TagManager;
 
 public class DatapackLoader {
@@ -145,10 +146,16 @@ public class DatapackLoader {
             return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         }, ioExecutor);
 
-        CompletableFuture<Void> startupFuture = CompletableFuture
-            .runAsync(() -> drainStartupTasks(externalListenersFuture, startupTaskQueue), ioExecutor);
+        CompletableFuture<Void> syncFuture = externalListenersFuture.thenRunAsync(() -> {
+            RecipeRegistry.syncMCCraftingManager();
+            RecipeRegistry.syncMCFurnaceRecipes();
+            OKCore.okLog(Level.INFO, "DataLoader: Vanilla crafting & furnace recipes synced successfully.");
+        }, ioExecutor);
 
-        return CompletableFuture.allOf(externalListenersFuture, startupFuture);
+        CompletableFuture<Void> startupFuture = CompletableFuture
+            .runAsync(() -> drainStartupTasks(syncFuture, startupTaskQueue), ioExecutor);
+
+        return CompletableFuture.allOf(syncFuture, startupFuture);
     }
 
     private static CompletableFuture<Void> scanModJars(DatapackManager datapackManager,

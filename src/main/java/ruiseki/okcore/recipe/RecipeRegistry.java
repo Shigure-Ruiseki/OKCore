@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -13,6 +14,7 @@ import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
@@ -24,7 +26,9 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.GsonHelpers;
@@ -260,83 +264,118 @@ public class RecipeRegistry {
         return stack;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static void syncMCCraftingManager() {
-        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
-            .getRecipes();
-        List mcRecipeList = CraftingManager.getInstance()
-            .getRecipeList();
-        if (mcRecipeList == null) return;
-
-        mcRecipeList.removeIf(obj -> obj instanceof IRecipeOK);
-
-        if (targetRecipes == null || targetRecipes.isEmpty()) return;
-        for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe instanceof ICraftingRecipe) {
-                mcRecipeList.add(recipe);
+    public static void runOnMainThread(Runnable task) {
+        MinecraftServer server = FMLCommonHandler.instance()
+            .getMinecraftServerInstance();
+        if (server != null) {
+            if (ServerThreadUtil.isCallingFromMinecraftThread()) {
+                task.run();
+            } else {
+                ServerThreadUtil.addScheduledTask(task);
             }
+            return;
+        }
+
+        if (FMLCommonHandler.instance()
+            .getEffectiveSide()
+            .isClient()) {
+            runOnClientThread(task);
+            return;
+        }
+
+        task.run();
+    }
+
+    private static void runOnClientThread(Runnable task) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.func_152345_ab()) {
+            task.run();
+        } else {
+            mc.func_152344_a(task);
         }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static void syncMCFurnaceRecipes() {
-        Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
-            .getRecipes();
-        FurnaceRecipes furnaceInstance = FurnaceRecipes.smelting();
-        Map mcSmeltingList = furnaceInstance.getSmeltingList();
-        Map mcExperienceList = furnaceInstance.experienceList;
+    public static void syncMCCraftingManager() {
+        runOnMainThread(() -> {
+            Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
+                .getRecipes();
+            List mcRecipeList = CraftingManager.getInstance()
+                .getRecipeList();
+            if (mcRecipeList == null) return;
 
-        if (mcSmeltingList == null) return;
-        for (AbstractCookingRecipe oldRecipe : FURNACE_BRIDGE_MAP.values()) {
-            ItemStack oldOutput = oldRecipe.getResultItem();
-            if (oldOutput == null) continue;
+            mcRecipeList.removeIf(obj -> obj instanceof IRecipeOK);
 
-            Iterator<Map.Entry> smeltingIterator = mcSmeltingList.entrySet()
-                .iterator();
-            while (smeltingIterator.hasNext()) {
-                Map.Entry entry = smeltingIterator.next();
-                ItemStack valueStack = (ItemStack) entry.getValue();
-                if (ItemStack.areItemStacksEqual(valueStack, oldOutput)) {
-                    smeltingIterator.remove();
+            if (targetRecipes == null || targetRecipes.isEmpty()) return;
+            for (IRecipeOK<?> recipe : targetRecipes) {
+                if (recipe instanceof ICraftingRecipe) {
+                    mcRecipeList.add(recipe);
                 }
             }
+        });
+    }
 
-            if (mcExperienceList != null) {
-                Iterator<Map.Entry> expIterator = mcExperienceList.entrySet()
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static void syncMCFurnaceRecipes() {
+        runOnMainThread(() -> {
+            Collection<IRecipeOK<?>> targetRecipes = RecipeManager.getManager()
+                .getRecipes();
+            FurnaceRecipes furnaceInstance = FurnaceRecipes.smelting();
+            Map mcSmeltingList = furnaceInstance.getSmeltingList();
+            Map mcExperienceList = furnaceInstance.experienceList;
+
+            if (mcSmeltingList == null) return;
+            for (AbstractCookingRecipe oldRecipe : FURNACE_BRIDGE_MAP.values()) {
+                ItemStack oldOutput = oldRecipe.getResultItem();
+                if (oldOutput == null) continue;
+
+                Iterator<Map.Entry> smeltingIterator = mcSmeltingList.entrySet()
                     .iterator();
-                while (expIterator.hasNext()) {
-                    Map.Entry entry = expIterator.next();
-                    if (ItemStack.areItemStacksEqual((ItemStack) entry.getKey(), oldOutput)) {
-                        expIterator.remove();
+                while (smeltingIterator.hasNext()) {
+                    Map.Entry entry = smeltingIterator.next();
+                    ItemStack valueStack = (ItemStack) entry.getValue();
+                    if (ItemStack.areItemStacksEqual(valueStack, oldOutput)) {
+                        smeltingIterator.remove();
+                    }
+                }
+
+                if (mcExperienceList != null) {
+                    Iterator<Map.Entry> expIterator = mcExperienceList.entrySet()
+                        .iterator();
+                    while (expIterator.hasNext()) {
+                        Map.Entry entry = expIterator.next();
+                        if (ItemStack.areItemStacksEqual((ItemStack) entry.getKey(), oldOutput)) {
+                            expIterator.remove();
+                        }
                     }
                 }
             }
-        }
 
-        FURNACE_BRIDGE_MAP.clear();
+            FURNACE_BRIDGE_MAP.clear();
 
-        if (targetRecipes == null || targetRecipes.isEmpty()) return;
+            if (targetRecipes == null || targetRecipes.isEmpty()) return;
 
-        for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe instanceof AbstractCookingRecipe customRecipe) {
-                ResourceLocation recipeId = customRecipe.getId();
-                ItemStack customOutput = customRecipe.getResultItem();
-                float customExp = customRecipe.getExperience();
-                if (customRecipe.getIngredient() == null || customOutput == null || recipeId == null) continue;
-                List<ItemStack> matchingStacks = List.of(
-                    customRecipe.getIngredient()
-                        .getItems());
-                if (matchingStacks.isEmpty()) continue;
+            for (IRecipeOK<?> recipe : targetRecipes) {
+                if (recipe instanceof AbstractCookingRecipe customRecipe) {
+                    ResourceLocation recipeId = customRecipe.getId();
+                    ItemStack customOutput = customRecipe.getResultItem();
+                    float customExp = customRecipe.getExperience();
+                    if (customRecipe.getIngredient() == null || customOutput == null || recipeId == null) continue;
 
-                ItemStack representInput = matchingStacks.getFirst();
-                if (representInput == null) continue;
+                    ItemStack[] matchingStacks = customRecipe.getIngredient()
+                        .getItems();
+                    if (matchingStacks == null || matchingStacks.length == 0) continue;
 
-                mcSmeltingList.put(representInput, customOutput);
-                if (mcExperienceList != null) {
-                    mcExperienceList.put(customOutput, customExp);
+                    ItemStack representInput = matchingStacks[0];
+                    if (representInput == null) continue;
+
+                    mcSmeltingList.put(representInput, customOutput);
+                    if (mcExperienceList != null) {
+                        mcExperienceList.put(customOutput, customExp);
+                    }
+                    FURNACE_BRIDGE_MAP.put(recipeId, customRecipe);
                 }
-                FURNACE_BRIDGE_MAP.put(recipeId, customRecipe);
             }
-        }
+        });
     }
 }

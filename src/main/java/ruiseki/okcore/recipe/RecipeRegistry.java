@@ -323,12 +323,12 @@ public class RecipeRegistry {
                 ItemStack customOutput = customRecipe.getResultItem();
                 float customExp = customRecipe.getExperience();
                 if (customRecipe.getIngredient() == null || customOutput == null || recipeId == null) continue;
-                List<ItemStack> matchingStacks = List.of(
-                    customRecipe.getIngredient()
-                        .getItems());
-                if (matchingStacks.isEmpty()) continue;
 
-                ItemStack representInput = matchingStacks.getFirst();
+                ItemStack[] matchingStacks = customRecipe.getIngredient()
+                    .getItems();
+                if (matchingStacks == null || matchingStacks.length == 0) continue;
+
+                ItemStack representInput = matchingStacks[0];
                 if (representInput == null) continue;
 
                 mcSmeltingList.put(representInput, customOutput);

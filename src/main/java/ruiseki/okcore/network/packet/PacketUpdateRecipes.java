@@ -69,8 +69,7 @@ public class PacketUpdateRecipes extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        RecipeRegistry.syncMCCraftingManager();
-        RecipeRegistry.syncMCFurnaceRecipes();
+        // Sync when load not when apply to player
     }
 
     public static IRecipeOK<?> fromNetwork(ExtendedBuffer buffer) throws IOException {

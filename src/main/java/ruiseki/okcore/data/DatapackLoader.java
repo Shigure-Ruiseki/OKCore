@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
@@ -37,12 +37,14 @@ import ruiseki.okcore.data.condition.ICondition;
 import ruiseki.okcore.datastructure.Resource;
 import ruiseki.okcore.event.data.AddReloadListenerEvent;
 import ruiseki.okcore.recipe.RecipeManager;
+import ruiseki.okcore.recipe.RecipeRegistry;
 import ruiseki.okcore.tag.TagManager;
 
 public class DatapackLoader {
 
     private static final Map<String, ?> EMPTY_ENV = Collections.emptyMap();
     private static final Runnable END_MARKER = () -> {};
+    private static final ConcurrentHashMap<URI, Object> FILE_SYSTEM_LOCKS = new ConcurrentHashMap<>();
 
     public static CompletableFuture<Void> loadAllData(MinecraftServer server) {
         if (server == null) return CompletableFuture.completedFuture(null);
@@ -64,18 +66,19 @@ public class DatapackLoader {
         Executor ioExecutor = ForkJoinPool.commonPool();
 
         BlockingQueue<Runnable> startupTaskQueue = new LinkedBlockingQueue<>();
-
         Executor startupAppExecutor = startupTaskQueue::add;
 
+        // Step 1: Scan Mod JAR
         CompletableFuture<Void> scanModJarsFuture = scanModJars(datapackManager, openedFileSystems, ioExecutor);
 
+        // Step 2: Scan World Datapacks
         CompletableFuture<Void> scanDatapacksFuture = scanWorldDatapacks(
             server,
             realWorldDir,
             datapackManager,
             ioExecutor);
 
-        return CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
+        CompletableFuture<Void> pipelineFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
             .thenComposeAsync(
                 ignored -> prepareListeners(
                     datapackManager,
@@ -83,23 +86,32 @@ public class DatapackLoader {
                     startupAppExecutor,
                     startupTaskQueue,
                     startTime),
-                ioExecutor)
-            .whenComplete((ignored, throwable) -> {
+                ioExecutor);
 
-                if (throwable != null) {
-                    OKCore.okLog(
-                        Level.ERROR,
-                        "DataLoader: Critical error occurred during resource reload pipeline!",
-                        throwable);
-                } else {
-                    OKCore.okLog(
-                        Level.INFO,
-                        "DataLoader: All data successfully reloaded in Total: {} ms.",
-                        System.currentTimeMillis() - startTime);
-                }
+        CompletableFuture<Void> finalSyncFuture = pipelineFuture.thenRunAsync(() -> {
+            RecipeRegistry.syncMCCraftingManager();
+            RecipeRegistry.syncMCFurnaceRecipes();
+            OKCore.okLog(Level.INFO, "DataLoader: Vanilla crafting & furnace recipes synced.");
+        }, startupAppExecutor);
 
-                closeFileSystems(openedFileSystems);
-            });
+        CompletableFuture<Void> drainFuture = CompletableFuture
+            .runAsync(() -> drainStartupTasks(finalSyncFuture, startupTaskQueue), ioExecutor);
+
+        return drainFuture.whenComplete((ignored, throwable) -> {
+            if (throwable != null) {
+                OKCore.okLog(
+                    Level.ERROR,
+                    "DataLoader: Critical error occurred during resource reload pipeline!",
+                    throwable);
+            } else {
+                OKCore.okLog(
+                    Level.INFO,
+                    "DataLoader: All data successfully reloaded in Total: {} ms.",
+                    System.currentTimeMillis() - startTime);
+            }
+
+            closeFileSystems(openedFileSystems);
+        });
     }
 
     private static CompletableFuture<Void> prepareListeners(DatapackManager datapackManager, Executor ioExecutor,
@@ -112,6 +124,7 @@ public class DatapackLoader {
             "DataLoader: Core Scan done in {} ms. Starting phased execution...",
             System.currentTimeMillis() - startTime);
 
+        // Step 3: Load Tag Data
         CompletableFuture<Void> tagFuture = TagManager.getManager()
             .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
 
@@ -119,12 +132,15 @@ public class DatapackLoader {
 
         RecipeManager.getManager()
             .setContext(context);
+
+        // Step 4: Load Recipe Data
         CompletableFuture<Void> recipeFuture = tagFuture.thenComposeAsync(
             ignored -> RecipeManager.getManager()
                 .reload(barrier, datapackManager, ioExecutor, startupAppExecutor),
             ioExecutor);
 
-        CompletableFuture<Void> externalListenersFuture = recipeFuture.thenComposeAsync(ignored -> {
+        // Step 5: Load External Reload Listeners
+        return recipeFuture.thenComposeAsync(ignored -> {
             AddReloadListenerEvent event = new AddReloadListenerEvent();
             MinecraftForge.EVENT_BUS.post(event);
 
@@ -138,11 +154,6 @@ public class DatapackLoader {
 
             return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         }, ioExecutor);
-
-        CompletableFuture<Void> startupFuture = CompletableFuture
-            .runAsync(() -> drainStartupTasks(externalListenersFuture, startupTaskQueue), ioExecutor);
-
-        return CompletableFuture.allOf(externalListenersFuture, startupFuture);
     }
 
     private static CompletableFuture<Void> scanModJars(DatapackManager datapackManager,
@@ -191,7 +202,6 @@ public class DatapackLoader {
     }
 
     private static SimpleDataManager scanModJar(File modSource, ConcurrentLinkedQueue<FileSystem> openedFileSystems) {
-
         URI uri = URI.create("jar:" + modSource.toURI());
 
         try {
@@ -238,34 +248,18 @@ public class DatapackLoader {
     }
 
     private static FileSystem obtainFileSystem(URI uri, ConcurrentLinkedQueue<FileSystem> openedFileSystems) {
-
-        try {
-            return FileSystems.getFileSystem(uri);
-
-        } catch (FileSystemNotFoundException e) {
-
+        synchronized (FILE_SYSTEM_LOCKS.computeIfAbsent(uri, k -> new Object())) {
             try {
-                FileSystem fileSystem = FileSystems.newFileSystem(uri, EMPTY_ENV);
-
-                openedFileSystems.add(fileSystem);
-
-                return fileSystem;
-
-            } catch (FileSystemAlreadyExistsException ex) {
-
+                return FileSystems.getFileSystem(uri);
+            } catch (FileSystemNotFoundException e) {
                 try {
-                    return FileSystems.getFileSystem(uri);
-
-                } catch (Exception innerEx) {
-                    OKCore.okLog(Level.ERROR, "Failed to obtain existing FileSystem for URI: " + uri, innerEx);
-
+                    FileSystem fileSystem = FileSystems.newFileSystem(uri, EMPTY_ENV);
+                    openedFileSystems.add(fileSystem);
+                    return fileSystem;
+                } catch (IOException ioEx) {
+                    OKCore.okLog(Level.ERROR, "Failed to create FileSystem for URI: " + uri, ioEx);
                     return null;
                 }
-
-            } catch (IOException ioEx) {
-                OKCore.okLog(Level.ERROR, "Failed to create FileSystem for URI: " + uri, ioEx);
-
-                return null;
             }
         }
     }
@@ -400,10 +394,10 @@ public class DatapackLoader {
         }
     }
 
-    private static void drainStartupTasks(CompletableFuture<Void> allPreparationsFuture,
+    private static void drainStartupTasks(CompletableFuture<Void> finalSyncFuture,
         BlockingQueue<Runnable> startupTaskQueue) {
 
-        allPreparationsFuture.whenComplete((ignored, throwable) -> {
+        finalSyncFuture.whenComplete((ignored, throwable) -> {
             if (throwable != null) {
                 startupTaskQueue.clear();
             }

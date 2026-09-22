@@ -61,7 +61,7 @@ public class Ingredient implements Predicate<ItemStack> {
     public ItemStack[] getItems() {
         if (this.itemStacks == null || this.itemStacks.length == 0 || checkInvalidation()) {
             this.markValid();
-            this.itemStacks = Arrays.stream(this.values)
+            ItemStack[] resolved = Arrays.stream(this.values)
                 .map(IItemList::getItems)
                 .<ItemStack>mapMulti((items, consumer) -> {
                     for (ItemStack stack : items) {
@@ -72,7 +72,12 @@ public class Ingredient implements Predicate<ItemStack> {
                 })
                 .distinct()
                 .toArray(ItemStack[]::new);
+
+            this.itemStacks = resolved.length > 0 ? resolved : null;
+
+            return resolved;
         }
+
         return this.itemStacks;
     }
 
@@ -93,16 +98,20 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public IntList getStackingIds() {
-        if (this.stackingIds == null || checkInvalidation()) {
+        if (this.stackingIds == null || this.stackingIds.isEmpty() || checkInvalidation()) {
             this.markValid();
             ItemStack[] aitemstack = this.getItems();
-            this.stackingIds = new IntArrayList(aitemstack.length);
+            IntList ids = new IntArrayList(aitemstack.length);
 
             for (ItemStack itemstack : aitemstack) {
-                this.stackingIds.add(RecipeItemHelpers.getStackingIndex(itemstack));
+                ids.add(RecipeItemHelpers.getStackingIndex(itemstack));
             }
 
-            this.stackingIds.sort(IntComparators.NATURAL_COMPARATOR);
+            ids.sort(IntComparators.NATURAL_COMPARATOR);
+
+            this.stackingIds = ids.isEmpty() ? null : ids;
+
+            return ids;
         }
 
         return this.stackingIds;

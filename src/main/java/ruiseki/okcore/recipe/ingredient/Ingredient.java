@@ -53,39 +53,41 @@ public class Ingredient implements Predicate<ItemStack> {
     @Nullable
     private IntList stackingIds;
     private int invalidationCounter = -1;
+    private boolean unresolved;
 
     protected Ingredient(Stream<? extends IItemList> stream) {
         this.values = stream.toArray(IItemList[]::new);
     }
 
     public ItemStack[] getItems() {
-        if (this.itemStacks == null || this.itemStacks.length == 0 || checkInvalidation()) {
-            this.markValid();
-            ItemStack[] resolved = Arrays.stream(this.values)
-                .map(IItemList::getItems)
-                .<ItemStack>mapMulti((items, consumer) -> {
-                    for (ItemStack stack : items) {
-                        if (!ItemHelpers.isEmpty(stack)) {
-                            consumer.accept(stack);
-                        }
-                    }
-                })
-                .distinct()
-                .toArray(ItemStack[]::new);
-
-            this.itemStacks = resolved.length > 0 ? resolved : null;
-
-            return resolved;
+        if (this.itemStacks != null && !this.unresolved && !checkInvalidation()) {
+            return this.itemStacks;
         }
 
-        return this.itemStacks;
+        this.markValid();
+        ItemStack[] resolved = Arrays.stream(this.values)
+            .map(IItemList::getItems)
+            .<ItemStack>mapMulti((items, consumer) -> {
+                for (ItemStack stack : items) {
+                    if (!ItemHelpers.isEmpty(stack)) {
+                        consumer.accept(stack);
+                    }
+                }
+            })
+            .distinct()
+            .toArray(ItemStack[]::new);
+
+        this.itemStacks = resolved;
+        this.unresolved = resolved.length == 0;
+
+        return resolved;
     }
 
     public boolean test(@Nullable ItemStack stack) {
-        if (ItemHelpers.isEmpty(stack)) {
-            return false;
-        } else if (this.isEmpty()) {
+        if (this.isEmpty()) {
             return ItemHelpers.isEmpty(stack);
+        } else if (ItemHelpers.isEmpty(stack)) {
+            return false;
         } else {
             for (ItemStack itemstack : this.getItems()) {
                 if (ItemHelpers.areItemsEqual(stack, itemstack)) {
@@ -98,23 +100,23 @@ public class Ingredient implements Predicate<ItemStack> {
     }
 
     public IntList getStackingIds() {
-        if (this.stackingIds == null || this.stackingIds.isEmpty() || checkInvalidation()) {
-            this.markValid();
-            ItemStack[] aitemstack = this.getItems();
-            IntList ids = new IntArrayList(aitemstack.length);
-
-            for (ItemStack itemstack : aitemstack) {
-                ids.add(RecipeItemHelpers.getStackingIndex(itemstack));
-            }
-
-            ids.sort(IntComparators.NATURAL_COMPARATOR);
-
-            this.stackingIds = ids.isEmpty() ? null : ids;
-
-            return ids;
+        if (this.stackingIds != null && !this.unresolved && !checkInvalidation()) {
+            return this.stackingIds;
         }
 
-        return this.stackingIds;
+        ItemStack[] aitemstack = this.getItems();
+        IntList ids = new IntArrayList(aitemstack.length);
+
+        for (ItemStack itemstack : aitemstack) {
+            ids.add(RecipeItemHelpers.getStackingIndex(itemstack));
+        }
+
+        ids.sort(IntComparators.NATURAL_COMPARATOR);
+        this.stackingIds = ids;
+
+        // The unresolved flag is owned by getItems, which decides whether the ingredient is still waiting for the
+        // entries it refers to, so it is deliberately not written here.
+        return ids;
     }
 
     public final void toNetwork(ExtendedBuffer buffer) {
@@ -166,6 +168,7 @@ public class Ingredient implements Predicate<ItemStack> {
     protected void invalidate() {
         this.itemStacks = null;
         this.stackingIds = null;
+        this.unresolved = false;
     }
 
     public boolean isSimple() {

@@ -15,6 +15,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
@@ -36,6 +37,7 @@ import ruiseki.okcore.data.SimpleJsonResourceReloadListener;
 import ruiseki.okcore.data.condition.ConditionRegistry;
 import ruiseki.okcore.data.condition.ICondition;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.event.recipes.RecipesRegisterEvent;
 import ruiseki.okcore.init.IRegistry;
 
 public class RecipeManager extends SimpleJsonResourceReloadListener implements IRegistry {
@@ -96,7 +98,6 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
 
                     map.computeIfAbsent(recipe.getType(), type -> new Object2ObjectOpenHashMap<>())
                         .put(id, recipe);
-
                     builderByName.put(id, recipe);
                 }
             } catch (IllegalArgumentException | JsonParseException jsonparseexception) {
@@ -104,6 +105,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
             }
         }
 
+        MinecraftForge.EVENT_BUS.post(new RecipesRegisterEvent(this, map, builderByName));
         this.recipes = Collections.unmodifiableMap(map);
         this.byName = Collections.unmodifiableMap(builderByName);
 

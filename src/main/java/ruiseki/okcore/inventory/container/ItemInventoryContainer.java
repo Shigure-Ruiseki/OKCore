@@ -1,5 +1,7 @@
 package ruiseki.okcore.inventory.container;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
@@ -7,38 +9,46 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.helper.InventoryHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
+import ruiseki.okcore.inventory.ClickType;
 import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * A container for an item.
- * 
+ *
  * @author rubensworks
  *
  * @param <I> The item instance.
  */
 public abstract class ItemInventoryContainer<I extends Item & IGuiContainerProviderConfigurable>
-    extends InventoryContainerConfigurable {
+    extends ContainerExtended {
 
     protected I item;
     protected int itemIndex;
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
      * @param item      The item.
      * @param itemIndex The index of the item in use inside the player inventory.
      */
-    public ItemInventoryContainer(InventoryPlayer inventory, I item, int itemIndex) {
-        super(inventory, item);
+    public ItemInventoryContainer(@Nullable GuiType<?> type, InventoryPlayer inventory, I item, int itemIndex) {
+        super(type, inventory);
         this.item = item;
         this.itemIndex = itemIndex;
     }
 
+    public static int readItemIndex(ExtendedBuffer packetBuffer) {
+        return packetBuffer.readInt();
+    }
+
     /**
      * Get the item instance.
-     * 
+     *
      * @return The item.
      */
     public I getItem() {
@@ -67,4 +77,12 @@ public abstract class ItemInventoryContainer<I extends Item & IGuiContainerProvi
         };
     }
 
+    @Override
+    public ItemStack slotClick(int slotId, int clickedButton, ClickType clickType, EntityPlayer player) {
+        if (clickType == ClickType.SWAP && clickedButton == itemIndex) {
+            // Don't allow swapping with the slot of the active item.
+            return ItemHelpers.EMPTY;
+        }
+        return super.slotClick(slotId, clickedButton, clickType, player);
+    }
 }

@@ -21,6 +21,7 @@ import ruiseki.okcore.config.extendedconfig.EnchantmentConfig;
 import ruiseki.okcore.config.extendedconfig.EntityConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.FluidConfig;
+import ruiseki.okcore.config.extendedconfig.GuiConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.config.extendedconfig.MobConfig;
 import ruiseki.okcore.config.extendedconfig.PotionConfig;
@@ -115,6 +116,10 @@ public class ConfigurableType {
         RecipeTypeConfig.class,
         new RecipeTypeAction(),
         "recipe_type");
+    /**
+     * Gui type.
+     */
+    public static final ConfigurableType GUI = new ConfigurableType(true, GuiConfig.class, new FluidAction(), "gui");
     /**
      * Capability type.
      */

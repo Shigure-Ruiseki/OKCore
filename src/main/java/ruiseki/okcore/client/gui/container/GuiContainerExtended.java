@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.client.IContainerEventHandler;
+import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
@@ -36,7 +37,7 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.KeyBoardHelpers;
 import ruiseki.okcore.inventory.IValueNotifiable;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.packet.PacketButtonClick;
 
 /**
@@ -44,8 +45,8 @@ import ruiseki.okcore.network.packet.PacketButtonClick;
  *
  * @author rubensworks
  */
-public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer> extends GuiContainer
-    implements IValueNotifiable, IContainerEventHandler {
+public abstract class GuiContainerExtended<T extends ContainerExtended> extends GuiContainer
+    implements IValueNotifiable, IContainerEventHandler, IContainerAccess<T> {
 
     protected T container;
     protected ResourceLocation texture;
@@ -73,6 +74,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         this.texture = constructGuiTexture();
     }
 
+    @Override
     public T getContainer() {
         return this.container;
     }

@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.EncoderException;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
@@ -41,6 +42,36 @@ public abstract class PacketCodec extends PacketBase {
 
     private static Map<Class<?>, ICodecAction> codecActions = Maps.newHashMap();
     static {
+        codecActions.put(ExtendedBuffer.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) throws IOException {
+                if (object == null) {
+                    output.writeInt(-1);
+                    return;
+                }
+
+                ExtendedBuffer buffer = (ExtendedBuffer) object;
+                int length = buffer.readableBytes();
+                output.writeInt(length);
+
+                if (length > 0) {
+                    output.writeBytes(buffer, buffer.readerIndex(), length);
+                }
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                int length = input.readInt();
+                if (length < 0) {
+                    return null;
+                }
+                if (length == 0) {
+                    return new ExtendedBuffer(Unpooled.EMPTY_BUFFER);
+                }
+                return new ExtendedBuffer(input.readBytes(length));
+            }
+        });
         codecActions.put(ResourceLocation.class, new ICodecAction() {
 
             @Override

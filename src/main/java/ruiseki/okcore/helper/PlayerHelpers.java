@@ -2,8 +2,11 @@ package ruiseki.okcore.helper;
 
 import java.lang.ref.WeakReference;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
@@ -19,10 +22,64 @@ import org.apache.logging.log4j.Level;
 import com.mojang.authlib.GameProfile;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import io.netty.buffer.Unpooled;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
+import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.IGuiTypeAccess;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.packet.PacketOpenGuiWithData;
 
 public class PlayerHelpers {
+
+    public static void openGui(EntityPlayerMP player, IGuiConstructor containerSupplier) {
+        openGui(player, containerSupplier, buf -> {});
+    }
+
+    public static void openGui(EntityPlayerMP player, IGuiConstructor containerSupplier, BlockPos pos) {
+        openGui(player, containerSupplier, buf -> buf.writeBlockPos(pos));
+    }
+
+    public static <T extends Container> void openGui(EntityPlayerMP player, IGuiConstructor containerSupplier,
+        Consumer<ExtendedBuffer> extraDataWriter) {
+        if (player.worldObj.isRemote) return;
+
+        player.getNextWindowId();
+        player.closeContainer();
+        int openContainerId = player.currentWindowId;
+
+        ExtendedBuffer extraData = new ExtendedBuffer(Unpooled.buffer());
+        extraDataWriter.accept(extraData);
+        extraData.readerIndex(0);
+
+        ExtendedBuffer output = new ExtendedBuffer(Unpooled.buffer());
+        output.writeVarIntToBuffer(extraData.readableBytes());
+        output.writeBytes(extraData);
+
+        if (output.readableBytes() > 32600 || output.readableBytes() < 1) {
+            throw new IllegalArgumentException(
+                "Invalid PacketBuffer for openGui, found " + output.readableBytes() + " bytes");
+        }
+        Container c = containerSupplier.createMenu(openContainerId, player.inventory, player);
+        if (c == null) return;
+
+        GuiType<?> type;
+        if (c instanceof IGuiTypeAccess access) {
+            type = access.getType();
+        } else {
+            throw new UnsupportedOperationException("Unable to construct this menu by type");
+        }
+
+        PacketOpenGuiWithData packet = new PacketOpenGuiWithData(type, openContainerId, extraData);
+        OKCore._instance.getPacketHandler()
+            .sendToPlayer(packet, player);
+
+        player.openContainer = c;
+        player.openContainer.windowId = openContainerId;
+        player.openContainer.addCraftingToCrafters(player);
+    }
 
     public static boolean doesPlayerExist(World world, UUID player) {
         if (world != null && player != null) {

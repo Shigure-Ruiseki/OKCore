@@ -10,6 +10,7 @@ import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
  *
  * @author rubensworks
  */
+@Deprecated
 public abstract class InventoryContainerConfigurable extends ExtendedInventoryContainer {
 
     /**

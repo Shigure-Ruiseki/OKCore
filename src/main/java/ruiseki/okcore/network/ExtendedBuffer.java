@@ -19,6 +19,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
 
 /**
@@ -38,6 +39,14 @@ public class ExtendedBuffer extends PacketBuffer {
 
     public void writeString(String string) {
         ByteBufUtils.writeUTF8String(this, string);
+    }
+
+    public BlockPos readBlockPos() {
+        return BlockPos.fromLong(this.readLong());
+    }
+
+    public void writeBlockPos(BlockPos pos) {
+        this.writeLong(pos.toLong());
     }
 
     /**

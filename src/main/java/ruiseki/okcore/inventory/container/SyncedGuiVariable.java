@@ -9,19 +9,19 @@ import ruiseki.okcore.persist.nbt.NBTClassType;
 
 /**
  * A convenience datastructure that offers direct synchronization of values between server and client inside GUIs.
- * 
+ *
  * @param <T> The type of value.
  */
 public class SyncedGuiVariable<T> implements Supplier<T> {
 
-    private final InventoryContainer gui;
+    private final ContainerExtended gui;
     private final int guiValueId;
     private final NBTClassType<T> nbtClassType;
     private final Supplier<T> serverValueSupplier;
 
     private NBTTagCompound lastTag;
 
-    SyncedGuiVariable(InventoryContainer gui, Class<T> clazz, Supplier<T> serverValueSupplier) {
+    SyncedGuiVariable(ContainerExtended gui, Class<T> clazz, Supplier<T> serverValueSupplier) {
         this.gui = gui;
         this.guiValueId = gui.getNextValueId();
         this.nbtClassType = NBTClassType.getClassType(clazz);

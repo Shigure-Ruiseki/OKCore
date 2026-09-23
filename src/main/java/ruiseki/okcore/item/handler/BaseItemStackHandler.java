@@ -18,7 +18,7 @@ import ruiseki.okcore.inventory.SimpleInventory;
 
 public class BaseItemStackHandler extends ItemStackHandler {
 
-    private final Runnable onContentsChanged;
+    private Runnable onContentsChanged;
     private final Map<Integer, Integer> slotSizeMap;
     private final RecipeInventory recipeWrapper;
     private BiFunction<Integer, ItemStack, Boolean> canInsert = null;
@@ -142,6 +142,10 @@ public class BaseItemStackHandler extends ItemStackHandler {
 
     public void setOutputSlots(int... slots) {
         this.outputSlots = slots;
+    }
+
+    public void setOnContentsChanged(Runnable onContentsChanged) {
+        this.onContentsChanged = onContentsChanged;
     }
 
     public IInventory toIInventory() {

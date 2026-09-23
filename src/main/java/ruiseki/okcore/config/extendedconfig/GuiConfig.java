@@ -10,10 +10,12 @@ import ruiseki.okcore.client.gui.GuiScreens;
 import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.config.ConfigurableType;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.registries.IForgeRegistry;
 
-public abstract class GuiConfig<T extends ContainerExtended> extends ExtendedConfig<GuiConfig<T>, GuiType<T>> {
+public abstract class GuiConfig<T extends ContainerExtended> extends ExtendedConfigForge<GuiConfig<T>, GuiType<T>> {
 
     /**
      * Create a new config
@@ -48,14 +50,25 @@ public abstract class GuiConfig<T extends ContainerExtended> extends ExtendedCon
     public abstract <U extends GuiScreen & IContainerAccess<T>> GuiScreens.ScreenConstructor<T, U> getScreenFactory();
 
     @Override
+    public IForgeRegistry<? super GuiType<T>> getRegistry() {
+        return GuiType.REGISTRY;
+    }
+
+    @Override
     public boolean isDisableable() {
         return false;
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
     public void onRegistered() {
         super.onRegistered();
+        if (MinecraftHelpers.isClientSide()) {
+            registerScreenFactory();
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void registerScreenFactory() {
         GuiScreens.register(getInstance(), getScreenFactory());
     }
 }

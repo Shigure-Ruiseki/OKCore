@@ -25,7 +25,7 @@ public class GuiType<T extends ContainerExtended> implements IForgeRegistryEntry
     @SubscribeEvent
     @SuppressWarnings("unchecked")
     public static void onRegistriesCreate(RegistryEvent.NewRegistry event) {
-        REGISTRY = new RegistryBuilder<GuiType<?>>().setName(new ResourceLocation("okcore", "registry:guitype"))
+        REGISTRY = new RegistryBuilder<GuiType<?>>().setName(new ResourceLocation("okcore", "guitype"))
             .setType((Class<GuiType<?>>) (Class<?>) GuiType.class)
             .create();
     }

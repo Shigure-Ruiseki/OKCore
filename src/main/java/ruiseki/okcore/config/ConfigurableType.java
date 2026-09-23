@@ -8,6 +8,7 @@ import ruiseki.okcore.config.configurabletypeaction.DummyAction;
 import ruiseki.okcore.config.configurabletypeaction.EnchantmentAction;
 import ruiseki.okcore.config.configurabletypeaction.EntityAction;
 import ruiseki.okcore.config.configurabletypeaction.FluidAction;
+import ruiseki.okcore.config.configurabletypeaction.GuiAction;
 import ruiseki.okcore.config.configurabletypeaction.ItemAction;
 import ruiseki.okcore.config.configurabletypeaction.MobAction;
 import ruiseki.okcore.config.configurabletypeaction.PotionAction;
@@ -119,7 +120,7 @@ public class ConfigurableType {
     /**
      * Gui type.
      */
-    public static final ConfigurableType GUI = new ConfigurableType(true, GuiConfig.class, new FluidAction(), "gui");
+    public static final ConfigurableType GUI = new ConfigurableType(true, GuiConfig.class, new GuiAction(), "gui");
     /**
      * Capability type.
      */

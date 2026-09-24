@@ -25,7 +25,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import io.netty.buffer.Unpooled;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.IGuiConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
@@ -65,7 +65,7 @@ public class PlayerHelpers {
         ContainerExtended c = containerSupplier.createContainer(openContainerId, player.inventory, player);
         if (c == null) return;
 
-        GuiType<?> type = c.getType();
+        ContainerType<?> type = c.getType();
         PacketOpenGuiWithData packet = new PacketOpenGuiWithData(type, openContainerId, extraData);
         OKCore._instance.getPacketHandler()
             .sendToPlayer(packet, player);

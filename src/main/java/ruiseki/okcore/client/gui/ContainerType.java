@@ -18,27 +18,27 @@ import ruiseki.okcore.registries.RegistryBuilder;
 import ruiseki.okcore.registries.RegistryEvent;
 
 @EventBusSubscriber(phase = Phase.CONSTRUCT)
-public class GuiType<T extends ContainerExtended> implements IForgeRegistryEntry<GuiType<?>> {
+public class ContainerType<T extends ContainerExtended> implements IForgeRegistryEntry<ContainerType<?>> {
 
-    public static IForgeRegistry<GuiType<?>> REGISTRY;
+    public static IForgeRegistry<ContainerType<?>> REGISTRY;
 
     @SubscribeEvent
     @SuppressWarnings("unchecked")
     public static void onRegistriesCreate(RegistryEvent.NewRegistry event) {
-        REGISTRY = new RegistryBuilder<GuiType<?>>().setName(new ResourceLocation("okcore", "guitype"))
-            .setType((Class<GuiType<?>>) (Class<?>) GuiType.class)
+        REGISTRY = new RegistryBuilder<ContainerType<?>>().setName(new ResourceLocation("okcore", "container_type"))
+            .setType((Class<ContainerType<?>>) (Class<?>) ContainerType.class)
             .create();
     }
 
     private ResourceLocation name;
-    private final GuiType.GuiSupplier<T> constructor;
+    private final ContainerType.GuiSupplier<T> constructor;
 
-    public GuiType(@NotNull GuiType.GuiSupplier<T> constructor) {
+    public ContainerType(@NotNull ContainerType.GuiSupplier<T> constructor) {
         this.constructor = constructor;
     }
 
     @Override
-    public GuiType<T> setRegistryName(ResourceLocation name) {
+    public ContainerType<T> setRegistryName(ResourceLocation name) {
         this.name = name;
         return this;
     }
@@ -50,8 +50,8 @@ public class GuiType<T extends ContainerExtended> implements IForgeRegistryEntry
 
     @Override
     @SuppressWarnings("unchecked")
-    public Class<GuiType<?>> getRegistryType() {
-        return (Class<GuiType<?>>) (Class<?>) GuiType.class;
+    public Class<ContainerType<?>> getRegistryType() {
+        return (Class<ContainerType<?>>) (Class<?>) ContainerType.class;
     }
 
     public T create(int windowId, InventoryPlayer playerInv, ExtendedBuffer extraData) {

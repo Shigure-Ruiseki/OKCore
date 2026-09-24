@@ -2,7 +2,7 @@ package ruiseki.okcore.inventory;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 
 /**
  * Used for receiving values from servers to clients in guis.
@@ -15,7 +15,7 @@ public interface IValueNotifiable {
     /**
      * @return The container type.
      */
-    public GuiType<?> getValueNotifiableType();
+    public ContainerType<?> getValueNotifiableType();
 
     /**
      * Called by the server if the value has changed.

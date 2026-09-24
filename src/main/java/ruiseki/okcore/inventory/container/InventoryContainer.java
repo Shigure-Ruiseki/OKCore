@@ -4,7 +4,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 
 /**
  * A container with inventory.
@@ -20,8 +20,8 @@ public abstract class InventoryContainer extends ContainerExtended {
      *
      * @param inventory The player inventory.
      */
-    public InventoryContainer(GuiType<?> guiType, InventoryPlayer playerInventory, IInventory inventory) {
-        super(guiType, playerInventory);
+    public InventoryContainer(ContainerType<?> containerType, InventoryPlayer playerInventory, IInventory inventory) {
+        super(containerType, playerInventory);
         this.inventory = inventory;
         if (isAssertInventorySize()) {
             checkContainerSize(inventory, getSizeInventory());

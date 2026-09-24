@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
 
 /**
@@ -25,7 +25,7 @@ import ruiseki.okcore.client.gui.component.GuiScrollBar;
  * visible: Currently on-screen by the user, maximum amount of elements is determined by the pageSize
  * filtered: All items that are browsable by the user, might be more than the pageSize allows what leads to a scrollbar.
  * unfiltered: All items, pattern searching will happen in this list.
- * 
+ *
  * @author rubensworks
  */
 public abstract class ScrollingInventoryContainer<E> extends InventoryContainer
@@ -39,8 +39,8 @@ public abstract class ScrollingInventoryContainer<E> extends InventoryContainer
     private int firstElement = 0;
 
     @SuppressWarnings("unchecked")
-    public ScrollingInventoryContainer(@Nullable GuiType<?> type, InventoryPlayer playerInventory, IInventory inventory,
-        List<E> items, IItemPredicate<E> filterer) {
+    public ScrollingInventoryContainer(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+        IInventory inventory, List<E> items, IItemPredicate<E> filterer) {
         super(type, playerInventory, inventory);
         this.unfilteredItems = Lists.newArrayList(items);
         this.filteredItems = Lists.newLinkedList();

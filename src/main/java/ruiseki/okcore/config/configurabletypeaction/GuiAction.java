@@ -3,7 +3,7 @@ package ruiseki.okcore.config.configurabletypeaction;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.config.extendedconfig.GuiConfig;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 
@@ -13,7 +13,8 @@ import ruiseki.okcore.inventory.container.ContainerExtended;
  * @author rubensworks
  * @see ConfigurableTypeAction
  */
-public class GuiAction<T extends ContainerExtended> extends ConfigurableTypeActionForge<GuiConfig<T>, GuiType<T>> {
+public class GuiAction<T extends ContainerExtended>
+    extends ConfigurableTypeActionForge<GuiConfig<T>, ContainerType<T>> {
 
     @Override
     public void preRun(GuiConfig<T> eConfig, Configuration config, boolean startup) {

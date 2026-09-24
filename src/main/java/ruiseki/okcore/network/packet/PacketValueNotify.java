@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -36,7 +36,7 @@ public class PacketValueNotify extends PacketCodec {
 
     }
 
-    public PacketValueNotify(GuiType<?> containerType, int valueId, NBTTagCompound value) {
+    public PacketValueNotify(ContainerType<?> containerType, int valueId, NBTTagCompound value) {
         this.containerType = containerType.getRegistryName();
         this.valueId = valueId;
         this.value = value;
@@ -48,7 +48,7 @@ public class PacketValueNotify extends PacketCodec {
     }
 
     protected boolean isContainerValid(IValueNotifiable container) {
-        return Objects.equals(GuiType.REGISTRY.getKey(container.getValueNotifiableType()), containerType);
+        return Objects.equals(ContainerType.REGISTRY.getKey(container.getValueNotifiableType()), containerType);
     }
 
     @Override

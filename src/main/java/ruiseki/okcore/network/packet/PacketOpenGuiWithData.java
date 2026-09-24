@@ -9,8 +9,8 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.client.gui.GuiScreens;
-import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.CodecField;
@@ -30,7 +30,7 @@ public class PacketOpenGuiWithData extends PacketCodec {
 
     public PacketOpenGuiWithData() {}
 
-    public PacketOpenGuiWithData(GuiType<?> type, int windowId, ExtendedBuffer extraData) {
+    public PacketOpenGuiWithData(ContainerType<?> type, int windowId, ExtendedBuffer extraData) {
         this(type.getRegistryName(), windowId, extraData);
     }
 
@@ -40,8 +40,8 @@ public class PacketOpenGuiWithData extends PacketCodec {
         this.extraData = extraData;
     }
 
-    public final GuiType<?> getType() {
-        return GuiType.REGISTRY.getValue(this.id);
+    public final ContainerType<?> getType() {
+        return ContainerType.REGISTRY.getValue(this.id);
     }
 
     @Override

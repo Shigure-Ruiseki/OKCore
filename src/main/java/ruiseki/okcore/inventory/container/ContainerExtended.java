@@ -22,7 +22,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.ClickType;
@@ -45,7 +45,7 @@ public abstract class ContainerExtended extends Container
     private int nextValueId = 0;
     private IValueNotifiable guiValueListener = null;
 
-    protected GuiType<?> guiType;
+    protected ContainerType<?> containerType;
     private IInventory playerIInventory;
     protected final EntityPlayer player;
     protected int offsetX = 0;
@@ -64,22 +64,22 @@ public abstract class ContainerExtended extends Container
      * @param type      The container type.
      * @param inventory The player inventory.
      */
-    public ContainerExtended(@Nullable GuiType<?> type, InventoryPlayer inventory) {
-        this.guiType = type;
+    public ContainerExtended(@Nullable ContainerType<?> type, InventoryPlayer inventory) {
+        this.containerType = type;
         this.playerIInventory = inventory;
         this.player = inventory.player;
     }
 
-    public GuiType<?> getType() {
-        if (this.guiType == null) {
+    public ContainerType<?> getType() {
+        if (this.containerType == null) {
             throw new UnsupportedOperationException("Unable to construct this menu by type");
         } else {
-            return this.guiType;
+            return this.containerType;
         }
     }
 
     @Override
-    public GuiType<?> getValueNotifiableType() {
+    public ContainerType<?> getValueNotifiableType() {
         return getType();
     }
 

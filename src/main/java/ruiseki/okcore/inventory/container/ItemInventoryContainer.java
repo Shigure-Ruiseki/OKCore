@@ -9,7 +9,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.ClickType;
@@ -33,7 +33,7 @@ public abstract class ItemInventoryContainer<I extends Item> extends ContainerEx
      * @param inventory The player inventory.
      * @param itemIndex The index of the item in use inside the player inventory.
      */
-    public ItemInventoryContainer(@Nullable GuiType<?> type, InventoryPlayer inventory, int itemIndex) {
+    public ItemInventoryContainer(@Nullable ContainerType<?> type, InventoryPlayer inventory, int itemIndex) {
         super(type, inventory);
         this.item = (I) InventoryHelpers.getItemFromIndex(inventory.player, itemIndex)
             .getItem();

@@ -10,7 +10,7 @@ import net.minecraft.inventory.IInventory;
 
 import org.jetbrains.annotations.NotNull;
 
-import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.tileentity.InventoryTileEntity;
 
 /**
@@ -25,9 +25,9 @@ public class TileInventoryContainer<T extends InventoryTileEntity> extends Inven
     @Nullable
     protected final T tile;
 
-    public TileInventoryContainer(GuiType<?> guiType, InventoryPlayer playerInventory, IInventory inventory,
+    public TileInventoryContainer(ContainerType<?> containerType, InventoryPlayer playerInventory, IInventory inventory,
         @Nullable T tile) {
-        super(guiType, playerInventory, inventory);
+        super(containerType, playerInventory, inventory);
         this.tile = tile;
     }
 

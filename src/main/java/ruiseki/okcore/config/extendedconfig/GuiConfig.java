@@ -6,8 +6,8 @@ import net.minecraft.client.gui.GuiScreen;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.client.gui.GuiScreens;
-import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -15,7 +15,8 @@ import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.registries.IForgeRegistry;
 
-public abstract class GuiConfig<T extends ContainerExtended> extends ExtendedConfigForge<GuiConfig<T>, GuiType<T>> {
+public abstract class GuiConfig<T extends ContainerExtended>
+    extends ExtendedConfigForge<GuiConfig<T>, ContainerType<T>> {
 
     /**
      * Create a new config
@@ -27,7 +28,7 @@ public abstract class GuiConfig<T extends ContainerExtended> extends ExtendedCon
      * @param elementFactory The element constructor.
      */
     public GuiConfig(ModBase mod, boolean enabled, String namedId, String comment,
-        Function<GuiConfig<T>, GuiType<T>> elementFactory) {
+        Function<GuiConfig<T>, ContainerType<T>> elementFactory) {
         super(mod, enabled, namedId, comment, elementFactory);
     }
 
@@ -50,8 +51,8 @@ public abstract class GuiConfig<T extends ContainerExtended> extends ExtendedCon
     public abstract <U extends GuiScreen & IContainerAccess<T>> GuiScreens.ScreenConstructor<T, U> getScreenFactory();
 
     @Override
-    public IForgeRegistry<? super GuiType<T>> getRegistry() {
-        return GuiType.REGISTRY;
+    public IForgeRegistry<? super ContainerType<T>> getRegistry() {
+        return ContainerType.REGISTRY;
     }
 
     @Override

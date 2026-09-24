@@ -6,7 +6,7 @@ import ruiseki.okcore.client.gui.ContainerType;
 
 public class ContainerTypeData<T extends ContainerExtended> extends ContainerType<T> {
 
-    public ContainerTypeData(@NotNull ContainerType.GuiSupplier<T> constructor) {
+    public ContainerTypeData(@NotNull ContainerType.ContainerSupplier<T> constructor) {
         super(constructor);
     }
 }

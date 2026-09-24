@@ -31,9 +31,9 @@ public class ContainerType<T extends ContainerExtended> implements IForgeRegistr
     }
 
     private ResourceLocation name;
-    private final ContainerType.GuiSupplier<T> constructor;
+    private final ContainerSupplier<T> constructor;
 
-    public ContainerType(@NotNull ContainerType.GuiSupplier<T> constructor) {
+    public ContainerType(@NotNull ContainerType.ContainerSupplier<T> constructor) {
         this.constructor = constructor;
     }
 
@@ -63,7 +63,7 @@ public class ContainerType<T extends ContainerExtended> implements IForgeRegistr
     }
 
     @FunctionalInterface
-    public interface GuiSupplier<T extends ContainerExtended> {
+    public interface ContainerSupplier<T extends ContainerExtended> {
 
         T create(int windowId, InventoryPlayer playerInv, ExtendedBuffer extraData);
     }

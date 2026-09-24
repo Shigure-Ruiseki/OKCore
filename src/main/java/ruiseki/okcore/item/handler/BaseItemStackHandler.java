@@ -12,13 +12,17 @@ import net.minecraft.item.ItemStack;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.google.common.collect.Lists;
+
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.RecipeInventory;
 import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.persist.IDirtyMarkListener;
 
 public class BaseItemStackHandler extends ItemStackHandler {
 
     private Runnable onContentsChanged;
+    private final List<IDirtyMarkListener> dirtyMarkListeners = Lists.newLinkedList();
     private final Map<Integer, Integer> slotSizeMap;
     private final RecipeInventory recipeWrapper;
     private BiFunction<Integer, ItemStack, Boolean> canInsert = null;
@@ -102,6 +106,13 @@ public class BaseItemStackHandler extends ItemStackHandler {
     @Override
     protected void onContentsChanged(int slot) {
         if (this.onContentsChanged != null) this.onContentsChanged.run();
+        List<IDirtyMarkListener> listeners;
+        synchronized (this) {
+            listeners = Lists.newLinkedList(this.dirtyMarkListeners);
+        }
+        for (IDirtyMarkListener dirtyMarkListener : listeners) {
+            dirtyMarkListener.onDirty();
+        }
     }
 
     public List<ItemStack> getStacks() {
@@ -148,6 +159,24 @@ public class BaseItemStackHandler extends ItemStackHandler {
         this.onContentsChanged = onContentsChanged;
     }
 
+    /**
+     * Add a dirty marking listener.
+     *
+     * @param dirtyMarkListener The dirty mark listener.
+     */
+    public synchronized void addDirtyMarkListener(IDirtyMarkListener dirtyMarkListener) {
+        this.dirtyMarkListeners.add(dirtyMarkListener);
+    }
+
+    /**
+     * Remove a dirty marking listener.
+     *
+     * @param dirtyMarkListener The dirty mark listener.
+     */
+    public synchronized void removeDirtyMarkListener(IDirtyMarkListener dirtyMarkListener) {
+        this.dirtyMarkListeners.remove(dirtyMarkListener);
+    }
+
     public IInventory toIInventory() {
         return new SimpleInventory(this.stacks.toArray(new ItemStack[0]));
     }
@@ -168,6 +197,9 @@ public class BaseItemStackHandler extends ItemStackHandler {
         newInventory.setCanExtract(this.canExtract);
         newInventory.setInputSlots(this.inputSlots);
         newInventory.setOutputSlots(this.outputSlots);
+        for (IDirtyMarkListener dirtyMarkListener : this.dirtyMarkListeners) {
+            newInventory.addDirtyMarkListener(dirtyMarkListener);
+        }
 
         this.slotSizeMap.forEach(newInventory::addSlotLimit);
 

@@ -1,20 +1,16 @@
 package ruiseki.okcore.block;
 
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
-import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
@@ -53,30 +49,5 @@ public abstract class BlockTileGui extends BlockTile implements IBlockGui {
             pos,
             player,
             rayTraceResult);
-    }
-
-    @Override
-    protected void onPostBlockDestroyed(World world, int x, int y, int z) {
-        super.onPostBlockDestroyed(world, x, y, z);
-
-        if (world.isRemote) {
-            tryCloseClientGui();
-        }
-    }
-
-    /**
-     * Safely closes open container on the client if the tile entity is invalidated.
-     */
-    @SideOnly(Side.CLIENT)
-    public void tryCloseClientGui() {
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc != null && mc.thePlayer != null) {
-            if (mc.thePlayer.openContainer instanceof TileInventoryContainerConfigurable<?>container) {
-                if (container.getTile() == null || container.getTile()
-                    .isInvalid()) {
-                    mc.thePlayer.closeScreen();
-                }
-            }
-        }
     }
 }

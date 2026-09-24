@@ -16,13 +16,11 @@ import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import ruiseki.okcore.block.BlockTile;
-import ruiseki.okcore.block.IBlockGui;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * The action used for {@link BlockConfig}.
@@ -155,13 +153,6 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
                     + eConfig.getSubUniqueName(),
                 eConfig.getSubUniqueName());
             guiType = GuiHandler.GuiType.TILE;
-        }
-
-        if (block instanceof IBlockGui configurableBlock && configurableBlock.hasGui()) {
-            IGuiContainerProvider gui = (IGuiContainerProvider) block;
-            eConfig.getMod()
-                .getGuiHandler()
-                .registerGUI(gui, eConfig.getGuiType() != null ? eConfig.getGuiType() : guiType);
         }
 
         if (block instanceof IBlockPropertyProvider provider) {

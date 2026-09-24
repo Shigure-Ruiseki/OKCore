@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.client.IContainerEventHandler;
+import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
@@ -77,6 +78,11 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
     @Override
     public T getContainer() {
         return this.container;
+    }
+
+    @Override
+    public GuiType<?> getValueNotifiableType() {
+        return getContainer().getType();
     }
 
     protected abstract ResourceLocation constructGuiTexture();

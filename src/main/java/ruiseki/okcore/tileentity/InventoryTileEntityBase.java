@@ -1,6 +1,7 @@
 package ruiseki.okcore.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,7 +26,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     public InventoryTileEntityBase() {
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(CapabilityItemHandler.ITEM_HANDLER, this::getInventory));
+            BasicCapabilityResolver.create(CapabilityItemHandler.ITEM_HANDLER, this::getItemHandler));
     }
 
     /**
@@ -34,7 +35,11 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
      * @return The inventory handler instance.
      */
     @NotNull
-    public abstract IItemHandlerModifiable getInventory();
+    public abstract IItemHandlerModifiable getItemHandler();
+
+    protected IInventory getInventory() {
+        return this;
+    }
 
     public abstract int[] getSlotsForFace(ForgeDirection side);
 
@@ -45,13 +50,13 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public int getSizeInventory() {
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         return inv != null ? inv.getSlots() : 0;
     }
 
     @Override
     public ItemStack getStackInSlot(int slotId) {
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         if (inv == null || slotId < 0 || slotId >= inv.getSlots()) {
             return null;
         }
@@ -60,7 +65,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public ItemStack decrStackSize(int slotId, int count) {
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         if (inv == null || slotId < 0 || slotId >= inv.getSlots()) {
             return null;
         }
@@ -74,7 +79,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public ItemStack getStackInSlotOnClosing(int slotId) {
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         if (inv == null || slotId < 0 || slotId >= inv.getSlots()) {
             return null;
         }
@@ -89,7 +94,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public void setInventorySlotContents(int slotId, ItemStack itemstack) {
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         if (slotId < 0 || slotId >= inv.getSlots()) {
             return;
         }
@@ -116,7 +121,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public int getInventoryStackLimit() {
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         return inv.getSlotLimit(0);
     }
 
@@ -133,7 +138,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         return inv.isItemValid(index, stack);
     }
 
@@ -141,7 +146,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
     @SuppressWarnings("unchecked")
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
-        IItemHandlerModifiable inventory = getInventory();
+        IItemHandlerModifiable inventory = getItemHandler();
         if (inventory instanceof INBTSerializable) {
             ((INBTSerializable) inventory).deserializeNBT(tag.getCompoundTag("Inventory"));
         }
@@ -151,7 +156,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
     @SuppressWarnings("unchecked")
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        IItemHandlerModifiable inventory = getInventory();
+        IItemHandlerModifiable inventory = getItemHandler();
         if (inventory instanceof INBTSerializable) {
             NBTTagCompound invTag = ((INBTSerializable) inventory).serializeNBT();
             if (invTag != null) {
@@ -174,7 +179,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
         if (!canAccess(slot, ForgeDirection.getOrientation(side))) {
             return false;
         }
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         ItemStack remainder = inv.insertItem(slot, itemStack, true);
         return remainder == null || remainder.stackSize < itemStack.stackSize;
     }
@@ -184,7 +189,7 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
         if (!canAccess(slot, ForgeDirection.getOrientation(side))) {
             return false;
         }
-        IItemHandlerModifiable inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
         ItemStack extracted = inv.extractItem(slot, itemStack.stackSize, true);
         return extracted != null && extracted.stackSize > 0;
     }

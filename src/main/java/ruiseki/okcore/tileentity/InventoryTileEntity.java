@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.collect.Maps;
 
 import ruiseki.okcore.item.handler.BaseItemStackHandler;
-import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
 /**
  * A TileEntity with a static internal inventory.
@@ -67,7 +66,7 @@ public abstract class InventoryTileEntity extends InventoryTileEntityBase {
     }
 
     @Override
-    public @NotNull BaseItemStackHandler getInventory() {
+    public @NotNull BaseItemStackHandler getItemHandler() {
         return inventory;
     }
 

@@ -67,7 +67,7 @@ public abstract class InventoryTileEntity extends InventoryTileEntityBase {
     }
 
     @Override
-    public @NotNull IItemHandlerModifiable getInventory() {
+    public @NotNull BaseItemStackHandler getInventory() {
         return inventory;
     }
 

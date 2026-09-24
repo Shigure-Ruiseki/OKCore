@@ -16,17 +16,19 @@ import ruiseki.okcore.inventory.container.ContainerExtended;
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public class ScreenFactorySafe<T extends ContainerExtended, U1 extends GuiScreen & IContainerAccess<T>, U2 extends GuiScreen & IContainerAccess<T>>
-    implements GuiScreens.ScreenConstructor<T, U1> {
+@SuppressWarnings("unchecked")
+public class ScreenFactorySafe<T extends ContainerExtended, U extends GuiScreen & IContainerAccess<T>>
+    implements GuiScreens.ScreenConstructor<T, U> {
 
-    private final GuiScreens.ScreenConstructor<T, U2> screenFactoryInner;
+    private final GuiScreens.ScreenConstructor<T, ?> screenFactoryInner;
 
-    public ScreenFactorySafe(GuiScreens.ScreenConstructor<T, U2> screenFactoryInner) {
+    public <U2 extends GuiScreen & IContainerAccess<T>> ScreenFactorySafe(
+        GuiScreens.ScreenConstructor<T, U2> screenFactoryInner) {
         this.screenFactoryInner = screenFactoryInner;
     }
 
     @Override
-    public U1 create(T container, InventoryPlayer inventoryPlayer) {
-        return (U1) this.screenFactoryInner.create(container, inventoryPlayer);
+    public U create(T container, InventoryPlayer inventoryPlayer) {
+        return (U) this.screenFactoryInner.create(container, inventoryPlayer);
     }
 }

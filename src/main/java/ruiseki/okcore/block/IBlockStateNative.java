@@ -12,7 +12,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
-public interface IBlockStateAction {
+public interface IBlockStateNative {
 
     /// Gets the {@link BlockState} to place
     ///

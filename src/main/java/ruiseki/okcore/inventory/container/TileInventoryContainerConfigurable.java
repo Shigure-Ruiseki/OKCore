@@ -13,6 +13,8 @@ import ruiseki.okcore.tileentity.InventoryTileEntity;
  *
  * @param <T> The type of tile.
  */
+
+@Deprecated
 public class TileInventoryContainerConfigurable<T extends InventoryTileEntity> extends InventoryContainerConfigurable {
 
     protected T tile;

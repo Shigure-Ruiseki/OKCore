@@ -13,12 +13,10 @@ import ruiseki.okcore.block.property.IBlockPropertyProvider;
  *
  */
 public class BlockTorchBase extends BlockTorch
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
-
-    protected boolean hasGui = false;
 
     /**
      * Make a new blockState instance.
@@ -28,10 +26,5 @@ public class BlockTorchBase extends BlockTorch
         this.setHardness(0.0F);
         this.setLightLevel(0.9375F);
         this.setStepSound(soundTypeWood);
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 }

@@ -31,7 +31,7 @@ import ruiseki.okcore.helper.BlockStateHelpers;
  *
  */
 public abstract class BlockLeavesBase extends BlockLeaves
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
@@ -58,8 +58,6 @@ public abstract class BlockLeavesBase extends BlockLeaves
             world.setBlockMetadataWithNotify(x, y, z, newMeta, 4);
         });
 
-    protected boolean hasGui = false;
-
     private int[] surroundings;
 
     /**
@@ -67,11 +65,6 @@ public abstract class BlockLeavesBase extends BlockLeaves
      */
     public BlockLeavesBase() {
 
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 
     @Override

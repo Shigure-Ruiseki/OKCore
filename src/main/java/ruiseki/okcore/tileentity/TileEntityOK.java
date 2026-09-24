@@ -22,6 +22,7 @@ import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.persist.nbt.NBTProviderComponent;
@@ -154,9 +155,7 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      * Called when an update is sent to client.
      */
     protected void onSendUpdate() {
-        if (this.worldObj != null) {
-            this.worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
-        }
+        BlockHelpers.markForUpdate(worldObj, pos);
     }
 
     /**

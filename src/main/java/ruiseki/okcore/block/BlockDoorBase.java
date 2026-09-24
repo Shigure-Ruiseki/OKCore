@@ -18,14 +18,12 @@ import ruiseki.okcore.block.property.IBlockPropertyProvider;
  * Door block that can hold ExtendedConfigs.
  */
 public class BlockDoorBase extends BlockDoor
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
     public Item item;
-
-    protected boolean hasGui = false;
 
     /**
      * Make a new block instance.
@@ -51,11 +49,6 @@ public class BlockDoorBase extends BlockDoor
     public BlockDoorBase setStepSound(SoundType sound) {
         super.setStepSound(sound);
         return this;
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 
     @Override

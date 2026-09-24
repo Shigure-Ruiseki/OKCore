@@ -28,7 +28,7 @@ import ruiseki.okcore.Reference;
 import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.IGuiConstructor;
-import ruiseki.okcore.inventory.container.IGuiTypeAccess;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.packet.PacketOpenGuiWithData;
 
@@ -62,16 +62,10 @@ public class PlayerHelpers {
             throw new IllegalArgumentException(
                 "Invalid PacketBuffer for openGui, found " + output.readableBytes() + " bytes");
         }
-        Container c = containerSupplier.createMenu(openContainerId, player.inventory, player);
+        ContainerExtended c = containerSupplier.createMenu(openContainerId, player.inventory, player);
         if (c == null) return;
 
-        GuiType<?> type;
-        if (c instanceof IGuiTypeAccess access) {
-            type = access.getType();
-        } else {
-            throw new UnsupportedOperationException("Unable to construct this menu by type");
-        }
-
+        GuiType<?> type = c.getType();
         PacketOpenGuiWithData packet = new PacketOpenGuiWithData(type, openContainerId, extraData);
         OKCore._instance.getPacketHandler()
             .sendToPlayer(packet, player);

@@ -8,9 +8,7 @@ import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 
 public class BlockBase extends Block
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
-
-    protected boolean hasGui = false;
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
@@ -22,10 +20,5 @@ public class BlockBase extends Block
      */
     public BlockBase(Material material) {
         super(material);
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 }

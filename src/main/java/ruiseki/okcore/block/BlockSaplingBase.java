@@ -20,12 +20,10 @@ import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
 
 public class BlockSaplingBase extends BlockSapling
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
-
-    protected boolean hasGui = false;
 
     @SideOnly(Side.CLIENT)
     private IIcon blockIcon;
@@ -40,11 +38,6 @@ public class BlockSaplingBase extends BlockSapling
     public BlockSaplingBase(WorldGeneratorTree treeGenerator) {
         this.treeGenerator = treeGenerator;
         setStepSound(soundTypeGrass);
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

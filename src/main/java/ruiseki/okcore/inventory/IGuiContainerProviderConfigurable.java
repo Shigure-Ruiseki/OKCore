@@ -8,6 +8,7 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
  * @author rubensworks
  *
  */
+@Deprecated
 public interface IGuiContainerProviderConfigurable extends IGuiContainerProvider {
 
     /**

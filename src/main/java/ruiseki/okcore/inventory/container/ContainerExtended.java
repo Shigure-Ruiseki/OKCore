@@ -34,8 +34,8 @@ import ruiseki.okcore.inventory.slot.SlotArmor;
 import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.network.packet.PacketValueNotify;
 
-public abstract class ContainerExtended extends Container implements IValueNotifier, IValueNotifiable,
-    IContainerButtonClickAcceptorServer<ContainerExtended>, IGuiTypeAccess {
+public abstract class ContainerExtended extends Container
+    implements IValueNotifier, IValueNotifiable, IContainerButtonClickAcceptorServer<ContainerExtended> {
 
     protected static final int ITEMBOX = 18;
 
@@ -70,7 +70,6 @@ public abstract class ContainerExtended extends Container implements IValueNotif
         this.player = inventory.player;
     }
 
-    @Override
     public GuiType<?> getType() {
         if (this.guiType == null) {
             throw new UnsupportedOperationException("Unable to construct this menu by type");

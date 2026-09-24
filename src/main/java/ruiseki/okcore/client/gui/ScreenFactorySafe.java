@@ -6,7 +6,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.inventory.container.ContainerExtended;
-import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * A type-safe implementation of {@link GuiScreens.ScreenConstructor}.
@@ -27,7 +26,7 @@ public class ScreenFactorySafe<T extends ContainerExtended, U1 extends GuiScreen
     }
 
     @Override
-    public U1 create(T container, InventoryPlayer inventoryPlayer, ExtendedBuffer extraData) {
-        return (U1) this.screenFactoryInner.create(container, inventoryPlayer, extraData);
+    public U1 create(T container, InventoryPlayer inventoryPlayer) {
+        return (U1) this.screenFactoryInner.create(container, inventoryPlayer);
     }
 }

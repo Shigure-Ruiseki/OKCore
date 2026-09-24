@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.inventory.container.ContainerExtended;
-import ruiseki.okcore.network.ExtendedBuffer;
 
 @SideOnly(Side.CLIENT)
 public class GuiScreens {
@@ -23,13 +22,12 @@ public class GuiScreens {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Map<GuiType<?>, ScreenConstructor<?, ?>> SCREENS = Maps.newHashMap();
 
-    public static <T extends ContainerExtended> void create(GuiType<T> type, Minecraft mc, int windowId,
-        ExtendedBuffer extraData) {
-        getScreenFactory(type, extraData).ifPresent(factory -> factory.fromPacket(type, windowId, mc, extraData));
+    public static <T extends ContainerExtended> void create(GuiType<T> type, Minecraft mc, int windowId) {
+        getScreenFactory(type, mc, windowId).ifPresent(factory -> factory.fromPacket(type, mc, windowId));
     }
 
     public static <T extends ContainerExtended> Optional<ScreenConstructor<T, ?>> getScreenFactory(GuiType<T> type,
-        ExtendedBuffer extraData) {
+        Minecraft mc, int windowId) {
         if (type == null) {
             LOGGER.warn("Trying to open invalid screen for null GuiType");
         } else {
@@ -73,23 +71,13 @@ public class GuiScreens {
     @SideOnly(Side.CLIENT)
     public interface ScreenConstructor<T extends ContainerExtended, U extends GuiScreen & IContainerAccess<T>> {
 
-        default void fromPacket(GuiType<T> type, int windowId, Minecraft mc, ExtendedBuffer extraData) {
+        default void fromPacket(GuiType<T> type, Minecraft mc, int windowId) {
             InventoryPlayer inventoryPlayer = mc.thePlayer.inventory;
-
-            if (extraData != null) {
-                extraData.readerIndex(0);
-            }
-            T container = type.create(windowId, inventoryPlayer, extraData);
-
-            if (extraData != null) {
-                extraData.readerIndex(0);
-            }
-            U screen = this.create(container, inventoryPlayer, extraData);
-
+            U screen = this.create(type.create(windowId, inventoryPlayer), inventoryPlayer);
             mc.thePlayer.openContainer = screen.getContainer();
             mc.displayGuiScreen(screen);
         }
 
-        U create(T container, InventoryPlayer inventoryPlayer, ExtendedBuffer extraData);
+        U create(T container, InventoryPlayer inventoryPlayer);
     }
 }

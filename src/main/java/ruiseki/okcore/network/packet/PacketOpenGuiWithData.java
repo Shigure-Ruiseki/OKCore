@@ -1,6 +1,7 @@
 package ruiseki.okcore.network.packet;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
@@ -10,6 +11,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.GuiScreens;
 import ruiseki.okcore.client.gui.GuiType;
+import ruiseki.okcore.client.gui.IContainerAccess;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -49,10 +52,16 @@ public class PacketOpenGuiWithData extends PacketCodec {
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        GuiType<?> type = this.getType();
-        if (type != null) {
-            GuiScreens.create(type, Minecraft.getMinecraft(), this.windowId, this.extraData);
-        }
+        GuiScreens.getScreenFactory(this.getType(), Minecraft.getMinecraft(), this.windowId)
+            .ifPresent(f -> {
+                ContainerExtended c = this.getType()
+                    .create(this.windowId, player.inventory, this.extraData);
+                @SuppressWarnings("unchecked")
+                GuiScreen s = ((GuiScreens.ScreenConstructor<ContainerExtended, ?>) f).create(c, player.inventory);
+                Minecraft.getMinecraft().thePlayer.openContainer = ((IContainerAccess<?>) s).getContainer();
+                Minecraft.getMinecraft()
+                    .displayGuiScreen(s);
+            });
     }
 
     @Override

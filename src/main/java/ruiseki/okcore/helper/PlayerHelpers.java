@@ -62,7 +62,7 @@ public class PlayerHelpers {
             throw new IllegalArgumentException(
                 "Invalid PacketBuffer for openGui, found " + output.readableBytes() + " bytes");
         }
-        ContainerExtended c = containerSupplier.createMenu(openContainerId, player.inventory, player);
+        ContainerExtended c = containerSupplier.createContainer(openContainerId, player.inventory, player);
         if (c == null) return;
 
         GuiType<?> type = c.getType();

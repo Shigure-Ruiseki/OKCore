@@ -11,5 +11,5 @@ import ruiseki.okcore.inventory.container.ContainerExtended;
 public interface IGuiConstructor {
 
     @Nullable
-    ContainerExtended createMenu(int windowId, InventoryPlayer playerInventory, EntityPlayer player);
+    ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory, EntityPlayer player);
 }

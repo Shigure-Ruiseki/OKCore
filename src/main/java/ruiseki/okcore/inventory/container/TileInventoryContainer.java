@@ -2,9 +2,13 @@ package ruiseki.okcore.inventory.container;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
+
+import org.jetbrains.annotations.NotNull;
 
 import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.tileentity.InventoryTileEntity;
@@ -18,30 +22,26 @@ import ruiseki.okcore.tileentity.InventoryTileEntity;
  */
 public class TileInventoryContainer<T extends InventoryTileEntity> extends InventoryContainer {
 
-    protected Optional<T> tile;
+    @Nullable
+    protected final T tile;
 
-    /**
-     * Make a new TileInventoryContainer.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The TileEntity for this container.
-     */
     public TileInventoryContainer(GuiType<?> guiType, InventoryPlayer playerInventory, IInventory inventory,
-        Optional<T> tile) {
+        @Nullable T tile) {
         super(guiType, playerInventory, inventory);
         this.tile = tile;
     }
 
     @Override
     public boolean canInteractWith(EntityPlayer entityPlayer) {
-        return tile.map(t -> t.canInteractWith(entityPlayer))
+        return getTile().map(t -> t.canInteractWith(entityPlayer))
             .orElse(false);
     }
 
     /**
-     * @return The tile entity.
+     * @return The tile entity wrapped in an Optional.
      */
+    @NotNull
     public Optional<T> getTile() {
-        return tile;
+        return Optional.ofNullable(tile);
     }
 }

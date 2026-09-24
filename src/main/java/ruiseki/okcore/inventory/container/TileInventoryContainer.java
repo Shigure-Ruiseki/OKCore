@@ -1,5 +1,7 @@
 package ruiseki.okcore.inventory.container;
 
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
@@ -16,7 +18,7 @@ import ruiseki.okcore.tileentity.InventoryTileEntity;
  */
 public class TileInventoryContainer<T extends InventoryTileEntity> extends InventoryContainer {
 
-    protected T tile;
+    protected Optional<T> tile;
 
     /**
      * Make a new TileInventoryContainer.
@@ -24,20 +26,22 @@ public class TileInventoryContainer<T extends InventoryTileEntity> extends Inven
      * @param inventory The player inventory.
      * @param tile      The TileEntity for this container.
      */
-    public TileInventoryContainer(GuiType<?> guiType, InventoryPlayer playerInventory, IInventory inventory, T tile) {
+    public TileInventoryContainer(GuiType<?> guiType, InventoryPlayer playerInventory, IInventory inventory,
+        Optional<T> tile) {
         super(guiType, playerInventory, inventory);
         this.tile = tile;
     }
 
     @Override
     public boolean canInteractWith(EntityPlayer entityPlayer) {
-        return tile.canInteractWith(entityPlayer);
+        return tile.map(t -> t.canInteractWith(entityPlayer))
+            .orElse(false);
     }
 
     /**
      * @return The tile entity.
      */
-    public T getTile() {
+    public Optional<T> getTile() {
         return tile;
     }
 }

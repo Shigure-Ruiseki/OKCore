@@ -83,13 +83,6 @@ public abstract class ContainerExtended extends Container
         return getType();
     }
 
-    protected static void checkContainerSize(IInventory inventory, int size) {
-        int i = inventory.getSizeInventory();
-        if (i < size) {
-            throw new IllegalArgumentException("Inventory size " + i + " is smaller than expected " + size);
-        }
-    }
-
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();

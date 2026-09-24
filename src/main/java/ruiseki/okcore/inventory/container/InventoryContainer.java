@@ -23,14 +23,7 @@ public abstract class InventoryContainer extends ContainerExtended {
     public InventoryContainer(ContainerType<?> containerType, InventoryPlayer playerInventory, IInventory inventory) {
         super(containerType, playerInventory);
         this.inventory = inventory;
-        if (isAssertInventorySize()) {
-            checkContainerSize(inventory, getSizeInventory());
-        }
         this.inventory.openInventory();
-    }
-
-    protected boolean isAssertInventorySize() {
-        return true;
     }
 
     public IInventory getContainerInventory() {

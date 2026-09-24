@@ -12,7 +12,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.client.gui.GuiScreens;
-import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.ExtendedBuffer;

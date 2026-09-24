@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -58,9 +59,10 @@ public class PacketOpenGuiWithData extends PacketCodec {
                     .create(this.windowId, player.inventory, this.extraData);
                 @SuppressWarnings("unchecked")
                 GuiScreen s = ((GuiScreens.ScreenConstructor<ContainerExtended, ?>) f).create(c, player.inventory);
-                Minecraft.getMinecraft().thePlayer.openContainer = ((IContainerAccess<?>) s).getContainer();
-                Minecraft.getMinecraft()
-                    .displayGuiScreen(s);
+                player.openContainer = ((IContainerAccess<?>) s).getContainer();
+                player.openContainer.windowId = this.windowId;
+                FMLCommonHandler.instance()
+                    .showGuiScreen(s);
             });
     }
 

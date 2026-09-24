@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Maps;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.inventory.container.ContainerExtended;
@@ -75,7 +76,9 @@ public class GuiScreens {
             InventoryPlayer inventoryPlayer = mc.thePlayer.inventory;
             U screen = this.create(type.create(windowId, inventoryPlayer), inventoryPlayer);
             mc.thePlayer.openContainer = screen.getContainer();
-            mc.displayGuiScreen(screen);
+            mc.thePlayer.openContainer.windowId = windowId;
+            FMLCommonHandler.instance()
+                .showGuiScreen(screen);
         }
 
         U create(T container, InventoryPlayer inventoryPlayer);

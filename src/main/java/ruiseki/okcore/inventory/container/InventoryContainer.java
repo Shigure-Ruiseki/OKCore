@@ -7,7 +7,7 @@ import net.minecraft.inventory.IInventory;
 import ruiseki.okcore.client.gui.GuiType;
 
 /**
- * A container with inventory for Minecraft 1.7.10.
+ * A container with inventory.
  *
  * @author rubensworks
  */

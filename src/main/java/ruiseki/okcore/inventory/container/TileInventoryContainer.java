@@ -2,8 +2,9 @@ package ruiseki.okcore.inventory.container;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 
-import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
+import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.tileentity.InventoryTileEntity;
 
 /**
@@ -13,9 +14,7 @@ import ruiseki.okcore.tileentity.InventoryTileEntity;
  *
  * @param <T> The type of tile.
  */
-
-@Deprecated
-public class TileInventoryContainerConfigurable<T extends InventoryTileEntity> extends InventoryContainerConfigurable {
+public class TileInventoryContainer<T extends InventoryTileEntity> extends InventoryContainer {
 
     protected T tile;
 
@@ -25,8 +24,8 @@ public class TileInventoryContainerConfigurable<T extends InventoryTileEntity> e
      * @param inventory The player inventory.
      * @param tile      The TileEntity for this container.
      */
-    public TileInventoryContainerConfigurable(InventoryPlayer inventory, T tile) {
-        super(inventory, (IGuiContainerProviderConfigurable) tile.getBlock());
+    public TileInventoryContainer(GuiType<?> guiType, InventoryPlayer playerInventory, IInventory inventory, T tile) {
+        super(guiType, playerInventory, inventory);
         this.tile = tile;
     }
 
@@ -40,21 +39,5 @@ public class TileInventoryContainerConfigurable<T extends InventoryTileEntity> e
      */
     public T getTile() {
         return tile;
-    }
-
-    @Override
-    protected int getSizeInventory() {
-        return getTile().getSizeInventory();
-    }
-
-    @Override
-    public String getGuiModId() {
-        return getGuiProvider().getModGui()
-            .getModId();
-    }
-
-    @Override
-    public int getGuiId() {
-        return getGuiProvider().getGuiID();
     }
 }

@@ -8,10 +8,8 @@ import net.minecraftforge.common.config.Property;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameRegistry;
-import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * The action used for {@link ItemConfig}.
@@ -70,12 +68,5 @@ public class ItemAction extends ConfigurableTypeAction<ItemConfig, Item> {
 
         // Register item and set creative tab.
         register(item, eConfig, eConfig.getTargetTab());
-
-        // Optionally register gui
-        if (item instanceof IGuiContainerProvider gui) {
-            eConfig.getMod()
-                .getGuiHandler()
-                .registerGUI(gui, eConfig.getGuiType() != null ? eConfig.getGuiType() : GuiHandler.GuiType.ITEM);
-        }
     }
 }

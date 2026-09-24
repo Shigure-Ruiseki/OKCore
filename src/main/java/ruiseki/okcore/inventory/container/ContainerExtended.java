@@ -78,6 +78,11 @@ public abstract class ContainerExtended extends Container
         }
     }
 
+    @Override
+    public GuiType<?> getValueNotifiableType() {
+        return getType();
+    }
+
     protected static void checkContainerSize(IInventory inventory, int size) {
         int i = inventory.getSizeInventory();
         if (i < size) {
@@ -513,12 +518,10 @@ public abstract class ContainerExtended extends Container
             .equals(value)) {
             if (!player.worldObj.isRemote) { // server -> client
                 OKCore._instance.getPacketHandler()
-                    .sendToPlayer(
-                        new PacketValueNotify(getGuiModId(), getGuiId(), valueId, value),
-                        (EntityPlayerMP) player);
+                    .sendToPlayer(new PacketValueNotify(getType(), valueId, value), (EntityPlayerMP) player);
             } else { // client -> server
                 OKCore._instance.getPacketHandler()
-                    .sendToServer(new PacketValueNotify(getGuiModId(), getGuiId(), valueId, value));
+                    .sendToServer(new PacketValueNotify(getType(), valueId, value));
             }
             values.put(valueId, value);
         }

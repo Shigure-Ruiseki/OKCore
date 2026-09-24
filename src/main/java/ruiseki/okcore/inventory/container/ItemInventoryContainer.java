@@ -13,7 +13,6 @@ import ruiseki.okcore.client.gui.GuiType;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.ClickType;
-import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
@@ -23,8 +22,7 @@ import ruiseki.okcore.network.ExtendedBuffer;
  *
  * @param <I> The item instance.
  */
-public abstract class ItemInventoryContainer<I extends Item & IGuiContainerProviderConfigurable>
-    extends ContainerExtended {
+public abstract class ItemInventoryContainer<I extends Item> extends ContainerExtended {
 
     protected I item;
     protected int itemIndex;
@@ -33,12 +31,12 @@ public abstract class ItemInventoryContainer<I extends Item & IGuiContainerProvi
      * Make a new instance.
      *
      * @param inventory The player inventory.
-     * @param item      The item.
      * @param itemIndex The index of the item in use inside the player inventory.
      */
-    public ItemInventoryContainer(@Nullable GuiType<?> type, InventoryPlayer inventory, I item, int itemIndex) {
+    public ItemInventoryContainer(@Nullable GuiType<?> type, InventoryPlayer inventory, int itemIndex) {
         super(type, inventory);
-        this.item = item;
+        this.item = (I) InventoryHelpers.getItemFromIndex(inventory.player, itemIndex)
+            .getItem();
         this.itemIndex = itemIndex;
     }
 

@@ -106,16 +106,6 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
         return this.guiTop + offsetY;
     }
 
-    @Override
-    public String getGuiModId() {
-        return getContainer().getGuiModId();
-    }
-
-    @Override
-    public int getGuiId() {
-        return getContainer().getGuiId();
-    }
-
     // 2. INIT & LIFECYCLE
 
     @Override

@@ -15,10 +15,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameRegistry;
-import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.client.gui.GuiHandler;
-import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
@@ -141,19 +138,6 @@ public class BlockAction extends ConfigurableTypeAction<BlockConfig, Block> {
         }
 
         register(block, eConfig.getItemBlockClass(), eConfig, eConfig.getTargetTab());
-
-        GuiHandler.GuiType guiType = GuiHandler.GuiType.BLOCK;
-        if (eConfig.getHolderType()
-            .equals(ConfigurableType.BLOCKCONTAINER)) {
-            BlockTile container = (BlockTile) block;
-            GameRegistry.registerTileEntityWithAlternatives(
-                container.getTileEntity(),
-                eConfig.getMod()
-                    .getModId() + ":"
-                    + eConfig.getSubUniqueName(),
-                eConfig.getSubUniqueName());
-            guiType = GuiHandler.GuiType.TILE;
-        }
 
         if (block instanceof IBlockPropertyProvider provider) {
             provider.registerProperties();

@@ -58,12 +58,14 @@ public class PlayerHelpers {
         output.writeVarIntToBuffer(extraData.readableBytes());
         output.writeBytes(extraData);
 
+        ContainerExtended c = containerSupplier.createContainer(openContainerId, player.inventory, player);
+        if (c == null) return;
+
+        extraData.readerIndex(0);
         if (output.readableBytes() > 32600 || output.readableBytes() < 1) {
             throw new IllegalArgumentException(
                 "Invalid PacketBuffer for openGui, found " + output.readableBytes() + " bytes");
         }
-        ContainerExtended c = containerSupplier.createContainer(openContainerId, player.inventory, player);
-        if (c == null) return;
 
         ContainerType<?> type = c.getType();
         PacketOpenGuiWithData packet = new PacketOpenGuiWithData(type, openContainerId, extraData);

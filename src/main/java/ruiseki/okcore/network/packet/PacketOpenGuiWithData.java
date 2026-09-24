@@ -53,16 +53,19 @@ public class PacketOpenGuiWithData extends PacketCodec {
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
+        if (this.extraData != null) {
+            this.extraData.readerIndex(0);
+        }
+
         GuiScreens.getScreenFactory(this.getType(), Minecraft.getMinecraft(), this.windowId)
             .ifPresent(f -> {
                 ContainerExtended c = this.getType()
                     .create(this.windowId, player.inventory, this.extraData);
                 @SuppressWarnings("unchecked")
                 GuiScreen s = ((GuiScreens.ScreenConstructor<ContainerExtended, ?>) f).create(c, player.inventory);
-                player.openContainer = ((IContainerAccess<?>) s).getContainer();
-                player.openContainer.windowId = this.windowId;
                 FMLCommonHandler.instance()
                     .showGuiScreen(s);
+                player.openContainer.windowId = this.windowId;
             });
     }
 

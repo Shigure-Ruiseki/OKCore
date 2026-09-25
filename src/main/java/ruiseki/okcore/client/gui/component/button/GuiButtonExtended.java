@@ -231,7 +231,7 @@ public abstract class GuiButtonExtended extends GuiButton
     @Override
     @Deprecated
     public final void drawButton(Minecraft minecraft, int mouseX, int mouseY) {
-
+        drawScreen(mouseX, mouseY, 0);
     }
 
     @Override

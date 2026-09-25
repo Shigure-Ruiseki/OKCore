@@ -205,8 +205,8 @@ public abstract class ContainerExtended extends Container
                 getSlotStart(slotID, 0, false),
                 getSlotRange(slotID, slots, false),
                 false)) { // Click in player inventory -> tile
-                return ItemHelpers.EMPTY;
-            }
+                    return ItemHelpers.EMPTY;
+                }
 
             if (stackInSlot.stackSize == 0) {
                 slot.putStack(null);

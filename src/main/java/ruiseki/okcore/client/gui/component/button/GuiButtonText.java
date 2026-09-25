@@ -41,13 +41,13 @@ public class GuiButtonText extends GuiButtonExtended {
         FontRenderer fontrenderer = Minecraft.getMinecraft().fontRenderer;
 
         int color = 0xe0e0e0;
-        if (!enabled) {
+        if (!active) {
             color = 0xffa0a0a0;
         } else if (mouseOver) {
             color = 0xffffa0;
         }
 
-        drawCenteredString(fontrenderer, displayString, xPosition + width / 2, yPosition + (height - 8) / 2, color);
+        drawCenteredString(fontrenderer, narrationMessage, x + width / 2, y + (height - 8) / 2, color);
     }
 
 }

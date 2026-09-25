@@ -1,13 +1,11 @@
 package ruiseki.okcore.client.gui.component.button;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
+import net.minecraft.util.ResourceLocation;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.IGuiEventListener;
-import ruiseki.okcore.client.gui.component.IWidgetEventListener;
-import ruiseki.okcore.client.gui.component.IWidgetRenderable;
+import ruiseki.okcore.client.gui.component.GuiWidget;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.RenderHelpers;
 
@@ -18,12 +16,12 @@ import ruiseki.okcore.helper.RenderHelpers;
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public abstract class GuiButtonExtended extends GuiButton
-    implements IWidgetEventListener, IGuiEventListener, IWidgetRenderable {
+public abstract class GuiButtonExtended extends GuiWidget {
+
+    protected static final ResourceLocation buttonTextures = new ResourceLocation("textures/gui/widgets.png");
 
     private final boolean background;
     protected final OnPress onPress;
-    private boolean focused;
 
     /**
      * @param x          X position
@@ -35,7 +33,7 @@ public abstract class GuiButtonExtended extends GuiButton
      * @param background If the background of the button should be rendered
      */
     public GuiButtonExtended(int x, int y, int width, int height, String string, OnPress onPress, boolean background) {
-        super(0, x, y, width, height, string);
+        super(x, y, width, height, string);
         this.background = background;
         this.onPress = onPress;
     }
@@ -60,7 +58,7 @@ public abstract class GuiButtonExtended extends GuiButton
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
-            this.field_146123_n = mouseX >= this.getX() && mouseY >= this.getY()
+            this.isHovered = mouseX >= this.getX() && mouseY >= this.getY()
                 && mouseX < this.getX() + this.width
                 && mouseY < this.getY() + this.height;
             this.drawWidget(mouseX, mouseY, partialTicks);
@@ -77,7 +75,7 @@ public abstract class GuiButtonExtended extends GuiButton
             if (this.background) {
                 this.drawBackground();
             }
-            this.drawButtonInner(mouseX, mouseY, this.field_146123_n);
+            this.drawButtonInner(mouseX, mouseY, this.isHovered);
         }
     }
 
@@ -88,23 +86,19 @@ public abstract class GuiButtonExtended extends GuiButton
         this.onPress();
     }
 
-    public boolean isHovered() {
-        return this.field_146123_n;
-    }
-
     public boolean hasBackground() {
         return this.background;
     }
 
     public void onPress() {
-        if (this.enabled) {
+        if (this.active) {
             this.onPress.onPress(this);
         }
     }
 
     protected int getYImage() {
         int i = 1;
-        if (!this.enabled) {
+        if (!this.active) {
             i = 0;
         } else if (this.isHoveredOrFocused()) {
             i = 2;
@@ -115,7 +109,7 @@ public abstract class GuiButtonExtended extends GuiButton
 
     protected int getTextureY() { // Copy from AbstractButton
         int i = 1;
-        if (!this.enabled) {
+        if (!this.active) {
             i = 0;
         } else if (this.isHoveredOrFocused()) {
             i = 2;
@@ -124,131 +118,13 @@ public abstract class GuiButtonExtended extends GuiButton
         return 46 + i * 20;
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.enabled && this.visible) {
-            if (this.isValidClickButton(button)) {
-                boolean flag = this.isMouseOver(mouseX, mouseY);
-                if (flag) {
-                    this.func_146113_a(
-                        Minecraft.getMinecraft()
-                            .getSoundHandler());
-                    this.onClick(mouseX, mouseY);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (this.isValidClickButton(button)) {
-            this.onRelease(mouseX, mouseY);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    protected boolean isValidClickButton(int button) {
-        return button == 0;
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (this.isValidClickButton(button)) {
-            this.onDrag(mouseX, mouseY, dragX, dragY);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public boolean isMouseOver(double mouseX, double mouseY) {
-        return this.visible && mouseX >= this.xPosition
-            && mouseY >= this.yPosition
-            && mouseX < this.xPosition + this.width
-            && mouseY < this.yPosition + this.height;
-    }
-
-    @Override
-    public void setFocused(boolean focused) {
-        this.focused = focused;
-    }
-
-    @Override
-    public boolean isFocused() {
-        return this.focused;
-    }
-
     public boolean isHoveredOrFocused() {
         return this.isHovered() || this.isFocused();
-    }
-
-    @Override
-    public int getX() {
-        return xPosition;
-    }
-
-    @Override
-    public int getY() {
-        return yPosition;
-    }
-
-    @Override
-    public void setX(int x) {
-        xPosition = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        yPosition = y;
-    }
-
-    @Override
-    public int getWidth() {
-        return width;
-    }
-
-    @Override
-    public int getHeight() {
-        return height;
-    }
-
-    @Override
-    public String getTooltip() {
-        return displayString;
     }
 
     @SideOnly(Side.CLIENT)
     public interface OnPress {
 
         void onPress(GuiButtonExtended button);
-    }
-
-    @Override
-    @Deprecated
-    public final void drawButton(Minecraft minecraft, int mouseX, int mouseY) {
-        drawScreen(mouseX, mouseY, 0);
-    }
-
-    @Override
-    @Deprecated
-    protected final void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
-
-    }
-
-    @Override
-    @Deprecated
-    public final void mouseReleased(int mouseX, int mouseY) {
-
-    }
-
-    @Override
-    @Deprecated
-    public final boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-        return false;
     }
 }

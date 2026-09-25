@@ -10,11 +10,11 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 
 public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidgetEventListener, IWidgetRenderable {
 
-    private int x;
-    private int y;
+    protected int x;
+    protected int y;
     protected final int width;
     protected final int height;
-    private final String narrationMessage;
+    protected final String narrationMessage;
     protected boolean isHovered;
     public boolean active = true;
     public boolean visible = true;
@@ -84,6 +84,18 @@ public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidge
     @Override
     public String getTooltip() {
         return narrationMessage;
+    }
+
+    public boolean isHovered() {
+        return isHovered;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     @Override

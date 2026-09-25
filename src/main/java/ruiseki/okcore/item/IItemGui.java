@@ -27,6 +27,6 @@ public interface IItemGui {
      * @param itemIndex    The slot index in player inventory.
      */
     default void writeExtraGuiData(ExtendedBuffer packetBuffer, World world, EntityPlayer player, int itemIndex) {
-        packetBuffer.writeVarIntToBuffer(itemIndex);
+        packetBuffer.writeInt(itemIndex);
     }
 }

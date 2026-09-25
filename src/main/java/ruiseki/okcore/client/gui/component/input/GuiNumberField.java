@@ -27,7 +27,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
         if (this.arrows) {
             this.arrowUp = new GuiButtonArrow(x, y + height / 2, btn -> increase(), GuiButtonArrow.Direction.NORTH);
             this.arrowDown = new GuiButtonArrow(x, y + height / 2, btn -> decrease(), GuiButtonArrow.Direction.SOUTH);
-            this.arrowUp.yPosition -= this.arrowUp.height;
+            this.arrowUp.y -= this.arrowUp.height;
         }
         setEnableBackgroundDrawing(true);
         setText("0");
@@ -37,8 +37,8 @@ public class GuiNumberField extends GuiTextFieldExtended {
     public void setEnabled(boolean enabled) {
         this.isEnabled = enabled;
         if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
-            this.arrowUp.enabled = enabled;
-            this.arrowDown.enabled = enabled;
+            this.arrowUp.active = enabled;
+            this.arrowDown.active = enabled;
             if (enabled) {
                 updateArrowsState();
             }
@@ -163,17 +163,17 @@ public class GuiNumberField extends GuiTextFieldExtended {
 
     protected void updateArrowsState() {
         if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
-            this.arrowDown.enabled = this.isEnabled;
-            this.arrowUp.enabled = this.isEnabled;
+            this.arrowDown.active = this.isEnabled;
+            this.arrowUp.active = this.isEnabled;
             if (!this.isEnabled) return;
 
             try {
                 int currentVal = getInt();
                 if (currentVal <= this.minValue) {
-                    this.arrowDown.enabled = false;
+                    this.arrowDown.active = false;
                 }
                 if (currentVal >= this.maxValue) {
-                    this.arrowUp.enabled = false;
+                    this.arrowUp.active = false;
                 }
             } catch (NumberFormatException e) {
 

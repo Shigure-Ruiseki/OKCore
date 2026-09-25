@@ -10,12 +10,12 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 
 public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidgetEventListener, IWidgetRenderable {
 
-    protected int x;
-    protected int y;
-    protected final int width;
-    protected final int height;
-    protected final String narrationMessage;
-    protected boolean isHovered;
+    public int x;
+    public int y;
+    public final int width;
+    public final int height;
+    public final String narrationMessage;
+    public boolean isHovered;
     public boolean active = true;
     public boolean visible = true;
     private boolean focused;

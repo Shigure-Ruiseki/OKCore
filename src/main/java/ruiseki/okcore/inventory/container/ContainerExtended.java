@@ -205,8 +205,8 @@ public abstract class ContainerExtended extends Container
                 getSlotStart(slotID, 0, false),
                 getSlotRange(slotID, slots, false),
                 false)) { // Click in player inventory -> tile
-                    return ItemHelpers.EMPTY;
-                }
+                return ItemHelpers.EMPTY;
+            }
 
             if (stackInSlot.stackSize == 0) {
                 slot.putStack(null);
@@ -316,7 +316,7 @@ public abstract class ContainerExtended extends Container
     }
 
     public ItemStack slotClick(int slotId, int clickedButton, ClickType clickType, EntityPlayer player) {
-        Slot slot = slotId < 0 ? null : this.inventorySlots.get(slotId);
+        Slot slot = slotId < 0 ? null : (Slot) this.inventorySlots.get(slotId);
         InventoryPlayer inventoryplayer = player.inventory;
 
         if (clickType == ClickType.QUICK_CRAFT) {
@@ -382,7 +382,7 @@ public abstract class ContainerExtended extends Container
 
                     originalHeld.stackSize = remainingCount + phantomCount; // Changed
                     if (originalHeld.stackSize <= 0) {
-                        inventoryplayer.setItemStack(ItemHelpers.EMPTY);
+                        inventoryplayer.setItemStack(null);
                     } else {
                         inventoryplayer.setItemStack(originalHeld);
                     }
@@ -392,21 +392,16 @@ public abstract class ContainerExtended extends Container
             } else {
                 this.func_94533_d();
             }
-            return ItemHelpers.EMPTY;
+            return null;
         } else if (this.dragEvent != 0) {
             this.func_94533_d();
-            return ItemHelpers.EMPTY;
+            return null;
+        } else if (slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {// Phantom slot logic added
+            return slotClickPhantom(slot, clickedButton, clickType, player);
+        } else {
+            // All other cases are delegated to the original code
+            return super.slotClick(slotId, clickedButton, clickType.toNumber(), player);
         }
-
-        if (slot instanceof SlotExtended && ((SlotExtended) slot).isPhantom()) {
-            return this.slotClickPhantom(slot, clickedButton, clickType, player);
-        }
-
-        return this.vanillaSlotClick(slotId, clickedButton, clickType.toNumber(), player);
-    }
-
-    protected ItemStack vanillaSlotClick(int slotId, int clickedButton, int mode, EntityPlayer player) {
-        return super.slotClick(slotId, clickedButton, mode, player);
     }
 
     private ItemStack slotClickPhantom(Slot slot, int mouseButton, ClickType clickType, EntityPlayer player) {

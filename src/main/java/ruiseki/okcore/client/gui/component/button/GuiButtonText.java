@@ -47,7 +47,7 @@ public class GuiButtonText extends GuiButtonExtended {
             color = 0xffffa0;
         }
 
-        drawCenteredString(fontrenderer, narrationMessage, x + width / 2, y + (height - 8) / 2, color);
+        drawCenteredString(fontrenderer, message, x + width / 2, y + (height - 8) / 2, color);
     }
 
 }

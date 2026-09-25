@@ -18,6 +18,10 @@ public interface IWidgetRenderable {
 
     public int getHeight();
 
+    public void setWidth(int width);
+
+    public void setHeight(int height);
+
     public String getTooltip();
 
     public void drawScreen(int mouseX, int mouseY, float partialTicks);

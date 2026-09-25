@@ -12,20 +12,20 @@ public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidge
 
     public int x;
     public int y;
-    public final int width;
-    public final int height;
-    public final String narrationMessage;
+    public int width;
+    public int height;
+    public String message;
     public boolean isHovered;
     public boolean active = true;
     public boolean visible = true;
     private boolean focused;
 
-    protected GuiWidget(int x, int y, int width, int height, String narrationMessage) {
+    protected GuiWidget(int x, int y, int width, int height, String message) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.narrationMessage = narrationMessage;
+        this.message = message;
     }
 
     public void playDownSound(SoundHandler soundHandlerIn) {
@@ -82,8 +82,18 @@ public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidge
     }
 
     @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    @Override
     public String getTooltip() {
-        return narrationMessage;
+        return message;
     }
 
     public boolean isHovered() {

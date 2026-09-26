@@ -215,7 +215,8 @@ public class PacketHandler {
             if (packet.isAsync()) {
                 action.run();
             } else {
-                Minecraft.getMinecraft().func_152344_a(action);
+                Minecraft.getMinecraft()
+                    .func_152344_a(action);
             }
             return null;
         }

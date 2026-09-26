@@ -61,6 +61,7 @@ dependencies {
 
     compileOnly(rfg.deobf("com.github.Thorfusion:Mekanism-Community-Edition:9.10.46:DEV"))
     devOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.10.45:dev")
+    devOnlyNonPublishable(rfg.deobf("curse.maven:better-foliage-228529:2500869"))
 
     compileOnlyApi('com.github.GTNewHorizons:Angelica:2.2.15:dev')
     compileOnlyApi("com.github.GTNewHorizons:ModularUI2:2.3.90-1.7.10:dev") { transitive = false }

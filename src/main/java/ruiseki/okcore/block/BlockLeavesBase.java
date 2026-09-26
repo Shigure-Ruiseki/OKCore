@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLeaves;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -60,6 +63,12 @@ public abstract class BlockLeavesBase extends BlockLeaves
 
     private int[] surroundings;
 
+    @SideOnly(Side.CLIENT)
+    private IIcon fancyIcon;
+
+    @SideOnly(Side.CLIENT)
+    private IIcon fastIcon;
+
     /**
      * Make a new block instance.
      */
@@ -99,8 +108,14 @@ public abstract class BlockLeavesBase extends BlockLeaves
     }
 
     @Override
+    public void registerBlockIcons(IIconRegister reg) {
+        fancyIcon = reg.registerIcon(getTextureName() + "_fancy");
+        fastIcon = reg.registerIcon(getTextureName() + "_fast");
+    }
+
+    @Override
     public IIcon getIcon(int side, int meta) {
-        return null;
+        return Blocks.leaves.isOpaqueCube() ? fastIcon : fancyIcon;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -247,7 +262,5 @@ public abstract class BlockLeavesBase extends BlockLeaves
     }
 
     @Override
-    public int getRenderColor(int meta) {
-        return 16777215;
-    }
+    public abstract int getRenderColor(int meta);
 }

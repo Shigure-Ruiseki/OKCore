@@ -8,14 +8,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.helper.ItemHelpers;
-import ruiseki.okcore.item.handler.IItemHandler;
+import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
-public class InventoryHandlerWrapper implements IItemHandler {
+public class InventoryHandlerWrapper implements IItemHandlerModifiable {
 
     public final IInventory inventory;
     public final ForgeDirection side;
 
-    public InventoryHandlerWrapper(IInventory inventory, ForgeDirection side) {
+    public InventoryHandlerWrapper(IInventory inventory, @Nullable ForgeDirection side) {
         this.inventory = inventory;
         this.side = side;
     }
@@ -23,8 +23,8 @@ public class InventoryHandlerWrapper implements IItemHandler {
     @Override
     public int getSlots() {
         if (inventory == null) return 0;
-        if (inventory instanceof ISidedInventory sidedInv) {
-            int[] slots = side != null ? sidedInv.getAccessibleSlotsFromSide(side.ordinal()) : null;
+        if (inventory instanceof ISidedInventory sidedInv && side != null) {
+            int[] slots = sidedInv.getAccessibleSlotsFromSide(side.ordinal());
             return slots != null ? slots.length : 0;
         }
         return inventory.getSizeInventory();
@@ -32,15 +32,14 @@ public class InventoryHandlerWrapper implements IItemHandler {
 
     private int getSlotIndex(int slot) {
         if (inventory == null) return -1;
-        if (inventory instanceof ISidedInventory sidedInv) {
-            if (side == null) return -1;
+        if (inventory instanceof ISidedInventory sidedInv && side != null) {
             int[] slots = sidedInv.getAccessibleSlotsFromSide(side.ordinal());
             if (slots == null || slot < 0 || slot >= slots.length) {
                 return -1;
             }
             return slots[slot];
         }
-        return slot;
+        return slot >= 0 && slot < inventory.getSizeInventory() ? slot : -1;
     }
 
     @Override
@@ -50,6 +49,15 @@ public class InventoryHandlerWrapper implements IItemHandler {
 
         ItemStack stack = inventory.getStackInSlot(realSlot);
         return ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack;
+    }
+
+    @Override
+    public void setStackInSlot(int slot, @Nullable ItemStack stack) {
+        int realSlot = getSlotIndex(slot);
+        if (realSlot != -1) {
+            inventory.setInventorySlotContents(realSlot, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
+            inventory.markDirty();
+        }
     }
 
     @Override
@@ -71,15 +79,12 @@ public class InventoryHandlerWrapper implements IItemHandler {
         if (ItemHelpers.isEmpty(existing)) {
             int accept = Math.min(stack.stackSize, limit);
             if (!simulate) {
-                ItemStack copy = ItemHelpers.copyWithSize(stack, accept);
-                inventory.setInventorySlotContents(realSlot, copy);
+                inventory.setInventorySlotContents(realSlot, ItemHelpers.copyWithSize(stack, accept));
                 inventory.markDirty();
             }
             if (accept >= stack.stackSize) return ItemHelpers.EMPTY;
 
-            ItemStack remainder = ItemHelpers.copy(stack);
-            ItemHelpers.shrink(remainder, accept);
-            return remainder;
+            return ItemHelpers.copyWithSize(stack, stack.stackSize - accept);
         }
 
         if (!ItemHelpers.canStack(existing, stack)) {
@@ -91,15 +96,14 @@ public class InventoryHandlerWrapper implements IItemHandler {
 
         int accept = Math.min(stack.stackSize, maxInsert);
         if (!simulate) {
-            ItemHelpers.grow(existing, accept);
+            ItemStack newStack = ItemHelpers.copyWithSize(existing, existing.stackSize + accept);
+            inventory.setInventorySlotContents(realSlot, newStack);
             inventory.markDirty();
         }
 
         if (accept >= stack.stackSize) return ItemHelpers.EMPTY;
 
-        ItemStack remainder = ItemHelpers.copy(stack);
-        ItemHelpers.shrink(remainder, accept);
-        return remainder;
+        return ItemHelpers.copyWithSize(stack, stack.stackSize - accept);
     }
 
     @Override
@@ -118,23 +122,26 @@ public class InventoryHandlerWrapper implements IItemHandler {
         }
 
         int toExtract = Math.min(existing.stackSize, amount);
-        ItemStack extracted = ItemHelpers.copyWithSize(existing, toExtract);
 
-        if (!simulate) {
-            ItemHelpers.shrink(existing, toExtract);
-            if (ItemHelpers.isEmpty(existing)) {
-                inventory.setInventorySlotContents(realSlot, ItemHelpers.EMPTY);
-            } else {
-                inventory.setInventorySlotContents(realSlot, existing);
-            }
+        if (simulate) {
+            return ItemHelpers.copyWithSize(existing, toExtract);
+        } else {
+            ItemStack extracted = inventory.decrStackSize(realSlot, toExtract);
             inventory.markDirty();
+            return ItemHelpers.isEmpty(extracted) ? ItemHelpers.EMPTY : extracted;
         }
-
-        return extracted;
     }
 
     @Override
     public int getSlotLimit(int slot) {
         return inventory != null ? inventory.getInventoryStackLimit() : 0;
+    }
+
+    @Override
+    public boolean isItemValid(int slot, @Nullable ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) return false;
+        int realSlot = getSlotIndex(slot);
+        if (realSlot == -1) return false;
+        return inventory.isItemValidForSlot(realSlot, stack);
     }
 }

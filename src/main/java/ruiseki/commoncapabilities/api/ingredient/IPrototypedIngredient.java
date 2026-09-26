@@ -32,7 +32,7 @@ public interface IPrototypedIngredient<T, M> extends Comparable<IPrototypedIngre
 
     /**
      * Deserialize an ingredient to NBT.
-     *
+     * 
      * @param prototypedIngredient Ingredient.
      * @param <T>                  The instance type.
      * @param <M>                  The matching condition parameter, may be Void.
@@ -56,7 +56,7 @@ public interface IPrototypedIngredient<T, M> extends Comparable<IPrototypedIngre
 
     /**
      * Deserialize an ingredient from NBT
-     *
+     * 
      * @param tag An NBT tag.
      * @return A new ingredient instance.
      * @throws IllegalArgumentException If the given tag is invalid or does not contain data on the given ingredient.
@@ -85,4 +85,5 @@ public interface IPrototypedIngredient<T, M> extends Comparable<IPrototypedIngre
 
         return new PrototypedIngredient(component, prototype, condition);
     }
+
 }

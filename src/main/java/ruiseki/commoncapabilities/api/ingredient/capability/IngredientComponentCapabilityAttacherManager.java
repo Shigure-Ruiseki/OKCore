@@ -33,7 +33,7 @@ public class IngredientComponentCapabilityAttacherManager {
 
     /**
      * Register the given capability attacher.
-     *
+     * 
      * @param attacher A capability attacher that will be called when the corresponding capability is instantiated.
      */
     public void addAttacher(IIngredientComponentCapabilityAttacher<?, ?> attacher) {
@@ -43,18 +43,15 @@ public class IngredientComponentCapabilityAttacherManager {
     @SubscribeEvent
     public void onIngredientComponentsLoad(AttachCapabilitiesEventIngredientComponent event) {
         onIngredientComponentLoad(event, event.getIngredientComponent());
-
     }
 
     protected <T, M> void onIngredientComponentLoad(AttachCapabilitiesEventIngredientComponent event,
         IngredientComponent<T, M> ingredientComponent) {
-        for (IIngredientComponentCapabilityAttacher<?, ?> attacher : attachers
-            .get(ingredientComponent.getRegistryName())) {
+        for (IIngredientComponentCapabilityAttacher<?, ?> attacher : attachers.get(ingredientComponent.getName())) {
             event.addCapability(
                 attacher.getCapabilityProviderName(),
                 ((IIngredientComponentCapabilityAttacher<T, M>) attacher)
                     .createCapabilityProvider(ingredientComponent));
-
         }
     }
 

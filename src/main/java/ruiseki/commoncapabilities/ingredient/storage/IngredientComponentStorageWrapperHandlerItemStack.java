@@ -26,9 +26,11 @@ import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentSto
 import ruiseki.commoncapabilities.api.ingredient.storage.IngredientComponentStorageEmpty;
 import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.datastructure.Wrapper;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.ingredient.collection.FilteredIngredientCollectionIterator;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
 import ruiseki.okcore.ingredient.collection.IngredientHashMap;
@@ -37,7 +39,7 @@ import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
  * Item storage wrapper handler for {@link IItemHandler}.
- *
+ * 
  * @author rubensworks
  */
 public class IngredientComponentStorageWrapperHandlerItemStack
@@ -62,7 +64,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
 
     @Override
     public IItemHandler wrapStorage(IIngredientComponentStorage<ItemStack, Integer> componentStorage) {
-        if (componentStorage instanceof IIngredientComponentStorageSlotted<ItemStack, Integer>) {
+        if (componentStorage instanceof IIngredientComponentStorageSlotted) {
             return new ItemStorageWrapperSlotted(
                 getComponent(),
                 (IIngredientComponentStorageSlotted<ItemStack, Integer>) componentStorage);
@@ -70,25 +72,23 @@ public class IngredientComponentStorageWrapperHandlerItemStack
         return new ItemStorageWrapper(getComponent(), componentStorage);
     }
 
-    @Nullable
     @Override
-    public IItemHandler getStorage(ICapabilityProvider capabilityProvider, @Nullable ForgeDirection facing) {
-        return capabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER, facing)
-            .getOrNull();
+    public LazyOptional<IItemHandler> getStorage(ICapabilityProvider capabilityProvider,
+        @Nullable ForgeDirection facing) {
+        return capabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER, facing);
     }
 
     @Override
     public IIngredientComponentStorage<ItemStack, Integer> getComponentStorage(ICapabilityProvider capabilityProvider,
         @Nullable ForgeDirection facing) {
-        IItemHandler storageSlotted = getStorage(capabilityProvider, facing);
-        ISlotlessItemHandler storageSlotless = capabilityProvider
-            .getCapability(SlotlessItemHandlerConfig.CAPABILITY, facing)
-            .getOrNull();
-        if (storageSlotted != null) {
-            if (storageSlotless != null) {
-                return wrapComponentStorage(storageSlotted, storageSlotless);
+        LazyOptional<IItemHandler> storageSlotted = getStorage(capabilityProvider, facing);
+        LazyOptional<ISlotlessItemHandler> storageSlotless = capabilityProvider
+            .getCapability(SlotlessItemHandlerConfig.CAPABILITY, facing);
+        if (storageSlotted.isPresent()) {
+            if (storageSlotless.isPresent()) {
+                return wrapComponentStorage(storageSlotted.orElse(null), storageSlotless.orElse(null));
             } else {
-                return wrapComponentStorage(getStorage(capabilityProvider, facing));
+                return wrapComponentStorage(storageSlotted.orElse(null));
             }
         }
         return new IngredientComponentStorageEmpty<>(getComponent());
@@ -162,8 +162,8 @@ public class IngredientComponentStorageWrapperHandlerItemStack
             int subMatchFlags = matchFlags & ~ItemMatch.STACKSIZE;
 
             for (int slot = 0; slot < slots; slot++) {
-                ItemStack extractedSimulated = storage.extractItem(slot, requiredStackSize, true);
-                if (extractedSimulated != null && getComponent().getMatcher()
+                ItemStack extractedSimulated = storageExtractItem(slot, requiredStackSize, true);
+                if (!ItemHelpers.isEmpty(extractedSimulated) && getComponent().getMatcher()
                     .matches(prototype, extractedSimulated, subMatchFlags)) {
                     ItemStack storagePrototype = getComponent().getMatcher()
                         .withQuantity(extractedSimulated, 1);
@@ -199,12 +199,12 @@ public class IngredientComponentStorageWrapperHandlerItemStack
 
             // Fail if we required an exact quantity
             if (checkStackSize) {
-                return null;
+                return ItemHelpers.EMPTY;
             }
 
             // Extract for the instance that had the most matches if we didn't require an exact quantity
             Pair<Wrapper<Integer>, List<Integer>> maxValue = Pair.of(new Wrapper<>(0), Lists.newArrayList());
-            ItemStack maxInstance = null;
+            ItemStack maxInstance = ItemHelpers.EMPTY;
             for (Map.Entry<ItemStack, Pair<Wrapper<Integer>, List<Integer>>> entry : validInstancesCollapsed) {
                 if (entry.getValue()
                     .getLeft()
@@ -225,7 +225,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
             if (!simulate && extractedCount > 0) {
                 int toExtract = requiredQuantity;
                 for (Integer finalSlot : value.getRight()) {
-                    ItemStack extractedActual = storage.extractItem(finalSlot, toExtract, false);
+                    ItemStack extractedActual = storageExtractItem(finalSlot, toExtract, false);
                     toExtract -= extractedActual.stackSize;
                 }
                 // Quick heuristic check to see if 'storage' did not lie during its simulation
@@ -243,12 +243,12 @@ public class IngredientComponentStorageWrapperHandlerItemStack
             int slots = storage.getSlots();
             int amount = Helpers.castSafe(maxQuantity);
             for (int slot = 0; slot < slots; slot++) {
-                ItemStack extractedSimulated = storage.extractItem(slot, amount, true);
-                if (extractedSimulated != null) {
-                    return simulate ? extractedSimulated : storage.extractItem(slot, amount, false);
+                ItemStack extractedSimulated = storageExtractItem(slot, amount, true);
+                if (!ItemHelpers.isEmpty(extractedSimulated)) {
+                    return simulate ? extractedSimulated : storageExtractItem(slot, amount, false);
                 }
             }
-            return null;
+            return ItemHelpers.EMPTY;
         }
 
         @Override
@@ -273,7 +273,53 @@ public class IngredientComponentStorageWrapperHandlerItemStack
 
         @Override
         public ItemStack extract(int slot, long maxQuantity, boolean simulate) {
-            return storage.extractItem(slot, Helpers.castSafe(maxQuantity), simulate);
+            return storageExtractItem(slot, Helpers.castSafe(maxQuantity), simulate);
+        }
+
+        protected ItemStack storageExtractItem(int slot, int amount, boolean simulate) {
+            // Special handling for inventories that have larger slot sizes, such as Sophisticated Barrels.
+            // See https://github.com/CyclopsMC/IntegratedCrafting/issues/106
+            int maxStackSize = 64;
+            if (amount > maxStackSize && storage.getSlotLimit(slot) > maxStackSize) {
+                if (simulate) {
+                    // In simulate-mode, extract up to max stack size.
+                    // If the returned stack less than max stack size, return it.
+                    // Otherwise, return the full stack in the slot up to the requested amount.
+                    ItemStack extractedUntilMaxStackSize = storage.extractItem(slot, maxStackSize, true);
+                    if (extractedUntilMaxStackSize.stackSize < maxStackSize) {
+                        return extractedUntilMaxStackSize;
+                    } else {
+                        ItemStack stackInSlot = storage.getStackInSlot(slot)
+                            .copy();
+                        if (stackInSlot.stackSize > amount) {
+                            stackInSlot.stackSize = amount;
+                        }
+                        return stackInSlot;
+                    }
+                } else {
+                    // Iterate extraction until requested amount is reached.
+                    ItemStack bufferExtracted = ItemHelpers.EMPTY;
+                    while (bufferExtracted.stackSize < amount) {
+                        ItemStack extractedPartial = storage
+                            .extractItem(slot, Math.min(amount - bufferExtracted.stackSize, maxStackSize), false);
+
+                        // Stop loop if empty
+                        if (ItemHelpers.isEmpty(extractedPartial)) {
+                            break;
+                        }
+
+                        // Add to buffer
+                        if (ItemHelpers.isEmpty(extractedPartial)) {
+                            bufferExtracted = extractedPartial;
+                        } else {
+                            bufferExtracted.stackSize = bufferExtracted.stackSize + extractedPartial.stackSize;
+                        }
+                    }
+                    return bufferExtracted;
+                }
+            }
+
+            return storage.extractItem(slot, amount, simulate);
         }
     }
 
@@ -341,7 +387,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
             try {
                 return Iterators.get(storage.iterator(), slot);
             } catch (IndexOutOfBoundsException e) {
-                return null;
+                return ItemHelpers.EMPTY;
             }
         }
 
@@ -354,8 +400,8 @@ public class IngredientComponentStorageWrapperHandlerItemStack
         @Nonnull
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            ItemStack slotItem = Iterators.get(storage.iterator(), slot, null);
-            if (slotItem == null) {
+            ItemStack slotItem = Iterators.get(storage.iterator(), slot, ItemHelpers.EMPTY);
+            if (ItemHelpers.isEmpty(slotItem)) {
                 return slotItem;
             }
             return storage.extract(
@@ -371,6 +417,11 @@ public class IngredientComponentStorageWrapperHandlerItemStack
             return Helpers.castSafe(
                 ingredientComponent.getMatcher()
                     .getMaximumQuantity());
+        }
+
+        @Override
+        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+            return true;
         }
     }
 
@@ -411,6 +462,11 @@ public class IngredientComponentStorageWrapperHandlerItemStack
         @Override
         public int getSlotLimit(int slot) {
             return Helpers.castSafe(storage.getMaxQuantity(slot));
+        }
+
+        @Override
+        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+            return true;
         }
     }
 }

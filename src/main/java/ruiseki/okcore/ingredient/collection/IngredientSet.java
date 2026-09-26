@@ -18,7 +18,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientInstanceWrapper;
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  */
-public abstract class IngredientSet<T, M>
+public class IngredientSet<T, M>
     extends IngredientCollectionCollectionWrappedAdapter<T, M, Set<IngredientInstanceWrapper<T, M>>>
     implements IIngredientSetMutable<T, M> {
 

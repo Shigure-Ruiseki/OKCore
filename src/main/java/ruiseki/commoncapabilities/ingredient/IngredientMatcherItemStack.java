@@ -57,12 +57,12 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public ItemStack getEmptyInstance() {
-        return null;
+        return ItemHelpers.EMPTY;
     }
 
     @Override
     public boolean isEmpty(ItemStack instance) {
-        return instance == null || instance.getItem() == null || instance.stackSize <= 0;
+        return ItemHelpers.isEmpty(instance) || instance.stackSize <= 0;
     }
 
     @Override
@@ -72,12 +72,12 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public ItemStack copy(ItemStack instance) {
-        return instance == null ? null : instance.copy();
+        return ItemHelpers.copy(instance);
     }
 
     @Override
     public long getQuantity(ItemStack instance) {
-        if (instance == null || instance.getItem() == null) {
+        if (isEmpty(instance)) {
             return 0;
         }
         return instance.stackSize;
@@ -85,15 +85,13 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public ItemStack withQuantity(ItemStack instance, long quantity) {
-        if (instance == null || instance.getItem() == null || quantity <= 0) {
-            return null;
+        if (isEmpty(instance) || quantity <= 0) {
+            return ItemHelpers.EMPTY;
         }
         if (instance.stackSize == quantity) {
             return instance;
         }
-        ItemStack copy = instance.copy();
-        copy.stackSize = Helpers.castSafe(quantity);
-        return copy;
+        return ItemHelpers.copyWithSize(instance, Helpers.castSafe(quantity));
     }
 
     @Override
@@ -108,10 +106,27 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public String localize(ItemStack instance) {
-        if (instance == null || instance.getItem() == null) {
+        if (isEmpty(instance)) {
             return "";
         }
         return instance.getDisplayName();
+    }
+
+    @Override
+    public String toString(ItemStack instance) {
+        if (isEmpty(instance)) {
+            return "EMPTY";
+        }
+        String itemName = Item.itemRegistry.getNameForObject(instance.getItem());
+        if (itemName == null) {
+            itemName = String.valueOf(Item.getIdFromItem(instance.getItem()));
+        }
+        return String.format(
+            "%s:%d %d %s",
+            itemName,
+            ItemHelpers.getStackMeta(instance),
+            instance.stackSize,
+            instance.getTagCompound());
     }
 
     @Override
@@ -124,18 +139,18 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
         } else if (empty2) {
             return 1;
         } else if (o1.getItem() == o2.getItem()) {
-            int m1 = o1.getItemDamage();
-            int m2 = o2.getItemDamage();
+            int m1 = ItemHelpers.getStackMeta(o1);
+            int m2 = ItemHelpers.getStackMeta(o2);
             if (m1 == m2) {
                 int c1 = o1.stackSize;
                 int c2 = o2.stackSize;
                 if (c1 == c2) {
                     return IngredientHelpers.compareTags(o1.getTagCompound(), o2.getTagCompound());
                 }
-                return c1 - c2;
+                return Integer.compare(c1, c2);
             }
-            return m1 - m2;
+            return Integer.compare(m1, m2);
         }
-        return Item.getIdFromItem(o1.getItem()) - Item.getIdFromItem(o2.getItem());
+        return Integer.compare(Item.getIdFromItem(o1.getItem()), Item.getIdFromItem(o2.getItem()));
     }
 }

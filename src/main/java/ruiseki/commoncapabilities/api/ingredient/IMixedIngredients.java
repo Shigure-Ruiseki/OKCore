@@ -15,7 +15,7 @@ import com.google.common.collect.Maps;
 
 /**
  * A collection of ingredient instances of different types.
- *
+ * 
  * @author rubensworks
  */
 public interface IMixedIngredients extends Comparable<IMixedIngredients> {
@@ -27,7 +27,7 @@ public interface IMixedIngredients extends Comparable<IMixedIngredients> {
 
     /**
      * Get the instances of a certain type.
-     *
+     * 
      * @param ingredientComponent An ingredient component type.
      * @param <T>                 The instance type.
      * @return Instances.
@@ -36,7 +36,7 @@ public interface IMixedIngredients extends Comparable<IMixedIngredients> {
 
     /**
      * Get the first non-empty instance of the given type.
-     *
+     * 
      * @param ingredientComponent An ingredient component type.
      * @param <T>                 The instance type.
      * @return The first non-empty instance, or the empty instance if none could be found.
@@ -54,7 +54,7 @@ public interface IMixedIngredients extends Comparable<IMixedIngredients> {
     /**
      * Check if at least all ingredients from the supplied mixed ingredients are contained in this mixed ingredients.
      * This mixed ingredients could contain more ingredients.
-     *
+     * 
      * @param that The ingredients to look for.
      * @return If at least all ingredients in that are contained in this.
      */

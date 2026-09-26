@@ -262,5 +262,7 @@ public abstract class BlockLeavesBase extends BlockLeaves
     }
 
     @Override
-    public abstract int getRenderColor(int meta);
+    public int getRenderColor(int meta) {
+        return 0xFFFFFF;
+    }
 }

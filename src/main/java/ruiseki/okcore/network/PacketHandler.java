@@ -205,18 +205,17 @@ public class PacketHandler {
 
         @Override
         public IMessage onMessage(final PacketBase packet, MessageContext ctx) {
-            final Runnable action = () -> {
-                Minecraft mc = Minecraft.getMinecraft();
-                if (mc.theWorld != null && mc.thePlayer != null) {
-                    packet.actionClient(mc.theWorld, mc.thePlayer);
-                }
-            };
-
+            final Minecraft mc = Minecraft.getMinecraft();
             if (packet.isAsync()) {
-                action.run();
+                packet.actionClient(mc.theWorld, mc.thePlayer);
             } else {
-                Minecraft.getMinecraft()
-                    .func_152344_a(action);
+                mc.func_152344_a(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        packet.actionClient(mc.theWorld, mc.thePlayer);
+                    }
+                });
             }
             return null;
         }
@@ -228,22 +227,15 @@ public class PacketHandler {
         @Override
         public IMessage onMessage(PacketBase packet, MessageContext ctx) {
             if (ctx.side == Side.CLIENT) {
+                // nothing on the client thread
                 return null;
             }
 
             EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-            if (player == null || player.worldObj == null) {
-                return null;
-            }
-
             if (packet.isAsync()) {
                 packet.actionServer(player.worldObj, player);
             } else {
-                ServerThreadUtil.addScheduledTask(() -> {
-                    if (player.worldObj != null) {
-                        packet.actionServer(player.worldObj, player);
-                    }
-                });
+                ServerThreadUtil.addScheduledTask(() -> packet.actionServer(player.worldObj, player));
             }
             return null;
         }

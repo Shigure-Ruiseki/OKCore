@@ -2,11 +2,14 @@ package ruiseki.okcore.datastructure;
 
 import java.lang.ref.WeakReference;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
 import org.jetbrains.annotations.Nullable;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -25,7 +28,8 @@ public class DimPos implements Comparable<DimPos> {
     private DimPos(int dimensionId, BlockPos blockPos, @Nullable World world) {
         this.dimensionId = dimensionId;
         this.blockPos = blockPos;
-        this.worldReference = world != null ? new WeakReference<>(world) : null;
+        this.worldReference = (world != null && world.provider.dimensionId == dimensionId) ? new WeakReference<>(world)
+            : null;
     }
 
     public static DimPos of(int dimensionId, int x, int y, int z) {
@@ -46,6 +50,11 @@ public class DimPos implements Comparable<DimPos> {
 
     @Nullable
     public World getWorld() {
+        return getWorld(false);
+    }
+
+    @Nullable
+    public World getWorld(boolean forceLoad) {
         if (worldReference != null) {
             World world = worldReference.get();
             if (world != null && world.provider.dimensionId == dimensionId) {
@@ -53,18 +62,40 @@ public class DimPos implements Comparable<DimPos> {
             }
         }
 
-        World world = DimensionManager.getWorld(dimensionId);
-        if (world != null) {
-            worldReference = new WeakReference<>(world);
-        } else {
-            worldReference = null;
+        if (MinecraftHelpers.isClientSide()) {
+            World clientWorld = getClientWorld();
+            if (clientWorld != null) {
+                this.worldReference = new WeakReference<>(clientWorld);
+                return clientWorld;
+            }
+            return null;
         }
-        return world;
+
+        World serverWorld = DimensionManager.getWorld(dimensionId);
+        if (serverWorld != null) {
+            this.worldReference = new WeakReference<>(serverWorld);
+        } else {
+            this.worldReference = null;
+        }
+        return serverWorld;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private @Nullable World getClientWorld() {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc != null && mc.theWorld != null && mc.theWorld.provider.dimensionId == dimensionId) {
+            return mc.theWorld;
+        }
+        return null;
     }
 
     public boolean isLoaded() {
-        World world = getWorld();
+        World world = getWorld(false);
         return world != null && blockPos.isLoaded(world);
+    }
+
+    public DimPos withPosition(BlockPos pos) {
+        return new DimPos(this.dimensionId, pos, this.worldReference == null ? null : this.worldReference.get());
     }
 
     @Override

@@ -38,7 +38,7 @@ public class IngredientSerializerItemStack implements IIngredientSerializer<Item
             return null;
         }
         ItemStack itemStack = ItemStack.loadItemStackFromNBT(stackTag);
-        if (itemStack != null && stackTag.hasKey("ExtendedCount", Constants.NBT.TAG_INT)) {
+        if (stackTag.hasKey("ExtendedCount", Constants.NBT.TAG_INT)) {
             itemStack.stackSize = stackTag.getInteger("ExtendedCount");
         }
         return itemStack;

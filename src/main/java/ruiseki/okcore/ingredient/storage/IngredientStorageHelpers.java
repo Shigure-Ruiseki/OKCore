@@ -12,8 +12,9 @@ import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
+import ruiseki.okcore.ingredient.collection.IIngredientCollapsedCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IngredientArrayList;
-import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
+import ruiseki.okcore.ingredient.collection.IngredientCollectionHelpers;
 import ruiseki.okcore.ingredient.collection.IngredientCollections;
 
 /**
@@ -1016,7 +1017,9 @@ public final class IngredientStorageHelpers {
                 rateLimit);
         } else {
             return new IngredientComponentStorageCollectionWrapper<>(
-                IngredientCollections.deserialize(tag, IngredientCollectionPrototypeMap::new),
+                IngredientCollections.deserialize(
+                    tag,
+                    (IngredientCollections.IIngredientCollectionConstructor<IIngredientCollapsedCollectionMutable<?, ?>>) IngredientCollectionHelpers::createCollapsedCollection),
                 maxQuantity,
                 rateLimit);
         }

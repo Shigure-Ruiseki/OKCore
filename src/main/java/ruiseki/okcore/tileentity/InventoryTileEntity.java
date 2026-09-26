@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Maps;
 
-import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.item.handler.BaseItemStackHandler;
 
 /**
  * A TileEntity with a static internal inventory.
@@ -18,18 +18,17 @@ import ruiseki.okcore.inventory.SimpleInventory;
  */
 public abstract class InventoryTileEntity extends InventoryTileEntityBase {
 
-    protected SimpleInventory inventory;
+    protected BaseItemStackHandler inventory;
     protected Map<ForgeDirection, int[]> slotSides;
 
     /**
      * Make new tile with an inventory.
      *
      * @param inventorySize Amount of slots in the inventory.
-     * @param inventoryName Internal name of the inventory.
      * @param stackSize     The maximum stacksize each slot can have
      */
-    public InventoryTileEntity(int inventorySize, String inventoryName, int stackSize) {
-        this.inventory = createInventory(inventorySize, inventoryName, stackSize);
+    public InventoryTileEntity(int inventorySize, int stackSize) {
+        this.inventory = createInventory(inventorySize, stackSize);
         this.slotSides = Maps.newHashMap();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             this.slotSides.put(side, new int[0]);
@@ -40,14 +39,13 @@ public abstract class InventoryTileEntity extends InventoryTileEntityBase {
      * Make new tile with an inventory.
      *
      * @param inventorySize Amount of slots in the inventory.
-     * @param inventoryName Internal name of the inventory.
      */
-    public InventoryTileEntity(int inventorySize, String inventoryName) {
-        this(inventorySize, inventoryName, 64);
+    public InventoryTileEntity(int inventorySize) {
+        this(inventorySize, 64);
     }
 
-    protected SimpleInventory createInventory(int inventorySize, String inventoryName, int stackSize) {
-        return new SimpleInventory(inventorySize, inventoryName, stackSize);
+    protected BaseItemStackHandler createInventory(int inventorySize, int stackSize) {
+        return BaseItemStackHandler.create(inventorySize, builder -> { builder.setDefaultSlotLimit(stackSize); });
     }
 
     /**
@@ -68,7 +66,7 @@ public abstract class InventoryTileEntity extends InventoryTileEntityBase {
     }
 
     @Override
-    public @NotNull SimpleInventory getInventory() {
+    public @NotNull BaseItemStackHandler getItemHandler() {
         return inventory;
     }
 

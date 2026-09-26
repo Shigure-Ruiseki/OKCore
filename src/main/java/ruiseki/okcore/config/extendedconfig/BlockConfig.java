@@ -8,7 +8,6 @@ import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 
-import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.item.ItemBlockMetadata;
@@ -86,12 +85,5 @@ public abstract class BlockConfig extends ExtendedConfig<BlockConfig, Block> {
      */
     public CreativeTabs getTargetTab() {
         return getMod().getDefaultCreativeTab();
-    }
-
-    /**
-     * return null to use BlockAction GuiType.
-     */
-    public GuiHandler.GuiType<?> getGuiType() {
-        return null;
     }
 }

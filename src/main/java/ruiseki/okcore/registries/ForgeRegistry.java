@@ -27,6 +27,11 @@ public class ForgeRegistry<V extends IForgeRegistryEntry<V>> implements IForgeRe
     }
 
     @Override
+    public ResourceLocation getRegistryName() {
+        return name;
+    }
+
+    @Override
     public Class<V> getRegistrySuperType() {
         return superType;
     }

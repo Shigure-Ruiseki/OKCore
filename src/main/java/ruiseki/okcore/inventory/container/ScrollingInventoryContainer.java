@@ -5,14 +5,17 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * An inventory container that has a scrollbar and searchfield.
@@ -25,7 +28,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  *
  * @author rubensworks
  */
-public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryContainer
+public abstract class ScrollingInventoryContainer<E> extends InventoryContainer
     implements GuiScrollBar.IScrollCallback {
 
     private final List<E> unfilteredItems;
@@ -35,18 +38,10 @@ public abstract class ScrollingInventoryContainer<E> extends ExtendedInventoryCo
     private String lastSearchString = "";
     private int firstElement = 0;
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory   The player inventory.
-     * @param guiProvider The gui provider.
-     * @param items       All items to potentially show in this list.
-     * @param filterer    The predicate that is used to filter on the given items.
-     */
     @SuppressWarnings("unchecked")
-    public ScrollingInventoryContainer(InventoryPlayer inventory, IGuiContainerProvider guiProvider, List<E> items,
-        IItemPredicate<E> filterer) {
-        super(inventory, guiProvider);
+    public ScrollingInventoryContainer(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+        IInventory inventory, List<E> items, IItemPredicate<E> filterer) {
+        super(type, playerInventory, inventory);
         this.unfilteredItems = Lists.newArrayList(items);
         this.filteredItems = Lists.newLinkedList();
         this.visibleItems = (List<E>) Arrays.asList(new Object[getPageSize() * getColumns()]);

@@ -1,12 +1,16 @@
 package ruiseki.okcore.network.packet;
 
+import java.util.Objects;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.inventory.IValueNotifiable;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -22,9 +26,7 @@ import ruiseki.okcore.network.PacketCodec;
 public class PacketValueNotify extends PacketCodec {
 
     @CodecField
-    private String guiModId;
-    @CodecField
-    private int guiId;
+    private ResourceLocation containerType;
     @CodecField
     private int valueId;
     @CodecField
@@ -34,9 +36,8 @@ public class PacketValueNotify extends PacketCodec {
 
     }
 
-    public PacketValueNotify(String guiModId, int guiId, int valueId, NBTTagCompound value) {
-        this.guiModId = guiModId;
-        this.guiId = guiId;
+    public PacketValueNotify(ContainerType<?> containerType, int valueId, NBTTagCompound value) {
+        this.containerType = containerType.getRegistryName();
         this.valueId = valueId;
         this.value = value;
     }
@@ -47,15 +48,13 @@ public class PacketValueNotify extends PacketCodec {
     }
 
     protected boolean isContainerValid(IValueNotifiable container) {
-        return container.getGuiId() == guiId && container.getGuiModId()
-            .equals(guiModId);
+        return Objects.equals(ContainerType.REGISTRY.getKey(container.getValueNotifiableType()), containerType);
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        if (player.openContainer instanceof IValueNotifiable) {
-            IValueNotifiable container = ((IValueNotifiable) player.openContainer);
+        if (player.openContainer instanceof IValueNotifiable container) {
             if (isContainerValid(container)) {
                 container.onUpdate(valueId, value);
             }
@@ -64,8 +63,7 @@ public class PacketValueNotify extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof IValueNotifiable) {
-            IValueNotifiable container = ((IValueNotifiable) player.openContainer);
+        if (player.openContainer instanceof IValueNotifiable container) {
             if (isContainerValid(container)) {
                 container.onUpdate(valueId, value);
             }

@@ -1,66 +1,28 @@
 package ruiseki.okcore.block;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.IGuiContainerProviderConfigurable;
-import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
- * Block with a tile entity with a GUI that can hold ExtendedConfigs.
- * The container and GUI must be set inside the constructor of the extension.
- *
- * @author rubensworks
- *
+ * Block with a tile entity and a custom GUI framework.
  */
-public abstract class BlockTileGui extends BlockTile implements IGuiContainerProviderConfigurable {
+public abstract class BlockTileGui extends BlockTile implements IBlockGui {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
 
-    private final ExtendedConfig<BlockConfig, Block> eConfig;
-    private final int guiID;
-
-    /**
-     * Make a new blockState instance.
-     *
-     * @param material   Material of this blockState.
-     * @param tileEntity The class of the tile entity this blockState holds.
-     */
-    public BlockTileGui(ExtendedConfig<BlockConfig, Block> eConfig, Material material,
-        Class<? extends TileEntityOK> tileEntity) {
+    public BlockTileGui(Material material, Class<? extends TileEntityOK> tileEntity) {
         super(material, tileEntity);
-        this.eConfig = eConfig;
-        this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
-        this.hasGui = true;
-    }
-
-    @Override
-    public ExtendedConfig<BlockConfig, Block> getConfig() {
-        return eConfig;
-    }
-
-    @Override
-    public ModBase getModGui() {
-        return eConfig.getMod();
-    }
-
-    @Override
-    public int getGuiID() {
-        return guiID;
     }
 
     @Override
@@ -71,44 +33,21 @@ public abstract class BlockTileGui extends BlockTile implements IGuiContainerPro
     @Override
     public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float subX,
         float subY, float subZ) {
-        super.onBlockActivated(world, x, y, z, player, side, subX, subY, subZ);
-
-        // Drop through if the player is sneaking
-        if (player.isSneaking()) {
-            return false;
+        if (super.onBlockActivated(world, x, y, z, player, side, subX, subY, subZ)) {
+            return true;
         }
 
-        if (!world.isRemote && hasGui()) {
-            player.openGui(getModGui(), getGuiID(), world, x, y, z);
-        }
+        BlockPos pos = new BlockPos(x, y, z);
+        Vec3 hitVec = Vec3.createVectorHelper(x + subX, y + subY, z + subZ);
+        MovingObjectPosition rayTraceResult = new MovingObjectPosition(x, y, z, side, hitVec);
 
-        return true;
-    }
-
-    @Override
-    protected void onPostBlockDestroyed(World world, int x, int y, int z) {
-        super.onPostBlockDestroyed(world, x, y, z);
-
-        // Close the GUI if it is open
-        if (world.isRemote) {
-            tryCloseClientGui(world);
-        }
-    }
-
-    /**
-     * Try to close the gui at client side.
-     *
-     * @param world The world.
-     */
-    @SuppressWarnings("unchecked")
-    @SideOnly(Side.CLIENT)
-    public void tryCloseClientGui(World world) {
-        if (Minecraft
-            .getMinecraft().thePlayer.openContainer instanceof TileInventoryContainerConfigurable<?>container) {
-            if (container.getTile() == null || container.getTile()
-                .isInvalid()) {
-                Minecraft.getMinecraft().thePlayer.closeScreen();
-            }
-        }
+        return IBlockGui.onBlockActivatedHook(
+            this,
+            this::getGuiProvider,
+            BlockStateHelpers.getState(world, pos),
+            world,
+            pos,
+            player,
+            rayTraceResult);
     }
 }

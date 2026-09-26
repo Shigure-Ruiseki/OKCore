@@ -13,7 +13,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.IBlockGui;
-import ruiseki.okcore.block.IBlockStateAction;
+import ruiseki.okcore.block.IBlockStateNative;
 import ruiseki.okcore.block.IEntityDropParticleFXBlock;
 import ruiseki.okcore.block.ParticleDropBlockComponent;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
@@ -27,11 +27,9 @@ import ruiseki.okcore.block.property.IBlockPropertyProvider;
  *
  */
 public abstract class BlockFluidBase extends BlockFluidClassic
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IEntityDropParticleFXBlock {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IEntityDropParticleFXBlock {
 
     private Fluid fluid;
-
-    protected boolean hasGui = false;
 
     @SideOnly(Side.CLIENT)
     protected ParticleDropBlockComponent particleDropBlockComponent;
@@ -54,11 +52,6 @@ public abstract class BlockFluidBase extends BlockFluidClassic
     @Override
     public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
         return ImmutableAxisAlignedBB.NULL_AABB;
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 
     /**

@@ -22,6 +22,7 @@ import ruiseki.okcore.capabilities.ICapabilityInternal;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.persist.nbt.NBTProviderComponent;
@@ -97,6 +98,20 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
         sendUpdateBackoff = 0;
     }
 
+    /**
+     * Marks the block entity as dirty (queuing it to be saved to disk on the server)
+     * and immediately dispatches a world update packet to nearby clients.
+     * <p>
+     * Use this method when state changes occur through player interaction or single-time events,
+     * ensuring both data persistence and client-side rendering synchronization.
+     */
+    public void setChangedAndDispatch() {
+        this.markDirty();
+        if (this.worldObj != null && !this.worldObj.isRemote) {
+            this.onSendUpdate();
+        }
+    }
+
     @Override
     public final void updateEntity() {
         if (isTicking()) {
@@ -109,17 +124,9 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      * Use updateTileEntity() instead.
      */
     private void updateTicking() {
-        doUpdate();
         updateTileEntity();
         trySendActualUpdate();
     }
-
-    /**
-     * Override this method instead of {@link TileEntityOK#updateEntity()}.
-     * This method is called each tick.
-     */
-    @Deprecated
-    protected void doUpdate() {}
 
     /**
      * Override this method instead of {@link TileEntityOK#updateTicking()}.
@@ -145,11 +152,10 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
     }
 
     /**
-     * Called when an update will is sent.
-     * This contains the logic to send the update, so make sure to call the super!
+     * Called when an update is sent to client.
      */
     protected void onSendUpdate() {
-        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        BlockHelpers.markForUpdate(worldObj, pos);
     }
 
     /**
@@ -175,8 +181,10 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
 
     @Override
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
-        this.readFromNBT(pkt.func_148857_g());
-        onUpdateReceived();
+        if (pkt != null && pkt.func_148857_g() != null) {
+            this.readFromNBT(pkt.func_148857_g());
+            onUpdateReceived();
+        }
     }
 
     /**
@@ -340,6 +348,9 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
         return ret;
     }
 
+    /**
+     * Cached position accessor to avoid frequent object allocations.
+     */
     public BlockPos getPos() {
         if (pos == null || pos.getX() != xCoord || pos.getY() != yCoord || pos.getZ() != zCoord) {
             pos = new BlockPos(this);

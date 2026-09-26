@@ -65,7 +65,8 @@ public class PrototypedIngredient<T, M> implements IPrototypedIngredient<T, M> {
     public String toString() {
         return "[PrototypedIngredient ingredientComponent: " + ingredientComponent.toString()
             + "; prototype: "
-            + Objects.toString(prototype)
+            + getComponent().getMatcher()
+                .toString(prototype)
             + "; condition: "
             + Objects.toString(condition)
             + "]";

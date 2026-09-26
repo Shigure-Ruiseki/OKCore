@@ -5,7 +5,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Exact matcher for a void match condition.
- *
+ * 
  * @author rubensworks
  */
 public class IngredientMatcherEnergy implements IIngredientMatcher<Long, Boolean> {
@@ -47,7 +47,7 @@ public class IngredientMatcherEnergy implements IIngredientMatcher<Long, Boolean
 
     @Override
     public boolean matches(Long a, Long b, Boolean matchCondition) {
-        return !matchCondition || (a != null && b != null && a.longValue() == b.longValue());
+        return !matchCondition || a.intValue() == b.intValue();
     }
 
     @Override
@@ -57,12 +57,12 @@ public class IngredientMatcherEnergy implements IIngredientMatcher<Long, Boolean
 
     @Override
     public boolean isEmpty(Long instance) {
-        return instance == null || instance == 0L;
+        return instance == 0L;
     }
 
     @Override
     public int hash(Long instance) {
-        return instance == null ? 0 : Long.hashCode(instance);
+        return (int) (long) instance;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class IngredientMatcherEnergy implements IIngredientMatcher<Long, Boolean
 
     @Override
     public long getQuantity(Long instance) {
-        return instance == null ? 0L : instance;
+        return instance;
     }
 
     @Override
@@ -96,10 +96,12 @@ public class IngredientMatcherEnergy implements IIngredientMatcher<Long, Boolean
     }
 
     @Override
+    public String toString(Long instance) {
+        return instance.toString();
+    }
+
+    @Override
     public int compare(Long o1, Long o2) {
-        if (o1 == null && o2 == null) return 0;
-        if (o1 == null) return -1;
-        if (o2 == null) return 1;
-        return Long.compare(o1, o2);
+        return (int) (o1 - o2);
     }
 }

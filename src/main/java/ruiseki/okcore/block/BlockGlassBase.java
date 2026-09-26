@@ -8,12 +8,10 @@ import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 
 public class BlockGlassBase extends BlockGlass
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
-
-    protected boolean hasGui = false;
 
     /**
      * Make a new blockState instance.
@@ -23,10 +21,5 @@ public class BlockGlassBase extends BlockGlass
      */
     public BlockGlassBase(Material material, boolean ignoreSimilarity) {
         super(material, ignoreSimilarity);
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 }

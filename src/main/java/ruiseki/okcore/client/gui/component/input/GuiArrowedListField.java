@@ -29,7 +29,7 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
         if (this.arrows) {
             this.arrowLeft = new GuiButtonArrow(x, y - 1, btn -> decrease(), GuiButtonArrow.Direction.WEST);
             this.arrowRight = new GuiButtonArrow(x + width, y - 1, btn -> increase(), GuiButtonArrow.Direction.EAST);
-            this.arrowRight.xPosition -= this.arrowRight.width;
+            this.arrowRight.x -= this.arrowRight.width;
         }
         setEnableBackgroundDrawing(true);
         this.elements = elements;

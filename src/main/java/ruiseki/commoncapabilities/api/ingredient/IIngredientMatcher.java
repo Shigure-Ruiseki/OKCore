@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 /**
  * An instance matcher for certain instance and condition types.
- *
+ * 
  * @param <T> The instance type to match.
  * @param <M> The matching condition parameter.
  * @author rubensworks
@@ -13,7 +13,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * If the given object is an instance of the ingredient type.
-     *
+     * 
      * @param object An object.
      * @return If the object is a valid instance of the ingredient component type.
      */
@@ -37,7 +37,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Create a new match condition based on the given condition that includes the second condition.
-     *
+     * 
      * @param matchCondition The match condition to start from.
      * @param with           The match condition to include.
      * @return A new match condition that is the combination of both.
@@ -46,7 +46,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Create a new match condition based on the given condition that excludes the second condition.
-     *
+     * 
      * @param matchCondition The match condition to start from.
      * @param without        A match condition to exclude.
      * @return A new match condition that is the first one without the second one.
@@ -55,7 +55,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Check if the given match condition contains at least the given condition.
-     *
+     * 
      * @param matchCondition  The match condition to start from.
      * @param searchCondition A match condition to search for.
      * @return If the first condition contains at least the second condition.
@@ -64,7 +64,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Check if the two given instances match based on the given match conditions.
-     *
+     * 
      * @param a              A first instance.
      * @param b              A second instance.
      * @param matchCondition A condition under which the matching should be done.
@@ -74,7 +74,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Check if the two given instances are equal.
-     *
+     * 
      * @param a A first instance.
      * @param b A second instance.
      * @return If the two given instances are equal.
@@ -92,7 +92,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
     /**
      * Check if the given entity matches the empty instance,
      * as provided by {@link #getEmptyInstance()}.
-     *
+     * 
      * @param instance An instance.
      * @return If the instance is empty.
      */
@@ -103,7 +103,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
     /**
      * Hash the given instance.
      * This must be calculated quickly.
-     *
+     * 
      * @param instance An instance.
      * @return A hashcode for the given instance.
      */
@@ -111,7 +111,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Create a deep copy of the given instance.
-     *
+     * 
      * @param instance An instance.
      * @return A copy of the given instance.
      */
@@ -119,7 +119,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Get the quantity in the given instance.
-     *
+     * 
      * @param instance An instance.
      * @return The instance quantity.
      */
@@ -127,7 +127,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Create a copy of the given instance with the given quantity.
-     *
+     * 
      * @param instance An instance.
      * @param quantity The new instance quantity.
      * @return The copied instance with the new quantity.
@@ -142,7 +142,7 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
 
     /**
      * Compare two conditions with each other.
-     *
+     * 
      * @param a A first condition.
      * @param b A second condition.
      * @return The comparison result.
@@ -152,9 +152,21 @@ public interface IIngredientMatcher<T, M> extends Comparator<T> {
     /**
      * Return the localized name of the given instance.
      * This should not include the instance quantity.
-     * 
+     *
+     * Should only be called client-side!
+     *
      * @param instance An instance.
      * @return The localized name of the given instance.
      */
     public String localize(T instance);
+
+    /**
+     * Return a stringified version of the given instance.
+     * These strings are mainly used for development purposes.
+     * 
+     * @param instance An instance.
+     * @return The string version of the given instance.
+     */
+    public String toString(T instance);
+
 }

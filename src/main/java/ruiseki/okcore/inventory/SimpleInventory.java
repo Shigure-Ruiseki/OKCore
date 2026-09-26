@@ -57,6 +57,10 @@ public class SimpleInventory implements INBTInventory {
         this(size, "", 64);
     }
 
+    public SimpleInventory(ItemStack... stacks) {
+        this(stacks.length);
+    }
+
     /**
      * Add a dirty marking listener.
      *

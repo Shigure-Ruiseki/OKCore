@@ -5,7 +5,7 @@ import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 
 /**
  * Event for when an {@link IngredientComponent} is being constructed.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  * @author rubensworks

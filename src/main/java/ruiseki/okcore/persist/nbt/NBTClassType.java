@@ -38,6 +38,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.PlayerHelpers;
 
@@ -389,6 +390,29 @@ public abstract class NBTClassType<T> {
             }
         });
 
+        NBTYPES.put(LangHelpers.UnlocalizedString.class, new NBTClassType<LangHelpers.UnlocalizedString>() {
+
+            @Override
+            public void writePersistedField(String name, LangHelpers.UnlocalizedString object, NBTTagCompound tag) {
+                if (object != null) {
+                    tag.setTag(name, object.serializeNBT());
+                }
+            }
+
+            @Override
+            public LangHelpers.UnlocalizedString readPersistedField(String name, NBTTagCompound tag) {
+                if (!tag.hasKey(name)) return getDefaultValue();
+                LangHelpers.UnlocalizedString value = new LangHelpers.UnlocalizedString();
+                value.deserializeNBT(tag.getCompoundTag(name));
+                return value;
+            }
+
+            @Override
+            public LangHelpers.UnlocalizedString getDefaultValue() {
+                return null;
+            }
+        });
+
         NBTYPES.put(Pair.class, new NBTClassType<Pair>() {
 
             @Override
@@ -557,7 +581,7 @@ public abstract class NBTClassType<T> {
             }
 
             @SideOnly(Side.CLIENT)
-            protected World getClientWorld() {
+            private World getClientWorld() {
                 return Minecraft.getMinecraft().theWorld;
             }
 

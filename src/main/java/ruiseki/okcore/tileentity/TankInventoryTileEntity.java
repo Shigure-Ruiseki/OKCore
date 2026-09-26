@@ -31,12 +31,11 @@ public abstract class TankInventoryTileEntity extends InventoryTileEntity
      * Make new tile with a tank that can accept anything and an inventory.
      *
      * @param inventorySize Amount of slots in the inventory.
-     * @param inventoryName Internal name of the inventory.
      * @param tankSize      Size (mB) of the tank.
      * @param stackSize     The maximum stacksize each slot can have.
      */
-    public TankInventoryTileEntity(int inventorySize, String inventoryName, int stackSize, int tankSize) {
-        super(inventorySize, inventoryName, stackSize);
+    public TankInventoryTileEntity(int inventorySize, int stackSize, int tankSize) {
+        super(inventorySize, stackSize);
         this.tankSize = tankSize;
         tank = newTank(tankSize);
         this.capabilityCache
@@ -53,14 +52,12 @@ public abstract class TankInventoryTileEntity extends InventoryTileEntity
      * Make new tile with a tank that can accept only one fluid and an inventory.
      *
      * @param inventorySize Amount of slots in the inventory.
-     * @param inventoryName Internal name of the inventory.
      * @param stackSize     The maximum stacksize each slot can have
      * @param tankSize      Size (mB) of the tank.
      * @param acceptedFluid Type of Fluid to accept.
      */
-    public TankInventoryTileEntity(int inventorySize, String inventoryName, int stackSize, int tankSize,
-        Fluid acceptedFluid) {
-        this(inventorySize, inventoryName, stackSize, tankSize);
+    public TankInventoryTileEntity(int inventorySize, int stackSize, int tankSize, Fluid acceptedFluid) {
+        this(inventorySize, stackSize, tankSize);
         this.tankSize = tankSize;
         tank.setRestriction(acceptedFluid);
     }

@@ -8,7 +8,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientInstanceWrapper;
 
 /**
  * A function that unwraps wrapped instances into instances.
- *
+ * 
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  */

@@ -16,7 +16,7 @@ import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition
 
 /**
  * Raw implementation of mixed ingredients.
- *
+ * 
  * @author rubensworks
  */
 public class MixedIngredients extends MixedIngredientsAdapter {
@@ -34,7 +34,7 @@ public class MixedIngredients extends MixedIngredientsAdapter {
                     String.format(
                         "Invalid MixedIngredients input, empty list for %s",
                         entry.getKey()
-                            .getRegistryName()));
+                            .getName()));
             }
         }
     }
@@ -58,7 +58,7 @@ public class MixedIngredients extends MixedIngredientsAdapter {
 
     /**
      * Create a new ingredients for a single instance.
-     *
+     * 
      * @param component A component type.
      * @param instance  An instance.
      * @param <T>       The instance type.
@@ -71,7 +71,7 @@ public class MixedIngredients extends MixedIngredientsAdapter {
     /**
      * Create ingredients from the given recipe's input.
      * This will create the ingredients based on the first prototype of the recipe's inputs.
-     *
+     * 
      * @param recipe A recipe.
      * @return New ingredients.
      */

@@ -18,14 +18,14 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
  *
  * Note: The storage provider MUST ensure deterministic behaviour for extraction and insertion.
  * For example, the three first returned ingredients hereafter must equal each other.
- *
+ * 
  * <pre>
  * ingredient1 = insert(myIngredient, true);
  * ingredient2 = insert(myIngredient, true);
  * ingredient3 = insert(myIngredient, false);
  * ingredient4 = insert(myIngredient, true); // Can be different again
  * </pre>
- *
+ * 
  * The same applies to extraction.
  *
  * This should not be used as a capability,
@@ -45,7 +45,7 @@ public interface IIngredientComponentStorage<T, M> extends Iterable<T> {
 
     /**
      * Get all ingredients in this storage.
-     *
+     * 
      * @return An iterator over all available ingredients in this storage.
      */
     public Iterator<T> iterator();

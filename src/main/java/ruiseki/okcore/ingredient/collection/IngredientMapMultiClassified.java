@@ -65,7 +65,7 @@ public class IngredientMapMultiClassified<T, M, V> extends IngredientMapAdapter<
     /**
      * A multi-threaded putAll implementation.
      * This will create workers for adding the given instances to all classified collections.
-     *
+     * 
      * @param executorService An optional executor service.
      *                        If none is provided, a new temporary one will be created
      *                        for the duration of this method call.

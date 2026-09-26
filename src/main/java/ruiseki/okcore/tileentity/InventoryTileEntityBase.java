@@ -1,6 +1,7 @@
 package ruiseki.okcore.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,13 +10,13 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
-import ruiseki.okcore.inventory.INBTInventory;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
-import ruiseki.okcore.item.capability.wrapper.InvWrapper;
+import ruiseki.okcore.item.handler.IItemHandlerModifiable;
+import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 /**
- * A TileEntity with an internal inventory.
- * Integrated with CapabilityCache support.
+ * A TileEntity with an internal inventory based on {@link IItemHandlerModifiable}.
+ * Fully integrated with CapabilityCache and Vanilla ISidedInventory support.
  *
  * @author rubensworks
  */
@@ -25,16 +26,20 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     public InventoryTileEntityBase() {
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(CapabilityItemHandler.ITEM_HANDLER, () -> new InvWrapper(getInventory())));
+            BasicCapabilityResolver.create(CapabilityItemHandler.ITEM_HANDLER, this::getItemHandler));
     }
 
     /**
-     * Get the internal inventory.
+     * Get the internal item handler.
      *
-     * @return The inventory instance.
+     * @return The inventory handler instance.
      */
     @NotNull
-    public abstract INBTInventory getInventory();
+    public abstract IItemHandlerModifiable getItemHandler();
+
+    protected IInventory getInventory() {
+        return this;
+    }
 
     public abstract int[] getSlotsForFace(ForgeDirection side);
 
@@ -45,38 +50,55 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public int getSizeInventory() {
-        INBTInventory inv = getInventory();
-        return inv.getSizeInventory();
+        IItemHandlerModifiable inv = getItemHandler();
+        return inv != null ? inv.getSlots() : 0;
     }
 
     @Override
     public ItemStack getStackInSlot(int slotId) {
-        if (slotId < 0 || slotId >= getSizeInventory()) {
+        IItemHandlerModifiable inv = getItemHandler();
+        if (inv == null || slotId < 0 || slotId >= inv.getSlots()) {
             return null;
         }
-        INBTInventory inv = getInventory();
         return inv.getStackInSlot(slotId);
     }
 
     @Override
     public ItemStack decrStackSize(int slotId, int count) {
-        INBTInventory inv = getInventory();
+        IItemHandlerModifiable inv = getItemHandler();
+        if (inv == null || slotId < 0 || slotId >= inv.getSlots()) {
+            return null;
+        }
 
-        ItemStack itemStack = inv.decrStackSize(slotId, count);
-        onInventoryChanged();
-        return itemStack;
+        ItemStack extracted = inv.extractItem(slotId, count, false);
+        if (extracted != null) {
+            onInventoryChanged();
+        }
+        return extracted;
     }
 
     @Override
     public ItemStack getStackInSlotOnClosing(int slotId) {
-        INBTInventory inv = getInventory();
-        return inv.getStackInSlotOnClosing(slotId);
+        IItemHandlerModifiable inv = getItemHandler();
+        if (inv == null || slotId < 0 || slotId >= inv.getSlots()) {
+            return null;
+        }
+
+        ItemStack stack = inv.getStackInSlot(slotId);
+        if (stack != null) {
+            inv.setStackInSlot(slotId, null);
+            onInventoryChanged();
+        }
+        return stack;
     }
 
     @Override
     public void setInventorySlotContents(int slotId, ItemStack itemstack) {
-        INBTInventory inv = getInventory();
-        inv.setInventorySlotContents(slotId, itemstack);
+        IItemHandlerModifiable inv = getItemHandler();
+        if (slotId < 0 || slotId >= inv.getSlots()) {
+            return;
+        }
+        inv.setStackInSlot(slotId, itemstack);
         onInventoryChanged();
     }
 
@@ -89,20 +111,18 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public String getInventoryName() {
-        INBTInventory inv = getInventory();
-        return inv.getInventoryName();
+        return "container.inventory";
     }
 
     @Override
     public boolean hasCustomInventoryName() {
-        INBTInventory inv = getInventory();
-        return inv.hasCustomInventoryName();
+        return false;
     }
 
     @Override
     public int getInventoryStackLimit() {
-        INBTInventory inv = getInventory();
-        return inv.getInventoryStackLimit();
+        IItemHandlerModifiable inv = getItemHandler();
+        return inv.getSlotLimit(0);
     }
 
     @Override
@@ -111,39 +131,43 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
     }
 
     @Override
-    public void openInventory() {
-        INBTInventory inv = getInventory();
-        inv.openInventory();
-    }
+    public void openInventory() {}
 
     @Override
-    public void closeInventory() {
-        INBTInventory inv = getInventory();
-        inv.closeInventory();
-    }
+    public void closeInventory() {}
 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
-        INBTInventory inv = getInventory();
-        return inv.isItemValidForSlot(index, stack);
+        IItemHandlerModifiable inv = getItemHandler();
+        return inv.isItemValid(index, stack);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
-        INBTInventory inventory = getInventory();
-        inventory.readFromNBT(tag);
+        IItemHandlerModifiable inventory = getItemHandler();
+        if (inventory instanceof INBTSerializable) {
+            ((INBTSerializable) inventory).deserializeNBT(tag.getCompoundTag("Inventory"));
+        }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        INBTInventory inventory = getInventory();
-        inventory.writeToNBT(tag);
+        IItemHandlerModifiable inventory = getItemHandler();
+        if (inventory instanceof INBTSerializable) {
+            NBTTagCompound invTag = ((INBTSerializable) inventory).serializeNBT();
+            if (invTag != null) {
+                tag.setTag("Inventory", invTag);
+            }
+        }
     }
 
     protected boolean canAccess(int slot, ForgeDirection side) {
         int[] slots = getAccessibleSlotsFromSide(side.ordinal());
+        if (slots == null) return false;
         for (int slotAccess : slots) {
             if (slotAccess == slot) return true;
         }
@@ -152,12 +176,22 @@ public abstract class InventoryTileEntityBase extends TileEntityOK implements IS
 
     @Override
     public boolean canInsertItem(int slot, ItemStack itemStack, int side) {
-        return canAccess(slot, ForgeDirection.getOrientation(side)) && this.isItemValidForSlot(slot, itemStack);
+        if (!canAccess(slot, ForgeDirection.getOrientation(side))) {
+            return false;
+        }
+        IItemHandlerModifiable inv = getItemHandler();
+        ItemStack remainder = inv.insertItem(slot, itemStack, true);
+        return remainder == null || remainder.stackSize < itemStack.stackSize;
     }
 
     @Override
     public boolean canExtractItem(int slot, ItemStack itemStack, int side) {
-        return canAccess(slot, ForgeDirection.getOrientation(side));
+        if (!canAccess(slot, ForgeDirection.getOrientation(side))) {
+            return false;
+        }
+        IItemHandlerModifiable inv = getItemHandler();
+        ItemStack extracted = inv.extractItem(slot, itemStack.stackSize, true);
+        return extracted != null && extracted.stackSize > 0;
     }
 
     public boolean isSendUpdateOnInventoryChanged() {

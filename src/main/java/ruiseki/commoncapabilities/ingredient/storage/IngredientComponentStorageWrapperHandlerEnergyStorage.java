@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.jetbrains.annotations.NotNull;
-
 import com.google.common.collect.Iterators;
 
 import cofh.api.energy.IEnergyStorage;
@@ -17,13 +15,14 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.ingredient.collection.FilteredIngredientCollectionIterator;
 
 /**
  * Energy storage wrapper handler for {@link IEnergyStorage}.
- *
+ * 
  * @author rubensworks
  */
 public class IngredientComponentStorageWrapperHandlerEnergyStorage
@@ -48,9 +47,9 @@ public class IngredientComponentStorageWrapperHandlerEnergyStorage
 
     @Nullable
     @Override
-    public IEnergyStorage getStorage(ICapabilityProvider capabilityProvider, @Nullable ForgeDirection facing) {
-        return capabilityProvider.getCapability(CapabilityEnergy.ENERGY, facing)
-            .getOrNull();
+    public LazyOptional<IEnergyStorage> getStorage(ICapabilityProvider capabilityProvider,
+        @Nullable ForgeDirection facing) {
+        return capabilityProvider.getCapability(CapabilityEnergy.ENERGY, facing);
     }
 
     @Override
@@ -74,7 +73,7 @@ public class IngredientComponentStorageWrapperHandlerEnergyStorage
         }
 
         @Override
-        public @NotNull Iterator<Long> iterator() {
+        public Iterator<Long> iterator() {
             return Iterators.forArray((long) storage.getEnergyStored());
         }
 
@@ -94,20 +93,18 @@ public class IngredientComponentStorageWrapperHandlerEnergyStorage
 
         @Override
         public Long insert(@Nonnull Long ingredient, boolean simulate) {
-            int toReceive = Helpers.castSafe(ingredient);
-            return ingredient - storage.receiveEnergy(toReceive, simulate);
+            return ingredient - storage.receiveEnergy(Helpers.castSafe(ingredient), simulate);
         }
 
         @Override
         public Long extract(@Nonnull Long prototype, Boolean matchFlags, boolean simulate) {
-            int toExtract = Helpers.castSafe(prototype);
-            if (Boolean.TRUE.equals(matchFlags)) {
-                int extractable = storage.extractEnergy(toExtract, true);
-                if (extractable != toExtract) {
+            if (matchFlags) {
+                int extractable = storage.extractEnergy(Helpers.castSafe(prototype), true);
+                if (extractable != prototype) {
                     return 0L;
                 }
             }
-            return (long) storage.extractEnergy(toExtract, simulate);
+            return (long) storage.extractEnergy(Helpers.castSafe(prototype), simulate);
         }
 
         @Override
@@ -126,23 +123,19 @@ public class IngredientComponentStorageWrapperHandlerEnergyStorage
 
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
-            Long notInserted = storage.insert((long) maxReceive, simulate);
-            return maxReceive - Helpers.castSafe(notInserted);
+            return maxReceive - Helpers.castSafe(storage.insert((long) maxReceive, simulate));
         }
 
         @Override
         public int extractEnergy(int maxExtract, boolean simulate) {
-            Long extracted = storage.extract((long) maxExtract, simulate);
-            return Helpers.castSafe(extracted);
+            return Helpers.castSafe(storage.extract(maxExtract, simulate));
         }
 
         @Override
         public int getEnergyStored() {
             long total = 0;
             for (Long stored : storage) {
-                if (stored != null) {
-                    total += stored;
-                }
+                total = Math.addExact(total, stored);
             }
             return Helpers.castSafe(total);
         }

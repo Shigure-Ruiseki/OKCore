@@ -146,10 +146,10 @@ public final class IngredientComponent<T, M>
 
     /**
      * Get the given capability.
-     *
+     * 
      * @param capability The capability to get.
      * @param <TC>       The capability type.
-     * @return The capability instance.
+     * @return The lazy optional capability instance.
      */
     public <TC> LazyOptional<TC> getCapability(Capability<TC> capability) {
         return capabilityDispatcher == null ? LazyOptional.empty()
@@ -191,7 +191,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Wrap the given instance inside an equals, hashCode and compareTo-safe holder.
-     *
+     * 
      * @param instance An instance.
      * @return The wrapped instance.
      */
@@ -209,14 +209,15 @@ public final class IngredientComponent<T, M>
 
     /**
      * Set the storage wrapper handler for this component.
-     *
+     * 
      * @param capability            The capability for the storage wrapper.
      * @param storageWrapperHandler The storage wrapper handler.
      * @param <S>                   The capability type.
      */
     public <S> void setStorageWrapperHandler(Capability<S> capability,
         IIngredientComponentStorageWrapperHandler<T, M, ? super S> storageWrapperHandler) {
-        if (capability != null && this.storageWrapperHandler.put(capability, storageWrapperHandler) == null) {
+        Objects.requireNonNull(capability, "Registered a storage wrapper handler before capabilities are registered.");
+        if (this.storageWrapperHandler.put(capability, storageWrapperHandler) == null) {
             this.storageWrapperCapabilities.add(capability);
             IngredientComponent<?, ?> previousValue = IngredientComponent.STORAGE_WRAPPER_CAPABILITIES_COMPONENTS
                 .put(capability, this);
@@ -233,7 +234,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Get the storage wrapper handler for this component.
-     *
+     * 
      * @param capability The capability to get the storage wrapper for.
      * @param <S>        The external storage type.
      * @return The storage wrapper handler, can be null if none has been assigned.
@@ -253,7 +254,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Get the ingredient component that was attached to the given storage capability.
-     *
+     * 
      * @param capability A storage capability.
      * @return The attached ingredient component, or null.
      */
@@ -279,12 +280,11 @@ public final class IngredientComponent<T, M>
     public IIngredientComponentStorage<T, M> getStorage(ICapabilityProvider capabilityProvider,
         @Nullable ForgeDirection facing) {
         // Check IIngredientComponentStorageHandler capability
-        if (capabilityProvider.getCapability(CAPABILITY_INGREDIENT_COMPONENT_STORAGE_HANDLER, facing)
-            .isPresent()) {
-            IIngredientComponentStorageHandler storageHandler = capabilityProvider
-                .getCapability(CAPABILITY_INGREDIENT_COMPONENT_STORAGE_HANDLER, facing)
-                .getOrNull();
-            IIngredientComponentStorage<T, M> storage = storageHandler.getStorage(this);
+        LazyOptional<IIngredientComponentStorageHandler> storageHandler = capabilityProvider
+            .getCapability(CAPABILITY_INGREDIENT_COMPONENT_STORAGE_HANDLER, facing);
+        if (storageHandler.isPresent()) {
+            IIngredientComponentStorage<T, M> storage = storageHandler.orElse(null)
+                .getStorage(this);
             if (storage != null) {
                 return storage;
             }
@@ -305,10 +305,10 @@ public final class IngredientComponent<T, M>
 
     @Override
     public int compareTo(IngredientComponent<?, ?> that) {
-        return this.getRegistryName()
+        return this.getName()
             .toString()
             .compareTo(
-                that.getRegistryName()
+                that.getName()
                     .toString());
     }
 }

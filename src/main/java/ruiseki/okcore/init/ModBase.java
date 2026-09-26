@@ -26,11 +26,9 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
-import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.client.icon.IconProvider;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyRegistry;
@@ -78,7 +76,6 @@ public abstract class ModBase {
     private final ConfigHandler configHandler;
     private final Map<EnumReferenceKey, Object> genericReference = Maps.newHashMap();
     private final List<WorldStorage> worldStorages = Lists.newLinkedList();
-    private final GuiHandler guiHandler;
     private LiteralArgumentBuilder<ICommandSender> baseCommand;
     private final RegistryManager registryManager;
     private final IKeyRegistry keyRegistry;
@@ -98,7 +95,6 @@ public abstract class ModBase {
         this.loggerHelper = constructLoggerHelper();
         this.initListeners = Sets.newHashSet();
         this.configHandler = constructConfigHandler();
-        this.guiHandler = constructGuiHandler();
         this.registryManager = constructRegistryManager();
         this.keyRegistry = new KeyRegistry();
         this.packetHandler = constructPacketHandler();
@@ -119,10 +115,6 @@ public abstract class ModBase {
 
     protected ConfigHandler constructConfigHandler() {
         return new ConfigHandler(this);
-    }
-
-    protected GuiHandler constructGuiHandler() {
-        return new GuiHandler(this);
     }
 
     protected RegistryManager constructRegistryManager() {
@@ -338,9 +330,6 @@ public abstract class ModBase {
     public void init(FMLInitializationEvent event) {
         log(Level.TRACE, "init()");
         moduleManager.init(event);
-
-        // Gui Handlers
-        NetworkRegistry.INSTANCE.registerGuiHandler(getModId(), getGuiHandler());
 
         // Initialize the creative tab
         getDefaultCreativeTab();

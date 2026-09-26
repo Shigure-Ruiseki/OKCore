@@ -19,21 +19,23 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
 public class BlockTile extends BlockContainer
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateAction, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
 
     protected Random random;
     private Class<? extends TileEntityOK> tileEntity;
-
-    protected boolean hasGui = false;
 
     private boolean rotatable;
 
@@ -54,6 +56,11 @@ public class BlockTile extends BlockContainer
         setStepSound(Block.soundTypePiston);
     }
 
+    @Override
+    public IGuiConstructor getGuiProvider(BlockState blockState, World world, BlockPos blockPos) {
+        return TileHelpers.getSafeTile(world, blockPos, IGuiConstructor.class);
+    }
+
     /**
      * Get the class of the tile entity this blockState holds.
      *
@@ -61,11 +68,6 @@ public class BlockTile extends BlockContainer
      */
     public Class<? extends TileEntity> getTileEntity() {
         return this.tileEntity;
-    }
-
-    @Override
-    public boolean hasGui() {
-        return hasGui;
     }
 
     @Override

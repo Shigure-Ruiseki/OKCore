@@ -48,8 +48,8 @@ public class GuiButtonCheckbox extends GuiButtonExtended {
             // Determine position
             int imageWidth = image.getWidth();
             int imageHeight = image.getHeight();
-            int x = this.width <= imageWidth ? this.xPosition : this.xPosition + (this.width - imageWidth) / 2;
-            int y = this.height <= imageHeight ? this.yPosition : this.yPosition + (this.height - imageHeight) / 2;
+            int x = this.width <= imageWidth ? this.x : this.x + (this.width - imageWidth) / 2;
+            int y = this.height <= imageHeight ? this.y : this.y + (this.height - imageHeight) / 2;
 
             // Draw image
             image.draw(this, x, y);

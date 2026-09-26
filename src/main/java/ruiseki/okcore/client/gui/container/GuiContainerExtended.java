@@ -29,6 +29,8 @@ import com.google.common.collect.Lists;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.client.IContainerEventHandler;
+import ruiseki.okcore.client.gui.ContainerType;
+import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
@@ -36,7 +38,7 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.KeyBoardHelpers;
 import ruiseki.okcore.inventory.IValueNotifiable;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.packet.PacketButtonClick;
 
 /**
@@ -44,8 +46,8 @@ import ruiseki.okcore.network.packet.PacketButtonClick;
  *
  * @author rubensworks
  */
-public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer> extends GuiContainer
-    implements IValueNotifiable, IContainerEventHandler {
+public abstract class GuiContainerExtended<T extends ContainerExtended> extends GuiContainer
+    implements IValueNotifiable, IContainerEventHandler, IContainerAccess<T> {
 
     protected T container;
     protected ResourceLocation texture;
@@ -73,8 +75,14 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         this.texture = constructGuiTexture();
     }
 
+    @Override
     public T getContainer() {
         return this.container;
+    }
+
+    @Override
+    public ContainerType<?> getValueNotifiableType() {
+        return getContainer().getType();
     }
 
     protected abstract ResourceLocation constructGuiTexture();
@@ -102,16 +110,6 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
 
     public int getGuiTopTotal() {
         return this.guiTop + offsetY;
-    }
-
-    @Override
-    public String getGuiModId() {
-        return getContainer().getGuiModId();
-    }
-
-    @Override
-    public int getGuiId() {
-        return getContainer().getGuiId();
     }
 
     // 2. INIT & LIFECYCLE
@@ -147,27 +145,27 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
         this.drawDefaultBackground();
         int k = this.guiLeft;
         int l = this.guiTop;
-        this.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-        RenderHelper.disableStandardItemLighting();
+
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
+        this.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         for (IWidgetRenderable renderable : this.renderables) {
             renderable.drawScreen(mouseX, mouseY, partialTicks);
         }
 
-        RenderHelper.enableGUIStandardItemLighting();
         GL11.glPushMatrix();
         GL11.glTranslatef((float) k, (float) l, 0.0F);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-        this.theSlot = null;
-        short short1 = 240;
-        short short2 = 240;
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, short1, short2);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+        RenderHelper.enableGUIStandardItemLighting();
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        int k1;
+
+        this.theSlot = null;
 
         for (int i1 = 0; i1 < this.inventorySlots.inventorySlots.size(); ++i1) {
             Slot slot = this.inventorySlots.inventorySlots.get(i1);
@@ -178,27 +176,25 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
                 GL11.glDisable(GL11.GL_LIGHTING);
                 GL11.glDisable(GL11.GL_DEPTH_TEST);
                 int j1 = slot.xDisplayPosition;
-                k1 = slot.yDisplayPosition;
+                int k1 = slot.yDisplayPosition;
                 GL11.glColorMask(true, true, true, false);
                 this.drawGradientRect(j1, k1, j1 + 16, k1 + 16, -2130706433, -2130706433);
                 GL11.glColorMask(true, true, true, true);
-                GL11.glEnable(GL11.GL_LIGHTING);
                 GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+                RenderHelper.enableGUIStandardItemLighting();
             }
         }
 
-        // Forge: Force lighting to be disabled as there are some issue where lighting would
-        // incorrectly be applied based on items that are in the inventory.
         GL11.glDisable(GL11.GL_LIGHTING);
         this.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
-        GL11.glEnable(GL11.GL_LIGHTING);
         InventoryPlayer inventoryplayer = this.mc.thePlayer.inventory;
         ItemStack itemstack = this.draggedStack == null ? inventoryplayer.getItemStack() : this.draggedStack;
 
         if (itemstack != null) {
             byte b0 = 8;
-            k1 = this.draggedStack == null ? 8 : 16;
+            int k1 = this.draggedStack == null ? 8 : 16;
             String s = null;
 
             if (this.draggedStack != null && this.isRightMouseClick) {
@@ -213,6 +209,7 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
                 }
             }
 
+            RenderHelper.enableGUIStandardItemLighting();
             this.drawItemStack(itemstack, mouseX - k - b0, mouseY - l - k1, s);
         }
 
@@ -224,14 +221,20 @@ public abstract class GuiContainerExtended<T extends ExtendedInventoryContainer>
                 this.returningStack = null;
             }
 
-            k1 = this.returningStackDestSlot.xDisplayPosition - this.field_147011_y;
+            int k1 = this.returningStackDestSlot.xDisplayPosition - this.field_147011_y;
             int j2 = this.returningStackDestSlot.yDisplayPosition - this.field_147010_z;
             int l1 = this.field_147011_y + (int) ((float) k1 * f1);
             int i2 = this.field_147010_z + (int) ((float) j2 * f1);
+
+            RenderHelper.enableGUIStandardItemLighting();
             this.drawItemStack(this.returningStack, l1, i2, (String) null);
         }
 
         GL11.glPopMatrix();
+
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        RenderHelper.disableStandardItemLighting();
 
         if (inventoryplayer.getItemStack() == null && this.theSlot != null && this.theSlot.getHasStack()) {
             ItemStack itemstack1 = this.theSlot.getStack();

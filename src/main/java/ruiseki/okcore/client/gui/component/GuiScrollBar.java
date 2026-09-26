@@ -3,13 +3,11 @@ package ruiseki.okcore.client.gui.component;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import net.minecraft.client.gui.Gui;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
@@ -23,19 +21,13 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * @author rubensworks
  */
-public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEventListener, IWidgetRenderable {
+public class GuiScrollBar extends GuiWidget {
 
     private static final ResourceLocation SCROLLBUTTON = new ResourceLocation(
         "textures/gui/container/creative_inventory/tabs.png");
     private static final int SCROLL_BUTTON_HEIGHT = 15;
     private static final int SCROLL_BUTTON_WIDTH = 12;
 
-    private int x;
-    private int y;
-
-    private final int width;
-    private final int height;
-    private final String narrationMessage;
     @Nullable
     private final IScrollCallback scrollCallback;
     @Nullable
@@ -54,11 +46,7 @@ public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEvent
 
     public GuiScrollBar(int x, int y, int height, String narrationMessage, @Nullable IScrollCallback scrollCallback,
         int visibleRows, Rectangle scollRegion) {
-        this.x = x;
-        this.y = y;
-        this.width = SCROLL_BUTTON_WIDTH;
-        this.height = height;
-        this.narrationMessage = narrationMessage;
+        super(x, y, SCROLL_BUTTON_WIDTH, height, narrationMessage);
         this.scrollCallback = scrollCallback;
         this.scollRegion = scollRegion;
 
@@ -73,13 +61,13 @@ public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEvent
     }
 
     @Override
-    public boolean isMouseOver(double x, double y) {
+    public boolean isMouseOver(double mouseX, double mouseY) {
         if (scollRegion != null) {
-            if (RenderHelpers.isPointInRegion(scollRegion, new Point((int) x, (int) y))) {
+            if (RenderHelpers.isPointInRegion(scollRegion, new Point((int) mouseX, (int) mouseY))) {
                 return true;
             }
         }
-        return IGuiEventListener.super.isMouseOver(x, y);
+        return super.isMouseOver(mouseX, mouseY);
     }
 
     /**
@@ -131,15 +119,10 @@ public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEvent
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawWidget(mouseX, mouseY, partialTicks);
-    }
-
-    @Override
     public void drawWidget(int mouseX, int mouseY, float partialTicks) {
-        int scrollX = x;
-        int scrollMinY = y;
-        int scrollMaxY = scrollMinY + height;
+        int scrollX = getX();
+        int scrollMinY = getY();
+        int scrollMaxY = scrollMinY + getHeight();
         RenderHelpers.bindTexture(SCROLLBUTTON);
         this.drawTexturedModalRect(
             scrollX,
@@ -198,54 +181,8 @@ public class GuiScrollBar extends Gui implements IGuiEventListener, IWidgetEvent
         this.visibleRows = visibleRows;
     }
 
-    @Override
-    public void setFocused(boolean focused) {
-
-    }
-
-    @Override
-    public boolean isFocused() {
-        return false;
-    }
-
-    @Override
-    public int getX() {
-        return x;
-    }
-
-    @Override
-    public int getY() {
-        return y;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    @Override
-    public int getHeight() {
-        return height;
-    }
-
-    @Override
-    public int getWidth() {
-        return width;
-    }
-
-    @Override
-    public String getTooltip() {
-        return narrationMessage;
-    }
-
     public static interface IScrollCallback {
 
         public void onScroll(int firstRow);
-
     }
 }

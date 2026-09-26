@@ -4,10 +4,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Abstract implementation of mixed ingredients.
- *
+ * 
  * @author rubensworks
  */
 public abstract class MixedIngredientsAdapter implements IMixedIngredients {
@@ -42,11 +43,11 @@ public abstract class MixedIngredientsAdapter implements IMixedIngredients {
                                 return false;
                             }
                         }
+                    } else {
+                        return false;
                     }
                 }
                 return true;
-            } else {
-                return false;
             }
         }
         return false;
@@ -68,11 +69,16 @@ public abstract class MixedIngredientsAdapter implements IMixedIngredients {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (IngredientComponent<?, ?> component : getComponents()) {
+        for (IngredientComponent component : getComponents()) {
             sb.append('{');
             sb.append(component);
             sb.append(':');
-            sb.append(getInstances(component));
+            sb.append(
+                getInstances(component).stream()
+                    .map(
+                        instance -> component.getMatcher()
+                            .toString(instance))
+                    .collect(Collectors.toList()));
             sb.append('}');
         }
         return "[MixedIngredients ingredients: " + sb + "]";
@@ -100,7 +106,7 @@ public abstract class MixedIngredientsAdapter implements IMixedIngredients {
 
     /**
      * Compare two collections with comparable elements.
-     *
+     * 
      * @param a   A first collection.
      * @param b   A second collection.
      * @param <T> The type of the elements.
@@ -124,7 +130,7 @@ public abstract class MixedIngredientsAdapter implements IMixedIngredients {
 
     /**
      * Compare two collections with a custom comparator.
-     *
+     * 
      * @param a          A first collection.
      * @param b          A second collection.
      * @param comparator The element comparator.

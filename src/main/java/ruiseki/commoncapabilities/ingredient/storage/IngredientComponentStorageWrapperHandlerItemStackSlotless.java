@@ -15,11 +15,12 @@ import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentSto
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
 import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.Helpers;
 
 /**
  * Item storage wrapper handler for {@link ISlotlessItemHandler}.
- *
+ * 
  * @author rubensworks
  */
 public class IngredientComponentStorageWrapperHandlerItemStackSlotless
@@ -42,11 +43,10 @@ public class IngredientComponentStorageWrapperHandlerItemStackSlotless
         return new ItemStorageWrapper(getComponent(), componentStorage);
     }
 
-    @Nullable
     @Override
-    public ISlotlessItemHandler getStorage(ICapabilityProvider capabilityProvider, @Nullable ForgeDirection facing) {
-        return capabilityProvider.getCapability(SlotlessItemHandlerConfig.CAPABILITY, facing)
-            .getOrNull();
+    public LazyOptional<ISlotlessItemHandler> getStorage(ICapabilityProvider capabilityProvider,
+        @Nullable ForgeDirection facing) {
+        return capabilityProvider.getCapability(SlotlessItemHandlerConfig.CAPABILITY, facing);
     }
 
     @Override

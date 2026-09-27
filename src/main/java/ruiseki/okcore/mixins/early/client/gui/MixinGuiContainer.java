@@ -14,9 +14,26 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import ruiseki.okcore.client.gui.ISlotBackground;
+import ruiseki.okcore.client.gui.component.IWidgetRenderable;
+import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 
 @Mixin(GuiContainer.class)
 public abstract class MixinGuiContainer {
+
+    @Inject(
+        method = "drawScreen(IIF)V",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/inventory/GuiContainer;drawGuiContainerBackgroundLayer(FII)V",
+            shift = At.Shift.AFTER))
+    private void renderExtendedBackgroundWidgets(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+        GuiContainer container = (GuiContainer) (Object) this;
+        if (container instanceof GuiContainerExtended<?>extendedGui) {
+            for (IWidgetRenderable renderable : extendedGui.renderables) {
+                renderable.drawScreen(mouseX, mouseY, partialTicks);
+            }
+        }
+    }
 
     @Inject(
         method = "func_146977_a(Lnet/minecraft/inventory/Slot;)V",

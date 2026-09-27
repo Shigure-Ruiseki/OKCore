@@ -29,6 +29,7 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.event.input.IGuiInputHandle;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.KeyBoardHelpers;
 import ruiseki.okcore.inventory.IValueNotifiable;
@@ -739,7 +740,8 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
     @Override
     @Deprecated
     protected final void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-
+        if (this instanceof IGuiInputHandle handle && handle.isMouseHandled()) return;
+        super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     /**
@@ -748,7 +750,8 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
     @Override
     @Deprecated
     protected final void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-
+        if (this instanceof IGuiInputHandle handle && handle.isMouseHandled()) return;
+        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
     }
 
     /**
@@ -757,7 +760,8 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
     @Override
     @Deprecated
     protected final void mouseMovedOrUp(int mouseX, int mouseY, int state) {
-
+        if (this instanceof IGuiInputHandle handle && handle.isMouseHandled()) return;
+        super.mouseMovedOrUp(mouseX, mouseY, state);
     }
 
     /**
@@ -768,6 +772,7 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
     @Override
     @Deprecated
     protected final void keyTyped(char typedChar, int keyCode) {
-
+        if (this instanceof IGuiInputHandle handle && handle.isKeyHandled()) return;
+        super.keyTyped(typedChar, keyCode);
     }
 }

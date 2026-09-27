@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ruiseki.okcore.client.gui.ISlotBackground;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
+import ruiseki.okcore.client.renderer.GlStateManager;
 
 @Mixin(GuiContainer.class)
 public abstract class MixinGuiContainer {
@@ -29,9 +30,20 @@ public abstract class MixinGuiContainer {
     private void renderExtendedBackgroundWidgets(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         GuiContainer container = (GuiContainer) (Object) this;
         if (container instanceof GuiContainerExtended<?>extendedGui) {
+            GlStateManager.pushMatrix();
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+
             for (IWidgetRenderable renderable : extendedGui.renderables) {
                 renderable.drawScreen(mouseX, mouseY, partialTicks);
             }
+
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.popMatrix();
         }
     }
 

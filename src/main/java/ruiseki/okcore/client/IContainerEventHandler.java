@@ -53,7 +53,7 @@ public interface IContainerEventHandler extends IGuiEventListener {
     default boolean mouseReleased(double mouseX, double mouseY, int button) {
         this.setDragging(false);
         return this.getChildAt(mouseX, mouseY)
-            .filter((child) -> { return child.mouseReleased(mouseX, mouseY, button); })
+            .filter((child) -> child.mouseReleased(mouseX, mouseY, button))
             .isPresent();
     }
 
@@ -140,7 +140,8 @@ public interface IContainerEventHandler extends IGuiEventListener {
                 return this.mouseDragged(x, y, activeBtn, dragX, dragY);
             } else {
                 this.mouseMoved(x, y);
-                return true;
+                return this.getChildAt(x, y)
+                    .isPresent();
             }
         }
 

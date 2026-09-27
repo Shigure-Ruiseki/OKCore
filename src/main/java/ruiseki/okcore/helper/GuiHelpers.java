@@ -800,7 +800,6 @@ public class GuiHelpers {
 
         GlStateManager.pushMatrix();
         GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GlStateManager.disableRescaleNormal();
         GlStateManager.disableLighting();
 
         int tooltipWidth = 0;

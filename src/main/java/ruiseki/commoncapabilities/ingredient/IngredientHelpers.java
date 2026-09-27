@@ -6,27 +6,25 @@ import net.minecraft.nbt.NBTBase;
 
 /**
  * Helper methods for ingredients.
- * 
+ *
  * @author rubensworks
  */
 public final class IngredientHelpers {
 
+    private IngredientHelpers() {
+        // Prevent instantiation
+    }
+
     /**
      * Compare the given NBT tags with each other for order.
-     * 
+     *
      * @param tag1 An NBT tag.
      * @param tag2 An NBT tag.
-     * @return a negative integer, zero, or a positive integer as the
-     *         first argument is less than, equal to, or greater than the
-     *         second.
+     * @return a negative integer, zero, or a positive integer
      */
     public static int compareTags(@Nullable NBTBase tag1, @Nullable NBTBase tag2) {
         if (tag1 == null) {
-            if (tag2 == null) {
-                return 0;
-            } else {
-                return -1;
-            }
+            return tag2 == null ? 0 : -1;
         } else if (tag2 == null) {
             return 1;
         } else {

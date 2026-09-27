@@ -16,7 +16,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public abstract class GuiButtonExtended extends GuiWidget {
+public class GuiButtonExtended extends GuiWidget {
 
     protected static final ResourceLocation buttonTextures = new ResourceLocation("textures/gui/widgets.png");
 
@@ -69,6 +69,7 @@ public abstract class GuiButtonExtended extends GuiWidget {
     @Override
     public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
+            GlStateManager.pushMatrix();
             GlStateManager.enableBlend();
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -76,10 +77,14 @@ public abstract class GuiButtonExtended extends GuiWidget {
                 this.drawBackground();
             }
             this.drawButtonInner(mouseX, mouseY, this.isHovered);
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
         }
     }
 
-    protected abstract void drawButtonInner(int mouseX, int mouseY, boolean mouseOver);
+    protected void drawButtonInner(int mouseX, int mouseY, boolean mouseOver) {
+
+    }
 
     @Override
     public void onClick(double mouseX, double mouseY) {
@@ -107,7 +112,7 @@ public abstract class GuiButtonExtended extends GuiWidget {
         return i;
     }
 
-    protected int getTextureY() { // Copy from AbstractButton
+    protected int getTextureY() {
         int i = 1;
         if (!this.active) {
             i = 0;

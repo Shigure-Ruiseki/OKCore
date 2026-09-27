@@ -29,7 +29,6 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
-import ruiseki.okcore.event.input.IGuiInputHandle;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.KeyBoardHelpers;
 import ruiseki.okcore.inventory.IValueNotifiable;
@@ -728,51 +727,5 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         return IContainerEventHandler.super.charTyped(codePoint, modifiers);
-    }
-
-    // ==========================================
-    // 7. DEPRECATED / LEGACY OVERRIDES
-    // ==========================================
-
-    /**
-     * @deprecated {@link #mouseClicked(double, double, int)}.
-     */
-    @Override
-    @Deprecated
-    protected final void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (this instanceof IGuiInputHandle handle && handle.isMouseHandled()) return;
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-    }
-
-    /**
-     * @deprecated {@link #mouseDragged(double, double, int, double, double)}.
-     */
-    @Override
-    @Deprecated
-    protected final void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-        if (this instanceof IGuiInputHandle handle && handle.isMouseHandled()) return;
-        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
-    }
-
-    /**
-     * @deprecated {@link #mouseMoved(double, double)} and {@link #mouseReleased(double, double, int)}.
-     */
-    @Override
-    @Deprecated
-    protected final void mouseMovedOrUp(int mouseX, int mouseY, int state) {
-        if (this instanceof IGuiInputHandle handle && handle.isMouseHandled()) return;
-        super.mouseMovedOrUp(mouseX, mouseY, state);
-    }
-
-    /**
-     * Legacy key typed entry point from Vanilla 1.7.10.
-     *
-     * @deprecated {@link #charTyped(char, int)}.
-     */
-    @Override
-    @Deprecated
-    protected final void keyTyped(char typedChar, int keyCode) {
-        if (this instanceof IGuiInputHandle handle && handle.isKeyHandled()) return;
-        super.keyTyped(typedChar, keyCode);
     }
 }

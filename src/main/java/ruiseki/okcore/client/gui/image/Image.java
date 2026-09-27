@@ -55,6 +55,7 @@ public class Image implements IImage {
 
     @Override
     public void drawWithColor(Gui gui, int x, int y, int width, int height, float r, float g, float b, float a) {
+        GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glColor4f(r, g, b, a);
@@ -85,6 +86,7 @@ public class Image implements IImage {
 
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.disableBlend();
+        GlStateManager.popMatrix();
     }
 
     @Override

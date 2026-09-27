@@ -30,6 +30,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -799,9 +800,14 @@ public class GuiHelpers {
         Minecraft mc = Minecraft.getMinecraft();
 
         GlStateManager.pushMatrix();
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GlStateManager.disableRescaleNormal();
+
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderHelper.disableStandardItemLighting();
         GlStateManager.disableLighting();
+        GlStateManager.disableDepth();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         int tooltipWidth = 0;
         for (String line : lines) {
@@ -830,7 +836,7 @@ public class GuiHelpers {
         final int zLevel = 300;
         render.zLevel = 300.0F;
 
-        int color1 = 0xF0100010; // -267386864 in HEX
+        int color1 = 0xF0100010; // -267386864
         drawGradientRect(xStart - 3, yStart - 4, xStart + tooltipWidth + 3, yStart - 3, color1, color1, zLevel);
         drawGradientRect(
             xStart - 3,
@@ -858,13 +864,13 @@ public class GuiHelpers {
             color1,
             zLevel);
 
-        int color2 = 0x505000FF; // 1347420415 in HEX
+        int color2 = 0x505000FF; // 1347420415
         int color3 = (color2 & 0xFEFEFE) >> 1 | color2 & 0xFF000000;
         drawGradientRect(
             xStart - 3,
             yStart - 3 + 1,
             xStart - 3 + 1,
-            yStart + tooltipHeight + 3 - 1,
+            yStart + tooltipHeight + 3 - 1, // Đã sửa toán tử - 1
             color2,
             color3,
             zLevel);
@@ -872,7 +878,7 @@ public class GuiHelpers {
             xStart + tooltipWidth + 2,
             yStart - 3 + 1,
             xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 3 - 1,
+            yStart + tooltipHeight + 3 - 1, // Đã sửa toán tử - 1
             color2,
             color3,
             zLevel);
@@ -886,6 +892,7 @@ public class GuiHelpers {
             color3,
             zLevel);
 
+        // 2. Render Text
         for (int stringIndex = 0; stringIndex < lines.size(); ++stringIndex) {
             String line = lines.get(stringIndex);
 
@@ -904,10 +911,15 @@ public class GuiHelpers {
             yStart += 10;
         }
 
-        GlStateManager.popMatrix();
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-
         render.zLevel = 0.0F;
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableDepth();
+        GlStateManager.enableLighting();
+        RenderHelper.enableGUIStandardItemLighting();
+
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
+
+        GlStateManager.popMatrix();
     }
 
     /**

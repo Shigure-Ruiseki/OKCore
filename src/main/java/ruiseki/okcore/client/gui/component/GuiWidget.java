@@ -10,6 +10,9 @@ import ruiseki.okcore.client.gui.IGuiEventListener;
 
 public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidgetEventListener, IWidgetRenderable {
 
+    protected static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
+    private static final double PERIOD_PER_SCROLLED_PIXEL = 0.5D;
+    private static final double MIN_SCROLL_PERIOD = 3.0D;
     public int x;
     public int y;
     public int width;
@@ -18,6 +21,7 @@ public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidge
     public boolean isHovered;
     public boolean active = true;
     public boolean visible = true;
+    protected float alpha = 1.0F;
     private boolean focused;
 
     protected GuiWidget(int x, int y, int width, int height, String message) {
@@ -104,8 +108,20 @@ public abstract class GuiWidget extends Gui implements IGuiEventListener, IWidge
         return visible;
     }
 
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
     public boolean isActive() {
         return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isHoveredOrFocused() {
+        return this.isHovered() || this.isFocused();
     }
 
     @Override

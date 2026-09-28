@@ -1,5 +1,7 @@
 package ruiseki.okcore.client.gui.component.button;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
 import ruiseki.okcore.client.gui.image.Image;
 import ruiseki.okcore.client.gui.image.Images;
@@ -9,6 +11,7 @@ import ruiseki.okcore.client.gui.image.Images;
  *
  * @author rubensworks
  */
+@SideOnly(Side.CLIENT)
 public class GuiButtonArrow extends GuiButtonExtended {
 
     @Getter

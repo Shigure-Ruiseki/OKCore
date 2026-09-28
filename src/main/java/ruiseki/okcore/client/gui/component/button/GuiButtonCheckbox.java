@@ -1,22 +1,17 @@
 package ruiseki.okcore.client.gui.component.button;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.image.Image;
 import ruiseki.okcore.client.gui.image.Images;
 
-public class GuiButtonCheckbox extends GuiButtonExtended {
+@SideOnly(Side.CLIENT)
+public class GuiButtonCheckbox extends GuiButton {
 
     private boolean checked;
 
-    public GuiButtonCheckbox(int x, int y, int width, int height, String string, OnPress onPress, boolean background) {
-        super(x, y, width, height, string, onPress, background);
-    }
-
-    public GuiButtonCheckbox(int x, int y, String string, OnPress onPress) {
-        this(x, y, 10, 10, string, onPress, false);
-    }
-
-    public GuiButtonCheckbox(int x, int y, OnPress onPress) {
-        this(x, y, 10, 10, "", onPress, false);
+    public GuiButtonCheckbox(int x, int y, int width, int height, String string, OnPress onPress) {
+        super(x, y, width, height, string, onPress);
     }
 
     public void setChecked(boolean checked) {
@@ -34,7 +29,7 @@ public class GuiButtonCheckbox extends GuiButtonExtended {
     }
 
     @Override
-    protected void drawButtonInner(int mouseX, int mouseY, boolean mouseOver) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         if (visible) {
             // Determine image
             int i = 0;
@@ -47,9 +42,9 @@ public class GuiButtonCheckbox extends GuiButtonExtended {
 
             // Determine position
             int imageWidth = image.getWidth();
-            int imageHeight = image.getHeight();
-            int x = this.width <= imageWidth ? this.x : this.x + (this.width - imageWidth) / 2;
-            int y = this.height <= imageHeight ? this.y : this.y + (this.height - imageHeight) / 2;
+            int imageWHeight = image.getHeight();
+            int x = this.width <= imageWidth ? this.getX() : this.getX() + (this.width - imageWidth) / 2;
+            int y = this.height <= imageWHeight ? this.getY() : this.getY() + (this.height - imageWHeight) / 2;
 
             // Draw image
             image.draw(this, x, y);

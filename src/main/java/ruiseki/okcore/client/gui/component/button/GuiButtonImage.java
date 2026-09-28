@@ -17,22 +17,22 @@ public class GuiButtonImage extends GuiButtonExtended {
 
     /**
      * Make a new instance.
-     *
+     * 
      * @param x                X
      * @param y                Y
      * @param width            Width
      * @param height           Height
      * @param narrationMessage The string to print.
-     * @param onPress          The click handler.
-     * @param images           The images to render. First images are rendered behind later images.
-     * @param background       If the button background should be rendered.
      * @param offsetX          The x coordinate for the image inside the button.
      * @param offsetY          The y coordinate for the image inside the button.
+     * @param pressCallback    A callback for when this button was pressed.
+     * @param images           The images to render. First images are rendered behind later images.
+     * @param background       If the button background should be rendered.
      */
-    public GuiButtonImage(int x, int y, int width, int height, String narrationMessage, OnPress onPress,
+    public GuiButtonImage(int x, int y, int width, int height, String narrationMessage, GuiButton.OnPress pressCallback,
         IImage[] images, boolean background, int offsetX, int offsetY) {
-        super(x, y, width, height, narrationMessage, onPress, background);
-        this.images = images != null ? images : new IImage[0];
+        super(x, y, width, height, narrationMessage, pressCallback, background);
+        this.images = images;
         this.offsetX = offsetX;
         this.offsetY = offsetY;
     }
@@ -46,13 +46,13 @@ public class GuiButtonImage extends GuiButtonExtended {
      * @param pressCallback    A callback for when this button was pressed.
      * @param images           The images to render
      */
-    public GuiButtonImage(int x, int y, String narrationMessage, OnPress pressCallback, IImage... images) {
+    public GuiButtonImage(int x, int y, String narrationMessage, GuiButton.OnPress pressCallback, IImage... images) {
         this(x, y, images[0].getWidth(), images[0].getHeight(), narrationMessage, pressCallback, images, false, 0, 0);
     }
 
     /**
      * Make a new instance.
-     *
+     * 
      * @param x                X
      * @param y                Y
      * @param width            Width
@@ -64,7 +64,7 @@ public class GuiButtonImage extends GuiButtonExtended {
      * @param offsetX          The x coordinate for the image inside the button.
      * @param offsetY          The y coordinate for the image inside the button.
      */
-    public GuiButtonImage(int x, int y, int width, int height, String narrationMessage, OnPress pressCallback,
+    public GuiButtonImage(int x, int y, int width, int height, String narrationMessage, GuiButton.OnPress pressCallback,
         boolean background, IImage image, int offsetX, int offsetY) {
         this(
             x,
@@ -81,14 +81,14 @@ public class GuiButtonImage extends GuiButtonExtended {
 
     /**
      * Make a new instance.
-     *
+     * 
      * @param x                X
      * @param y                Y
      * @param narrationMessage The string to print.
      * @param pressCallback    A callback for when this button was pressed.
      * @param image            The image to render
      */
-    public GuiButtonImage(int x, int y, String narrationMessage, OnPress pressCallback, IImage image) {
+    public GuiButtonImage(int x, int y, String narrationMessage, GuiButton.OnPress pressCallback, IImage image) {
         this(x, y, image.getWidth(), image.getHeight(), narrationMessage, pressCallback, false, image, 0, 0);
     }
 
@@ -105,9 +105,5 @@ public class GuiButtonImage extends GuiButtonExtended {
 
     public void setImages(IImage[] images) {
         this.images = images;
-    }
-
-    public IImage[] getImages() {
-        return this.images;
     }
 }

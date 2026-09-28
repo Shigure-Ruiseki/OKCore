@@ -1,7 +1,6 @@
 package ruiseki.okcore.client.gui.component.button;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 
 /**
  * An button with text.
@@ -11,15 +10,17 @@ import net.minecraft.client.gui.FontRenderer;
  */
 public class GuiButtonText extends GuiButtonExtended {
 
+    private final String text;
+
     /**
      * Make a new instance.
      *
-     * @param x      X
-     * @param y      Y
-     * @param string The string to print.
+     * @param x    X
+     * @param y    Y
+     * @param text The string to print.
      */
-    public GuiButtonText(int x, int y, String string, OnPress onPress) {
-        this(x, y, Minecraft.getMinecraft().fontRenderer.getStringWidth(string) + 6, 16, string, onPress, true);
+    public GuiButtonText(int x, int y, String message, String text, OnPress onPress) {
+        this(x, y, Minecraft.getMinecraft().fontRenderer.getStringWidth(text) + 6, 16, message, text, onPress, true);
     }
 
     /**
@@ -29,25 +30,34 @@ public class GuiButtonText extends GuiButtonExtended {
      * @param y          Y
      * @param width      Width
      * @param height     Height
-     * @param string     The string to print.
+     * @param text       The string to print.
      * @param background If the button background should be rendered.
      */
-    public GuiButtonText(int x, int y, int width, int height, String string, OnPress onPress, boolean background) {
-        super(x, y, width, height, string, onPress, background);
+    public GuiButtonText(int x, int y, int width, int height, String message, String text, OnPress onPress,
+        boolean background) {
+        super(x, y, width, height, message, onPress, background);
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
     }
 
     @Override
     protected void drawButtonInner(int i, int j, boolean mouseOver) {
-        FontRenderer fontrenderer = Minecraft.getMinecraft().fontRenderer;
-
         int color = 0xe0e0e0;
         if (!active) {
             color = 0xffa0a0a0;
-        } else if (mouseOver) {
+        } else if (isHoveredOrFocused()) {
             color = 0xffffa0;
         }
 
-        drawCenteredString(fontrenderer, message, x + width / 2, y + (height - 8) / 2, color);
+        drawCenteredString(
+            Minecraft.getMinecraft().fontRenderer,
+            getText(),
+            getX() + width / 2,
+            getY() + (height - 8) / 2,
+            color);
     }
 
 }

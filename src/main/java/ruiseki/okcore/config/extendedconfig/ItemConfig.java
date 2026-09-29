@@ -34,7 +34,7 @@ public abstract class ItemConfig extends ExtendedConfig<ItemConfig, Item> {
 
     @Override
     public String getUnlocalizedName() {
-        return "items." + getMod().getModId() + "." + getNamedId();
+        return getMod().getModId() + "." + getNamedId();
     }
 
     @Override

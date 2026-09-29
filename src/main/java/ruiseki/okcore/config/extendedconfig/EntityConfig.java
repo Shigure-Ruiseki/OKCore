@@ -38,7 +38,7 @@ public abstract class EntityConfig<T extends Entity> extends ExtendedConfig<Enti
 
     @Override
     public String getUnlocalizedName() {
-        return "entity." + getNamedId();
+        return getNamedId();
     }
 
     @Override

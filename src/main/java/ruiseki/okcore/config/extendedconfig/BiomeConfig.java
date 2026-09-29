@@ -51,7 +51,7 @@ public abstract class BiomeConfig extends ExtendedConfig<BiomeConfig, BiomeGenBa
 
     @Override
     public String getUnlocalizedName() {
-        return "biomes." + getMod().getModId() + "." + getNamedId();
+        return "biome." + getMod().getModId() + "." + getNamedId();
     }
 
     @Override

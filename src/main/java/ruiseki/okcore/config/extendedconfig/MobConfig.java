@@ -35,7 +35,7 @@ public abstract class MobConfig extends ExtendedConfig<MobConfig, EntityLiving> 
 
     @Override
     public String getUnlocalizedName() {
-        return "entity.mob." + getNamedId();
+        return "mob." + getNamedId();
     }
 
     @Override

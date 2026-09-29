@@ -37,7 +37,7 @@ public abstract class EnchantmentConfig extends ExtendedConfig<EnchantmentConfig
 
     @Override
     public String getUnlocalizedName() {
-        return "enchantments." + getNamedId();
+        return "enchantment." + getNamedId();
     }
 
     @Override

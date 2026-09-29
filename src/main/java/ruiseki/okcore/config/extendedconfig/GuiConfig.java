@@ -34,7 +34,7 @@ public abstract class GuiConfig<T extends ContainerExtended>
 
     @Override
     public String getUnlocalizedName() {
-        return "guis." + getMod().getModId() + "." + getNamedId();
+        return getMod().getModId() + "." + getNamedId();
     }
 
     @Override

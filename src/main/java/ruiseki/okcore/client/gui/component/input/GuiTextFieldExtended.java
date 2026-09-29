@@ -42,17 +42,25 @@ public class GuiTextFieldExtended extends GuiTextField {
 
         setX(getX() - 1);
         setY(getY() - 1);
-        drawTexturedModalRect(getX(), getY(), 0, 0, width / 2, height / 2); // top left
-        drawTexturedModalRect(getX() + width / 2, getY(), 200 - width / 2, 0, width / 2, height / 2); // top right
-        drawTexturedModalRect(getX(), getY() + height / 2, 0, 20 - height / 2, width / 2, height / 2); // bottom
-                                                                                                       // left
+
+        // 1. Top-Left
+        drawTexturedModalRect(getX(), getY(), 0, 0, width / 2, height / 2);
+
+        // 2. Top-Right
+        drawTexturedModalRect(getX() + width / 2, getY(), 200 - width / 2, 0, width / 2, height / 2);
+
+        // 3. Bottom-Left
+        drawTexturedModalRect(getX(), getY() + height / 2, 0, 20 - height / 2, width / 2, height / 2);
+
+        // 4. Bottom-Right
         drawTexturedModalRect(
             getX() + width / 2,
-            getX() + height / 2,
+            getY() + height / 2,
             200 - width / 2,
             20 - height / 2,
             width / 2,
-            height / 2); // bottom right
+            height / 2);
+
         setX(getX() + 1);
         setY(getY() + 1);
     }
@@ -77,7 +85,7 @@ public class GuiTextFieldExtended extends GuiTextField {
             && mouseX < this.getX() + this.width
             && mouseY >= this.getY()
             && mouseY < this.getY() + this.height) {
-            // Select everything
+            // Right-click: Select all
             this.setFocused(true);
             this.moveCursorTo(0);
             this.setHighlightPos(Integer.MAX_VALUE);

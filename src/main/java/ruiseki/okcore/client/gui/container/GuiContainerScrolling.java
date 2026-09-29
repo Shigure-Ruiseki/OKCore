@@ -104,8 +104,10 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
                 this.updateSearch(searchField.getValue());
                 return true;
             }
+            return false;
+        } else {
+            return super.charTyped(typedChar, keyCode);
         }
-        return super.charTyped(typedChar, keyCode);
     }
 
     @Override
@@ -115,8 +117,10 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
                 this.updateSearch(searchField.getValue());
                 return true;
             }
+            return false;
+        } else {
+            return super.keyPressed(typedChar, keyCode, modifiers);
         }
-        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     @Override

@@ -154,24 +154,21 @@ public interface IContainerEventHandler extends IGuiEventListener {
         char eventChar = Keyboard.getEventCharacter();
         boolean isRepeat = Keyboard.isRepeatEvent();
         int modifiers = KeyBoardHelpers.getModifiers();
-
         if (keyState || isRepeat) {
+            boolean handled = false;
+
             if (keyCode != Keyboard.KEY_NONE) {
-                if (this.keyPressed(keyCode, 0, modifiers)) {
-                    return true;
-                }
+                handled = this.keyPressed(keyCode, 0, modifiers);
             }
 
-            if (KeyBoardHelpers.isValidChar(eventChar)) {
-                if (this.charTyped(eventChar, modifiers)) {
-                    return true;
-                }
+            if (!handled && KeyBoardHelpers.isValidChar(eventChar)) {
+                handled = this.charTyped(eventChar, modifiers);
             }
+
+            return handled;
         } else {
             if (keyCode != Keyboard.KEY_NONE) {
-                if (this.keyReleased(keyCode, 0, modifiers)) {
-                    return true;
-                }
+                return this.keyReleased(keyCode, 0, modifiers);
             }
         }
 

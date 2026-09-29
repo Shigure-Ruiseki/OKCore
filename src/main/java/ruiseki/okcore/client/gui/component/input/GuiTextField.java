@@ -282,10 +282,6 @@ public class GuiTextField extends GuiWidget {
         }
     }
 
-    public boolean canConsumeInput() {
-        return this.isVisible() && this.isFocused() && this.isEditable();
-    }
-
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if (!this.canConsumeInput()) {
@@ -299,6 +295,10 @@ public class GuiTextField extends GuiWidget {
         } else {
             return false;
         }
+    }
+
+    public boolean canConsumeInput() {
+        return this.isVisible() && this.isFocused() && this.isEditable();
     }
 
     @Override

@@ -20,6 +20,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.commoncapabilities.api.capability.block.BlockCapabilities;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngredientAlternatives;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
+import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackTag;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.modcompat.enderio.EnderIOModCompat;
@@ -72,6 +73,10 @@ public class CommonCapabilities extends ModBase {
         IPrototypedIngredientAlternatives.SERIALIZERS.put(
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER.getId(),
             PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER);
+
+        IPrototypedIngredientAlternatives.SERIALIZERS.put(
+            PrototypedIngredientAlternativesItemStackTag.SERIALIZER.getId(),
+            PrototypedIngredientAlternativesItemStackTag.SERIALIZER);
     }
 
     @Mod.EventHandler
@@ -130,12 +135,18 @@ public class CommonCapabilities extends ModBase {
     @SuppressWarnings("unchecked")
     public void onRegister(RegistryEvent.Register event) {
         if (event.getRegistry() == IngredientComponent.REGISTRY) {
+
             IPrototypedIngredientAlternatives.SERIALIZERS.put(
                 PrototypedIngredientAlternativesList.SERIALIZER.getId(),
                 PrototypedIngredientAlternativesList.SERIALIZER);
+
             IPrototypedIngredientAlternatives.SERIALIZERS.put(
                 PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER.getId(),
                 PrototypedIngredientAlternativesItemStackOredictionary.SERIALIZER);
+
+            IPrototypedIngredientAlternatives.SERIALIZERS.put(
+                PrototypedIngredientAlternativesItemStackTag.SERIALIZER.getId(),
+                PrototypedIngredientAlternativesItemStackTag.SERIALIZER);
 
             IngredientComponents.register();
             event.getRegistry()

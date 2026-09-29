@@ -126,7 +126,7 @@ public class PrototypedIngredientAlternativesItemStackTag
 
         @Override
         public byte getId() {
-            return 1;
+            return 2;
         }
 
         @Override

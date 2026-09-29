@@ -102,11 +102,10 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
         if (isSearchEnabled() && this.searchField.isFocused()) {
             if (this.searchField.charTyped(typedChar, keyCode)) {
                 this.updateSearch(searchField.getValue());
+                return true;
             }
-            return true;
-        } else {
-            return super.charTyped(typedChar, keyCode);
         }
+        return super.charTyped(typedChar, keyCode);
     }
 
     @Override
@@ -114,11 +113,10 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
         if (isSearchEnabled() && this.searchField.isFocused() && typedChar != Keyboard.KEY_ESCAPE) {
             if (this.searchField.keyPressed(typedChar, keyCode, modifiers)) {
                 this.updateSearch(searchField.getValue());
+                return true;
             }
-            return true;
-        } else {
-            return super.keyPressed(typedChar, keyCode, modifiers);
         }
+        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     @Override

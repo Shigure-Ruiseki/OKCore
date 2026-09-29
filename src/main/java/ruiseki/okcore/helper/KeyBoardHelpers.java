@@ -51,4 +51,8 @@ public class KeyBoardHelpers {
         if (isMetaDown()) modifiers |= 8;
         return modifiers;
     }
+
+    public static boolean isValidChar(char c) {
+        return c >= 32 && c != 127;
+    }
 }

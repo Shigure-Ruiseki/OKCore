@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ChatAllowedCharacters;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -77,29 +76,20 @@ public interface IContainerEventHandler extends IGuiEventListener {
 
     @Override
     default boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        IGuiEventListener focused = this.getFocused();
-        if (focused != null) {
-            return focused.keyPressed(keyCode, scanCode, modifiers);
-        }
-        return false;
+        return this.getFocused() != null && this.getFocused()
+            .keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     default boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        IGuiEventListener focused = this.getFocused();
-        if (focused != null) {
-            return focused.keyReleased(keyCode, scanCode, modifiers);
-        }
-        return false;
+        return this.getFocused() != null && this.getFocused()
+            .keyReleased(keyCode, scanCode, modifiers);
     }
 
     @Override
     default boolean charTyped(char codePoint, int modifiers) {
-        IGuiEventListener focused = this.getFocused();
-        if (focused != null) {
-            return focused.charTyped(codePoint, modifiers);
-        }
-        return false;
+        return this.getFocused() != null && this.getFocused()
+            .charTyped(codePoint, modifiers);
     }
 
     @Nullable
@@ -166,22 +156,22 @@ public interface IContainerEventHandler extends IGuiEventListener {
         int modifiers = KeyBoardHelpers.getModifiers();
 
         if (keyState || isRepeat) {
-            boolean consumedByKeyPressed = false;
-
             if (keyCode != Keyboard.KEY_NONE) {
-                consumedByKeyPressed = this.keyPressed(keyCode, 0, modifiers);
+                if (this.keyPressed(keyCode, 0, modifiers)) {
+                    return true;
+                }
             }
 
-            if (consumedByKeyPressed) {
-                return true;
-            }
-
-            if (ChatAllowedCharacters.isAllowedCharacter(eventChar)) {
-                return this.charTyped(eventChar, modifiers);
+            if (KeyBoardHelpers.isValidChar(eventChar)) {
+                if (this.charTyped(eventChar, modifiers)) {
+                    return true;
+                }
             }
         } else {
             if (keyCode != Keyboard.KEY_NONE) {
-                return this.keyReleased(keyCode, 0, modifiers);
+                if (this.keyReleased(keyCode, 0, modifiers)) {
+                    return true;
+                }
             }
         }
 

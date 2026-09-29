@@ -61,6 +61,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
         this.quantity = quantity;
     }
 
+    @Override
     public Collection<IPrototypedIngredient<ItemStack, Integer>> getAlternatives() {
         IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
         return this.keys.stream()
@@ -97,7 +98,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
 
     @Override
     public int hashCode() {
-        return 1235 | this.keys.hashCode() << 2 | matchCondition | (int) quantity;
+        return 1235 | this.keys.hashCode() << 2 | (matchCondition != null ? matchCondition : 0) | (int) quantity;
     }
 
     public List<String> getKeys() {
@@ -114,7 +115,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
 
     @Override
     public String toString() {
-        return "[PrototypedIngredientAlternativesList: " + this.keys.toString() + "]";
+        return "[PrototypedIngredientAlternativesOredict: " + this.keys.toString() + "]";
     }
 
     public static class Serializer implements
@@ -134,7 +135,7 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
                 keys.appendTag(new NBTTagString(key));
             }
             tag.setTag("keys", keys);
-            tag.setInteger("match", alternatives.matchCondition);
+            tag.setInteger("match", alternatives.matchCondition != null ? alternatives.matchCondition : 0);
             tag.setLong("quantity", alternatives.quantity);
             return tag;
         }
@@ -151,12 +152,11 @@ public class PrototypedIngredientAlternativesItemStackOredictionary
             }
             NBTTagList keysTag = tagCompound.getTagList("keys", Constants.NBT.TAG_STRING);
             List<String> keys = Lists.newArrayList();
-            for (Object key : keysTag.tagList) {
-                keys.add(((NBTTagString) key).func_150285_a_());
+            for (int i = 0; i < keysTag.tagCount(); i++) {
+                keys.add(keysTag.getStringTagAt(i));
             }
             int matchCondition = tagCompound.getInteger("match");
-            long quantity = tagCompound.hasKey("quantity") ? tagCompound.getLong("quantity") : 1; // TODO: remove check
-                                                                                                  // in 1.13
+            long quantity = tagCompound.hasKey("quantity") ? tagCompound.getLong("quantity") : 1;
             return new PrototypedIngredientAlternativesItemStackOredictionary(keys, matchCondition, quantity);
         }
     }

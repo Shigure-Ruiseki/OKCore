@@ -34,7 +34,7 @@ import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagKey;
 
 /**
- * An tagged-based {@link IPrototypedIngredientAlternatives} implementation.
+ * A tag-based {@link IPrototypedIngredientAlternatives} implementation.
  *
  * @author rubensworks
  */
@@ -43,10 +43,10 @@ public class PrototypedIngredientAlternativesItemStackTag
 
     public static final PrototypedIngredientAlternativesItemStackTag.Serializer SERIALIZER = new PrototypedIngredientAlternativesItemStackTag.Serializer();
     static {
-        SERIALIZERS.put((byte) 1, SERIALIZER);
+        SERIALIZERS.put((byte) 2, SERIALIZER);
     }
 
-    private static final LoadingCache<String, List<ItemStack>> CACHE_OREDICT = CacheBuilder.newBuilder()
+    private static final LoadingCache<String, List<ItemStack>> CACHE_TAG = CacheBuilder.newBuilder()
         .expireAfterWrite(1, TimeUnit.MINUTES)
         .build(new CacheLoader<String, List<ItemStack>>() {
 
@@ -67,12 +67,13 @@ public class PrototypedIngredientAlternativesItemStackTag
         this.quantity = quantity;
     }
 
+    @Override
     public Collection<IPrototypedIngredient<ItemStack, Integer>> getAlternatives() {
         IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
         return this.keys.stream()
             .flatMap((key) -> {
                 try {
-                    return CACHE_OREDICT.get(key)
+                    return CACHE_TAG.get(key)
                         .stream();
                 } catch (ExecutionException e) {
                     return Stream.empty();
@@ -101,7 +102,7 @@ public class PrototypedIngredientAlternativesItemStackTag
 
     @Override
     public int hashCode() {
-        return 1235 | this.keys.hashCode() << 2 | matchCondition | (int) quantity;
+        return 1235 | this.keys.hashCode() << 2 | (matchCondition != null ? matchCondition : 0) | (int) quantity;
     }
 
     public List<String> getKeys() {
@@ -118,7 +119,7 @@ public class PrototypedIngredientAlternativesItemStackTag
 
     @Override
     public String toString() {
-        return "[PrototypedIngredientAlternativesList: " + this.keys.toString() + "]";
+        return "[PrototypedIngredientAlternativesTag: " + this.keys.toString() + "]";
     }
 
     public static class Serializer
@@ -126,7 +127,7 @@ public class PrototypedIngredientAlternativesItemStackTag
 
         @Override
         public byte getId() {
-            return 2;
+            return 2; // ID = 2 cho Tag
         }
 
         @Override
@@ -138,7 +139,7 @@ public class PrototypedIngredientAlternativesItemStackTag
                 keys.appendTag(new NBTTagString(key));
             }
             tag.setTag("keys", keys);
-            tag.setInteger("match", alternatives.matchCondition);
+            tag.setInteger("match", alternatives.matchCondition != null ? alternatives.matchCondition : 0);
             tag.setLong("quantity", alternatives.quantity);
             return tag;
         }
@@ -155,11 +156,11 @@ public class PrototypedIngredientAlternativesItemStackTag
             }
             NBTTagList keysTag = tagCompound.getTagList("keys", Constants.NBT.TAG_STRING);
             List<String> keys = Lists.newArrayList();
-            for (Object key : keysTag.tagList) {
-                keys.add(((NBTTagString) key).func_150285_a_());
+            for (int i = 0; i < keysTag.tagCount(); i++) {
+                keys.add(keysTag.getStringTagAt(i));
             }
             int matchCondition = tagCompound.getInteger("match");
-            long quantity = tagCompound.getLong("quantity");
+            long quantity = tagCompound.hasKey("quantity") ? tagCompound.getLong("quantity") : 1;
             return new PrototypedIngredientAlternativesItemStackTag(keys, matchCondition, quantity);
         }
     }

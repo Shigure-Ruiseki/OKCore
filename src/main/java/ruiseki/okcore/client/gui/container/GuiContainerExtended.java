@@ -454,7 +454,7 @@ public abstract class GuiContainerExtended<T extends ContainerExtended> extends 
                 return true;
             }
 
-            if (slotIndex >= 0) {
+            if (slotIndex >= 0 || slotIndex == -999) {
                 handled = true; // Click Slot or Drop Item
 
                 if (this.mc.gameSettings.touchscreen) {

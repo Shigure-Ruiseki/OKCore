@@ -20,8 +20,9 @@ public abstract class InventoryContainer extends ContainerExtended {
      *
      * @param inventory The player inventory.
      */
-    public InventoryContainer(ContainerType<?> containerType, InventoryPlayer playerInventory, IInventory inventory) {
-        super(containerType, playerInventory);
+    public InventoryContainer(ContainerType<?> containerType, int id, InventoryPlayer playerInventory,
+        IInventory inventory) {
+        super(containerType, id, playerInventory);
         this.inventory = inventory;
         this.inventory.openInventory();
     }

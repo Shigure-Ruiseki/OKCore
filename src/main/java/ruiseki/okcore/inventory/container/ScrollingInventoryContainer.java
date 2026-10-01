@@ -39,9 +39,9 @@ public abstract class ScrollingInventoryContainer<E> extends InventoryContainer
     private int firstElement = 0;
 
     @SuppressWarnings("unchecked")
-    public ScrollingInventoryContainer(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+    public ScrollingInventoryContainer(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
         IInventory inventory, List<E> items, IItemPredicate<E> filterer) {
-        super(type, playerInventory, inventory);
+        super(type, id, playerInventory, inventory);
         this.unfilteredItems = Lists.newArrayList(items);
         this.filteredItems = Lists.newLinkedList();
         this.visibleItems = (List<E>) Arrays.asList(new Object[getPageSize() * getColumns()]);

@@ -7,13 +7,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.inventory.InteractionHand;
 import ruiseki.okcore.item.handler.IItemHandler;
-import ruiseki.okcore.item.handler.IItemHandlerModifiable;
+import ruiseki.okcore.modcompat.backhand.BackhandHelpers;
 
 /**
  * Contains helper methods involving {@link IInventory}S.
@@ -44,13 +46,29 @@ public class InventoryHelpers {
      * @param originalStack The original item stack from which the new item stack originated.
      * @param newStackPart  The new item stack.
      */
-    public static void tryReAddToStack(EntityPlayer player, @Nullable ItemStack originalStack, ItemStack newStackPart) {
+    public static void tryReAddToStack(EntityPlayer player, ItemStack originalStack, ItemStack newStackPart) {
+        tryReAddToStack(player, originalStack, newStackPart, InteractionHand.MAIN_HAND);
+    }
+
+    /**
+     * Try adding a new item stack originating from the given original stack to the same original stack.
+     * The original item stack should not have it's stack-size decreased yet, this method does this.
+     * Otherwise it will add the new stack to another inventory slot and in the worst case drop it on the floor.
+     *
+     * @param player        The player.
+     * @param originalStack The original item stack from which the new item stack originated.
+     * @param newStackPart  The new item stack.
+     * @param hand          The interaction hand (MAIN_HAND or OFF_HAND).
+     */
+    public static void tryReAddToStack(EntityPlayer player, ItemStack originalStack, ItemStack newStackPart,
+        InteractionHand hand) {
         if (player == null || ItemHelpers.isEmpty(newStackPart)) return;
 
         if (!player.capabilities.isCreativeMode) {
+            int targetSlot = (hand == InteractionHand.MAIN_HAND) ? player.inventory.currentItem
+                : BackhandHelpers.getOffhandSlot(player);
             if (!ItemHelpers.isEmpty(originalStack) && originalStack.stackSize == 1) {
-                ItemHelpers.shrink(originalStack, 1);
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, newStackPart);
+                player.inventory.setInventorySlotContents(targetSlot, newStackPart);
             } else {
                 if (!ItemHelpers.isEmpty(originalStack)) {
                     ItemHelpers.shrink(originalStack, 1);
@@ -66,45 +84,42 @@ public class InventoryHelpers {
      * Validate the NBT storage of the given inventory in the given item.
      * Should be called in constructors of inventories.
      *
-     * @param handler   The inventory.
+     * @param inventory The inventory.
      * @param itemStack The item stack to read/write.
      * @param tagName   The tag name to read from.
      */
-    public static void validateNBTStorage(IItemHandler handler, ItemStack itemStack, String tagName) {
-        if (ItemHelpers.isEmpty(itemStack)) return;
-
-        NBTTagCompound tag = itemStack.getTagCompound();
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            itemStack.setTagCompound(tag);
-        }
+    public static void validateNBTStorage(IInventory inventory, ItemStack itemStack, String tagName) {
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         if (!tag.hasKey(tagName)) {
             tag.setTag(tagName, new NBTTagList());
         }
-        readFromNBT(handler, tag, tagName);
+        readFromNBT(inventory, tag, tagName);
     }
 
     /**
      * Read an inventory from NBT.
      *
-     * @param handler The inventory.
-     * @param data    The tag to read from.
-     * @param tagName The tag name to read from.
+     * @param inventory The inventory.
+     * @param data      The tag to read from.
+     * @param tagName   The tag name to read from.
      */
-    public static void readFromNBT(IItemHandler handler, NBTTagCompound data, String tagName) {
-        if (handler == null || data == null) return;
+    public static void readFromNBT(IInventory inventory, NBTTagCompound data, String tagName) {
+        NBTTagList nbttaglist = data.getTagList(tagName, Constants.NBT.TAG_COMPOUND);
 
-        NBTTagList nbttaglist = data.getTagList(tagName, MinecraftHelpers.NBTTag_Types.NBTTagCompound.getId());
-        clearInventory(handler);
+        for (int j = 0; j < inventory.getSizeInventory(); j++) {
+            inventory.setInventorySlotContents(j, ItemHelpers.EMPTY);
+        }
 
         for (int j = 0; j < nbttaglist.tagCount(); j++) {
             NBTTagCompound slot = nbttaglist.getCompoundTagAt(j);
-            int index = slot.hasKey("index") ? slot.getInteger("index") : slot.getByte("Slot");
-
-            if (index >= 0 && index < handler.getSlots()) {
-                if (handler instanceof IItemHandlerModifiable modifiable) {
-                    modifiable.setStackInSlot(index, ItemStack.loadItemStackFromNBT(slot));
-                }
+            int index;
+            if (slot.hasKey("index")) {
+                index = slot.getInteger("index");
+            } else {
+                index = slot.getByte("Slot");
+            }
+            if (index >= 0 && index < inventory.getSizeInventory()) {
+                inventory.setInventorySlotContents(index, ItemStack.loadItemStackFromNBT(slot));
             }
         }
     }
@@ -116,11 +131,11 @@ public class InventoryHelpers {
      * @param data    The tag to write to.
      * @param tagName The tag name to write into.
      */
-    public static void writeToNBT(IItemHandler handler, NBTTagCompound data, String tagName) {
+    public static void writeToNBT(IInventory handler, NBTTagCompound data, String tagName) {
         if (handler == null || data == null) return;
 
         NBTTagList slots = new NBTTagList();
-        for (byte index = 0; index < handler.getSlots(); ++index) {
+        for (byte index = 0; index < handler.getSizeInventory(); ++index) {
             ItemStack itemStack = handler.getStackInSlot(index);
             if (!ItemHelpers.isEmpty(itemStack)) {
                 NBTTagCompound slot = new NBTTagCompound();
@@ -134,16 +149,31 @@ public class InventoryHelpers {
 
     /**
      * Get the item stack from the given index in the player inventory.
-     *
+     * 
      * @param player    The player.
      * @param itemIndex The index of the item in the inventory.
      * @return The item stack.
      */
     public static ItemStack getItemFromIndex(EntityPlayer player, int itemIndex) {
-        if (player == null || itemIndex < 0 || itemIndex >= player.inventory.mainInventory.length) {
-            return ItemHelpers.EMPTY;
+        return getItemFromIndex(player, itemIndex, InteractionHand.MAIN_HAND);
+    }
+
+    /**
+     * Get the item stack from the given index or hand in the player inventory.
+     *
+     * @param player    The player.
+     * @param itemIndex The index of the item in the main inventory (0-35).
+     * @param hand      The interaction hand (MAIN_HAND or OFF_HAND).
+     * @return The item stack in that hand/slot, or null if empty.
+     */
+    public static ItemStack getItemFromIndex(EntityPlayer player, int itemIndex, InteractionHand hand) {
+        if (player == null) return null;
+
+        if (hand == InteractionHand.OFF_HAND) {
+            return BackhandHelpers.getOffhandItem(player);
         }
-        return player.inventory.mainInventory[itemIndex];
+
+        return player.inventory.getStackInSlot(itemIndex);
     }
 
     /**

@@ -13,6 +13,7 @@ public enum Mods implements IMod {
     AE2FluidCrafting("ae2fc"),
     Baubles("Baubles"),
     BaublesExpanded("Baubles|Expanded"),
+    Backhand("backhand"),
     BlockRenderer6343("blockrenderer6343"),
     BigReactors("BigReactors"),
     BogoSorter("bogosorter"),

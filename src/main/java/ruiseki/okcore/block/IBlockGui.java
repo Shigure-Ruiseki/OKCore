@@ -11,7 +11,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.PlayerHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 public interface IBlockGui {
@@ -29,7 +29,7 @@ public interface IBlockGui {
         }
 
         if (!world.isRemote) {
-            IGuiConstructor containerProvider = blockContainerProvider.get(blockState, world, blockPos);
+            IContainerConstructor containerProvider = blockContainerProvider.get(blockState, world, blockPos);
             if (containerProvider != null) {
                 PlayerHelpers.openGui(
                     (EntityPlayerMP) player,
@@ -41,7 +41,7 @@ public interface IBlockGui {
         return true;
     }
 
-    default IGuiConstructor getGuiProvider(BlockState blockState, World world, BlockPos blockPos) {
+    default IContainerConstructor getGuiProvider(BlockState blockState, World world, BlockPos blockPos) {
         return null;
     }
 
@@ -49,6 +49,6 @@ public interface IBlockGui {
     interface IBlockContainerProvider {
 
         @Nullable
-        IGuiConstructor get(BlockState blockState, World world, BlockPos blockPos);
+        IContainerConstructor get(BlockState blockState, World world, BlockPos blockPos);
     }
 }

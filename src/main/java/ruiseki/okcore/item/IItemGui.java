@@ -6,14 +6,15 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 public interface IItemGui {
 
     @Nullable
-    public IGuiConstructor getGuiProvider(World world, EntityPlayer player, int itemIndex);
+    public IContainerConstructor getContainer(World world, EntityPlayer player, ItemLocation itemLocation);
 
     public abstract Class<? extends ContainerExtended> getContainerClass(World world, EntityPlayer player,
         ItemStack itemStack);
@@ -24,9 +25,10 @@ public interface IItemGui {
      * @param packetBuffer A packet buffer to write to.
      * @param world        The world.
      * @param player       The player.
-     * @param itemIndex    The slot index in player inventory.
+     * @param itemLocation The item with its location.
      */
-    default void writeExtraGuiData(ExtendedBuffer packetBuffer, World world, EntityPlayer player, int itemIndex) {
-        packetBuffer.writeInt(itemIndex);
+    default void writeExtraGuiData(ExtendedBuffer packetBuffer, World world, EntityPlayer player,
+        ItemLocation itemLocation) {
+        ItemLocation.writeToPacketBuffer(packetBuffer, itemLocation);
     }
 }

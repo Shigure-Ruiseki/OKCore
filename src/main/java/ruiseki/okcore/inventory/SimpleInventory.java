@@ -22,7 +22,6 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 public class SimpleInventory implements INBTInventory {
 
     protected final ItemStack[] _contents;
-    private final String _name;
     private final int _stackLimit;
     private final List<IDirtyMarkListener> dirtyMarkListeners = Lists.newLinkedList();
 
@@ -30,31 +29,25 @@ public class SimpleInventory implements INBTInventory {
      * Default constructor for NBT persistence, don't call this yourself.
      */
     public SimpleInventory() {
-        this(0, "", 0);
+        this(0, 0);
     }
 
     /**
      * Make a new instance.
      *
      * @param size       The amount of slots in the inventory.
-     * @param name       The name of the inventory, used for NBT storage.
      * @param stackLimit The stack limit for each slot.
      */
-    public SimpleInventory(int size, String name, int stackLimit) {
+    public SimpleInventory(int size, int stackLimit) {
         _contents = new ItemStack[size];
         for (int i = 0; i < _contents.length; i++) {
             _contents[i] = ItemHelpers.EMPTY;
         }
-        _name = name;
         _stackLimit = stackLimit;
     }
 
-    public SimpleInventory(int size, int stackLimit) {
-        this(size, "", stackLimit);
-    }
-
     public SimpleInventory(int size) {
-        this(size, "", 64);
+        this(size, 64);
     }
 
     public SimpleInventory(ItemStack... stacks) {
@@ -140,12 +133,12 @@ public class SimpleInventory implements INBTInventory {
 
     @Override
     public String getInventoryName() {
-        return _name != null ? _name : "";
+        return "";
     }
 
     @Override
     public boolean hasCustomInventoryName() {
-        return _name != null && !_name.isEmpty();
+        return false;
     }
 
     @Override

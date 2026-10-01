@@ -27,22 +27,22 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.packet.PacketOpenGuiWithData;
 
 public class PlayerHelpers {
 
-    public static void openGui(EntityPlayerMP player, IGuiConstructor containerSupplier) {
+    public static void openGui(EntityPlayerMP player, IContainerConstructor containerSupplier) {
         openGui(player, containerSupplier, buf -> {});
     }
 
-    public static void openGui(EntityPlayerMP player, IGuiConstructor containerSupplier, BlockPos pos) {
+    public static void openGui(EntityPlayerMP player, IContainerConstructor containerSupplier, BlockPos pos) {
         openGui(player, containerSupplier, buf -> buf.writeBlockPos(pos));
     }
 
-    public static <T extends Container> void openGui(EntityPlayerMP player, IGuiConstructor containerSupplier,
+    public static <T extends Container> void openGui(EntityPlayerMP player, IContainerConstructor containerSupplier,
         Consumer<ExtendedBuffer> extraDataWriter) {
         if (player.worldObj.isRemote) return;
 
@@ -73,7 +73,6 @@ public class PlayerHelpers {
             .sendToPlayer(packet, player);
 
         player.openContainer = c;
-        player.openContainer.windowId = openContainerId;
         player.openContainer.addCraftingToCrafters(player);
     }
 

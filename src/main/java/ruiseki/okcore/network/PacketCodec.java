@@ -31,6 +31,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.SingleCache;
+import ruiseki.okcore.inventory.ItemLocation;
 
 /**
  * Packet with automatic coding and decoding of basic fields annotated with {@link CodecField}.
@@ -624,6 +625,19 @@ public abstract class PacketCodec extends PacketBase {
             @Override
             public Object decode(ExtendedBuffer input) {
                 return new ChunkCoordinates(input.readInt(), input.readInt(), input.readInt());
+            }
+        });
+
+        codecActions.put(ItemLocation.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) {
+                ItemLocation.writeToPacketBuffer(output, (ItemLocation) object);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return ItemLocation.readFromPacketBuffer(input);
             }
         });
     }

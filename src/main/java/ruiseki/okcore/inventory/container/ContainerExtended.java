@@ -64,8 +64,9 @@ public abstract class ContainerExtended extends Container
      * @param type      The container type.
      * @param inventory The player inventory.
      */
-    public ContainerExtended(@Nullable ContainerType<?> type, InventoryPlayer inventory) {
+    public ContainerExtended(@Nullable ContainerType<?> type, int id, InventoryPlayer inventory) {
         this.containerType = type;
+        this.windowId = id;
         this.playerIInventory = inventory;
         this.player = inventory.player;
     }

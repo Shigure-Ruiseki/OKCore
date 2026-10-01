@@ -8,7 +8,11 @@ import net.minecraftforge.common.util.FakePlayer;
 
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.PlayerHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
+import ruiseki.okcore.inventory.InteractionHand;
+import ruiseki.okcore.inventory.InventoryLocationPlayer;
+import ruiseki.okcore.inventory.ItemLocation;
+import ruiseki.okcore.modcompat.backhand.BackhandHelpers;
 
 /**
  * Configurable item that can show a GUI on right clicking.
@@ -34,15 +38,15 @@ public abstract class ItemGui extends ItemBase implements IItemGui {
     /**
      * Open the GUI for a certain item slot index in the player inventory.
      *
-     * @param world     The world.
-     * @param player    The player opening the GUI.
-     * @param itemIndex The item index in the player inventory.
+     * @param world        The world.
+     * @param player       The player opening the GUI.
+     * @param itemLocation The item with its location.
      */
-    public void openGuiForItemIndex(World world, EntityPlayer player, int itemIndex) {
-        if (!world.isRemote && player instanceof EntityPlayerMP playerMP) {
-            IGuiConstructor constructor = getGuiProvider(world, player, itemIndex);
+    public void openGuiForItemIndex(World world, EntityPlayerMP player, ItemLocation itemLocation) {
+        if (!world.isRemote) {
+            IContainerConstructor constructor = getContainer(world, player, itemLocation);
             if (constructor != null) {
-                PlayerHelpers.openGui(playerMP, constructor, buf -> writeExtraGuiData(buf, world, player, itemIndex));
+                PlayerHelpers.openGui(player, constructor, buf -> writeExtraGuiData(buf, world, player, itemLocation));
             }
         }
     }
@@ -52,8 +56,16 @@ public abstract class ItemGui extends ItemBase implements IItemGui {
         if (player instanceof FakePlayer) {
             return itemStack;
         }
-        if (player instanceof EntityPlayerMP) {
-            openGuiForItemIndex(world, player, player.inventory.currentItem);
+        if (player instanceof EntityPlayerMP playerMP) {
+            InteractionHand hand = InteractionHand.getHand(player, itemStack);
+            int slot = (hand == InteractionHand.OFF_HAND) ? BackhandHelpers.getOffhandSlot(player)
+                : player.inventory.currentItem;
+
+            openGuiForItemIndex(
+                world,
+                playerMP,
+                InventoryLocationPlayer.getInstance()
+                    .handToLocation(player, hand, slot));
         }
         return itemStack;
     }

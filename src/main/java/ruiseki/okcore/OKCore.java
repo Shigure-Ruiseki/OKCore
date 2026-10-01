@@ -82,7 +82,8 @@ public class OKCore extends ModBaseVersionable {
             .addRegistry(TagManager.class, TagManager.getManager());
         this.getRegistryManager()
             .addRegistry(RecipeManager.class, RecipeManager.getManager());
-        this.getRegistryManager().addRegistry(IRegistryInventoryLocation.class, RegistryInventoryLocation.getInstance());
+        this.getRegistryManager()
+            .addRegistry(IRegistryInventoryLocation.class, RegistryInventoryLocation.getInstance());
         super.preInit(event);
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();

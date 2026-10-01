@@ -26,6 +26,10 @@ import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.init.ModBaseVersionable;
+import ruiseki.okcore.inventory.IRegistryInventoryLocation;
+import ruiseki.okcore.inventory.RegistryInventoryLocation;
+import ruiseki.okcore.modcompat.ModCompatLoader;
+import ruiseki.okcore.modcompat.baubles.BaubleModCompat;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
@@ -64,6 +68,12 @@ public class OKCore extends ModBaseVersionable {
     }
 
     @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        super.loadModCompats(modCompatLoader);
+        modCompatLoader.addModCompat(new BaubleModCompat());
+    }
+
+    @Override
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         ForgeRegistryManager.fireCreateRegistryEvents();
@@ -72,6 +82,7 @@ public class OKCore extends ModBaseVersionable {
             .addRegistry(TagManager.class, TagManager.getManager());
         this.getRegistryManager()
             .addRegistry(RecipeManager.class, RecipeManager.getManager());
+        this.getRegistryManager().addRegistry(IRegistryInventoryLocation.class, RegistryInventoryLocation.getInstance());
         super.preInit(event);
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();

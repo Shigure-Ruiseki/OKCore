@@ -1,6 +1,7 @@
 package ruiseki.okcore.modcompat.capabilities;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.event.capabilities.AttachCapabilitiesEvent;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.init.ModBase;
 
 /**
@@ -53,6 +55,10 @@ public class CapabilityConstructorRegistry {
         .newHashSet();
     private Collection<Pair<Class<?>, ICapabilityConstructor<?, ?, ?>>> capabilityConstructorsItemSuper = Sets
         .newHashSet();
+
+    private final Map<Class<?>, List<ICapabilityConstructor<?, ?, ?>>> resolvedTileCache = Maps.newIdentityHashMap();
+    private final Map<Class<?>, List<ICapabilityConstructor<?, ?, ?>>> resolvedEntityCache = Maps.newIdentityHashMap();
+    private final Map<Class<?>, List<ICapabilityConstructor<?, ?, ?>>> resolvedItemCache = Maps.newIdentityHashMap();
 
     protected final ModBase mod;
     protected boolean baked = false;
@@ -138,65 +144,89 @@ public class CapabilityConstructorRegistry {
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <K, V> List<ICapabilityConstructor<?, ? extends K, ? extends V>> getResolvedConstructors(Class<?> clazz,
+        Map<Class<? extends K>, List<ICapabilityConstructor<?, ? extends K, ? extends V>>> exactMap,
+        Collection<Pair<Class<?>, ICapabilityConstructor<?, ?, ?>>> inheritableCollection,
+        Map<Class<?>, List<ICapabilityConstructor<?, ?, ?>>> cacheMap, Class<? extends K> baseClass,
+        boolean initialized) {
+
+        return (List) cacheMap.computeIfAbsent(clazz, keyClass -> {
+            List<ICapabilityConstructor<?, ?, ?>> matched = Lists.newArrayList();
+
+            List exactConstructors = exactMap.get(keyClass);
+            if (exactConstructors != null) {
+                for (Object c : exactConstructors) {
+                    ICapabilityConstructor constructor = (ICapabilityConstructor) c;
+                    if (initialized || constructor.getCapability() != null) {
+                        matched.add(constructor);
+                    }
+                }
+            }
+
+            for (Pair<Class<?>, ICapabilityConstructor<?, ?, ?>> entry : inheritableCollection) {
+                if ((initialized || entry.getRight()
+                    .getCapability() != null)
+                    && (keyClass == baseClass || entry.getLeft() == keyClass
+                        || entry.getLeft()
+                            .isAssignableFrom(keyClass))) {
+                    matched.add(entry.getRight());
+                }
+            }
+
+            return matched.isEmpty() ? Collections.emptyList() : ImmutableList.copyOf(matched);
+        });
+    }
+
     protected <T> void onLoad(
         Map<Class<? extends T>, List<ICapabilityConstructor<?, ? extends T, ? extends T>>> allConstructors,
-        Collection<Pair<Class<?>, ICapabilityConstructor<?, ?, ?>>> allInheritableConstructors, T object,
-        AttachCapabilitiesEvent<?> event, Class<? extends T> baseClass) {
-        onLoad(allConstructors, allInheritableConstructors, object, object, event, baseClass);
+        Collection<Pair<Class<?>, ICapabilityConstructor<?, ?, ?>>> allInheritableConstructors,
+        Map<Class<?>, List<ICapabilityConstructor<?, ?, ?>>> cacheMap, T object, AttachCapabilitiesEvent<?> event,
+        Class<? extends T> baseClass) {
+        onLoad(allConstructors, allInheritableConstructors, cacheMap, object, object, event, baseClass);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected <K, V> void onLoad(
         Map<Class<? extends K>, List<ICapabilityConstructor<?, ? extends K, ? extends V>>> allConstructors,
-        Collection<Pair<Class<?>, ICapabilityConstructor<?, ?, ?>>> allInheritableConstructors, K keyObject,
-        V valueObject, AttachCapabilitiesEvent<?> event, Class<? extends K> baseClass) {
+        Collection<Pair<Class<?>, ICapabilityConstructor<?, ?, ?>>> allInheritableConstructors,
+        Map<Class<?>, List<ICapabilityConstructor<?, ?, ?>>> cacheMap, K keyObject, V valueObject,
+        AttachCapabilitiesEvent<?> event, Class<? extends K> baseClass) {
+
         boolean initialized = baked || Helpers.isMinecraftInitialized();
         if (!baked && Helpers.isMinecraftInitialized()) {
             bake();
         }
 
-        List<ICapabilityConstructor<?, ? extends K, ? extends V>> matchedConstructors = Lists.newArrayList();
+        List<ICapabilityConstructor<?, ? extends K, ? extends V>> matchedConstructors = getResolvedConstructors(
+            keyObject.getClass(),
+            allConstructors,
+            allInheritableConstructors,
+            cacheMap,
+            baseClass,
+            initialized);
 
-        Collection<ICapabilityConstructor<?, ? extends K, ? extends V>> constructors = allConstructors
-            .get(keyObject.getClass());
-        if (constructors != null) {
-            for (ICapabilityConstructor<?, ? extends K, ? extends V> constructor : constructors) {
-                if (initialized || constructor.getCapability() != null) {
-                    matchedConstructors.add(constructor);
-                }
+        if (matchedConstructors.isEmpty()) {
+            return;
+        }
+
+        CapabilityCache cache = new CapabilityCache();
+        for (ICapabilityConstructor<?, ? extends K, ? extends V> constructor : matchedConstructors) {
+            Capability<?> cap = constructor.getCapability();
+            if (cap != null) {
+                cache
+                    .addCapabilityResolver(new ConstructorCapabilityResolver(cap, keyObject, valueObject, constructor));
             }
         }
 
-        for (Pair<Class<?>, ICapabilityConstructor<?, ?, ?>> constructorEntry : allInheritableConstructors) {
-            if ((initialized || constructorEntry.getRight()
-                .getCapability() != null)
-                && (keyObject == baseClass || constructorEntry.getLeft() == keyObject
-                    || constructorEntry.getLeft()
-                        .isInstance(keyObject))) {
-                matchedConstructors.add((ICapabilityConstructor) constructorEntry.getRight());
-            }
-        }
-
-        if (!matchedConstructors.isEmpty()) {
-            CapabilityCache cache = new CapabilityCache();
-
-            for (ICapabilityConstructor<?, ? extends K, ? extends V> constructor : matchedConstructors) {
-                Capability<?> cap = constructor.getCapability();
-                if (cap != null) {
-                    cache.addCapabilityResolver(
-                        new ConstructorCapabilityResolver(cap, keyObject, valueObject, constructor));
-                }
-            }
-
-            // Tạo Provider bọc CapabilityCache
-            ResourceLocation providerId = new ResourceLocation(getMod().getModId(), "capability_cache");
-            if (!event.getCapabilities()
-                .containsKey(providerId)) {
-                event.addCapability(providerId, new CapabilityCacheProvider(cache));
-            } else {
-                getMod().getLoggerHelper()
-                    .log(Level.DEBUG, "Duplicate capability cache registration for " + keyObject);
-            }
+        // Create CapabilityCache
+        ResourceLocation providerId = new ResourceLocation(getMod().getModId(), "capability_cache");
+        if (!event.getCapabilities()
+            .containsKey(providerId)) {
+            event.addCapability(providerId, new CapabilityCacheProvider(cache));
+        } else {
+            getMod().getLoggerHelper()
+                .log(Level.DEBUG, "Duplicate capability cache registration for " + keyObject);
         }
     }
 
@@ -242,18 +272,25 @@ public class CapabilityConstructorRegistry {
         capabilityConstructorsTileSuper = ImmutableList.copyOf(capabilityConstructorsTileSuper);
         capabilityConstructorsEntitySuper = ImmutableList.copyOf(capabilityConstructorsEntitySuper);
         capabilityConstructorsItemSuper = ImmutableList.copyOf(capabilityConstructorsItemSuper);
+
+        resolvedTileCache.clear();
+        resolvedEntityCache.clear();
+        resolvedItemCache.clear();
     }
 
     public class TileEventListener {
 
         @SubscribeEvent
         public void onTileLoad(AttachCapabilitiesEvent<TileEntity> event) {
-            onLoad(
-                capabilityConstructorsTile,
-                capabilityConstructorsTileSuper,
-                event.getObject(),
-                event,
-                TileEntity.class);
+            if (event.getObject() != null) {
+                onLoad(
+                    capabilityConstructorsTile,
+                    capabilityConstructorsTileSuper,
+                    resolvedTileCache,
+                    event.getObject(),
+                    event,
+                    TileEntity.class);
+            }
         }
     }
 
@@ -261,12 +298,15 @@ public class CapabilityConstructorRegistry {
 
         @SubscribeEvent
         public void onEntityLoad(AttachCapabilitiesEvent<Entity> event) {
-            onLoad(
-                capabilityConstructorsEntity,
-                capabilityConstructorsEntitySuper,
-                event.getObject(),
-                event,
-                Entity.class);
+            if (event.getObject() != null) {
+                onLoad(
+                    capabilityConstructorsEntity,
+                    capabilityConstructorsEntitySuper,
+                    resolvedEntityCache,
+                    event.getObject(),
+                    event,
+                    Entity.class);
+            }
         }
     }
 
@@ -274,10 +314,11 @@ public class CapabilityConstructorRegistry {
 
         @SubscribeEvent
         public void onItemStackLoad(AttachCapabilitiesEvent<ItemStack> event) {
-            if (event.getObject() != null) {
+            if (!ItemHelpers.isEmpty(event.getObject())) {
                 onLoad(
                     capabilityConstructorsItem,
                     capabilityConstructorsItemSuper,
+                    resolvedItemCache,
                     event.getObject()
                         .getItem(),
                     event.getObject(),
@@ -287,9 +328,6 @@ public class CapabilityConstructorRegistry {
         }
     }
 
-    /**
-     * Helper Provider bọc CapabilityCache để tích hợp với hệ thống ICapabilityProvider của OKCore.
-     */
     public static class CapabilityCacheProvider implements ICapabilityProvider {
 
         private final CapabilityCache cache;

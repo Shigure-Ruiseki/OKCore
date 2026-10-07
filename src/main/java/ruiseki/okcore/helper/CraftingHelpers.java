@@ -1,5 +1,6 @@
 package ruiseki.okcore.helper;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -15,52 +17,103 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.event.recipes.RecipesUpdatedEvent;
+import ruiseki.okcore.recipe.IRecipeOK;
+import ruiseki.okcore.recipe.IRecipeType;
+import ruiseki.okcore.recipe.RecipeManager;
 
 /**
- * Several convenience functions for crafting using Minecraft standard CraftingManager.
- *
- * @author rubensworks
+ * Several convenience functions for crafting.
  */
 public class CraftingHelpers {
 
-    private static final LoadingCache<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>> CACHE_RECIPES = CacheBuilder
-        .newBuilder()
-        .expireAfterWrite(1, TimeUnit.MINUTES)
-        .build(new CacheLoader<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>>() {
+    private static RecipeManager CLIENT_RECIPE_MANAGER;
 
-            @Override
-            public Optional<IRecipe> load(Pair<CacheableInventoryCrafting, Integer> key) throws Exception {
-                World world = DimensionManager.getWorld(key.getRight());
-                if (world == null) return Optional.empty();
+    private CraftingHelpers() {}
 
-                InventoryCrafting inv = key.getLeft()
-                    .getInventoryCrafting();
-
-                IRecipe matchedRecipe = findRecipeFromCraftingManager(inv, world);
-                return Optional.ofNullable(matchedRecipe);
-            }
-        });
-
-    public static IRecipe findRecipeFromCraftingManager(InventoryCrafting inv, World world) {
-        List<IRecipe> recipeList = CraftingManager.getInstance()
-            .getRecipeList();
-        for (IRecipe recipe : recipeList) {
-            if (recipe != null && recipe.matches(inv, world)) {
-                return recipe;
-            }
-        }
-        return null;
+    public static void load() {
+        MinecraftForge.EVENT_BUS.register(new CraftingHelpers());
     }
 
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onRecipesLoaded(RecipesUpdatedEvent event) {
+        CLIENT_RECIPE_MANAGER = event.getRecipeManager();
+    }
+
+    /**
+     * Get the current OKCore recipe manager.
+     *
+     * On the client, use the manager received from the server after recipes
+     * have been synced. Before that event fires, fall back to the singleton.
+     *
+     * On the server, the singleton is the authoritative manager.
+     */
+    public static RecipeManager getRecipeManager() {
+        if (MinecraftHelpers.isClientSide() && CLIENT_RECIPE_MANAGER != null) {
+            return CLIENT_RECIPE_MANAGER;
+        }
+        return RecipeManager.getManager();
+    }
+
+    public static <C extends IInventory, T extends IRecipeOK<C>> Collection<T> findRecipes(World world,
+        IRecipeType<? extends T> recipeType) {
+        return getRecipeManager().getAllRecipesFor(recipeType);
+    }
+
+    public static <C extends IInventory, T extends IRecipeOK<C>> Optional<T> getServerRecipe(
+        IRecipeType<? extends T> recipeType, ResourceLocation recipeName) {
+        return Optional.ofNullable(
+            getRecipeManager().byKey(recipeName)
+                .map(recipe -> {
+                    @SuppressWarnings("unchecked")
+                    T result = (T) recipe;
+                    return result;
+                })
+                .orElse(null));
+    }
+
+    public static <C extends IInventory, T extends IRecipeOK<C>> Optional<T> findServerRecipe(IRecipeType<T> recipeType,
+        C inventory, World world) {
+        return RecipeManager.getManager()
+            .getRecipeFor(recipeType, inventory, world);
+    }
+
+    public static <C extends IInventory, T extends IRecipeOK<C>> Collection<T> findServerRecipes(
+        IRecipeType<? extends T> recipeType) {
+        return getRecipeManager().getAllRecipesFor(recipeType);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static <C extends IInventory, T extends IRecipeOK<C>> Optional<T> getClientRecipe(
+        IRecipeType<? extends T> recipeType, ResourceLocation recipeName) {
+
+        return getServerRecipe(recipeType, recipeName);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static <C extends IInventory, T extends IRecipeOK<C>> Collection<T> getClientRecipes(
+        IRecipeType<? extends T> recipeType) {
+        return getRecipeManager().getAllRecipesFor(recipeType);
+    }
+
+    /**
+     * Find a vanilla crafting recipe by output.
+     */
     public static IRecipe findCraftingRecipe(ItemStack itemStack, int index) throws IllegalArgumentException {
         int indexAttempt = index;
         List<IRecipe> recipeList = CraftingManager.getInstance()
@@ -68,7 +121,7 @@ public class CraftingHelpers {
 
         for (IRecipe recipe : recipeList) {
             if (recipe != null && recipe.getRecipeOutput() != null
-                && itemStacksEqual(recipe.getRecipeOutput(), itemStack)
+                && ItemHelpers.areItemsEqual(recipe.getRecipeOutput(), itemStack)
                 && indexAttempt-- == 0) {
                 return recipe;
             }
@@ -76,22 +129,38 @@ public class CraftingHelpers {
         throw new IllegalArgumentException("Could not find crafting recipe for " + itemStack + " with index " + index);
     }
 
-    public static IRecipe findMatchingRecipeCached(InventoryCrafting inventoryCrafting, World world,
-        boolean uniqueInventory) {
-        if (world == null || world.provider == null) return null;
-        return CACHE_RECIPES.getUnchecked(
-            Pair.of(new CacheableInventoryCrafting(inventoryCrafting, !uniqueInventory), world.provider.dimensionId))
-            .orElse(null);
+    /**
+     * Find the first vanilla crafting recipe matching the inventory.
+     */
+    public static IRecipe findRecipeFromCraftingManager(InventoryCrafting inventory, World world) {
+        List<IRecipe> recipeList = CraftingManager.getInstance()
+            .getRecipeList();
+        for (IRecipe recipe : recipeList) {
+            if (recipe != null && recipe.matches(inventory, world)) {
+                return recipe;
+            }
+        }
+        return null;
     }
 
+    /**
+     * Find a matching OKCore recipe.
+     */
+    public static <C extends IInventory, T extends IRecipeOK<C>> Optional<T> findMatchingRecipe(
+        IRecipeType<T> recipeType, C inventory, World world) {
+        return getRecipeManager().getRecipeFor(recipeType, inventory, world);
+    }
+
+    /**
+     * Find a vanilla furnace recipe by output.
+     */
     public static Map.Entry<ItemStack, ItemStack> findFurnaceRecipe(ItemStack itemStack, int index)
         throws IllegalArgumentException {
         int indexAttempt = index;
-        Map<ItemStack, ItemStack> smeltingList = FurnaceRecipes.smelting()
-            .getSmeltingList();
-
-        for (Map.Entry<ItemStack, ItemStack> recipe : smeltingList.entrySet()) {
-            if (itemStacksEqual(recipe.getValue(), itemStack) && indexAttempt-- == 0) {
+        for (Map.Entry<ItemStack, ItemStack> recipe : FurnaceRecipes.smelting()
+            .getSmeltingList()
+            .entrySet()) {
+            if (ItemHelpers.areItemsEqual(recipe.getValue(), itemStack) && indexAttempt-- == 0) {
                 return recipe;
             }
         }
@@ -105,47 +174,81 @@ public class CraftingHelpers {
             .toLowerCase();
         String itemName = output.getItem()
             .getUnlocalizedName();
-        if (itemName.startsWith("item.")) itemName = itemName.substring(5);
-        if (itemName.startsWith("tile.")) itemName = itemName.substring(5);
+
+        if (itemName.startsWith("item.")) {
+            itemName = itemName.substring(5);
+        }
+
+        if (itemName.startsWith("tile.")) {
+            itemName = itemName.substring(5);
+        }
 
         return new ResourceLocation(modId, itemName + "_" + output.getItemDamage());
     }
 
-    @SuppressWarnings("unchecked")
-    public static IRecipe registerRecipe(IRecipe recipe) {
-        CraftingManager.getInstance()
-            .getRecipeList()
-            .add(recipe);
-        return recipe;
-    }
+    private static final LoadingCache<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>> CACHE_RECIPES = CacheBuilder
+        .newBuilder()
+        .expireAfterWrite(1, TimeUnit.MINUTES)
+        .build(new CacheLoader<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>>() {
 
-    public static boolean itemStacksEqual(ItemStack itemStack1, ItemStack itemStack2) {
-        if (itemStack1 == null || itemStack2 == null) return itemStack1 == itemStack2;
+            @Override
+            public Optional<IRecipe> load(Pair<CacheableInventoryCrafting, Integer> key) {
+                World world = DimensionManager.getWorld(key.getRight());
+                if (world == null || !(key.getLeft()
+                    .getInventoryCrafting() instanceof InventoryCrafting crafting)) {
+                    return Optional.empty();
+                }
+                IRecipe recipe = findRecipeFromCraftingManager(crafting, world);
+                return Optional.ofNullable(recipe);
+            }
+        });
 
-        return itemStack1.getItem() == itemStack2.getItem() && ItemStack.areItemStackTagsEqual(itemStack1, itemStack2)
-            && (itemStack1.getItemDamage() == itemStack2.getItemDamage()
-                || itemStack1.getItemDamage() == OreDictionary.WILDCARD_VALUE
-                || itemStack2.getItemDamage() == OreDictionary.WILDCARD_VALUE
-                || itemStack1.getItem()
-                    .isDamageable());
+    /**
+     * A cache-based variant of {@link RecipeManager#getRecipeFor(IRecipeType, IInventory, World)}.
+     * 
+     * @param recipeType        The recipe type.
+     * @param inventoryCrafting The crafting inventory.
+     * @param world             The world.
+     * @param uniqueInventory   If inventoryCrafting is a unique instance that can be cached safely.
+     *                          Otherwise a deep copy will be taken.
+     * @return The optional recipe if one was found.
+     * @param <C> The inventory type.
+     * @param <T> The recipe type.
+     */
+    public static <C extends IInventory, T extends IRecipeOK<C>> Optional<T> findRecipeCached(IRecipeType<T> recipeType,
+        C inventoryCrafting, World world, boolean uniqueInventory) {
+        return (Optional) CACHE_RECIPES.getUnchecked(
+            Triple.of(
+                recipeType,
+                new CacheableInventoryCrafting(inventoryCrafting, !uniqueInventory),
+                world.provider.dimensionId));
     }
 
     public static class CacheableInventoryCrafting {
 
-        private final InventoryCrafting inventoryCrafting;
+        private final IInventory inventoryCrafting;
 
-        public CacheableInventoryCrafting(InventoryCrafting inventoryCrafting, boolean copyInventory) {
+        public CacheableInventoryCrafting(IInventory inventoryCrafting, boolean copyInventory) {
+
             if (copyInventory) {
+                int width = inventoryCrafting.getSizeInventory();
+                int height = 1;
+                if (inventoryCrafting instanceof InventoryCrafting) {
+                    width = inventoryCrafting.getSizeInventory() == 4 ? 2 : 3;
+                    height = inventoryCrafting.getSizeInventory() == 4 ? 2 : 3;
+                }
                 this.inventoryCrafting = new InventoryCrafting(new Container() {
 
                     @Override
-                    public boolean canInteractWith(EntityPlayer playerIn) {
+                    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+                        return ItemHelpers.EMPTY;
+                    }
+
+                    @Override
+                    public boolean canInteractWith(EntityPlayer player) {
                         return false;
                     }
-                },
-                    inventoryCrafting.getSizeInventory() == 4 ? 2 : 3,
-                    inventoryCrafting.getSizeInventory() == 4 ? 2 : 3);
-
+                }, width, height);
                 for (int i = 0; i < inventoryCrafting.getSizeInventory(); i++) {
                     ItemStack stack = inventoryCrafting.getStackInSlot(i);
                     this.inventoryCrafting.setInventorySlotContents(i, stack != null ? stack.copy() : null);
@@ -155,7 +258,7 @@ public class CraftingHelpers {
             }
         }
 
-        public InventoryCrafting getInventoryCrafting() {
+        public IInventory getInventoryCrafting() {
             return inventoryCrafting;
         }
 
@@ -164,7 +267,7 @@ public class CraftingHelpers {
             if (!(obj instanceof CacheableInventoryCrafting)) {
                 return false;
             }
-            InventoryCrafting otherInv = ((CacheableInventoryCrafting) obj).getInventoryCrafting();
+            IInventory otherInv = ((CacheableInventoryCrafting) obj).getInventoryCrafting();
             if (getInventoryCrafting().getSizeInventory() != otherInv.getSizeInventory()) {
                 return false;
             }

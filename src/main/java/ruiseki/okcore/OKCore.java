@@ -25,6 +25,7 @@ import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.enums.Mods;
+import ruiseki.okcore.helper.CraftingHelpers;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.RecipeManager;
@@ -73,6 +74,10 @@ public class OKCore extends ModBaseVersionable {
         this.getRegistryManager()
             .addRegistry(RecipeManager.class, RecipeManager.getManager());
         super.preInit(event);
+
+        // Load others
+        CraftingHelpers.load();
+
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();
         }

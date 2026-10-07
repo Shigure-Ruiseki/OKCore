@@ -27,27 +27,22 @@ public class GuiNumberField extends GuiTextFieldExtended {
         if (this.arrows) {
             this.arrowUp = new GuiButtonArrow(x, y + height / 2, btn -> increase(), GuiButtonArrow.Direction.NORTH);
             this.arrowDown = new GuiButtonArrow(x, y + height / 2, btn -> decrease(), GuiButtonArrow.Direction.SOUTH);
-            this.arrowUp.y -= this.arrowUp.height;
+            arrowUp.setY(arrowUp.getY() - arrowUp.getHeight());
         }
-        setEnableBackgroundDrawing(true);
-        setText("0");
+        setBordered(true);
+        setValue("0");
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
-        this.isEnabled = enabled;
-        if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
-            this.arrowUp.active = enabled;
-            this.arrowDown.active = enabled;
-            if (enabled) {
-                updateArrowsState();
-            }
-        }
-        super.setEnabled(enabled);
+    public void setEditable(boolean enabled) {
+        arrowUp.active = enabled;
+        arrowDown.active = enabled;
+        isEnabled = enabled;
+        super.setEditable(enabled);
     }
 
     @Override
-    public boolean getEnableBackgroundDrawing() {
+    public boolean isBordered() {
         return false; // We want the offset, but not the drawing itself.
     }
 
@@ -56,7 +51,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public int getMinValue() {
-        return this.minValue;
+        return minValue;
     }
 
     /**
@@ -64,10 +59,18 @@ public class GuiNumberField extends GuiTextFieldExtended {
      */
     public void setMinValue(int minValue) {
         this.minValue = minValue;
+        try {
+            if (this.minValue > Integer.parseInt(getValue())) {
+                setValue(Integer.toString(this.minValue));
+            }
+        } catch (NumberFormatException e) {
+            setValue(Integer.toString(this.minValue));
+        }
+        updateArrowsState();
     }
 
     public int getMaxValue() {
-        return this.maxValue;
+        return maxValue;
     }
 
     /**
@@ -78,31 +81,31 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public int getInt() throws NumberFormatException {
-        return validateNumber(Integer.parseInt(getText()));
+        return validateNumber(Integer.parseInt(getValue()));
     }
 
     public double getDouble() throws NumberFormatException {
-        return validateNumber(Double.parseDouble(getText()));
+        return validateNumber(Double.parseDouble(getValue()));
     }
 
     public float getFloat() throws NumberFormatException {
-        return validateNumber(Float.parseFloat(getText()));
+        return validateNumber(Float.parseFloat(getValue()));
     }
 
     @Override
     public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         int offsetX = 0;
-        if (this.arrows) {
-            if (this.arrowUp != null) this.arrowUp.drawScreen(mouseX, mouseY, partialTicks);
-            if (this.arrowDown != null) this.arrowDown.drawScreen(mouseX, mouseY, partialTicks);
-            offsetX = this.arrowUp != null ? this.arrowUp.width : 0;
-            this.xPosition += offsetX;
-            this.width -= offsetX;
+        if (arrows) {
+            arrowUp.drawScreen(mouseX, mouseY, partialTicks);
+            arrowDown.drawScreen(mouseX, mouseY, partialTicks);
+            offsetX = arrowUp.getWidth();
+            setX(getX() + offsetX);
+            width -= offsetX;
         }
         super.drawWidget(mouseX, mouseY, partialTicks);
-        if (this.arrows) {
-            this.xPosition -= offsetX;
-            this.width += offsetX;
+        if (arrows) {
+            setX(getX() - offsetX);
+            width += offsetX;
         }
     }
 
@@ -115,7 +118,7 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     public float validateNumber(float number) {
-        return Math.max((float) this.minValue, Math.min((float) this.maxValue, number));
+        return Math.max(this.minValue, Math.min(this.maxValue, number));
     }
 
     protected int getDiffAmount() {
@@ -124,18 +127,26 @@ public class GuiNumberField extends GuiTextFieldExtended {
 
     protected void increase() {
         try {
-            setText(Integer.toString(validateNumber(getInt() + getDiffAmount())));
+            setValue(Integer.toString(validateNumber(getInt() + getDiffAmount())));
         } catch (NumberFormatException e) {
-            setText("0");
+            setValue("0");
         }
+        updateArrowsState();
     }
 
     protected void decrease() {
         try {
-            setText(Integer.toString(validateNumber(getInt() - getDiffAmount())));
+            setValue(Integer.toString(validateNumber(getInt() - getDiffAmount())));
         } catch (NumberFormatException e) {
-            setText("0");
+            setValue("0");
         }
+        updateArrowsState();
+    }
+
+    @Override
+    public void setValue(String value) {
+        super.setValue(value);
+        updateArrowsState();
     }
 
     @Override
@@ -162,23 +173,19 @@ public class GuiNumberField extends GuiTextFieldExtended {
     }
 
     protected void updateArrowsState() {
-        if (this.arrows && this.arrowUp != null && this.arrowDown != null) {
-            this.arrowDown.active = this.isEnabled;
-            this.arrowUp.active = this.isEnabled;
-            if (!this.isEnabled) return;
-
+        if (this.arrows && this.isEnabled) {
+            arrowDown.active = true;
+            arrowUp.active = true;
             try {
-                int currentVal = getInt();
-                if (currentVal <= this.minValue) {
-                    this.arrowDown.active = false;
+                if (getInt() <= this.minValue) {
+                    arrowDown.active = false;
                 }
-                if (currentVal >= this.maxValue) {
-                    this.arrowUp.active = false;
+                if (getInt() >= this.maxValue) {
+                    arrowUp.active = false;
                 }
             } catch (NumberFormatException e) {
 
             }
         }
     }
-
 }

@@ -554,7 +554,7 @@ public class FluidHelpers {
     public static LazyOptional<IFluidHandler> getFluidHandler(World world, BlockPos pos, ForgeDirection side) {
         Block block = pos.getBlock(world);
         if (block != null && block.hasTileEntity(pos.getBlockMetadata(world))) {
-            return TileHelpers.getTileEntity(world, pos, TileEntity.class)
+            return TileHelpers.get(world, pos)
                 .map(tile -> getFluidHandler(tile, side))
                 .orElse(LazyOptional.empty());
         }

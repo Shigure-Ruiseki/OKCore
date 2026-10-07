@@ -88,8 +88,7 @@ public class InputEventHandler {
     @SubscribeEvent
     public void onMouseInputGuiScreen(MouseInputEvent.Process event) {
         if (event.gui instanceof IContainerEventHandler handler) {
-            boolean handled = handler.handleMouseInput(event);
-            if (handled) {
+            if (handler.handleMouseInput(event)) {
                 event.setCanceled(true);
                 if (event.gui instanceof IGuiInputHandle inputHandle) {
                     inputHandle.setMouseHandled(true);
@@ -102,8 +101,7 @@ public class InputEventHandler {
     @SubscribeEvent
     public void onKeyboardInputGuiScreen(KeyboardInputEvent.Process event) {
         if (event.gui instanceof IContainerEventHandler handler) {
-            boolean handled = handler.handleKeyboardInput(event);
-            if (handled) {
+            if (handler.handleKeyboardInput(event)) {
                 event.setCanceled(true);
                 if (event.gui instanceof IGuiInputHandle inputHandle) {
                     inputHandle.setKeyHandled(true);

@@ -3,12 +3,12 @@ package ruiseki.okcore.client.gui.container;
 import java.awt.Rectangle;
 import java.util.List;
 
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.inventory.Slot;
 
 import org.lwjgl.input.Keyboard;
 
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
+import ruiseki.okcore.client.gui.component.input.GuiTextField;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.LangHelpers;
@@ -51,12 +51,13 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
                     searchWidth,
                     this.fontRendererObj.FONT_HEIGHT,
                     LangHelpers.localize("gui.okcore.search"));
-                this.searchField.setMaxStringLength(15);
-                this.searchField.setEnableBackgroundDrawing(false);
+                this.searchField.setMaxLength(64);
+                this.searchField.setMaxLength(15);
+                this.searchField.setBordered(false);
                 this.searchField.setVisible(true);
                 this.searchField.setTextColor(16777215);
                 this.searchField.setCanLoseFocus(true);
-                this.searchField.setText("");
+                this.searchField.setValue("");
                 this.searchField.setWidth(searchWidth);
                 this.searchField.setX(this.guiLeft + (searchX + searchWidth) - this.searchField.getWidth());
             } else {
@@ -100,9 +101,10 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
     public boolean charTyped(char typedChar, int keyCode) {
         if (isSearchEnabled() && this.searchField.isFocused()) {
             if (this.searchField.charTyped(typedChar, keyCode)) {
-                this.updateSearch(searchField.getText());
+                this.updateSearch(searchField.getValue());
+                return true;
             }
-            return true;
+            return false;
         } else {
             return super.charTyped(typedChar, keyCode);
         }
@@ -112,9 +114,10 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
     public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
         if (isSearchEnabled() && this.searchField.isFocused() && typedChar != Keyboard.KEY_ESCAPE) {
             if (this.searchField.keyPressed(typedChar, keyCode, modifiers)) {
-                this.updateSearch(searchField.getText());
+                this.updateSearch(searchField.getValue());
+                return true;
             }
-            return true;
+            return false;
         } else {
             return super.keyPressed(typedChar, keyCode, modifiers);
         }

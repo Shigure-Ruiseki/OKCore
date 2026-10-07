@@ -132,4 +132,26 @@ public class StringHelpers {
         }
         return false;
     }
+
+    public static int offsetByCodepoints(String text, int index, int offset) {
+        int i = text.length();
+        if (offset >= 0) {
+            for (int j = 0; index < i && j < offset; ++j) {
+                if (Character.isHighSurrogate(text.charAt(index++)) && index < i
+                    && Character.isLowSurrogate(text.charAt(index))) {
+                    ++index;
+                }
+            }
+        } else {
+            for (int k = offset; index > 0 && k < 0; ++k) {
+                --index;
+                if (Character.isLowSurrogate(text.charAt(index)) && index > 0
+                    && Character.isHighSurrogate(text.charAt(index - 1))) {
+                    --index;
+                }
+            }
+        }
+
+        return index;
+    }
 }

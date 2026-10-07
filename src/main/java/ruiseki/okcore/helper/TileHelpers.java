@@ -71,9 +71,17 @@ public class TileHelpers {
         return Optional.ofNullable(getSafeTile(world, x, y, z, teClass));
     }
 
+    public static Optional<TileEntity> get(@Nullable IBlockAccess world, int x, int y, int z) {
+        return get(world, x, y, z, TileEntity.class);
+    }
+
     public static <T> Optional<T> get(@Nullable IBlockAccess world, @Nullable BlockPos pos, Class<T> teClass) {
         if (world == null || pos == null) return Optional.empty();
         return Optional.ofNullable(getSafeTile(world, pos, teClass));
+    }
+
+    public static Optional<TileEntity> get(@Nullable IBlockAccess world, @Nullable BlockPos pos) {
+        return get(world, pos, TileEntity.class);
     }
 
     public static <T> Optional<T> get(@Nullable DimPos dimPos, Class<T> teClass) {
@@ -81,33 +89,22 @@ public class TileHelpers {
         return Optional.ofNullable(getSafeTile(dimPos, teClass));
     }
 
-    public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess world, int x, int y, int z) {
-        if (world == null) return Optional.empty();
-        return Optional.ofNullable(world.getTileEntity(x, y, z));
+    public static Optional<TileEntity> get(@Nullable DimPos dimPos) {
+        return get(dimPos, TileEntity.class);
     }
 
-    public static Optional<TileEntity> getTileEntity(@Nullable IBlockAccess world, BlockPos pos) {
-        if (world == null || pos == null) return Optional.empty();
-        return Optional.ofNullable(pos.getTileEntity(world));
-    }
-
-    public static Optional<TileEntity> getLoadedTileEntity(@Nullable World world, BlockPos pos) {
+    public static Optional<TileEntity> getLoaded(@Nullable World world, BlockPos pos) {
         if (world != null && pos != null && pos.isLoaded(world)) {
             return Optional.ofNullable(pos.getTileEntity(world));
         }
         return Optional.empty();
     }
 
-    public static <T> Optional<T> getLoadedTileEntity(@Nullable World world, BlockPos pos, Class<T> teClass) {
+    public static <T> Optional<T> getLoaded(@Nullable World world, BlockPos pos, Class<T> teClass) {
         if (world != null && pos != null && pos.isLoaded(world)) {
             return Optional.ofNullable(getSafeTile(world, pos, teClass));
         }
         return Optional.empty();
-    }
-
-    public static <T> Optional<T> getTileEntity(@Nullable IBlockAccess world, BlockPos pos, Class<T> teClass) {
-        if (world == null || pos == null) return Optional.empty();
-        return Optional.ofNullable(getSafeTile(world, pos, teClass));
     }
 
     public static void notifyBlockUpdate(TileEntity tile) {

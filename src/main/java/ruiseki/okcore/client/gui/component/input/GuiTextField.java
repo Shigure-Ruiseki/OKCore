@@ -9,10 +9,12 @@ import javax.annotation.Nullable;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.MathHelper;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import ruiseki.okcore.client.gui.component.GuiWidget;
 import ruiseki.okcore.helper.KeyBoardHelpers;
@@ -447,7 +449,22 @@ public class GuiTextField extends GuiWidget {
             startX = this.getX() + this.width;
         }
 
-        drawRect(startX, startY, endX, endY, -16776961);
+        Tessellator tessellator = Tessellator.instance;
+        GL11.glColor4f(0.0F, 0.0F, 255.0F, 255.0F);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_COLOR_LOGIC_OP);
+        GL11.glLogicOp(GL11.GL_OR_REVERSE);
+
+        tessellator.startDrawingQuads();
+        tessellator.addVertex(startX, endY, 0.0D);
+        tessellator.addVertex(endX, endY, 0.0D);
+        tessellator.addVertex(endX, startY, 0.0D);
+        tessellator.addVertex(startX, startY, 0.0D);
+        tessellator.draw();
+
+        GL11.glDisable(GL11.GL_COLOR_LOGIC_OP);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.0F);
     }
 
     public void setMaxLength(int maxLength) {

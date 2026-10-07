@@ -158,10 +158,8 @@ public interface IContainerEventHandler extends IGuiEventListener {
         boolean handled = false;
 
         if (keyState || isRepeat) {
-            if (KeyBoardHelpers.isValidChar(eventChar)) {
-                if (this.charTyped(eventChar, modifiers)) {
-                    handled = true;
-                }
+            if (this.charTyped(eventChar, modifiers)) {
+                handled = true;
             }
 
             if (!handled && keyCode != Keyboard.KEY_NONE) {

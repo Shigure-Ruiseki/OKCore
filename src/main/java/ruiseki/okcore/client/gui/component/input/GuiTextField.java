@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.MathHelper;
@@ -363,7 +362,12 @@ public class GuiTextField extends GuiWidget {
         if (this.isVisible()) {
             if (this.isBordered()) {
                 int i = this.isFocused() ? -1 : -6250336;
-                drawRect(this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, i);
+                drawRect(
+                    this.getX() - 1,
+                    this.getY() - 1,
+                    this.getX() + this.width + 1,
+                    this.getY() + this.height + 1,
+                    i);
                 drawRect(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
             }
 
@@ -399,18 +403,18 @@ public class GuiTextField extends GuiWidget {
             }
 
             if (this.hint != null && s.isEmpty() && !this.isFocused()) {
-                 this.fontRenderer.drawStringWithShadow(this.hint, j1, i1, i2);
+                this.fontRenderer.drawStringWithShadow(this.hint, j1, i1, i2);
             }
 
             if (!flag2 && this.suggestion != null) {
-                 this.fontRenderer.drawStringWithShadow(this.suggestion, k1 - 1, i1, -8355712);
+                this.fontRenderer.drawStringWithShadow(this.suggestion, k1 - 1, i1, -8355712);
             }
 
             if (flag1) {
                 if (flag2) {
                     drawRect(k1, i1 - 1, k1 + 1, i1 + 1 + this.fontRenderer.FONT_HEIGHT, -3092272);
                 } else {
-                     this.fontRenderer.drawStringWithShadow("_", k1, i1, i2);
+                    this.fontRenderer.drawStringWithShadow("_", k1, i1, i2);
                 }
             }
 
@@ -446,6 +450,15 @@ public class GuiTextField extends GuiWidget {
         drawRect(startX, startY, endX, endY, -16776961);
     }
 
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
+        if (this.value.length() > maxLength) {
+            this.value = this.value.substring(0, maxLength);
+            this.onValueChange(this.value);
+        }
+
+    }
+
     private int getMaxLength() {
         return this.maxLength;
     }
@@ -454,7 +467,7 @@ public class GuiTextField extends GuiWidget {
         return this.cursorPos;
     }
 
-    private boolean isBordered() {
+    public boolean isBordered() {
         return this.bordered;
     }
 
@@ -472,7 +485,10 @@ public class GuiTextField extends GuiWidget {
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return this.visible && mouseX >= (double)this.getX() && mouseX < (double)(this.getX() + this.width) && mouseY >= (double)this.getY() && mouseY < (double)(this.getY() + this.height);
+        return this.visible && mouseX >= (double) this.getX()
+            && mouseX < (double) (this.getX() + this.width)
+            && mouseY >= (double) this.getY()
+            && mouseY < (double) (this.getY() + this.height);
     }
 
     @Override
@@ -498,7 +514,6 @@ public class GuiTextField extends GuiWidget {
         return this.isBordered() ? this.width - 8 : this.width;
     }
 
-
     public void setHighlightPos(int index) {
         int i = this.value.length();
         this.highlightPos = MathHelper.clamp_int(index, 0, i);
@@ -511,7 +526,8 @@ public class GuiTextField extends GuiWidget {
             String s = this.fontRenderer.trimStringToWidth(this.value.substring(this.displayPos), j);
             int k = s.length() + this.displayPos;
             if (this.highlightPos == this.displayPos) {
-                this.displayPos -= this.fontRenderer.trimStringToWidth(this.value, j, true).length();
+                this.displayPos -= this.fontRenderer.trimStringToWidth(this.value, j, true)
+                    .length();
             }
 
             if (this.highlightPos > k) {
@@ -542,7 +558,8 @@ public class GuiTextField extends GuiWidget {
     }
 
     public int getScreenX(int index) {
-        return index > this.value.length() ? this.getX() : this.getX() + this.fontRenderer.getStringWidth(this.value.substring(0, index));
+        return index > this.value.length() ? this.getX()
+            : this.getX() + this.fontRenderer.getStringWidth(this.value.substring(0, index));
     }
 
     public void setHint(@Nullable String hint) {

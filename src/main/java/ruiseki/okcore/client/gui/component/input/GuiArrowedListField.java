@@ -29,9 +29,9 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
         if (this.arrows) {
             this.arrowLeft = new GuiButtonArrow(x, y - 1, btn -> decrease(), GuiButtonArrow.Direction.WEST);
             this.arrowRight = new GuiButtonArrow(x + width, y - 1, btn -> increase(), GuiButtonArrow.Direction.EAST);
-            this.arrowRight.x -= this.arrowRight.width;
+            arrowRight.setX(arrowRight.getX() - arrowRight.getWidth());
         }
-        setEnableBackgroundDrawing(true);
+        setBordered(true);
         this.elements = elements;
         setActiveElement(0);
     }
@@ -41,25 +41,22 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     }
 
     @Override
-    public boolean getEnableBackgroundDrawing() {
+    public boolean isBordered() {
         return false; // We want the offset, but not the drawing itself.
     }
 
     public void setActiveElement(int index) {
-        if (this.elements == null || this.elements.isEmpty() || index < 0 || index >= this.elements.size()) {
+        if (index >= elements.size()) {
             this.activeElement = -1;
-            setText("");
+            setValue("");
         } else {
             this.activeElement = index;
-            setText(activeElementToString(getActiveElement()));
+            setValue(activeElementToString(getActiveElement()));
         }
-        if (this.listener != null) {
-            this.listener.onChanged();
-        }
+        if (listener != null) listener.onChanged();
     }
 
     public boolean setActiveElement(E element) {
-        if (this.elements == null) return false;
         int index = this.elements.indexOf(element);
         if (index < 0) {
             return false;
@@ -69,43 +66,43 @@ public class GuiArrowedListField<E> extends GuiTextFieldExtended {
     }
 
     protected String activeElementToString(E element) {
-        return element != null ? element.toString() : "";
+        return element.toString();
     }
 
-    public E getActiveElement() {
-        if (this.elements == null || this.activeElement < 0 || this.activeElement >= this.elements.size()) {
+    public E getActiveElement() throws NumberFormatException {
+        if (activeElement < 0 || activeElement >= elements.size()) {
             return null;
         }
-        return this.elements.get(this.activeElement);
+        return elements.get(activeElement);
     }
 
     @Override
     public void drawWidget(int mouseX, int mouseY, float partialTicks) {
         int offsetX = 0;
-        if (this.arrows) {
-            if (this.arrowLeft != null) this.arrowLeft.drawScreen(mouseX, mouseY, partialTicks);
-            if (this.arrowRight != null) this.arrowRight.drawScreen(mouseX, mouseY, partialTicks);
-            offsetX = this.arrowLeft != null ? this.arrowLeft.width : 0;
-            this.xPosition += offsetX + 1;
-            this.width -= offsetX * 2;
+        if (arrows) {
+            arrowLeft.drawScreen(mouseX, mouseY, partialTicks);
+            arrowRight.drawScreen(mouseX, mouseY, partialTicks);
+            offsetX = arrowLeft.getWidth();
+            setX(getX() + offsetX + 1);
+            width -= offsetX * 2;
         }
         super.drawWidget(mouseX, mouseY, partialTicks);
-        if (this.arrows) {
-            this.xPosition -= offsetX + 1;
-            this.width += offsetX * 2;
+        if (arrows) {
+            setX(getX() - (offsetX + 1));
+            width += offsetX * 2;
         }
     }
 
     protected void increase() {
-        if (this.elements == null || this.elements.isEmpty()) return;
-        int nextIndex = (this.activeElement < 0) ? 0 : (this.activeElement + 1) % this.elements.size();
-        setActiveElement(nextIndex);
+        if (!elements.isEmpty()) {
+            setActiveElement((activeElement + 1) % elements.size());
+        }
     }
 
     protected void decrease() {
-        if (this.elements == null || this.elements.isEmpty()) return;
-        int prevIndex = (this.activeElement <= 0) ? this.elements.size() - 1 : this.activeElement - 1;
-        setActiveElement(prevIndex);
+        if (!elements.isEmpty()) {
+            setActiveElement((activeElement - 1 + elements.size()) % elements.size());
+        }
     }
 
     @Override

@@ -71,7 +71,6 @@ public class DatapackLoader {
 
         // Step 1: Scan Mod JAR
         long modScanStart = System.currentTimeMillis();
-        OKCore.okLog(Level.INFO, "DataLoader: Starting mod JAR scan...");
         CompletableFuture<Void> scanModJarsFuture = scanModJars(datapackManager, openedFileSystems, ioExecutor)
             .whenComplete((ignored, throwable) -> {
                 long duration = System.currentTimeMillis() - modScanStart;
@@ -86,7 +85,6 @@ public class DatapackLoader {
 
         // Step 2: Scan World Datapacks
         long datapackScanStart = System.currentTimeMillis();
-        OKCore.okLog(Level.INFO, "DataLoader: Starting world datapack scan...");
         CompletableFuture<Void> scanDatapacksFuture = scanWorldDatapacks(
             server,
             realWorldDir,
@@ -105,7 +103,21 @@ public class DatapackLoader {
         CompletableFuture<Void> pipelineFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
             .thenComposeAsync(
                 ignored -> prepareListeners(datapackManager, ioExecutor, startupAppExecutor, startTime),
-                ioExecutor);
+                ioExecutor)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    OKCore.okLog(
+                        Level.ERROR,
+                        "DataLoader: Pipeline failed during scan aggregation or listener preparation.");
+
+                    logFutureFailure("pipelineFuture", throwable);
+                } else {
+                    OKCore.okLog(
+                        Level.INFO,
+                        "DataLoader: Scan aggregation and listener preparation completed in {} ms.",
+                        System.currentTimeMillis() - startTime);
+                }
+            });
 
         CompletableFuture<Void> finalSyncFuture = pipelineFuture.thenRunAsync(() -> {
             RecipeRegistry.syncMCCraftingManager();
@@ -163,7 +175,14 @@ public class DatapackLoader {
 
         // Step 3: Load Tag Data
         CompletableFuture<Void> tagFuture = TagManager.getManager()
-            .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
+            .reload(barrier, datapackManager, ioExecutor, startupAppExecutor)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    logFutureFailure("TagManager.reload", throwable);
+                } else {
+                    OKCore.okLog(Level.INFO, "DataLoader: Tag reload completed.");
+                }
+            });
 
         ICondition.IContext context = new ConditionContext(TagManager.getManager());
 
@@ -174,7 +193,14 @@ public class DatapackLoader {
         CompletableFuture<Void> recipeFuture = tagFuture.thenComposeAsync(
             ignored -> RecipeManager.getManager()
                 .reload(barrier, datapackManager, ioExecutor, startupAppExecutor),
-            ioExecutor);
+            ioExecutor)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    logFutureFailure("RecipeManager.reload", throwable);
+                } else {
+                    OKCore.okLog(Level.INFO, "DataLoader: Recipe reload completed.");
+                }
+            });
 
         // Step 5: Load External Reload Listeners
         return recipeFuture.thenComposeAsync(ignored -> {
@@ -185,8 +211,22 @@ public class DatapackLoader {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             for (PreparableReloadListener listener : listeners) {
-                CompletableFuture<Void> f = listener.reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
-                if (f != null) futures.add(f);
+                CompletableFuture<Void> future = listener
+                    .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
+                if (future != null) {
+                    String listenerName = listener.getClass()
+                        .getName();
+                    future.whenComplete((ignored1, throwable) -> {
+                        if (throwable != null) {
+                            OKCore.okLog(Level.ERROR, "DataLoader: External listener failed: {}", listenerName);
+
+                            logFutureFailure(listenerName, throwable);
+                        } else {
+                            OKCore.okLog(Level.INFO, "DataLoader: External listener completed: {}", listenerName);
+                        }
+                    });
+                    futures.add(future);
+                }
             }
 
             return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));

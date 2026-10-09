@@ -19,7 +19,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.cache.CacheBuilder;
@@ -186,26 +185,28 @@ public class CraftingHelpers {
         return new ResourceLocation(modId, itemName + "_" + output.getItemDamage());
     }
 
-    private static final LoadingCache<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>> CACHE_RECIPES = CacheBuilder
+    private static final LoadingCache<Triple<IRecipeType<?>, CacheableInventoryCrafting, Integer>, Optional<IRecipe>> CACHE_RECIPES = CacheBuilder
         .newBuilder()
         .expireAfterWrite(1, TimeUnit.MINUTES)
-        .build(new CacheLoader<Pair<CacheableInventoryCrafting, Integer>, Optional<IRecipe>>() {
+        .build(new CacheLoader<Triple<IRecipeType<?>, CacheableInventoryCrafting, Integer>, Optional<IRecipe>>() {
 
             @Override
-            public Optional<IRecipe> load(Pair<CacheableInventoryCrafting, Integer> key) {
+            public Optional<IRecipe> load(Triple<IRecipeType<?>, CacheableInventoryCrafting, Integer> key) {
+
                 World world = DimensionManager.getWorld(key.getRight());
-                if (world == null || !(key.getLeft()
+
+                if (world == null || !(key.getMiddle()
                     .getInventoryCrafting() instanceof InventoryCrafting crafting)) {
                     return Optional.empty();
                 }
-                IRecipe recipe = findRecipeFromCraftingManager(crafting, world);
-                return Optional.ofNullable(recipe);
+
+                return Optional.ofNullable(findRecipeFromCraftingManager(crafting, world));
             }
         });
 
     /**
      * A cache-based variant of {@link RecipeManager#getRecipeFor(IRecipeType, IInventory, World)}.
-     * 
+     *
      * @param recipeType        The recipe type.
      * @param inventoryCrafting The crafting inventory.
      * @param world             The world.
@@ -215,9 +216,10 @@ public class CraftingHelpers {
      * @param <C> The inventory type.
      * @param <T> The recipe type.
      */
+    @SuppressWarnings("unchecked")
     public static <C extends IInventory, T extends IRecipeOK<C>> Optional<T> findRecipeCached(IRecipeType<T> recipeType,
         C inventoryCrafting, World world, boolean uniqueInventory) {
-        return (Optional) CACHE_RECIPES.getUnchecked(
+        return (Optional<T>) (Optional<?>) CACHE_RECIPES.getUnchecked(
             Triple.of(
                 recipeType,
                 new CacheableInventoryCrafting(inventoryCrafting, !uniqueInventory),

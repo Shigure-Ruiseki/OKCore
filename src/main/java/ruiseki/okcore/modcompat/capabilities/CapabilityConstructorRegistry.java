@@ -166,10 +166,8 @@ public class CapabilityConstructorRegistry {
 
             for (Pair<Class<?>, ICapabilityConstructor<?, ?, ?>> entry : inheritableCollection) {
                 if ((initialized || entry.getRight()
-                    .getCapability() != null)
-                    && (keyClass == baseClass || entry.getLeft() == keyClass
-                        || entry.getLeft()
-                            .isAssignableFrom(keyClass))) {
+                    .getCapability() != null) && entry.getLeft()
+                        .isAssignableFrom(keyClass)) {
                     matched.add(entry.getRight());
                 }
             }

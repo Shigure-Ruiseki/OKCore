@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -69,53 +70,101 @@ public class DatapackLoader {
         Executor startupAppExecutor = startupTaskQueue::add;
 
         // Step 1: Scan Mod JAR
-        CompletableFuture<Void> scanModJarsFuture = scanModJars(datapackManager, openedFileSystems, ioExecutor);
+        long modScanStart = System.currentTimeMillis();
+        CompletableFuture<Void> scanModJarsFuture = scanModJars(datapackManager, openedFileSystems, ioExecutor)
+            .whenComplete((ignored, throwable) -> {
+                long duration = System.currentTimeMillis() - modScanStart;
+
+                if (throwable != null) {
+                    OKCore.okLog(Level.ERROR, "DataLoader: Mod JAR scan failed after {} ms.", duration);
+                    logFutureFailure("scanModJars", throwable);
+                } else {
+                    OKCore.okLog(Level.INFO, "DataLoader: Mod JAR scan completed in {} ms.", duration);
+                }
+            });
 
         // Step 2: Scan World Datapacks
+        long datapackScanStart = System.currentTimeMillis();
         CompletableFuture<Void> scanDatapacksFuture = scanWorldDatapacks(
             server,
             realWorldDir,
             datapackManager,
-            ioExecutor);
+            ioExecutor).whenComplete((ignored, throwable) -> {
+                long duration = System.currentTimeMillis() - datapackScanStart;
+
+                if (throwable != null) {
+                    OKCore.okLog(Level.ERROR, "DataLoader: World datapack scan failed after {} ms.", duration);
+                    logFutureFailure("scanWorldDatapacks", throwable);
+                } else {
+                    OKCore.okLog(Level.INFO, "DataLoader: World datapack scan completed in {} ms.", duration);
+                }
+            });
 
         CompletableFuture<Void> pipelineFuture = CompletableFuture.allOf(scanModJarsFuture, scanDatapacksFuture)
             .thenComposeAsync(
-                ignored -> prepareListeners(
-                    datapackManager,
-                    ioExecutor,
-                    startupAppExecutor,
-                    startupTaskQueue,
-                    startTime),
-                ioExecutor);
+                ignored -> prepareListeners(datapackManager, ioExecutor, startupAppExecutor, startTime),
+                ioExecutor)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    OKCore.okLog(
+                        Level.ERROR,
+                        "DataLoader: Pipeline failed during scan aggregation or listener preparation.");
+
+                    logFutureFailure("pipelineFuture", throwable);
+                } else {
+                    OKCore.okLog(
+                        Level.INFO,
+                        "DataLoader: Scan aggregation and listener preparation completed in {} ms.",
+                        System.currentTimeMillis() - startTime);
+                }
+            });
 
         CompletableFuture<Void> finalSyncFuture = pipelineFuture.thenRunAsync(() -> {
             RecipeRegistry.syncMCCraftingManager();
             RecipeRegistry.syncMCFurnaceRecipes();
-            OKCore.okLog(Level.INFO, "DataLoader: Vanilla crafting & furnace recipes synced.");
+
+            OKCore.okLog(
+                Level.INFO,
+                "DataLoader: Vanilla crafting & furnace recipes synced in {} ms.",
+                System.currentTimeMillis() - startTime);
         }, startupAppExecutor);
 
-        CompletableFuture<Void> drainFuture = CompletableFuture
-            .runAsync(() -> drainStartupTasks(finalSyncFuture, startupTaskQueue), ioExecutor);
-
-        return drainFuture.whenComplete((ignored, throwable) -> {
+        finalSyncFuture.whenComplete((ignored, throwable) -> {
             if (throwable != null) {
-                OKCore.okLog(
-                    Level.ERROR,
-                    "DataLoader: Critical error occurred during resource reload pipeline!",
-                    throwable);
-            } else {
-                OKCore.okLog(
-                    Level.INFO,
-                    "DataLoader: All data successfully reloaded in Total: {} ms.",
-                    System.currentTimeMillis() - startTime);
+                startupTaskQueue.clear();
             }
 
-            closeFileSystems(openedFileSystems);
+            startupTaskQueue.offer(END_MARKER);
+        });
+
+        CompletableFuture<Void> drainFuture = CompletableFuture
+            .runAsync(() -> drainStartupTasks(startupTaskQueue), ioExecutor);
+
+        CompletableFuture<Void> result = drainFuture.thenCompose(ignored -> finalSyncFuture);
+
+        return result.whenComplete((ignored, throwable) -> {
+            try {
+                if (throwable != null) {
+                    OKCore.okLog(
+                        Level.ERROR,
+                        "DataLoader: Resource reload pipeline failed after {} ms.",
+                        System.currentTimeMillis() - startTime);
+
+                    OKCore.okLog(Level.ERROR, "DataLoader: Reload failure details", throwable);
+                } else {
+                    OKCore.okLog(
+                        Level.INFO,
+                        "DataLoader: All data successfully reloaded in {} ms.",
+                        System.currentTimeMillis() - startTime);
+                }
+            } finally {
+                closeFileSystems(openedFileSystems);
+            }
         });
     }
 
     private static CompletableFuture<Void> prepareListeners(DatapackManager datapackManager, Executor ioExecutor,
-        Executor startupAppExecutor, BlockingQueue<Runnable> startupTaskQueue, long startTime) {
+        Executor startupAppExecutor, long startTime) {
 
         SimplePreparationBarrier barrier = new SimplePreparationBarrier();
 
@@ -126,7 +175,14 @@ public class DatapackLoader {
 
         // Step 3: Load Tag Data
         CompletableFuture<Void> tagFuture = TagManager.getManager()
-            .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
+            .reload(barrier, datapackManager, ioExecutor, startupAppExecutor)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    logFutureFailure("TagManager.reload", throwable);
+                } else {
+                    OKCore.okLog(Level.INFO, "DataLoader: Tag reload completed.");
+                }
+            });
 
         ICondition.IContext context = new ConditionContext(TagManager.getManager());
 
@@ -137,7 +193,14 @@ public class DatapackLoader {
         CompletableFuture<Void> recipeFuture = tagFuture.thenComposeAsync(
             ignored -> RecipeManager.getManager()
                 .reload(barrier, datapackManager, ioExecutor, startupAppExecutor),
-            ioExecutor);
+            ioExecutor)
+            .whenComplete((ignored, throwable) -> {
+                if (throwable != null) {
+                    logFutureFailure("RecipeManager.reload", throwable);
+                } else {
+                    OKCore.okLog(Level.INFO, "DataLoader: Recipe reload completed.");
+                }
+            });
 
         // Step 5: Load External Reload Listeners
         return recipeFuture.thenComposeAsync(ignored -> {
@@ -148,8 +211,22 @@ public class DatapackLoader {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             for (PreparableReloadListener listener : listeners) {
-                CompletableFuture<Void> f = listener.reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
-                if (f != null) futures.add(f);
+                CompletableFuture<Void> future = listener
+                    .reload(barrier, datapackManager, ioExecutor, startupAppExecutor);
+                if (future != null) {
+                    String listenerName = listener.getClass()
+                        .getName();
+                    future.whenComplete((ignored1, throwable) -> {
+                        if (throwable != null) {
+                            OKCore.okLog(Level.ERROR, "DataLoader: External listener failed: {}", listenerName);
+
+                            logFutureFailure(listenerName, throwable);
+                        } else {
+                            OKCore.okLog(Level.INFO, "DataLoader: External listener completed: {}", listenerName);
+                        }
+                    });
+                    futures.add(future);
+                }
             }
 
             return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -394,37 +471,30 @@ public class DatapackLoader {
         }
     }
 
-    private static void drainStartupTasks(CompletableFuture<Void> finalSyncFuture,
-        BlockingQueue<Runnable> startupTaskQueue) {
-
-        finalSyncFuture.whenComplete((ignored, throwable) -> {
-            if (throwable != null) {
-                startupTaskQueue.clear();
+    private static void drainStartupTasks(BlockingQueue<Runnable> startupTaskQueue) {
+        OKCore.okLog(Level.INFO, "DataLoader: Startup task queue consumer entered.");
+        int taskCount = 0;
+        while (true) {
+            final Runnable task;
+            try {
+                task = startupTaskQueue.take();
+            } catch (InterruptedException e) {
+                Thread.currentThread()
+                    .interrupt();
+                throw new CompletionException("Startup task queue consumer was interrupted.", e);
             }
-            startupTaskQueue.add(END_MARKER);
-        });
-
-        try {
-            while (true) {
-                Runnable task = startupTaskQueue.take();
-
-                if (task == END_MARKER) {
-                    break;
-                }
-
-                try {
-                    task.run();
-
-                } catch (Throwable t) {
-                    OKCore.okLog(Level.ERROR, "DataLoader: Error while executing startup task", t);
-                }
+            if (task == END_MARKER) {
+                OKCore.okLog(Level.INFO, "DataLoader: Received END_MARKER. Executed {} queued task(s).", taskCount);
+                return;
             }
-
-        } catch (InterruptedException e) {
-            Thread.currentThread()
-                .interrupt();
-
-            OKCore.okLog(Level.ERROR, "DataLoader: Startup task executor was interrupted", e);
+            taskCount++;
+            try {
+                task.run();
+            } catch (Throwable throwable) {
+                // Keep draining so one unexpected task does not strand
+                // subsequent queued tasks.
+                OKCore.okLog(Level.ERROR, "DataLoader: Error while executing startup task #" + taskCount, throwable);
+            }
         }
     }
 
@@ -441,5 +511,14 @@ public class DatapackLoader {
                 OKCore.okLog(Level.ERROR, "Failed to close FileSystem on reload complete", e);
             }
         }
+    }
+
+    private static void logFutureFailure(String name, Throwable throwable) {
+        Throwable cause = throwable;
+        while (cause instanceof CompletionException && cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        OKCore.okLog(Level.ERROR, "DataLoader: Future '{}' failed: {}", name, cause.toString());
+        OKCore.okLog(Level.ERROR, "DataLoader: Future failure details", cause);
     }
 }

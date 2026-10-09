@@ -113,7 +113,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
     }
 
     @SuppressWarnings("unchecked")
-    private <C extends IInventory, T extends IRecipeOK<C>> Map<ResourceLocation, T> byType(IRecipeType<T> type) {
+    public <C extends IInventory, T extends IRecipeOK<C>> Map<ResourceLocation, T> byType(IRecipeType<T> type) {
         if (type == null) return Collections.emptyMap();
         return (Map<ResourceLocation, T>) (Map<ResourceLocation, ?>) this.recipes
             .getOrDefault(type, Collections.emptyMap());
@@ -148,7 +148,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener implements I
             .map(entry -> Pair.of(entry.getKey(), entry.getValue()));
     }
 
-    public <C extends IInventory, T extends IRecipeOK<C>> List<T> getAllRecipesFor(IRecipeType<T> type) {
+    public <C extends IInventory, T extends IRecipeOK<C>> List<T> getAllRecipesFor(IRecipeType<? extends T> type) {
         return List.copyOf(
             this.byType(type)
                 .values());

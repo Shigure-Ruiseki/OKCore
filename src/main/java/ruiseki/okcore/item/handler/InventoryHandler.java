@@ -31,7 +31,7 @@ public class InventoryHandler extends ItemStackHandler {
     private double maxStackSizeMultiplier;
     private boolean slotLimitInitialized = false;
 
-    protected InventoryHandler(int numberOfInventorySlots, NBTTagCompound contentsNbt, Runnable saveHandler,
+    public InventoryHandler(int numberOfInventorySlots, NBTTagCompound contentsNbt, Runnable saveHandler,
         int baseSlotLimit) {
         super(numberOfInventorySlots);
         this.contentsNbt = contentsNbt;

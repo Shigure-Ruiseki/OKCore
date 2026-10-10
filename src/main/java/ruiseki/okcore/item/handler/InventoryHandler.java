@@ -1,4 +1,4 @@
-package ruiseki.okcore.core.item.gui;
+package ruiseki.okcore.item.handler;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,7 +15,6 @@ import net.minecraftforge.common.util.Constants;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MathHelpers;
-import ruiseki.okcore.item.handler.ItemStackHandler;
 
 public class InventoryHandler extends ItemStackHandler {
 

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.NBTHelpers;
 import ruiseki.okcore.item.handler.IItemHandler;
+import ruiseki.okcore.item.handler.InventoryHandler;
 
 public class TestGuiWrapper {
 

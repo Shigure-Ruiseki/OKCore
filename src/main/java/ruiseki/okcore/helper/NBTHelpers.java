@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -36,6 +37,7 @@ public class NBTHelpers {
 
     public static <T> Optional<T> getTagValue(ItemStack stack, String parentKey, String key,
         BiFunction<NBTTagCompound, String, T> getValue) {
+        if (ItemHelpers.isEmpty(stack)) return Optional.empty();
         NBTTagCompound tag = stack.getTagCompound();
 
         if (tag == null) {
@@ -133,6 +135,11 @@ public class NBTHelpers {
         return getTagValue(tag, key, NBTTagCompound::getLong);
     }
 
+    public static Optional<UUID> getUniqueId(ItemStack stack, String key) {
+        // noinspection ConstantConditions - contains check is run before this get so it won't be null
+        return getTagValue(stack, key, (compound, k) -> UUID.fromString(compound.getString(k)));
+    }
+
     public static void setCompoundNBT(ItemStack stack, String key, NBTTagCompound tag) {
         setCompoundNBT(stack, "", key, tag);
     }
@@ -181,10 +188,12 @@ public class NBTHelpers {
         getOrCreateTag(stack).setInteger(key, value);
     }
 
+    public static void setUniqueId(ItemStack stack, String key, UUID uuid) {
+        getOrCreateTag(stack).setString(key, uuid.toString());
+    }
+
     public static void removeTag(ItemStack stack, String key) {
-        if (stack.getTagCompound() == null) {
-            return;
-        }
+        if (ItemHelpers.isEmpty(stack) || !stack.hasTagCompound()) return;
         stack.getTagCompound()
             .removeTag(key);
     }

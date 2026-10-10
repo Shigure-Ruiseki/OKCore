@@ -1,4 +1,4 @@
-package ruiseki.okcore.core;
+package ruiseki.okcore.core.item;
 
 import java.util.List;
 import java.util.Set;
@@ -15,15 +15,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.TileHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
-import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.item.IItemCooldown;
 import ruiseki.okcore.item.IItemToggle;
-import ruiseki.okcore.item.ItemGui;
+import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.item.UseCooldown;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tag.Registries;
@@ -31,7 +28,7 @@ import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
-public class ItemInventoryTest extends ItemGui implements IItemCooldown, IItemToggle {
+public class ItemInventoryTest extends ItemBase implements IItemCooldown, IItemToggle {
 
     public ItemInventoryTest() {
         super();
@@ -106,15 +103,5 @@ public class ItemInventoryTest extends ItemGui implements IItemCooldown, IItemTo
             int meta = entry.meta();
             list.add(" §7- " + itemId + (meta == TagEntry.WILDCARD ? ":*" : ":" + meta));
         }
-    }
-
-    @Override
-    public @Nullable IGuiConstructor getGuiProvider(World world, EntityPlayer player, int itemIndex) {
-        return null;
-    }
-
-    @Override
-    public Class<? extends ContainerExtended> getContainerClass(World world, EntityPlayer player, ItemStack itemStack) {
-        return null;
     }
 }

@@ -1,7 +1,6 @@
 package ruiseki.okcore.item.handler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -14,6 +13,7 @@ import net.minecraftforge.common.util.Constants;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
@@ -27,7 +27,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     public ItemStackHandler(int size) {
-        setSize(size);
+        stacks = NonNullList.withSize(size, ItemHelpers.EMPTY);
     }
 
     public ItemStackHandler(List<ItemStack> stacks) {
@@ -35,7 +35,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     public ItemStackHandler(ItemStack[] stacks) {
-        this.stacks = stacks != null ? Arrays.asList(stacks) : new ArrayList<>();
+        this.stacks = stacks != null ? NonNullList.from(ItemHelpers.EMPTY, stacks) : new ArrayList<>();
     }
 
     public void setEmpty() {
@@ -43,9 +43,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     public void setSize(int size) {
-        ItemStack[] array = new ItemStack[size];
-        Arrays.fill(array, ItemHelpers.EMPTY);
-        this.stacks = new ArrayList<>(Arrays.asList(array));
+        stacks = NonNullList.withSize(size, ItemHelpers.EMPTY);
     }
 
     public int[] getSlotArray() {
@@ -56,7 +54,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     @Override
     public void setStackInSlot(int slot, ItemStack stack) {
         this.validateSlotIndex(slot);
-        this.stacks.set(slot, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
+        this.stacks.set(slot, stack);
         this.onContentsChanged(slot);
     }
 
@@ -68,8 +66,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     @Override
     public ItemStack getStackInSlot(int slot) {
         this.validateSlotIndex(slot);
-        ItemStack stack = this.stacks.get(slot);
-        return ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack;
+        return this.stacks.get(slot);
     }
 
     @Override

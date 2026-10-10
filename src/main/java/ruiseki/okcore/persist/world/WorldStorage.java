@@ -25,6 +25,8 @@ public abstract class WorldStorage implements INBTProvider {
     protected final ModBase mod;
     @Delegate
     private INBTProvider nbtProviderComponent = new NBTProviderComponent(this);
+    private boolean dirtyTrackingEnabled = false;
+    private boolean dirty = true;
 
     public WorldStorage(ModBase mod) {
         this.mod = mod;
@@ -132,6 +134,26 @@ public abstract class WorldStorage implements INBTProvider {
 
     }
 
+    public void setDirtyTrackingEnabled(boolean enabled) {
+        this.dirtyTrackingEnabled = enabled;
+
+        if (!enabled) {
+            dirty = true;
+        }
+    }
+
+    public void markDirty() {
+        dirty = true;
+    }
+
+    public void clearDirty() {
+        dirty = false;
+    }
+
+    public boolean isDirty() {
+        return !dirtyTrackingEnabled || dirty;
+    }
+
     /**
      * Data holder for the global counter data.
      */
@@ -165,12 +187,13 @@ public abstract class WorldStorage implements INBTProvider {
             parentStorage.writeToNBT(dataTag);
 
             tag.setTag(KEY, dataTag);
+
+            parentStorage.clearDirty();
         }
 
         @Override
         public boolean isDirty() {
-            // If this proves to be too inefficient, add a decent implementation for this.
-            return true;
+            return parentStorage == null || parentStorage.isDirty();
         }
 
         public void setParentStorage(WorldStorage parentStorage) {

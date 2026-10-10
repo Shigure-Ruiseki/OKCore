@@ -1,4 +1,4 @@
-package ruiseki.okcore.core;
+package ruiseki.okcore.core.item;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;

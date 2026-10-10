@@ -64,9 +64,6 @@ public class ItemHandlerHelpers {
 
     @Nullable
     public static ItemStack copyStackWithSize(@Nullable ItemStack itemStack, int size) {
-        if (ItemHelpers.isEmpty(itemStack) || size <= 0) {
-            return null;
-        }
         return ItemHelpers.copyWithSize(itemStack, size);
     }
 

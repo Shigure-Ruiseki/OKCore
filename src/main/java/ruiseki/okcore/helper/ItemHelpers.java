@@ -51,6 +51,15 @@ public class ItemHelpers {
         return isEmpty(stack) ? EMPTY : stack.copy();
     }
 
+    public static int getCount(@Nullable ItemStack stack) {
+        if (!isEmpty(stack)) return stack.stackSize;
+        return 0;
+    }
+
+    public static void setCount(@Nullable ItemStack stack, int size) {
+        if (!isEmpty(stack)) stack.stackSize = size;
+    }
+
     @Nullable
     public static ItemStack copyWithSize(@Nullable ItemStack stack, int size) {
         if (isEmpty(stack)) return EMPTY;

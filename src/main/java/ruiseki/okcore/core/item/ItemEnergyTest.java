@@ -1,4 +1,4 @@
-package ruiseki.okcore.core;
+package ruiseki.okcore.core.item;
 
 import java.util.List;
 

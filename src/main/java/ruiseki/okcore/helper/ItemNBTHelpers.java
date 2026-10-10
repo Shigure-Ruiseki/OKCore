@@ -10,6 +10,7 @@ import net.minecraft.nbt.NBTTagList;
 
 import org.jetbrains.annotations.Nullable;
 
+@Deprecated
 public class ItemNBTHelpers {
 
     /**

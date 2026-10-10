@@ -31,20 +31,11 @@ import ruiseki.okcore.event.OKEventFactory;
 public abstract class MixinItemStackCap {
 
     @Unique
-    private CapabilityDispatcher okcore$capabilities;
+    private CapabilityDispatcher okcore$capabilities = null;
     @Unique
-    private NBTTagCompound okcore$capNBT;
+    private NBTTagCompound okcore$capNBT = null;
     @Unique
     private boolean okcore$initialized = false;
-
-    /*
-     * INITIALIZATION
-     */
-    @Inject(method = "func_150996_a", at = @At("RETURN"))
-    private void okcore$forgeInit(Item item, CallbackInfo ci) {
-        this.okcore$capabilities = null;
-        this.okcore$initialized = false;
-    }
 
     /*
      * LAZY INITIALIZER
@@ -54,7 +45,7 @@ public abstract class MixinItemStackCap {
         if (this.okcore$initialized) return;
         this.okcore$initialized = true;
 
-        ItemStack stack = (ItemStack) (Object) this;
+        ItemStack stack = this.okcore$getThis();
         Item item = stack.getItem();
         if (item == null) return;
 
@@ -92,7 +83,7 @@ public abstract class MixinItemStackCap {
     private void okcore$writeToNBT(NBTTagCompound tag, CallbackInfoReturnable<NBTTagCompound> cir) {
         if (this.okcore$initialized && this.okcore$capabilities != null) {
             NBTTagCompound cnbt = this.okcore$capabilities.serializeNBT();
-            if (cnbt != null && !cnbt.hasNoTags()) {
+            if (!cnbt.hasNoTags()) {
                 tag.setTag("OKCaps", cnbt);
             }
         } else if (this.okcore$capNBT != null && !this.okcore$capNBT.hasNoTags()) {

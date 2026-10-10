@@ -1,9 +1,11 @@
 package ruiseki.okcore;
 
 import ruiseki.okcore.config.ConfigHandler;
-import ruiseki.okcore.core.ItemEnergyTestConfig;
-import ruiseki.okcore.core.ItemFluidTestConfig;
-import ruiseki.okcore.core.ItemInventoryTestConfig;
+import ruiseki.okcore.core.item.ItemEnergyTestConfig;
+import ruiseki.okcore.core.item.ItemFluidTestConfig;
+import ruiseki.okcore.core.item.ItemInventoryTestConfig;
+import ruiseki.okcore.core.item.gui.CapabilityTestGuiWrapperConfig;
+import ruiseki.okcore.core.item.gui.ItemGuiTestConfig;
 import ruiseki.okcore.energy.capability.EnergyStorageConfig;
 import ruiseki.okcore.fluid.capability.FluidHandlerConfig;
 import ruiseki.okcore.fluid.capability.FluidHandlerItemCapacityConfig;
@@ -23,5 +25,8 @@ public class Configs {
         configHandler.add(new ItemEnergyTestConfig());
         configHandler.add(new ItemFluidTestConfig());
         configHandler.add(new ItemInventoryTestConfig());
+
+        configHandler.add(new ItemGuiTestConfig());
+        configHandler.add(new CapabilityTestGuiWrapperConfig());
     }
 }

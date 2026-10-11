@@ -24,7 +24,7 @@ public class TestGuiWrapper {
     @Nullable
     private InventoryHandler handler;
 
-    public TestGuiWrapper(ItemStack stack) {
+    public TestGuiWrapper(@Nullable ItemStack stack) {
         this.stack = stack;
     }
 

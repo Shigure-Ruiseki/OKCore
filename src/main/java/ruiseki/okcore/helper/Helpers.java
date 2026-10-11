@@ -1,6 +1,7 @@
 package ruiseki.okcore.helper;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,6 +10,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
@@ -262,7 +264,7 @@ public class Helpers {
      * Safely get a capability from a tile or block.
      * The capability of the tile will be checked first,
      * only if it was not found, the block will be checked.
-     * 
+     *
      * @param world      The world.
      * @param pos        The position of the tile or block providing the capability.
      * @param side       The side to get the capability from.
@@ -277,5 +279,9 @@ public class Helpers {
             return BlockHelpers.getCapability(world, pos, capability, side);
         }
         return instance;
+    }
+
+    public static long getEpochMillis() {
+        return Instant.now().toEpochMilli();
     }
 }

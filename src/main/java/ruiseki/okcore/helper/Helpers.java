@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
@@ -282,6 +281,7 @@ public class Helpers {
     }
 
     public static long getEpochMillis() {
-        return Instant.now().toEpochMilli();
+        return Instant.now()
+            .toEpochMilli();
     }
 }

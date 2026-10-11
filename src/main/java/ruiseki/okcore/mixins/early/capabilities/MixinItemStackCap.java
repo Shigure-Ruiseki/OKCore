@@ -24,10 +24,12 @@ import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.capabilities.IItemCapability;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.event.OKEventFactory;
+import ruiseki.okcore.item.IItemStackCap;
 
 @Mixin(ItemStack.class)
 @Implements({ @Interface(iface = ICapabilitySerializable.class, prefix = "okcorecap$"),
-    @Interface(iface = ICapabilityInternal.class, prefix = "okcoreinternal$") })
+    @Interface(iface = ICapabilityInternal.class, prefix = "okcoreinternal$"),
+    @Interface(iface = IItemStackCap.class, prefix = "okcorenbtcap$") })
 public abstract class MixinItemStackCap {
 
     @Unique
@@ -136,6 +138,10 @@ public abstract class MixinItemStackCap {
     public CapabilityDispatcher okcoreinternal$getCapabilities() {
         okcore$initCapabilitiesLazy();
         return this.okcore$capabilities;
+    }
+
+    public NBTTagCompound okcorenbtcap$getCapNBT() {
+        return this.okcore$capNBT;
     }
 
     @Unique

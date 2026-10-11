@@ -2,6 +2,7 @@ package ruiseki.okcore.helper;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -18,6 +19,7 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.item.IItemStackCap;
 
 public class CapabilityHelpers {
 
@@ -30,7 +32,7 @@ public class CapabilityHelpers {
     @SuppressWarnings("ConstantConditions")
     public static <T> LazyOptional<T> getCapability(ItemStack stack, @NotNull Capability<T> capability,
         @Nullable ForgeDirection side) {
-        if (stack == null) return LazyOptional.empty();
+        if (ItemHelpers.isEmpty(stack)) return LazyOptional.empty();
         Object obj = stack;
         if (obj instanceof ICapabilityProvider provider) {
             return provider.getCapability(capability, side);
@@ -40,10 +42,20 @@ public class CapabilityHelpers {
 
     @SuppressWarnings("ConstantConditions")
     public static CapabilityDispatcher getCapabilities(ItemStack stack) {
-        if (stack == null) return null;
+        if (ItemHelpers.isEmpty(stack)) return null;
         Object obj = stack;
         if (obj instanceof ICapabilityInternal provider) {
             return provider.getCapabilities();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public static NBTTagCompound getCapNBT(ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) return null;
+        Object obj = stack;
+        if (obj instanceof IItemStackCap provider) {
+            return provider.getCapNBT();
         }
         return null;
     }

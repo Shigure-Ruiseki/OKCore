@@ -376,7 +376,7 @@ public class InventoryHelpers {
         int slotsB = handlerB.getSlots();
         for (int slot = 0; slot < slotsA && slot < slotsB; slot++) {
             ItemStack slotStack = handlerA.getStackInSlot(slot);
-            if (!slotStack.isEmpty()) {
+            if (!ItemHelpers.isEmpty(slotStack)) {
                 handlerB.setStackInSlot(slot, slotStack);
             }
         }

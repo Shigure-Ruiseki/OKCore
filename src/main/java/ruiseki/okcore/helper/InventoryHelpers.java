@@ -370,4 +370,15 @@ public class InventoryHelpers {
             itemStacks.add(toAdd);
         }
     }
+
+    public static void copyTo(IItemHandlerModifiable handlerA, IItemHandlerModifiable handlerB) {
+        int slotsA = handlerA.getSlots();
+        int slotsB = handlerB.getSlots();
+        for (int slot = 0; slot < slotsA && slot < slotsB; slot++) {
+            ItemStack slotStack = handlerA.getStackInSlot(slot);
+            if (!slotStack.isEmpty()) {
+                handlerB.setStackInSlot(slot, slotStack);
+            }
+        }
+    }
 }

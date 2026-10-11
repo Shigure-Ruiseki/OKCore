@@ -74,22 +74,23 @@ public class NBTHelpers {
 
     public static <E, C extends Collection<E>> Optional<C> getCollection(ItemStack stack, String parentKey,
         String tagName, byte listType, Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
-        return getTagValue(stack, parentKey, tagName, (c, n) -> c.getTagList(n, listType)).map(listNbt -> {
-            C ret = initCollection.get();
-            for (int i = 0; i < listNbt.tagCount(); i++) {
-                getElement.apply(listNbt.getCompoundTagAt(i))
-                    .ifPresent(ret::add);
-            }
-            return ret;
-        });
+        return getTagValue(stack, parentKey, tagName, (compound, name) -> compound.getTagList(name, listType))
+            .map(listNbt -> {
+                C ret = initCollection.get();
+                for (int i = 0; i < listNbt.tagCount(); i++) {
+                    getElement.apply((NBTBase) listNbt.tagList.get(i))
+                        .ifPresent(ret::add);
+                }
+                return ret;
+            });
     }
 
     public static <E, C extends Collection<E>> Optional<C> getCollection(NBTTagCompound tag, String key, byte listType,
         Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
-        return getTagValue(tag, key, (c, n) -> c.getTagList(n, listType)).map(listNbt -> {
+        return getTagValue(tag, key, (compound, name) -> compound.getTagList(name, listType)).map(listNbt -> {
             C ret = initCollection.get();
             for (int i = 0; i < listNbt.tagCount(); i++) {
-                getElement.apply(listNbt.getCompoundTagAt(i))
+                getElement.apply((NBTBase) listNbt.tagList.get(i))
                     .ifPresent(ret::add);
             }
             return ret;

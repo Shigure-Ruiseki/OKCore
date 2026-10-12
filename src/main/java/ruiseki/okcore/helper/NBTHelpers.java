@@ -73,7 +73,7 @@ public class NBTHelpers {
     }
 
     public static <E, C extends Collection<E>> Optional<C> getCollection(ItemStack stack, String parentKey,
-        String tagName, byte listType, Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
+        String tagName, int listType, Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
         return getTagValue(stack, parentKey, tagName, (compound, name) -> compound.getTagList(name, listType))
             .map(listNbt -> {
                 C ret = initCollection.get();
@@ -85,7 +85,7 @@ public class NBTHelpers {
             });
     }
 
-    public static <E, C extends Collection<E>> Optional<C> getCollection(NBTTagCompound tag, String key, byte listType,
+    public static <E, C extends Collection<E>> Optional<C> getCollection(NBTTagCompound tag, String key, int listType,
         Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
         return getTagValue(tag, key, (compound, name) -> compound.getTagList(name, listType)).map(listNbt -> {
             C ret = initCollection.get();

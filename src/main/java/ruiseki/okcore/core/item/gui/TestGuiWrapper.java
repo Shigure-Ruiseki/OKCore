@@ -59,7 +59,7 @@ public class TestGuiWrapper {
         }
         UUID newUuid = UUID.randomUUID();
         setContentsUuid(newUuid);
-        migrateBackpackContents(newUuid);
+        migrateContents(newUuid);
         return newUuid;
     }
 
@@ -80,7 +80,7 @@ public class TestGuiWrapper {
         NBTHelpers.removeTag(stack, CONTENTS_UUID_TAG);
     }
 
-    private void migrateBackpackContents(UUID newUuid) {
+    private void migrateContents(UUID newUuid) {
         migrateNbtTag(newUuid, InventoryHandler.INVENTORY_TAG);
     }
 

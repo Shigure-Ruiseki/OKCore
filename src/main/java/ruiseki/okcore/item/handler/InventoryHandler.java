@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntConsumer;
 
 import net.minecraft.item.ItemStack;
@@ -14,7 +13,6 @@ import net.minecraftforge.common.util.Constants;
 
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.ItemHelpers;
-import ruiseki.okcore.helper.MathHelpers;
 
 public class InventoryHandler extends ItemStackHandler {
 
@@ -26,17 +24,10 @@ public class InventoryHandler extends ItemStackHandler {
     private boolean persistent = true;
     private final Map<Integer, NBTTagCompound> stackNbts = new LinkedHashMap<>();
 
-    private int baseSlotLimit;
-    private int slotLimit;
-    private double maxStackSizeMultiplier;
-    private boolean slotLimitInitialized = false;
-
-    public InventoryHandler(int numberOfInventorySlots, NBTTagCompound contentsNbt, Runnable saveHandler,
-        int baseSlotLimit) {
+    public InventoryHandler(int numberOfInventorySlots, NBTTagCompound contentsNbt, Runnable saveHandler) {
         super(numberOfInventorySlots);
         this.contentsNbt = contentsNbt;
         this.saveHandler = saveHandler;
-        setBaseSlotLimit(baseSlotLimit);
         deserializeNBT(contentsNbt.getCompoundTag(INVENTORY_TAG));
         initStackNbts();
     }
@@ -111,41 +102,6 @@ public class InventoryHandler extends ItemStackHandler {
         onLoad();
     }
 
-    public int getBaseSlotLimit() {
-        return baseSlotLimit;
-    }
-
-    @Override
-    public int getSlotLimit(int slot) {
-        if (!slotLimitInitialized) {
-            slotLimitInitialized = true;
-            updateSlotLimit();
-        }
-
-        return Math.max(slotLimit, baseSlotLimit);
-    }
-
-    public int getBaseStackLimit(ItemStack stack) {
-        int limit = MathHelpers.intMaxCappedMultiply(stack.getMaxStackSize(), (baseSlotLimit / 64));
-        int remainder = baseSlotLimit % 64;
-        if (remainder > 0) {
-            limit = MathHelpers.intMaxCappedAddition(limit, remainder * stack.getMaxStackSize() / 64);
-        }
-        return limit;
-    }
-
-    public void setBaseSlotLimit(int baseSlotLimit) {
-        slotLimitInitialized = false; // not the most ideal of places to do this, but base slot limit is set when
-                                      // upgrades change and that's when slot limit needs to be reinitialized as well
-        this.baseSlotLimit = baseSlotLimit;
-        maxStackSizeMultiplier = baseSlotLimit / 64f;
-    }
-
-    private void updateSlotLimit() {
-        AtomicInteger slotLimitOverride = new AtomicInteger(baseSlotLimit);
-        slotLimit = slotLimitOverride.get();
-    }
-
     public void saveInventory() {
         contentsNbt.setTag(INVENTORY_TAG, serializeNBT());
         saveHandler.run();
@@ -169,10 +125,6 @@ public class InventoryHandler extends ItemStackHandler {
         nbt.setTag("Items", nbtTagList);
         nbt.setInteger("Size", getSlots());
         return nbt;
-    }
-
-    public double getStackSizeMultiplier() {
-        return maxStackSizeMultiplier;
     }
 
     public void changeSlots(int diff) {

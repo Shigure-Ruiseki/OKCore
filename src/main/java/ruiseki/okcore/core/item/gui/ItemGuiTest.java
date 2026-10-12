@@ -65,7 +65,7 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
                 }
 
                 if (cap == CapabilityItemHandler.ITEM_HANDLER) {
-                    return LazyOptional.of(() -> wrapper.getItemHandler())
+                    return LazyOptional.of(() -> wrapper.getInventoryHandler())
                         .cast();
                 }
 
@@ -110,7 +110,7 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
             .coverChildren();
 
         wrapperCap.ifPresent(wrapper -> {
-            IItemHandler handler = wrapper.getItemHandler();
+            IItemHandler handler = wrapper.getInventoryHandler();
             SlotGroupWidget grid = SlotGroupWidget.builder()
                 .row("IIIIIIIII")
                 .row("IIIIIIIII")

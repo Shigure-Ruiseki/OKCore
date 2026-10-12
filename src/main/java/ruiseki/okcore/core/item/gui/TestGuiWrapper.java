@@ -32,12 +32,12 @@ public class TestGuiWrapper {
         inventorySlotChangeHandler = slotChangeHandler;
     }
 
-    public IItemHandler getItemHandler() {
+    public IItemHandler getInventoryHandler() {
         if (handler == null) {
             handler = new InventoryHandler(54, getBackpackContentsNbt(), () -> {
                 this.markContentsDirty();
                 this.inventorySlotChangeHandler.run();
-            }, 64);
+            });
         }
         return handler;
     }

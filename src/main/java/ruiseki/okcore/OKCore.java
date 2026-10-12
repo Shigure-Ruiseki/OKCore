@@ -23,7 +23,7 @@ import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ConfigHandler;
-import ruiseki.okcore.core.item.gui.TestGuiStorage;
+import ruiseki.okcore.core.item.gui.GuiTestStorage;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.helper.CraftingHelpers;
@@ -52,7 +52,7 @@ public class OKCore extends ModBaseVersionable {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
         putGenericReference(REFKEY_MOD_VERSION, Reference.MOD_VERSION);
 
-        registerWorldStorage(TestGuiStorage.getInstance(this));
+        registerWorldStorage(GuiTestStorage.getInstance(this));
     }
 
     @Mod.EventHandler

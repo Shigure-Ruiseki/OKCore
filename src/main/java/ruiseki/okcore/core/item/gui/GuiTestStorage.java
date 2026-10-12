@@ -10,13 +10,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.persist.world.WorldStorage;
 
-public class TestGuiStorage extends WorldStorage {
+public class GuiTestStorage extends WorldStorage {
 
     private final Map<UUID, NBTTagCompound> contents = new HashMap<>();
 
-    private static TestGuiStorage INSTANCE = null;
+    private static GuiTestStorage INSTANCE = null;
 
-    public TestGuiStorage(ModBase mod) {
+    public GuiTestStorage(ModBase mod) {
         super(mod);
         this.setDirtyTrackingEnabled(true);
     }
@@ -31,9 +31,9 @@ public class TestGuiStorage extends WorldStorage {
         return "test";
     }
 
-    public static TestGuiStorage getInstance(ModBase modBase) {
+    public static GuiTestStorage getInstance(ModBase modBase) {
         if (INSTANCE == null) {
-            INSTANCE = new TestGuiStorage(modBase);
+            INSTANCE = new GuiTestStorage(modBase);
         }
         return INSTANCE;
     }

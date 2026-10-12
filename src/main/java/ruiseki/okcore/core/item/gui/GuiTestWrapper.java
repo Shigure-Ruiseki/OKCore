@@ -13,7 +13,7 @@ import ruiseki.okcore.helper.NBTHelpers;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.InventoryHandler;
 
-public class TestGuiWrapper {
+public class GuiTestWrapper {
 
     private static final String CONTENTS_UUID_TAG = "contentsUuid";
 
@@ -24,7 +24,7 @@ public class TestGuiWrapper {
     @Nullable
     private InventoryHandler handler;
 
-    public TestGuiWrapper(@Nullable ItemStack stack) {
+    public GuiTestWrapper(@Nullable ItemStack stack) {
         this.stack = stack;
     }
 
@@ -43,12 +43,12 @@ public class TestGuiWrapper {
     }
 
     private NBTTagCompound getBackpackContentsNbt() {
-        return TestGuiStorage.getInstance(OKCore._instance)
+        return GuiTestStorage.getInstance(OKCore._instance)
             .getOrCreateContents(getOrCreateContentsUuid());
     }
 
     private void markContentsDirty() {
-        TestGuiStorage.getInstance(OKCore._instance)
+        GuiTestStorage.getInstance(OKCore._instance)
             .markDirty();
     }
 
@@ -72,7 +72,7 @@ public class TestGuiWrapper {
     }
 
     public void removeContentsUuid() {
-        getContentsUuid().ifPresent(TestGuiStorage.getInstance(OKCore._instance)::removeContents);
+        getContentsUuid().ifPresent(GuiTestStorage.getInstance(OKCore._instance)::removeContents);
         removeContentsUUIDTag();
     }
 
@@ -87,7 +87,7 @@ public class TestGuiWrapper {
     private void migrateNbtTag(UUID newUuid, String key) {
         NBTHelpers.getCompoundTag(stack, key)
             .ifPresent(nbt -> {
-                TestGuiStorage.getInstance(OKCore._instance)
+                GuiTestStorage.getInstance(OKCore._instance)
                     .getOrCreateContents(newUuid)
                     .setTag(key, nbt);
                 markContentsDirty();

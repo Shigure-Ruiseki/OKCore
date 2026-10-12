@@ -2,6 +2,7 @@ package ruiseki.okcore.core.item.gui;
 
 import java.util.List;
 
+import com.cleanroommc.modularui.screen.ModularContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -100,6 +101,8 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
         LazyOptional<GuiTestWrapper> wrapperCap = CapabilityHelpers
             .getCapability(data.getUsedItemStack(), CapabilityGuiTestWrapperConfig.CAPABILITY);
 
+        settings.customContainer(() -> new GuiTestContainer(wrapperCap));
+
         final int panelHeight = 216;
         final ModularPanel panel = ModularPanel.defaultPanel("golden_bag", 176, panelHeight);
         manager.registerSlotGroup("inv", 54);
@@ -129,5 +132,14 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
         });
 
         return panel;
+    }
+
+    public static class GuiTestContainer extends ModularContainer {
+
+        public final LazyOptional<GuiTestWrapper> cap;
+
+        public GuiTestContainer(LazyOptional<GuiTestWrapper> cap) {
+            this.cap = cap;
+        }
     }
 }

@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.NBTHelpers;
-import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.InventoryHandler;
 
 public class GuiTestWrapper {
@@ -32,7 +31,7 @@ public class GuiTestWrapper {
         inventorySlotChangeHandler = slotChangeHandler;
     }
 
-    public IItemHandler getInventoryHandler() {
+    public InventoryHandler getInventoryHandler() {
         if (handler == null) {
             handler = new InventoryHandler(54, getBackpackContentsNbt(), () -> {
                 this.markContentsDirty();

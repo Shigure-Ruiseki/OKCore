@@ -109,6 +109,48 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         }
     }
 
+    public ItemStack insertItem(ItemStack stack, boolean simulate) {
+        if (ItemHelpers.isEmpty(stack)) {
+            return ItemHelpers.EMPTY;
+        }
+
+        ItemStack remaining = stack;
+
+        // Pass 1: Merge into existing stacks first
+        for (int slot = 0; slot < getSlots(); slot++) {
+            ItemStack existing = getStackInSlot(slot);
+
+            if (ItemHelpers.isEmpty(existing)) {
+                continue;
+            }
+
+            if (!ItemHandlerHelpers.canItemStacksStack(remaining, existing)) {
+                continue;
+            }
+
+            remaining = insertItem(slot, remaining, simulate);
+
+            if (ItemHelpers.isEmpty(remaining)) {
+                return ItemHelpers.EMPTY;
+            }
+        }
+
+        // Pass 2: Insert into empty slots
+        for (int slot = 0; slot < getSlots(); slot++) {
+            if (!ItemHelpers.isEmpty(getStackInSlot(slot))) {
+                continue;
+            }
+
+            remaining = insertItem(slot, remaining, simulate);
+
+            if (ItemHelpers.isEmpty(remaining)) {
+                return ItemHelpers.EMPTY;
+            }
+        }
+
+        return remaining;
+    }
+
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (amount <= 0) {

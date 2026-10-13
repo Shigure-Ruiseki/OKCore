@@ -9,8 +9,8 @@ import java.util.Set;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-
 import net.minecraftforge.oredict.OreDictionary;
+
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.TagHelpers;
@@ -31,9 +31,11 @@ public class InventorySorter {
         return ret != 0 ? ret : getRegistryName(first.getKey()).compareTo(getRegistryName(second.getKey()));
     };
 
-    public static final Comparator<Map.Entry<ItemStackKey, Integer>> BY_OREDICT = (first, second) -> {
-        int[] firstOreIds = first.getKey().getOreIds();
-        int[] secondOreIds = second.getKey().getOreIds();
+    public static final Comparator<Map.Entry<ItemStackKey, Integer>> BY_ORE_DICT = (first, second) -> {
+        int[] firstOreIds = first.getKey()
+            .getOreIds();
+        int[] secondOreIds = second.getKey()
+            .getOreIds();
 
         int length = Math.min(firstOreIds.length, secondOreIds.length);
 
@@ -47,12 +49,10 @@ public class InventorySorter {
         }
 
         int ret = Integer.compare(firstOreIds.length, secondOreIds.length);
-        return ret != 0
-            ? ret
-            : getRegistryName(first.getKey()).compareTo(getRegistryName(second.getKey()));
+        return ret != 0 ? ret : getRegistryName(first.getKey()).compareTo(getRegistryName(second.getKey()));
     };
 
-    public static final Comparator<Map.Entry<ItemStackKey, Integer>> BY_TAGS = new Comparator<>() {
+    public static final Comparator<Map.Entry<ItemStackKey, Integer>> BY_TAG = new Comparator<>() {
 
         @Override
         public int compare(Map.Entry<ItemStackKey, Integer> first, Map.Entry<ItemStackKey, Integer> second) {
@@ -113,6 +113,12 @@ public class InventorySorter {
             return 0;
         }
     };
+
+    public static final Comparator<Map.Entry<ItemStackKey, Integer>> BY_MOD_ID = Comparator
+        .comparing(
+            (Map.Entry<ItemStackKey, Integer> entry) -> entry.getKey()
+                .getModId())
+        .thenComparing(entry -> getRegistryName(entry.getKey()));
 
     private static String getRegistryName(ItemStackKey itemStackKey) {
         // noinspection ConstantConditions - registryName is nonNull by the time it exists in itemstack form

@@ -1,6 +1,7 @@
 package ruiseki.okcore.inventory;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Objects;
 
 import net.minecraft.item.Item;
@@ -19,7 +20,7 @@ public final class ItemStackKey {
     private final int nbtSignature;
     private final @Nullable NBTTagCompound nbt;
 
-    private String cachedDisplayName;
+    private String cachedDisplayName = "";
     private int[] cachedOreIds;
     private String cachedModId;
     private int cachedHashCode = -1;
@@ -95,9 +96,9 @@ public final class ItemStackKey {
     }
 
     public String getDisplayName() {
-        if (cachedDisplayName == null) {
+        if (cachedDisplayName.isEmpty()) {
             cachedDisplayName = toStack(1).getDisplayName()
-                .toLowerCase();
+                .toLowerCase(Locale.ROOT);
         }
         return cachedDisplayName;
     }

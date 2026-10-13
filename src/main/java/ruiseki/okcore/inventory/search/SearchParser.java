@@ -8,10 +8,10 @@ public class SearchParser {
     private SearchParser() {}
 
     public static SearchNode parse(String input) {
-        if (input == null || input.isEmpty()) return null;
+        if (input == null || input.isEmpty()) return TrueNode.INSTANCE;
 
         String trimmedInput = input.trim();
-        if (trimmedInput.isEmpty()) return null;
+        if (trimmedInput.isEmpty()) return TrueNode.INSTANCE;
 
         List<SearchNode> orNodes = new ArrayList<>();
 
@@ -45,12 +45,12 @@ public class SearchParser {
             }
         }
 
-        if (orNodes.isEmpty()) return null;
+        if (orNodes.isEmpty()) return TrueNode.INSTANCE;
         return orNodes.size() == 1 ? orNodes.getFirst() : new OrNode(orNodes);
     }
 
     private static SearchNode parseTerm(String term) {
-        if (term.isEmpty()) return null;
+        if (term.isEmpty()) return TrueNode.INSTANCE;
 
         char prefix = term.charAt(0);
         if (term.length() == 1) return new TextNode(term);

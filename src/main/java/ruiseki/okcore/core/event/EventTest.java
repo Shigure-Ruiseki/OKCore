@@ -1,6 +1,7 @@
 package ruiseki.okcore.core.event;
 
-import cpw.mods.fml.common.gameevent.TickEvent;
+import java.util.List;
+
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -8,18 +9,18 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import org.jetbrains.annotations.Nullable;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import ruiseki.okcore.core.item.gui.CapabilityGuiTestWrapperConfig;
 import ruiseki.okcore.core.item.gui.GuiTestWrapper;
 import ruiseki.okcore.core.item.gui.ItemGuiTest;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
-
-import java.util.List;
 
 @EventBusSubscriber
 public class EventTest {
@@ -72,6 +73,7 @@ public class EventTest {
             event.setCanceled(true);
         }
     }
+
     public static ItemStack attemptPickup(EntityPlayer player, ItemStack pickupStack) {
         if (player == null || ItemHelpers.isEmpty(pickupStack)) {
             return pickupStack;
@@ -86,16 +88,14 @@ public class EventTest {
 
         final ItemStack[] remaining = { pickupStack };
 
-        PlayerExtendedInventoryIterator iterator =
-            new PlayerExtendedInventoryIterator(player);
+        PlayerExtendedInventoryIterator iterator = new PlayerExtendedInventoryIterator(player);
 
         iterator.forEachRemaining(stack -> {
             if (ItemHelpers.isEmpty(remaining[0])) {
                 return;
             }
 
-            GuiTestWrapper wrapper = CapabilityHelpers
-                .getCapability(stack, CapabilityGuiTestWrapperConfig.CAPABILITY)
+            GuiTestWrapper wrapper = CapabilityHelpers.getCapability(stack, CapabilityGuiTestWrapperConfig.CAPABILITY)
                 .getOrNull();
 
             if (wrapper == null) {
@@ -106,9 +106,7 @@ public class EventTest {
                 .insertItem(remaining[0], false);
         });
 
-        return ItemHelpers.isEmpty(remaining[0])
-            ? ItemHelpers.EMPTY
-            : remaining[0];
+        return ItemHelpers.isEmpty(remaining[0]) ? ItemHelpers.EMPTY : remaining[0];
     }
 
     @SubscribeEvent
@@ -124,8 +122,7 @@ public class EventTest {
     public static void tick(EntityPlayer player) {
         PlayerExtendedInventoryIterator iterator = new PlayerExtendedInventoryIterator(player);
         iterator.forEachRemaining(stack -> {
-            GuiTestWrapper wrapper = CapabilityHelpers
-                .getCapability(stack, CapabilityGuiTestWrapperConfig.CAPABILITY)
+            GuiTestWrapper wrapper = CapabilityHelpers.getCapability(stack, CapabilityGuiTestWrapperConfig.CAPABILITY)
                 .getOrNull();
             if (wrapper == null) return;
 
@@ -137,8 +134,7 @@ public class EventTest {
                 player.posZ - radius,
                 player.posX + radius,
                 player.posY + radius,
-                player.posZ + radius
-            );
+                player.posZ + radius);
 
             List<EntityItem> items = world.getEntitiesWithinAABB(EntityItem.class, area);
             for (EntityItem entityItem : items) {

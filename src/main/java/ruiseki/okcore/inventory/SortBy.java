@@ -10,8 +10,8 @@ public enum SortBy {
     NAME,
     MOD_ID,
     COUNT,
-    TAG,
-    ORE_DICT;
+    ORE_DICT,
+    TAG;
 
     private static final ImmutableList<SortBy> values = ImmutableList.copyOf(values());
 

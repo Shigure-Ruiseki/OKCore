@@ -1,5 +1,14 @@
 package ruiseki.okcore.helper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -12,6 +21,8 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.inventory.InventorySorter;
+import ruiseki.okcore.inventory.ItemStackKey;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 
@@ -381,4 +392,52 @@ public class InventoryHelpers {
             }
         }
     }
+
+    public static void iterate(IItemHandler handler, BiConsumer<Integer, ItemStack> actOn) {
+        iterate(handler, actOn, () -> false);
+    }
+
+    public static void iterate(IItemHandler handler, BiConsumer<Integer, ItemStack> actOn, BooleanSupplier shouldExit) {
+        int slots = handler.getSlots();
+        for (int slot = 0; slot < slots; slot++) {
+            ItemStack stack = handler.getStackInSlot(slot);
+            actOn.accept(slot, stack);
+            if (shouldExit.getAsBoolean()) {
+                break;
+            }
+        }
+    }
+
+    public static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler) {
+        return getCompactedStacks(handler, new HashSet<>());
+    }
+
+    public static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler, Set<Integer> ignoreSlots) {
+        Map<ItemStackKey, Integer> ret = new HashMap<>();
+        iterate(handler, (slot, stack) -> {
+            if (ItemHelpers.isEmpty(stack) || ignoreSlots.contains(slot)) {
+                return;
+            }
+            ItemStackKey itemStackKey = ItemStackKey.of(stack);
+            ret.put(itemStackKey, ret.computeIfAbsent(itemStackKey, fs -> 0) + ItemHelpers.getCount(stack));
+        });
+        return ret;
+    }
+
+    public static List<ItemStack> getCompactedStacksSortedByCount(IItemHandler handler) {
+        Map<ItemStackKey, Integer> compactedStacks = getCompactedStacks(handler);
+        List<Map.Entry<ItemStackKey, Integer>> sortedList = new ArrayList<>(compactedStacks.entrySet());
+        sortedList.sort(InventorySorter.BY_COUNT);
+
+        List<ItemStack> ret = new ArrayList<>();
+        sortedList.forEach(e -> {
+            ItemStack stackCopy = e.getKey()
+                .getStack()
+                .copy();
+            ItemHelpers.setCount(stackCopy, e.getValue());
+            ret.add(stackCopy);
+        });
+        return ret;
+    }
+
 }

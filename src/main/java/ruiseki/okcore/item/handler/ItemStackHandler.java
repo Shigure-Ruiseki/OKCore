@@ -187,7 +187,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         return 64;
     }
 
-    protected int getStackLimit(int slot, @Nullable ItemStack stack) {
+    public int getStackLimit(int slot, @Nullable ItemStack stack) {
         if (ItemHelpers.isEmpty(stack)) {
             return 0;
         }

@@ -2,7 +2,9 @@ package ruiseki.okcore.inventory;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -12,9 +14,16 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import ruiseki.okcore.helper.ItemHelpers;
 
+@EventBusSubscriber
 public final class ItemStackKey {
+
+    private static final Map<ItemStack, ItemStackKey> CACHE = new ConcurrentHashMap<>();
 
     private final long packedItemMeta;
     private final int nbtSignature;
@@ -23,7 +32,9 @@ public final class ItemStackKey {
     private String cachedDisplayName = "";
     private int[] cachedOreIds;
     private String cachedModId;
-    private int cachedHashCode = -1;
+    private int cachedHashCode;
+
+    private boolean hashInitialized;
 
     private ItemStackKey(long packedItemMeta, @Nullable NBTTagCompound nbt) {
         this.packedItemMeta = packedItemMeta;
@@ -35,19 +46,42 @@ public final class ItemStackKey {
         this(packItemMeta(itemId, meta), nbt);
     }
 
+    /**
+     * Returns a cached key for the given stack.
+     * The cache is cleared at the end of each server tick.
+     */
     public static @Nullable ItemStackKey of(@Nullable ItemStack stack) {
-        if (stack == null || stack.stackSize <= 0 || stack.getItem() == null) return null;
-
-        int itemId = Item.getIdFromItem(stack.getItem());
-        int meta = stack.isItemStackDamageable() ? 0 : ItemHelpers.getStackMeta(stack);
-        long packedItemMeta = packItemMeta(itemId, meta);
-
-        NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null) {
-            return new ItemStackKey(packedItemMeta, null);
+        if (stack == null || stack.stackSize <= 0 || stack.getItem() == null) {
+            return null;
         }
 
-        return new ItemStackKey(packedItemMeta, (NBTTagCompound) tag.copy());
+        return CACHE.computeIfAbsent(stack, ItemStackKey::create);
+    }
+
+    private static ItemStackKey create(ItemStack stack) {
+        int itemId = Item.getIdFromItem(stack.getItem());
+        int meta = stack.isItemStackDamageable() ? 0 : ItemHelpers.getStackMeta(stack);
+        NBTTagCompound tag = stack.getTagCompound();
+        return new ItemStackKey(itemId, meta, tag == null ? null : (NBTTagCompound) tag.copy());
+    }
+
+    /**
+     * Clears cached keys at the end of each server tick.
+     * Register this class on the Forge event bus.
+     */
+    @SubscribeEvent
+    public static void clearCacheOnTickEnd(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            CACHE.clear();
+        }
+    }
+
+    public static void clearCache() {
+        CACHE.clear();
+    }
+
+    public static int getCacheSize() {
+        return CACHE.size();
     }
 
     public int getItemId() {
@@ -66,7 +100,11 @@ public final class ItemStackKey {
         return nbt == null ? null : (NBTTagCompound) nbt.copy();
     }
 
-    public ItemStack toStack(int amount) {
+    public ItemStack getStack() {
+        return getStack(1);
+    }
+
+    public ItemStack getStack(int amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("amount must be > 0");
         }
@@ -97,7 +135,7 @@ public final class ItemStackKey {
 
     public String getDisplayName() {
         if (cachedDisplayName.isEmpty()) {
-            cachedDisplayName = toStack(1).getDisplayName()
+            cachedDisplayName = getStack().getDisplayName()
                 .toLowerCase(Locale.ROOT);
         }
         return cachedDisplayName;
@@ -105,7 +143,7 @@ public final class ItemStackKey {
 
     public int[] getOreIds() {
         if (cachedOreIds == null) {
-            cachedOreIds = OreDictionary.getOreIDs(toStack(1));
+            cachedOreIds = OreDictionary.getOreIDs(getStack());
         }
         return cachedOreIds;
     }
@@ -116,7 +154,7 @@ public final class ItemStackKey {
             String name = Item.itemRegistry.getNameForObject(item);
             if (name != null) {
                 int idx = name.indexOf(':');
-                cachedModId = (idx >= 0 ? name.substring(0, idx) : "minecraft").toLowerCase();
+                cachedModId = (idx >= 0 ? name.substring(0, idx) : "minecraft").toLowerCase(Locale.ROOT);
             } else {
                 cachedModId = "unknown";
             }
@@ -150,31 +188,41 @@ public final class ItemStackKey {
             tag = buf.readNBTTagCompoundFromBuffer();
         }
 
-        return new ItemStackKey(packItemMeta(itemId, meta), tag);
+        return new ItemStackKey(packItemMeta(itemId, meta), tag == null ? null : (NBTTagCompound) tag.copy());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof ItemStackKey other)) return false;
-        if (packedItemMeta != other.packedItemMeta) return false;
-        if (nbtSignature != other.nbtSignature) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof ItemStackKey other)) {
+            return false;
+        }
+
+        if (packedItemMeta != other.packedItemMeta) {
+            return false;
+        }
+        if (nbtSignature != other.nbtSignature) {
+            return false;
+        }
+
         return Objects.equals(nbt, other.nbt);
     }
 
     @Override
     public int hashCode() {
-        if (cachedHashCode == -1) {
+        if (!hashInitialized) {
             int result = Long.hashCode(packedItemMeta);
             result = 31 * result + nbtSignature;
             cachedHashCode = result;
+            hashInitialized = true;
         }
         return cachedHashCode;
     }
 
     @Override
     public String toString() {
-        return "ItemStackKey{itemId=" + unpackItemId(
-            packedItemMeta) + ", meta=" + getMeta() + ", nbtSignature=" + nbtSignature + "}";
+        return "ItemStackKey{itemId=" + getItemId() + ", meta=" + getMeta() + ", nbtSignature=" + nbtSignature + "}";
     }
 }

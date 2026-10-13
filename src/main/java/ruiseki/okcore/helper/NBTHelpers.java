@@ -193,6 +193,10 @@ public class NBTHelpers {
         getOrCreateTag(stack).setString(key, uuid.toString());
     }
 
+    public static void setString(ItemStack stack, String key, String string) {
+        getOrCreateTag(stack).setString(key, string);
+    }
+
     public static void removeTag(ItemStack stack, String key) {
         if (ItemHelpers.isEmpty(stack) || !stack.hasTagCompound()) return;
         stack.getTagCompound()

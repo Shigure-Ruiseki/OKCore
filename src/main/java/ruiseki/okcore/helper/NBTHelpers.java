@@ -274,6 +274,7 @@ public class NBTHelpers {
     }
 
     private static NBTTagCompound getOrCreateTag(ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) return new NBTTagCompound();
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());
         }

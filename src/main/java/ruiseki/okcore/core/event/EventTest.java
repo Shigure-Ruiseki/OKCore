@@ -11,8 +11,6 @@ import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
-
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import ruiseki.okcore.core.item.gui.CapabilityGuiTestWrapperConfig;
@@ -22,7 +20,6 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 
-@EventBusSubscriber
 public class EventTest {
 
     @SubscribeEvent

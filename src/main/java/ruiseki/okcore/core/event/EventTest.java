@@ -2,6 +2,7 @@ package ruiseki.okcore.core.event;
 
 import java.util.List;
 
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -20,6 +21,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 
+@EventBusSubscriber
 public class EventTest {
 
     @SubscribeEvent

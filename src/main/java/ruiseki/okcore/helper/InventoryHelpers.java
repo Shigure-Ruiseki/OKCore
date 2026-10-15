@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
@@ -423,6 +424,16 @@ public class InventoryHelpers {
             }
         }
         return ret;
+    }
+
+    public static boolean hasItem(IItemHandler inventory, Predicate<ItemStack> matches) {
+        AtomicBoolean result = new AtomicBoolean(false);
+        iterate(inventory, (slot, stack) -> {
+            if (!ItemHelpers.isEmpty(stack) && matches.test(stack)) {
+                result.set(true);
+            }
+        }, result::get);
+        return result.get();
     }
 
     public static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler) {

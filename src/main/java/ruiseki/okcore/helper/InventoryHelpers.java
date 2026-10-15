@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -406,6 +409,20 @@ public class InventoryHelpers {
                 break;
             }
         }
+    }
+
+    public static <T> T iterate(IItemHandler handler, BiFunction<Integer, ItemStack, T> getFromSlotStack,
+        Supplier<T> supplyDefault, Predicate<T> shouldExit) {
+        T ret = supplyDefault.get();
+        int slots = handler.getSlots();
+        for (int slot = 0; slot < slots; slot++) {
+            ItemStack stack = handler.getStackInSlot(slot);
+            ret = getFromSlotStack.apply(slot, stack);
+            if (shouldExit.test(ret)) {
+                break;
+            }
+        }
+        return ret;
     }
 
     public static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler) {

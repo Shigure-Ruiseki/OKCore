@@ -2,7 +2,6 @@ package ruiseki.okcore.core.event;
 
 import java.util.List;
 
-import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -11,6 +10,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 
 import org.jetbrains.annotations.Nullable;
+
+import com.gtnewhorizon.gtnhlib.eventbus.EventBusSubscriber;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;

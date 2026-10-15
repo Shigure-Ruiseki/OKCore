@@ -63,8 +63,8 @@ public class ItemHelpers {
     @Nullable
     public static ItemStack copyWithSize(@Nullable ItemStack stack, int size) {
         if (isEmpty(stack)) return EMPTY;
-        ItemStack copy = stack.copy();
-        copy.stackSize = size;
+        ItemStack copy = copy(stack);
+        setCount(copy, size);
         return copy;
     }
 
@@ -78,7 +78,7 @@ public class ItemHelpers {
 
     public static int getSpace(@Nullable ItemStack stack) {
         if (isEmpty(stack)) return 64;
-        return stack.getMaxStackSize() - stack.stackSize;
+        return stack.getMaxStackSize() - getCount(stack);
     }
 
     public static void grow(@Nullable ItemStack stack, int amount) {
@@ -95,8 +95,8 @@ public class ItemHelpers {
         if (isEmpty(stack)) return EMPTY;
 
         int i = Math.min(amount, stack.stackSize);
-        ItemStack itemstack = stack.copy();
-        itemstack.stackSize = i;
+        ItemStack itemstack = copy(stack);
+        setCount(itemstack, i);
         shrink(stack, i);
         return itemstack;
     }
@@ -120,7 +120,7 @@ public class ItemHelpers {
         if (isEmpty(stack2)) return false;
 
         return stack1.getItem() == stack2.getItem() && doMetasMatch(getStackMeta(stack1), getStackMeta(stack2))
-            && (ignoreNBT || Objects.equals(stack1.getTagCompound(), stack2.getTagCompound()));
+            && (ignoreNBT || areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound()));
     }
 
     public static boolean areItemsEqualIgnoreDurability(@Nullable ItemStack stack1, @Nullable ItemStack stack2) {
@@ -130,13 +130,35 @@ public class ItemHelpers {
         if (stack1.getItem() != stack2.getItem()) {
             return false;
         }
-        return Objects.equals(stack1.getTagCompound(), stack2.getTagCompound());
+        return areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound());
+    }
+
+    public static boolean areTagsEqualIgnoreDurability(NBTTagCompound tagA, @Nullable NBTTagCompound tagB) {
+        if (tagA == tagB) {
+            return true;
+        }
+        if (tagB == null || tagA.func_150296_c()
+            .size()
+            != tagB.func_150296_c()
+                .size()) {
+            return false;
+        }
+
+        for (String key : tagA.func_150296_c()) {
+            if (!tagB.hasKey(key)) {
+                return false;
+            }
+            if (!Objects.equals(tagA.getTag(key), tagB.getTag(key))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean areItemStacksIdentical(@Nullable ItemStack a, @Nullable ItemStack b) {
         if (isEmpty(a)) return isEmpty(b);
         if (isEmpty(b)) return false;
-        return ItemStack.areItemStacksEqual(a, b) && a.stackSize == b.stackSize;
+        return ItemStack.areItemStacksEqual(a, b) && getCount(a) == getCount(b);
     }
 
     public static boolean canStack(@Nullable ItemStack a, @Nullable ItemStack b) {
@@ -174,7 +196,7 @@ public class ItemHelpers {
             ? sharedTagB.getNBTShareTag(stackB)
             : stackB.getTagCompound();
 
-        return Objects.equals(shareTagA, shareTagB);
+        return areTagsEqualIgnoreDurability(shareTagA, shareTagB);
     }
 
     public static boolean areItemStacksEqualUsingNBTShareTag(@Nullable ItemStack stackA, @Nullable ItemStack stackB) {
@@ -183,7 +205,7 @@ public class ItemHelpers {
     }
 
     private static boolean isItemStackEqualUsingNBTShareTag(ItemStack self, ItemStack other) {
-        return self.stackSize == other.stackSize && self.getItem() == other.getItem()
+        return getCount(self) == getCount(other) && self.getItem() == other.getItem()
             && self.getItemDamage() == other.getItemDamage()
             && areItemStackShareTagsEqual(self, other);
     }
@@ -193,7 +215,7 @@ public class ItemHelpers {
             return 0;
         }
         int result = 1;
-        result = 37 * result + stack.stackSize;
+        result = 37 * result + getCount(stack);
         result = 37 * result + stack.getItem()
             .hashCode();
         result = 37 * result + stack.getItemDamage();

@@ -1,11 +1,13 @@
 package ruiseki.okcore.inventory;
 
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-public enum SortBy {
+import ruiseki.okcore.datastructure.StringRepresentable;
+
+public enum SortBy implements StringRepresentable {
 
     NAME,
     MOD_ID,
@@ -13,52 +15,54 @@ public enum SortBy {
     ORE_DICT,
     TAG;
 
-    private static final ImmutableList<SortBy> values = ImmutableList.copyOf(values());
-
     public SortBy next(List<SortBy> allowed) {
-        if (allowed == null || allowed.isEmpty()) return this;
+        if (allowed == null || allowed.isEmpty()) {
+            return this;
+        }
 
-        int i = allowed.indexOf(this);
-        if (i < 0) return allowed.get(0);
+        int index = allowed.indexOf(this);
+        return allowed.get(index < 0 ? 0 : (index + 1) % allowed.size());
+    }
 
-        return allowed.get((i + 1) % allowed.size());
+    public SortBy next() {
+        return VALUES[(ordinal() + 1) % VALUES.length];
     }
 
     public SortBy prev(List<SortBy> allowed) {
-        if (allowed == null || allowed.isEmpty()) return this;
+        if (allowed == null || allowed.isEmpty()) {
+            return this;
+        }
 
-        int i = allowed.indexOf(this);
-        if (i < 0) return allowed.get(0);
-
-        return allowed.get(Math.floorMod(i - 1, allowed.size()));
+        int index = allowed.indexOf(this);
+        return allowed.get(index < 0 ? 0 : Math.floorMod(index - 1, allowed.size()));
     }
 
-    public static SortBy byIndex(int index) {
-        if (index < 0 || index >= values.size()) return NAME;
-
-        return values.get(index);
+    public SortBy prev() {
+        return VALUES[Math.floorMod(ordinal() - 1, VALUES.length)];
     }
 
-    public String getName() {
-        return name().toLowerCase(Locale.ROOT);
+    private static final Map<String, SortBy> NAME_VALUES;
+    private static final SortBy[] VALUES;
+
+    static {
+        ImmutableMap.Builder<String, SortBy> builder = new ImmutableMap.Builder<>();
+        for (SortBy value : SortBy.values()) {
+            builder.put(value.getSerializedName(), value);
+        }
+        NAME_VALUES = builder.build();
+        VALUES = values();
     }
 
     public static SortBy fromName(String name) {
-        if (name == null || name.isEmpty()) {
-            return NAME;
-        }
-
-        for (SortBy sortBy : values) {
-            if (sortBy.name()
-                .equalsIgnoreCase(name)) {
-                return sortBy;
-            }
-        }
-
-        return NAME;
+        return NAME_VALUES.getOrDefault(name, NAME);
     }
 
-    public int getIndex() {
-        return values.indexOf(this);
+    public static SortBy fromIndex(int index) {
+        return index >= 0 && index < VALUES.length ? VALUES[index] : NAME;
+    }
+
+    @Override
+    public String getSerializedName() {
+        return name();
     }
 }

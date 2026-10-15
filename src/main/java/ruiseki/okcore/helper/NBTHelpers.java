@@ -14,6 +14,8 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import ruiseki.okcore.datastructure.StringRepresentable;
+
 public class NBTHelpers {
 
     private NBTHelpers() {}
@@ -168,6 +170,26 @@ public class NBTHelpers {
 
     public static NBTTagCompound setBoolean(NBTTagCompound tag, String key, boolean value) {
         tag.setBoolean(key, value);
+        return tag;
+    }
+
+    public static <T extends Enum<T> & StringRepresentable> void setEnumConstant(ItemStack stack, String parentKey,
+        String key, T enumConstant) {
+        if (parentKey.isEmpty()) {
+            setEnumConstant(stack, key, enumConstant);
+            return;
+        }
+        setEnumConstant(getOrCreateTagElement(stack, parentKey), key, enumConstant);
+    }
+
+    public static <T extends Enum<T> & StringRepresentable> void setEnumConstant(ItemStack stack, String key,
+        T enumConstant) {
+        getOrCreateTag(stack).setString(key, enumConstant.getSerializedName());
+    }
+
+    public static <T extends Enum<T> & StringRepresentable> NBTTagCompound setEnumConstant(NBTTagCompound tag,
+        String key, T enumConstant) {
+        tag.setString(key, enumConstant.getSerializedName());
         return tag;
     }
 

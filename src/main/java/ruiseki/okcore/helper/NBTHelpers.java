@@ -143,17 +143,16 @@ public class NBTHelpers {
         return getTagValue(stack, key, (compound, k) -> UUID.fromString(compound.getString(k)));
     }
 
-    public static void setCompoundNBT(ItemStack stack, String key, NBTTagCompound tag) {
-        setCompoundNBT(stack, "", key, tag);
+    public static void setCompoundNBT(ItemStack stack, String key, NBTTagCompound value) {
+        setCompoundNBT(stack, "", key, value);
     }
 
     public static void setCompoundNBT(ItemStack stack, String parentKey, String key, NBTTagCompound value) {
-        NBTTagCompound tag = getOrCreateTag(stack);
         if (parentKey.isEmpty()) {
-            getOrCreateTag(stack).setTag(key, tag);
+            getOrCreateTag(stack).setTag(key, value);
             return;
         }
-        getOrCreateTagElement(stack, parentKey).setTag(key, tag);
+        getOrCreateTagElement(stack, parentKey).setTag(key, value);
     }
 
     public static void setBoolean(ItemStack stack, String parentKey, String key, boolean value) {
@@ -217,6 +216,14 @@ public class NBTHelpers {
 
     public static void setString(ItemStack stack, String key, String string) {
         getOrCreateTag(stack).setString(key, string);
+    }
+
+    public static void setCompoundTag(ItemStack stack, String key, NBTTagCompound value) {
+        setCompoundNBT(stack, key, value);
+    }
+
+    public static void setCompoundTag(ItemStack stack, String parentKey, String key, NBTTagCompound value) {
+        setCompoundNBT(stack, parentKey, key, value);
     }
 
     public static void removeTag(ItemStack stack, String key) {

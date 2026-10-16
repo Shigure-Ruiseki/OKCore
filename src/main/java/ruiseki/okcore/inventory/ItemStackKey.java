@@ -32,14 +32,16 @@ public final class ItemStackKey {
     private String cachedDisplayName = "";
     private int[] cachedOreIds;
     private String cachedModId;
-    private int cachedHashCode;
-
-    private boolean hashInitialized;
+    private final int cachedHashCode;
 
     private ItemStackKey(long packedItemMeta, @Nullable NBTTagCompound nbt) {
         this.packedItemMeta = packedItemMeta;
         this.nbt = nbt;
         this.nbtSignature = nbt != null ? calculateNBTHash(nbt) : 0;
+
+        int result = Long.hashCode(packedItemMeta);
+        result = 31 * result + nbtSignature;
+        this.cachedHashCode = result;
     }
 
     private ItemStackKey(int itemId, int meta, @Nullable NBTTagCompound nbt) {
@@ -145,7 +147,7 @@ public final class ItemStackKey {
         if (cachedOreIds == null) {
             cachedOreIds = OreDictionary.getOreIDs(getStack());
         }
-        return cachedOreIds;
+        return cachedOreIds.clone();
     }
 
     public String getModId() {
@@ -163,8 +165,7 @@ public final class ItemStackKey {
     }
 
     private static int calculateNBTHash(NBTTagCompound tag) {
-        return tag.toString()
-            .hashCode();
+        return tag.hashCode();
     }
 
     public void write(PacketBuffer buf) throws IOException {
@@ -191,9 +192,38 @@ public final class ItemStackKey {
         return new ItemStackKey(packItemMeta(itemId, meta), tag == null ? null : (NBTTagCompound) tag.copy());
     }
 
-    public boolean matches(ItemStack stack) {
-        if (ItemHelpers.isEmpty(stack)) return false;
-        return hashCode() == of(stack).hashCode();
+    public boolean matches(@Nullable ItemStack stack) {
+        ItemStackKey other = of(stack);
+        return equals(other);
+    }
+
+    public static boolean canItemStacksStack(@Nullable ItemStack a, @Nullable ItemStack b) {
+        if (ItemHelpers.isEmpty(a) || ItemHelpers.isEmpty(b)) {
+            return false;
+        }
+
+        return ItemHelpers.areItemsEqual(a, b) && Objects.equals(a.getTagCompound(), b.getTagCompound());
+    }
+
+    public boolean hashCodeNotEquals(@Nullable ItemStack otherStack) {
+        return hashCode() != getHashCode(otherStack);
+    }
+
+    public static int getHashCode(@Nullable ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) {
+            return 0;
+        }
+
+        int hash = stack.getItem()
+            .hashCode();
+        hash = 31 * hash + ItemHelpers.getStackMeta(stack);
+
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag != null) {
+            hash = 31 * hash + tag.hashCode();
+        }
+
+        return hash;
     }
 
     @Override
@@ -217,12 +247,6 @@ public final class ItemStackKey {
 
     @Override
     public int hashCode() {
-        if (!hashInitialized) {
-            int result = Long.hashCode(packedItemMeta);
-            result = 31 * result + nbtSignature;
-            cachedHashCode = result;
-            hashInitialized = true;
-        }
         return cachedHashCode;
     }
 

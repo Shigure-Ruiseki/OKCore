@@ -191,6 +191,11 @@ public final class ItemStackKey {
         return new ItemStackKey(packItemMeta(itemId, meta), tag == null ? null : (NBTTagCompound) tag.copy());
     }
 
+    public boolean matches(ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) return false;
+        return hashCode() == of(stack).hashCode();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

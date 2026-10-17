@@ -128,31 +128,7 @@ public class InventorySorter {
     public static void sortHandler(IItemHandlerModifiable handler,
         Comparator<? super Map.Entry<ItemStackKey, Integer>> comparator, Set<Integer> noSortSlots) {
         int slots = handler.getSlots();
-
-        System.out.println("[InventorySorter] ===== SORT START =====");
-        System.out.println(
-            "[InventorySorter] Handler: " + handler.getClass()
-                .getName());
-        System.out.println("[InventorySorter] Slots: " + slots);
-        System.out.println("[InventorySorter] No-sort slots: " + noSortSlots);
-
         Map<ItemStackKey, Integer> compactedStacks = InventoryHelpers.getCompactedStacks(handler, noSortSlots);
-
-        int totalItems = 0;
-        for (Map.Entry<ItemStackKey, Integer> entry : compactedStacks.entrySet()) {
-            totalItems += entry.getValue();
-            System.out.println(
-                "[InventorySorter] INPUT: item=" + entry.getKey()
-                    .getDisplayName()
-                    + ", count="
-                    + entry.getValue()
-                    + ", stack="
-                    + entry.getKey()
-                        .getStack());
-        }
-
-        System.out.println("[InventorySorter] Unique stacks: " + compactedStacks.size());
-        System.out.println("[InventorySorter] Total items: " + totalItems);
 
         List<Map.Entry<ItemStackKey, Integer>> sortedList = new ArrayList<>(compactedStacks.entrySet());
         sortedList.sort(comparator);
@@ -164,7 +140,6 @@ public class InventorySorter {
 
         for (int slot = 0; slot < slots; slot++) {
             if (noSortSlots.contains(slot)) {
-                System.out.println("[InventorySorter] SKIP slot=" + slot);
                 continue;
             }
 
@@ -172,147 +147,44 @@ public class InventorySorter {
                 Map.Entry<ItemStackKey, Integer> entry = it.next();
                 current = entry.getKey();
                 count = entry.getValue();
-
-                System.out
-                    .println("[InventorySorter] NEXT STACK: item=" + current.getDisplayName() + ", count=" + count);
             }
 
             if (current != null && count > 0) {
-                int before = count;
-                int placed = placeStack(handler, current, count, slot);
-                count -= placed;
-
-                System.out.println(
-                    "[InventorySorter] SLOT RESULT: slot=" + slot
-                        + ", item="
-                        + current.getDisplayName()
-                        + ", before="
-                        + before
-                        + ", placed="
-                        + placed
-                        + ", remaining="
-                        + count);
+                count -= placeStack(handler, current, count, slot);
             } else {
                 emptySlot(handler, slot);
             }
         }
-
-        if (current != null && count > 0) {
-            System.out.println(
-                "[InventorySorter] WARNING: Remaining stack not placed: item=" + current.getDisplayName()
-                    + ", remaining="
-                    + count);
-        }
-
-        while (it.hasNext()) {
-            Map.Entry<ItemStackKey, Integer> entry = it.next();
-            System.out.println(
-                "[InventorySorter] WARNING: Unprocessed stack: item=" + entry.getKey()
-                    .getDisplayName() + ", count=" + entry.getValue());
-        }
-
-        System.out.println("[InventorySorter] ===== SORT END =====");
     }
 
     private static void emptySlot(IItemHandlerModifiable handler, int slot) {
         ItemStack existing = handler.getStackInSlot(slot);
-
         if (!ItemHelpers.isEmpty(existing)) {
-            System.out.println(
-                "[InventorySorter] CLEAR slot=" + slot
-                    + ", item="
-                    + existing
-                    + ", count="
-                    + ItemHelpers.getCount(existing));
-
             handler.setStackInSlot(slot, ItemHelpers.EMPTY);
-
-            System.out
-                .println("[InventorySorter] CLEAR RESULT slot=" + slot + ", after=" + handler.getStackInSlot(slot));
         }
     }
 
     private static int placeStack(IItemHandlerModifiable handler, ItemStackKey current, int count, int slot) {
-        if (count <= 0) {
-            System.out.println("[InventorySorter] INVALID COUNT slot=" + slot + ", count=" + count);
-            return 0;
-        }
+        if (count <= 0) return 0;
 
-        ItemStack copy = current.getStack()
+        ItemStack stack = current.getStack()
             .copy();
+
         int slotLimit = handler instanceof InventoryHandler inventoryHandler
-            ? inventoryHandler.getStackLimit(slot, copy)
+            ? inventoryHandler.getStackLimit(slot, stack)
             : handler.getSlotLimit(slot);
 
-        int countPlaced = Math.min(count, slotLimit);
+        int placed = Math.min(count, slotLimit);
+        if (placed <= 0) return 0;
 
-        if (countPlaced <= 0) {
-            System.out.println(
-                "[InventorySorter] INVALID LIMIT slot=" + slot
-                    + ", slotLimit="
-                    + slotLimit
-                    + ", count="
-                    + count
-                    + ", item="
-                    + current.getDisplayName());
-            return 0;
-        }
-
-        ItemHelpers.setCount(copy, countPlaced);
+        ItemHelpers.setCount(stack, placed);
 
         ItemStack existing = handler.getStackInSlot(slot);
-
-        System.out.println(
-            "[InventorySorter] PLACE ATTEMPT: slot=" + slot
-                + ", item="
-                + current.getDisplayName()
-                + ", requested="
-                + count
-                + ", slotLimit="
-                + slotLimit
-                + ", countPlaced="
-                + countPlaced
-                + ", existing="
-                + existing
-                + ", existingCount="
-                + ItemHelpers.getCount(existing)
-                + ", target="
-                + copy);
-
-        if (!ItemHelpers.areItemsEqual(existing, copy) || ItemHelpers.getCount(existing) != countPlaced) {
-            handler.setStackInSlot(slot, copy);
+        if (!ItemHelpers.areItemsEqual(existing, stack) || ItemHelpers.getCount(existing) != placed) {
+            handler.setStackInSlot(slot, stack);
         }
 
         ItemStack result = handler.getStackInSlot(slot);
-        int actualCount = ItemHelpers.getCount(result);
-
-        boolean correctItem = ItemHelpers.areItemsEqual(result, copy);
-        boolean correctCount = actualCount == countPlaced;
-
-        System.out.println(
-            "[InventorySorter] PLACE RESULT: slot=" + slot
-                + ", result="
-                + result
-                + ", actualCount="
-                + actualCount
-                + ", expectedCount="
-                + countPlaced
-                + ", correctItem="
-                + correctItem
-                + ", correctCount="
-                + correctCount);
-
-        if (!correctItem || !correctCount) {
-            System.out.println(
-                "[InventorySorter] WARNING: Write mismatch at slot=" + slot
-                    + ", item="
-                    + current.getDisplayName()
-                    + ", requested="
-                    + countPlaced
-                    + ", actual="
-                    + actualCount);
-        }
-
-        return correctItem ? Math.min(countPlaced, actualCount) : 0;
+        return ItemHelpers.areItemsEqual(result, stack) ? Math.min(placed, ItemHelpers.getCount(result)) : 0;
     }
 }

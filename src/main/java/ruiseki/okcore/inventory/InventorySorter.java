@@ -240,7 +240,6 @@ public class InventorySorter {
 
         ItemStack copy = current.getStack()
             .copy();
-
         int slotLimit = handler instanceof InventoryHandler inventoryHandler
             ? inventoryHandler.getStackLimit(slot, copy)
             : handler.getSlotLimit(slot);

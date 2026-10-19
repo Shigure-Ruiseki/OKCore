@@ -436,6 +436,16 @@ public class InventoryHelpers {
         return result.get();
     }
 
+    public static Set<Integer> getItemSlots(IItemHandler inventory, Predicate<ItemStack> matches) {
+        Set<Integer> slots = new HashSet<>();
+        iterate(inventory, (slot, stack) -> {
+            if (!stack.isEmpty() && matches.test(stack)) {
+                slots.add(slot);
+            }
+        });
+        return slots;
+    }
+
     public static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler) {
         return getCompactedStacks(handler, new HashSet<>());
     }

@@ -21,6 +21,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
@@ -439,7 +440,7 @@ public class InventoryHelpers {
     public static Set<Integer> getItemSlots(IItemHandler inventory, Predicate<ItemStack> matches) {
         Set<Integer> slots = new HashSet<>();
         iterate(inventory, (slot, stack) -> {
-            if (!stack.isEmpty() && matches.test(stack)) {
+            if (!ItemHelpers.isEmpty(stack) && matches.test(stack)) {
                 slots.add(slot);
             }
         });
@@ -448,6 +449,33 @@ public class InventoryHelpers {
 
     public static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler) {
         return getCompactedStacks(handler, new HashSet<>());
+    }
+
+    public static int getCountMissingInHandler(IItemHandler itemHandler, ItemStack filter, int expectedCount) {
+        MutableInt missingCount = new MutableInt(expectedCount);
+        iterate(itemHandler, (slot, stack) -> {
+            if (ItemHandlerHelpers.canItemStacksStack(stack, filter)) {
+                missingCount.subtract(Math.min(ItemHelpers.getCount(stack), missingCount.getValue()));
+            }
+        }, () -> missingCount.getValue() == 0);
+        return missingCount.getValue();
+    }
+
+    public static boolean isEmpty(IItemHandler itemHandler) {
+        int slots = itemHandler.getSlots();
+        for (int slot = 0; slot < slots; slot++) {
+            if (!ItemHelpers.isEmpty(itemHandler.getStackInSlot(slot))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static ItemStack getAndRemove(IItemHandler itemHandler, int slot) {
+        if (slot >= itemHandler.getSlots()) {
+            return ItemHelpers.EMPTY;
+        }
+        return itemHandler.extractItem(slot, ItemHelpers.getCount(itemHandler.getStackInSlot(slot)), false);
     }
 
     public static Map<ItemStackKey, Integer> getCompactedStacks(IItemHandler handler, Set<Integer> ignoreSlots) {
@@ -478,4 +506,15 @@ public class InventoryHelpers {
         return ret;
     }
 
+    public static Set<ItemStackKey> getUniqueStacks(IItemHandler handler) {
+        Set<ItemStackKey> uniqueStacks = new HashSet<>();
+        iterate(handler, (slot, stack) -> {
+            if (ItemHelpers.isEmpty(stack)) {
+                return;
+            }
+            ItemStackKey itemStackKey = ItemStackKey.of(stack);
+            uniqueStacks.add(itemStackKey);
+        });
+        return uniqueStacks;
+    }
 }

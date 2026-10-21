@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -516,5 +517,68 @@ public class InventoryHelpers {
             uniqueStacks.add(itemStackKey);
         });
         return uniqueStacks;
+    }
+
+    public static int findSlotMatchingItem(EntityPlayer player, ItemStack stack) {
+        if (player == null || stack == null) return -1;
+        for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+            ItemStack inventoryStack = player.inventory.getStackInSlot(i);
+
+            if (ItemHelpers.isEmpty(inventoryStack) && ItemHelpers.areItemsEqual(inventoryStack, stack)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static ItemStack insertIntoInventory(ItemStack stack, IItemHandler inventory, boolean simulate) {
+        ItemStack remainingStack = stack.copy();
+        int slots = inventory.getSlots();
+        for (int slot = 0; slot < slots && !ItemHelpers.isEmpty(remainingStack); slot++) {
+            remainingStack = inventory.insertItem(slot, remainingStack, simulate);
+        }
+        return remainingStack;
+    }
+
+    public static ItemStack extractFromInventory(Item item, int count, IItemHandler inventory, boolean simulate) {
+        return extractFromInventory(stack -> stack.getItem() == item, count, inventory, simulate);
+    }
+
+    public static ItemStack extractFromInventory(Predicate<ItemStack> stackMatcher, int count, IItemHandler inventory,
+        boolean simulate) {
+        ItemStack ret = ItemHelpers.EMPTY;
+        int slots = inventory.getSlots();
+        for (int slot = 0; slot < slots && ItemHelpers.getCount(ret) < count; slot++) {
+            ItemStack slotStack = inventory.getStackInSlot(slot);
+            if (stackMatcher.test(slotStack)
+                && (ItemHelpers.isEmpty(ret) || ItemHandlerHelpers.canItemStacksStack(ret, slotStack))) {
+                int toExtract = Math.min(ItemHelpers.getCount(slotStack), count - ItemHelpers.getCount(ret));
+                ItemStack extractedStack = inventory.extractItem(slot, toExtract, simulate);
+                if (ItemHelpers.isEmpty(ret)) {
+                    ret = extractedStack;
+                } else {
+                    ItemHelpers.setCount(ret, ItemHelpers.getCount(ret) + ItemHelpers.getCount(extractedStack));
+                }
+            }
+        }
+        return ret;
+    }
+
+    public static ItemStack extractFromInventory(ItemStack stack, IItemHandler inventory, boolean simulate) {
+        int extractedCount = 0;
+        int slots = inventory.getSlots();
+        for (int slot = 0; slot < slots && extractedCount < ItemHelpers.getCount(stack); slot++) {
+            ItemStack slotStack = inventory.getStackInSlot(slot);
+            if (ItemHandlerHelpers.canItemStacksStack(stack, slotStack)) {
+                int toExtract = Math.min(ItemHelpers.getCount(slotStack), ItemHelpers.getCount(stack) - extractedCount);
+                extractedCount += ItemHelpers.getCount(inventory.extractItem(slot, toExtract, simulate));
+            }
+        }
+        if (extractedCount == 0) {
+            return ItemHelpers.EMPTY;
+        }
+        ItemStack result = ItemHelpers.copy(stack);
+        ItemHelpers.setCount(result, extractedCount);
+        return result;
     }
 }

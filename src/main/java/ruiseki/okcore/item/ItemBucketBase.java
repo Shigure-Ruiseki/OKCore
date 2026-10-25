@@ -24,7 +24,7 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author rubensworks
  *
  */
-public class ItemBucketBase extends ItemBucket implements IItemCapability, IItemSharedTag {
+public class ItemBucketBase extends ItemBucket implements IItemCapability, IItemSharedTag, IItemTooltip {
 
     protected boolean canPickUp = true;
 

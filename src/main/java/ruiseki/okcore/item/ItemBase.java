@@ -17,7 +17,7 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author rubensworks
  *
  */
-public class ItemBase extends Item implements IItemCapability, IItemSharedTag {
+public class ItemBase extends Item implements IItemCapability, IItemSharedTag, IItemTooltip {
 
     /**
      * Make a new item instance.

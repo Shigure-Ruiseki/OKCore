@@ -10,6 +10,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
+import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.api.drawable.IRichTextBuilder;
 import com.cleanroommc.modularui.drawable.text.RichText;
 import com.cleanroommc.modularui.screen.RichTooltipEvent;
@@ -65,17 +66,44 @@ public final class TooltipEventHandler {
         List<String> originalLines = new ArrayList<>(getLines(event));
 
         for (String text : originalLines) {
-            ITooltipLine handler = TooltipLineHandler.getTipLine(text);
-
-            if (handler == null) {
+            if (text == null) {
                 continue;
             }
 
-            Pattern marker = Pattern.compile(Pattern.quote(text));
+            // Replace custom tooltip handler markers.
+            ITooltipLine handler = TooltipLineHandler.getTipLine(text);
 
-            builder.moveCursorToStart();
-            builder.replace(marker, key -> null);
-            builder.add(new TooltipLineDrawable(handler, renderFont));
+            if (handler != null) {
+                Pattern marker = Pattern.compile(Pattern.quote(text));
+
+                builder.moveCursorToStart();
+                builder.replace(marker, key -> null);
+                builder.add(new TooltipLineDrawable(handler, renderFont));
+
+                continue;
+            }
+
+            // Replace line spacing markers.
+            if (text.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
+                boolean standalone = text.equals(TooltipLineHandler.TOOLTIP_LINESPACE);
+
+                Pattern marker = Pattern.compile(Pattern.quote(text));
+
+                builder.moveCursorToStart();
+
+                if (standalone) {
+                    builder.replace(marker, key -> null);
+                } else {
+                    String cleanText = text.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
+
+                    builder.replace(marker, key -> {
+                        // Preserve the original text instead of deleting it.
+                        return IKey.str(cleanText);
+                    });
+                }
+
+                builder.spaceLine(2);
+            }
         }
 
         builder.moveCursorToEnd();
@@ -112,15 +140,14 @@ public final class TooltipEventHandler {
             return;
         }
 
-        RenderTooltipEvent.PostBackground forwarded =
-            new RenderTooltipEvent.PostBackground(
-                stack,
-                getLines(event),
-                event.getX(),
-                event.getY(),
-                getFont(),
-                event.getWidth(),
-                event.getHeight());
+        RenderTooltipEvent.PostBackground forwarded = new RenderTooltipEvent.PostBackground(
+            stack,
+            getLines(event),
+            event.getX(),
+            event.getY(),
+            getFont(),
+            event.getWidth(),
+            event.getHeight());
 
         MinecraftForge.EVENT_BUS.post(forwarded);
     }
@@ -133,15 +160,14 @@ public final class TooltipEventHandler {
                 return;
             }
 
-            RenderTooltipEvent.PostText forwarded =
-                new RenderTooltipEvent.PostText(
-                    stack,
-                    getLines(event),
-                    event.getX(),
-                    event.getY(),
-                    getFont(),
-                    event.getWidth(),
-                    event.getHeight());
+            RenderTooltipEvent.PostText forwarded = new RenderTooltipEvent.PostText(
+                stack,
+                getLines(event),
+                event.getX(),
+                event.getY(),
+                getFont(),
+                event.getWidth(),
+                event.getHeight());
 
             MinecraftForge.EVENT_BUS.post(forwarded);
         } finally {

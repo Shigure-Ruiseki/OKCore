@@ -5,8 +5,8 @@ import java.util.List;
 
 public final class TooltipLineHandler {
 
-    public static final String TOOLTIP_LINESPACE = "§h";
-    public static final String TOOLTIP_HANDLER = "§x";
+    public static final String TOOLTIP_LINESPACE = "\uE000OKCORE_SPACE";
+    public static final String TOOLTIP_HANDLER = "\uE000OKCORE_LINE:";
 
     private static final List<ITooltipLine> tipLineHandlers = new ArrayList<>();
 
@@ -32,9 +32,11 @@ public final class TooltipLineHandler {
 
         try {
             int id = Integer.parseInt(line.substring(TOOLTIP_HANDLER.length()));
+
             if (id < 0 || id >= tipLineHandlers.size()) {
                 return null;
             }
+
             return tipLineHandlers.get(id);
         } catch (NumberFormatException e) {
             return null;

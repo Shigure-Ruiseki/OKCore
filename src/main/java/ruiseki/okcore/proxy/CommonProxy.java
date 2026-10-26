@@ -4,6 +4,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.event.handler.*;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
@@ -50,7 +51,9 @@ public class CommonProxy extends CommonProxyComponent {
 
         MinecraftForge.EVENT_BUS.register(InputEventHandler.INSTANCE);
 
-        MinecraftForge.EVENT_BUS.register(TooltipEventHandler.INSTANCE);
+        if (Mods.MUI2.isModLoaded()) {
+            MinecraftForge.EVENT_BUS.register(new TooltipEventHandler());
+        }
 
         FMLCommonHandler.instance()
             .bus()

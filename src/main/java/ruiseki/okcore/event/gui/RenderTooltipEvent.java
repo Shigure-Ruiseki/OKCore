@@ -95,6 +95,8 @@ public abstract class RenderTooltipEvent extends Event {
         private int screenWidth;
         private int screenHeight;
         private int maxWidth;
+        private int minWidth = 0;
+        private int extraHeight = 0;
 
         public Pre(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y, int screenWidth,
             int screenHeight, int maxWidth, @Nonnull FontRenderer fr) {
@@ -154,6 +156,33 @@ public abstract class RenderTooltipEvent extends Event {
         public void setY(int y) {
             this.y = y;
         }
+
+        /**
+         * Minimum tooltip background width.
+         * Does not change text wrapping width.
+         */
+        public int getMinWidth() {
+            return minWidth;
+        }
+
+        public void setMinWidth(int minWidth) {
+            this.minWidth = Math.max(0, minWidth);
+        }
+
+        /**
+         * Additional space below tooltip text.
+         */
+        public int getExtraHeight() {
+            return extraHeight;
+        }
+
+        public void setExtraHeight(int extraHeight) {
+            this.extraHeight = Math.max(0, extraHeight);
+        }
+
+        public void addExtraHeight(int height) {
+            this.extraHeight = Math.max(0, this.extraHeight + height);
+        }
     }
 
     /**
@@ -208,9 +237,29 @@ public abstract class RenderTooltipEvent extends Event {
      */
     public static class PostText extends Post {
 
+        private final int textHeight;
+
+        public PostText(@Nonnull ItemStack stack, @Nonnull List<String> textLines, int x, int y,
+            @Nonnull FontRenderer fr, int width, int height, int textHeight) {
+            super(stack, textLines, x, y, fr, width, height);
+            this.textHeight = textHeight;
+        }
+
         public PostText(@Nonnull ItemStack stack, @Nonnull List<String> textLines, int x, int y,
             @Nonnull FontRenderer fr, int width, int height) {
-            super(stack, textLines, x, y, fr, width, height);
+            this(stack, textLines, x, y, fr, width, height, height);
+        }
+
+        public int getTextHeight() {
+            return textHeight;
+        }
+
+        public int getContentX() {
+            return getX();
+        }
+
+        public int getContentY() {
+            return getY() + textHeight + 2;
         }
     }
 

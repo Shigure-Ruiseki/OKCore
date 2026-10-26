@@ -1,6 +1,5 @@
 package ruiseki.okcore.event.gui;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,7 +11,6 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
 import cpw.mods.fml.common.eventhandler.Cancelable;
 import cpw.mods.fml.common.eventhandler.Event;
-import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 
 /**
  * A set of events which are fired at various points during tooltip rendering.
@@ -97,7 +95,6 @@ public abstract class RenderTooltipEvent extends Event {
         private int screenWidth;
         private int screenHeight;
         private int maxWidth;
-        private final List<ITooltipLine> tooltipLines = new ArrayList<>();
 
         public Pre(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y, int screenWidth,
             int screenHeight, int maxWidth, @Nonnull FontRenderer fr) {
@@ -156,15 +153,6 @@ public abstract class RenderTooltipEvent extends Event {
          */
         public void setY(int y) {
             this.y = y;
-        }
-
-        public void addLine(@Nonnull ITooltipLine line) {
-            tooltipLines.add(line);
-        }
-
-        @Nonnull
-        public List<ITooltipLine> getTooltipLines() {
-            return Collections.unmodifiableList(tooltipLines);
         }
     }
 

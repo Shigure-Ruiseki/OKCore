@@ -78,7 +78,7 @@ public final class TooltipEventHandler {
 
                 builder.moveCursorToStart();
                 builder.replace(marker, key -> null);
-                builder.add(new TooltipLineDrawable(handler, renderFont));
+                builder.addLine(new TooltipLineDrawable(handler, renderFont));
 
                 continue;
             }

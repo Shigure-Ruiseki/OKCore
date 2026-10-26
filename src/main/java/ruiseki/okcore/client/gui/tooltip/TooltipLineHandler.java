@@ -5,8 +5,9 @@ import java.util.List;
 
 public final class TooltipLineHandler {
 
-    public static final String TOOLTIP_LINESPACE = "\uE000OKCORE_SPACE";
-    public static final String TOOLTIP_HANDLER = "\uE000OKCORE_LINE:";
+    public static final String TOOLTIP_LINESPACE = "[[OKCORE:SPACE]]";
+    public static final String TOOLTIP_HANDLER = "[[OKCORE:LINE:";
+    public static final String TOOLTIP_HANDLER_SUFFIX = "]]";
 
     private static final List<ITooltipLine> tipLineHandlers = new ArrayList<>();
 
@@ -22,16 +23,18 @@ public final class TooltipLineHandler {
     }
 
     public static String register(ITooltipLine handler) {
-        return TOOLTIP_HANDLER + getTipLineId(handler);
+        return TOOLTIP_HANDLER + getTipLineId(handler) + TOOLTIP_HANDLER_SUFFIX;
     }
 
     public static ITooltipLine getTipLine(String line) {
-        if (line == null || !line.startsWith(TOOLTIP_HANDLER)) {
+        if (line == null || !line.startsWith(TOOLTIP_HANDLER) || !line.endsWith(TOOLTIP_HANDLER_SUFFIX)) {
             return null;
         }
 
         try {
-            int id = Integer.parseInt(line.substring(TOOLTIP_HANDLER.length()));
+            String idText = line.substring(TOOLTIP_HANDLER.length(), line.length() - TOOLTIP_HANDLER_SUFFIX.length());
+
+            int id = Integer.parseInt(idText);
 
             if (id < 0 || id >= tipLineHandlers.size()) {
                 return null;

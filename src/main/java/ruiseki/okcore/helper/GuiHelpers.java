@@ -51,6 +51,7 @@ import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.event.gui.RenderTooltipEvent;
 
@@ -319,10 +320,7 @@ public class GuiHelpers {
     }
 
     /**
-     * Draws a tooltip with optional additional width and height.
-     *
-     * minWidth - Minimum tooltip background width.
-     * extraHeight - Additional height reserved below the tooltip text.
+     * Draws a tooltip with text and optional custom tooltip lines.
      */
     public static void drawHoveringText(@Nonnull final ItemStack stack, List<String> textLines, int mouseX, int mouseY,
         int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font) {
@@ -351,16 +349,23 @@ public class GuiHelpers {
         maxTextWidth = event.getMaxWidth();
         font = event.getFontRenderer();
 
-        // Additional dimensions requested by tooltip listeners.
-        int minWidth = Math.max(0, event.getMinWidth());
-        int extraHeight = Math.max(0, event.getExtraHeight());
+        List<ITooltipLine> customLines = event.getTooltipLines();
+
+        int customWidth = 0;
+        int customHeight = 0;
+
+        for (ITooltipLine line : customLines) {
+            customWidth = Math.max(customWidth, Math.max(0, line.getWidth(font)));
+
+            customHeight += Math.max(0, line.getHeight(font));
+        }
 
         GlStateManager.disableRescaleNormal();
         RenderHelper.disableStandardItemLighting();
         GlStateManager.disableLighting();
         GlStateManager.disableDepth();
 
-        // Measure original text width.
+        // Measure text width.
         int tooltipTextWidth = 0;
 
         for (String textLine : textLines) {
@@ -391,7 +396,7 @@ public class GuiHelpers {
             needsWrap = true;
         }
 
-        // Wrap text before applying the minimum background width.
+        // Wrap text before calculating the final tooltip width.
         if (needsWrap) {
             int wrappedTooltipWidth = 0;
             List<String> wrappedTextLines = new ArrayList<String>();
@@ -418,10 +423,10 @@ public class GuiHelpers {
             textLines = wrappedTextLines;
         }
 
-        // Expand the background width without changing text wrapping.
-        int tooltipWidth = Math.max(tooltipTextWidth, minWidth);
+        // Custom lines can expand the background width.
+        int tooltipWidth = Math.max(tooltipTextWidth, customWidth);
 
-        // Keep the tooltip inside the horizontal screen bounds.
+        // Keep tooltip inside horizontal screen bounds.
         if (mouseX + 12 + tooltipWidth + 4 <= screenWidth) {
             tooltipX = mouseX + 12;
         } else if (mouseX - 16 - tooltipWidth >= 4) {
@@ -430,7 +435,7 @@ public class GuiHelpers {
             tooltipX = Math.max(4, screenWidth - tooltipWidth - 4);
         }
 
-        // Calculate the original text height.
+        // Calculate text height.
         int tooltipTextHeight = 8;
 
         if (textLines.size() > 1) {
@@ -441,8 +446,8 @@ public class GuiHelpers {
             }
         }
 
-        // Total background height includes the reserved content area.
-        int tooltipHeight = tooltipTextHeight + extraHeight;
+        // Custom lines contribute their own height.
+        int tooltipHeight = tooltipTextHeight + customHeight;
 
         int tooltipY = mouseY - 12;
 
@@ -452,7 +457,6 @@ public class GuiHelpers {
             tooltipY = screenHeight - tooltipHeight - 4;
         }
 
-        // Avoid negative positions when the tooltip exceeds screen height.
         tooltipY = Math.max(4, tooltipY);
 
         final int zLevel = 300;
@@ -567,7 +571,7 @@ public class GuiHelpers {
             borderColorEnd,
             zLevel);
 
-        // Background has been rendered.
+        // Background rendered.
         MinecraftForge.EVENT_BUS.post(
             new RenderTooltipEvent.PostBackground(
                 stack,
@@ -578,10 +582,9 @@ public class GuiHelpers {
                 tooltipWidth,
                 tooltipHeight));
 
-        int tooltipTop = tooltipY;
         int textY = tooltipY;
 
-        // Render text.
+        // Render regular text.
         for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
             String line = textLines.get(lineNumber);
 
@@ -594,17 +597,16 @@ public class GuiHelpers {
             textY += 10;
         }
 
-        // Text has been rendered.
+        // Render custom lines directly after the text.
+        int customY = tooltipY + tooltipTextHeight;
+        for (ITooltipLine line : customLines) {
+            line.draw(font, tooltipX, customY);
+            customY += Math.max(0, line.getHeight(font));
+        }
+
+        // All tooltip content has been rendered.
         MinecraftForge.EVENT_BUS.post(
-            new RenderTooltipEvent.PostText(
-                stack,
-                textLines,
-                tooltipX,
-                tooltipTop,
-                font,
-                tooltipWidth,
-                tooltipHeight,
-                tooltipTextHeight));
+            new RenderTooltipEvent.PostText(stack, textLines, tooltipX, tooltipY, font, tooltipWidth, tooltipHeight));
 
         GlStateManager.enableLighting();
         GlStateManager.enableDepth();

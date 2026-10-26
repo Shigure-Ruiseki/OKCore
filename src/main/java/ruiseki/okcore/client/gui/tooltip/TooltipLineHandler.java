@@ -27,19 +27,26 @@ public final class TooltipLineHandler {
     }
 
     public static ITooltipLine getTipLine(String line) {
-        if (line == null || !line.startsWith(TOOLTIP_HANDLER) || !line.endsWith(TOOLTIP_HANDLER_SUFFIX)) {
+        if (line == null) {
+            return null;
+        }
+
+        int start = line.indexOf(TOOLTIP_HANDLER);
+        if (start < 0) {
+            return null;
+        }
+
+        start += TOOLTIP_HANDLER.length();
+        int end = line.indexOf(TOOLTIP_HANDLER_SUFFIX, start);
+        if (end < 0) {
             return null;
         }
 
         try {
-            String idText = line.substring(TOOLTIP_HANDLER.length(), line.length() - TOOLTIP_HANDLER_SUFFIX.length());
-
-            int id = Integer.parseInt(idText);
-
+            int id = Integer.parseInt(line.substring(start, end));
             if (id < 0 || id >= tipLineHandlers.size()) {
                 return null;
             }
-
             return tipLineHandlers.get(id);
         } catch (NumberFormatException e) {
             return null;

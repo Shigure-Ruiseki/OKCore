@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 
 import net.minecraft.creativetab.CreativeTabs;
@@ -41,9 +42,19 @@ public class ItemHelpers {
     public static final ItemStack EMPTY = null;
 
     // 1. STACK BASIC OPERATIONS & CHECKS
-
     public static boolean isEmpty(@Nullable ItemStack stack) {
-        return stack == null || stack.getItem() == null;
+        return stack == null || stack.getItem() == null || stack.stackSize <= 0;
+    }
+
+    @Nullable
+    public static Item getItem(@Nullable ItemStack stack) {
+        return !isEmpty(stack) ? stack.getItem() : null;
+    }
+
+    public static <T extends Item> Optional<T> getItemType(@Nullable ItemStack stack, Class<T> clazz) {
+        return Optional.ofNullable(getItem(stack))
+            .filter(clazz::isInstance)
+            .map(clazz::cast);
     }
 
     @Nullable

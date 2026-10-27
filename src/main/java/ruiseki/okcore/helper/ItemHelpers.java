@@ -51,7 +51,7 @@ public class ItemHelpers {
         return !isEmpty(stack) ? stack.getItem() : null;
     }
 
-    public static <T extends Item> Optional<T> getItemType(@Nullable ItemStack stack, Class<T> clazz) {
+    public static <T extends Item> Optional<T> getItem(@Nullable ItemStack stack, Class<T> clazz) {
         return Optional.ofNullable(getItem(stack))
             .filter(clazz::isInstance)
             .map(clazz::cast);

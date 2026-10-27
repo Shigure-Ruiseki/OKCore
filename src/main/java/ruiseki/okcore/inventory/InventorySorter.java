@@ -56,17 +56,19 @@ public class InventorySorter {
 
         @Override
         public int compare(Map.Entry<ItemStackKey, Integer> first, Map.Entry<ItemStackKey, Integer> second) {
-            ItemStack firstStack = first.getKey()
-                .getStack();
-            Item firstItem = firstStack.getItem();
-            ItemStack secondStack = second.getKey()
-                .getStack();
-            Item secondItem = secondStack.getItem();
-            if (firstItem == secondItem) {
-                return 0;
-            }
+            ItemStackKey firstKey = first.getKey();
+            ItemStackKey secondKey = second.getKey();
+
+            Item firstItem = ItemHelpers.getItem(firstKey.getStack());
+            Item secondItem = ItemHelpers.getItem(secondKey.getStack());
+
+            if (firstItem == secondItem) return 0;
+
+            if (firstItem == null) return -1;
+            if (secondItem == null) return 1;
+
             int ret = compareTags(TagHelpers.getTags(firstItem), TagHelpers.getTags(secondItem));
-            return ret != 0 ? ret : getRegistryName(first.getKey()).compareTo(getRegistryName(second.getKey()));
+            return ret != 0 ? ret : getRegistryName(firstKey).compareTo(getRegistryName(secondKey));
         }
 
         private int compareTags(Set<TagKey<Item>> firstTags, Set<TagKey<Item>> secondTags) {

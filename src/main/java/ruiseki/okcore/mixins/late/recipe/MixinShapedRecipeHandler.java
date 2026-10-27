@@ -17,6 +17,7 @@ import codechicken.nei.NEIServerUtils;
 import codechicken.nei.recipe.ShapedRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.shaped.ShapedRecipe;
 
@@ -84,7 +85,7 @@ public abstract class MixinShapedRecipeHandler extends TemplateRecipeHandler {
             .getRecipeList()) {
             if (irecipe instanceof ShapedRecipe shaped) {
                 ShapedRecipeHandler.CachedShapedRecipe recipe = okcore$createNeiCachedRecipe(handler, shaped);
-                if (recipe == null || !recipe.contains(recipe.ingredients, ingredient.getItem())) continue;
+                if (recipe == null || !recipe.contains(recipe.ingredients, ItemHelpers.getItem(ingredient))) continue;
 
                 recipe.computeVisuals();
                 if (recipe.contains(recipe.ingredients, ingredient)) {

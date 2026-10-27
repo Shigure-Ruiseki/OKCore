@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 
 public interface IRecipeOK<C extends IInventory> extends IRecipe {
@@ -21,21 +22,13 @@ public interface IRecipeOK<C extends IInventory> extends IRecipe {
     ItemStack getResultItem();
 
     default NonNullList<ItemStack> getRemainingItems(C inventory) {
-        NonNullList<ItemStack> nonnulllist = NonNullList.withSize(inventory.getSizeInventory(), null);
+        NonNullList<ItemStack> remaining = NonNullList.withSize(inventory.getSizeInventory(), ItemHelpers.EMPTY);
 
-        for (int i = 0; i < nonnulllist.size(); ++i) {
-            ItemStack item = inventory.getStackInSlot(i);
-            if (item != null && item.getItem() != null
-                && item.getItem()
-                    .hasContainerItem(item)) {
-                nonnulllist.set(
-                    i,
-                    item.getItem()
-                        .getContainerItem(item));
-            }
+        for (int i = 0; i < remaining.size(); i++) {
+            remaining.set(i, ItemHelpers.getContainerItem(inventory.getStackInSlot(i)));
         }
 
-        return nonnulllist;
+        return remaining;
     }
 
     default NonNullList<Ingredient> getIngredients() {

@@ -17,6 +17,8 @@ import com.cleanroommc.modularui.screen.RichTooltipEvent;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
 import ruiseki.okcore.client.mui.gui.component.TooltipLineDrawable;
@@ -25,6 +27,7 @@ import ruiseki.okcore.helper.ItemHelpers;
 
 public final class TooltipEventHandler {
 
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderPre(RichTooltipEvent.Pre event) {
         ItemStack stack = event.getItemStack();
@@ -110,6 +113,7 @@ public final class TooltipEventHandler {
         builder.moveCursorToEnd();
     }
 
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderColor(RichTooltipEvent.Color event) {
         ItemStack stack = event.getItemStack();
@@ -134,6 +138,7 @@ public final class TooltipEventHandler {
         event.setBorderEnd(forwarded.getBorderEnd());
     }
 
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderPostBackground(RichTooltipEvent.PostBackground event) {
         ItemStack stack = event.getItemStack();
@@ -153,6 +158,7 @@ public final class TooltipEventHandler {
         MinecraftForge.EVENT_BUS.post(forwarded);
     }
 
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderPostText(RichTooltipEvent.PostText event) {
         try {
@@ -176,6 +182,7 @@ public final class TooltipEventHandler {
         }
     }
 
+    @SideOnly(Side.CLIENT)
     private static List<String> getLines(RichTooltipEvent event) {
         IRichTextBuilder<?> builder = event.getTooltip();
 
@@ -190,6 +197,7 @@ public final class TooltipEventHandler {
         return Collections.emptyList();
     }
 
+    @SideOnly(Side.CLIENT)
     private static FontRenderer getFont() {
         return Minecraft.getMinecraft().fontRenderer;
     }

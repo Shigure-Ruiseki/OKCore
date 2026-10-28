@@ -33,6 +33,7 @@ public class InputEventHandler {
     public InputEventHandler() {}
 
     // GTNHLib -> OkCore renderer
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderTooltip(RenderTooltipEvent event) {
         ItemStack stack = event.itemStack;

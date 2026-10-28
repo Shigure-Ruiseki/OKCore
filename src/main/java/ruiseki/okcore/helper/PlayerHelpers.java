@@ -4,6 +4,8 @@ import java.lang.ref.WeakReference;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
@@ -11,6 +13,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
@@ -27,10 +31,14 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.event.OKHooks;
+import ruiseki.okcore.event.interaction.IEntityInteractAt;
+import ruiseki.okcore.event.interaction.InteractionResult;
 import ruiseki.okcore.inventory.IGuiConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.packet.PacketOpenGuiWithData;
+import ruiseki.okcore.network.packet.PacketUseEntityAt;
 
 public class PlayerHelpers {
 
@@ -75,6 +83,19 @@ public class PlayerHelpers {
         player.openContainer = c;
         player.openContainer.windowId = openContainerId;
         player.openContainer.addCraftingToCrafters(player);
+    }
+
+    public static InteractionResult interactAt(EntityPlayer player, Entity entity, MovingObjectPosition hit) {
+        Minecraft.getMinecraft().playerController.syncCurrentPlayItem();
+        Vec3 hitVec = hit.hitVec;
+        Vec3 vec3 = Vec3
+            .createVectorHelper(hitVec.xCoord - entity.posX, hitVec.yCoord - entity.posY, hitVec.zCoord - entity.posZ);
+        OKCore._instance.getPacketHandler()
+            .sendToServer(new PacketUseEntityAt(entity, player.isSneaking(), vec3));
+        InteractionResult cancelResult = OKHooks.onInteractEntityAt(player, entity, hit);
+        if (cancelResult != null) return cancelResult;
+        if (entity instanceof IEntityInteractAt interactAt) return interactAt.interactAt(player, vec3);
+        return InteractionResult.PASS;
     }
 
     public static boolean doesPlayerExist(World world, UUID player) {

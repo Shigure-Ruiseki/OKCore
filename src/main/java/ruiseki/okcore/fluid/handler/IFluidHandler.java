@@ -6,6 +6,8 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
+import ruiseki.okcore.helper.FluidHelpers;
+
 /**
  * Implement this interface as a capability which should handle fluids, generally storing them in
  * one or more internal {@link IFluidTank} objects.
@@ -13,11 +15,78 @@ import net.minecraftforge.fluids.IFluidTank;
 public interface IFluidHandler extends net.minecraftforge.fluids.IFluidHandler {
 
     /**
-     * Returns an array of objects which represent the internal tanks.
-     * These objects cannot be used to manipulate the internal tanks.
+     * Returns the number of available tanks.
      *
-     * @return Properties for the relevant internal tanks.
+     * @return Number of tanks.
      */
+    default int getTanks() {
+        IFluidTankProperties[] properties = getTankProperties();
+        return properties == null ? 0 : properties.length;
+    }
+
+    /**
+     * Returns the fluid stored in the specified tank.
+     *
+     * The returned FluidStack must not be modified.
+     *
+     * @param tank Tank index.
+     * @return A copy of the stored fluid, or EMPTY.
+     */
+    default FluidStack getFluidInTank(int tank) {
+        IFluidTankProperties[] properties = getTankProperties();
+
+        if (properties == null || tank < 0 || tank >= properties.length || properties[tank] == null) {
+            return FluidHelpers.EMPTY;
+        }
+
+        FluidStack contents = properties[tank].getContents();
+
+        return FluidHelpers.isEmpty(contents) ? FluidHelpers.EMPTY : contents.copy();
+    }
+
+    /**
+     * Returns the maximum capacity of the specified tank.
+     *
+     * @param tank Tank index.
+     * @return Tank capacity, or zero if invalid.
+     */
+    default int getTankCapacity(int tank) {
+        IFluidTankProperties[] properties = getTankProperties();
+
+        if (properties == null || tank < 0 || tank >= properties.length || properties[tank] == null) {
+            return 0;
+        }
+
+        return properties[tank].getCapacity();
+    }
+
+    /**
+     * Checks whether the specified fluid type is valid for a tank.
+     * Does not consider the current amount of fluid stored.
+     *
+     * @param tank  Tank index.
+     * @param stack Fluid to test.
+     * @return Whether the tank accepts the fluid type.
+     */
+    default boolean isFluidValid(int tank, FluidStack stack) {
+        if (FluidHelpers.isEmpty(stack)) return false;
+
+        IFluidTankProperties[] properties = getTankProperties();
+
+        if (properties == null || tank < 0 || tank >= properties.length || properties[tank] == null) {
+            return false;
+        }
+
+        return properties[tank].canFillFluidType(stack);
+    }
+
+    /**
+     * Legacy tank properties API.
+     *
+     * @deprecated Use getTanks(), getFluidInTank(),
+     *             getTankCapacity() and isFluidValid() instead.
+     */
+    @Deprecated
     IFluidTankProperties[] getTankProperties();
 
     /**

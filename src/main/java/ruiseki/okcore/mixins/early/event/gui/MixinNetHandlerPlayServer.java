@@ -29,6 +29,8 @@ public abstract class MixinNetHandlerPlayServer {
 
         SlotClickEvent.Pre pre = new SlotClickEvent.Pre(container, player, slotId, mouseButton, clickType);
 
+        MinecraftForge.EVENT_BUS.post(pre);
+
         ItemStack result = pre.isCanceled() ? pre.getResultStack()
             : original.call(container, slotId, mouseButton, mode, player);
 

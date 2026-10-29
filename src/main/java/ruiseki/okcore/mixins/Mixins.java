@@ -50,13 +50,13 @@ public enum Mixins implements IMixins {
         .setPhase(Phase.EARLY)),
 
     // SHARED_NBT
-    ITEM_SHARED_NBT(
-        new MixinBuilder("Add shared nbt to Item").addCommonMixins("itemSharedNBT.MixinC0EPacketClickWindowNBT")
-            .addCommonMixins(
-                "itemSharedNBT.MixinC10PacketCreativeInventoryActionNBT",
-                "itemSharedNBT.MixinNetHandlerPlayServerNBT",
-                "itemSharedNBT.MixinPacketBufferNBT")
-            .setPhase(Phase.EARLY)),
+    ITEM_SHARED_NBT(new MixinBuilder("Add shared nbt to Item")
+        .addCommonMixins(
+            "itemSharedNBT.MixinC0EPacketClickWindow",
+            "itemSharedNBT.MixinC10PacketCreativeInventoryAction",
+            "itemSharedNBT.MixinNetHandlerPlayServer",
+            "itemSharedNBT.MixinPacketBuffer")
+        .setPhase(Phase.EARLY)),
 
     // GTNHLIB
     MUI2(new MixinBuilder("MUI2 Mixin").addClientMixins("mui.MixinItemSlot")

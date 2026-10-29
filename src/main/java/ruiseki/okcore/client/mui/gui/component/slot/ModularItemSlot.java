@@ -3,7 +3,6 @@ package ruiseki.okcore.client.mui.gui.component.slot;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.cleanroommc.modularui.widgets.slot.ModularSlot;

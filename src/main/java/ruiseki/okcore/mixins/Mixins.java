@@ -34,11 +34,12 @@ public enum Mixins implements IMixins {
         .setPhase(Phase.EARLY)),
     GENERIC_EVENT(new MixinBuilder("Hook Generic Event").addCommonMixins("event.generic.MixinASMEventHandler")
         .setPhase(Phase.EARLY)),
-    GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event")
+    GUI_INPUT_EVENT(new MixinBuilder("Add GUI input event").addCommonMixins("event.gui.MixinNetHandlerPlayServer")
         .addClientMixins(
             "event.gui.MixinGuiScreen",
             "event.gui.MixinGuiContainer",
-            "event.gui.MixinInventoryEffectRenderer")
+            "event.gui.MixinInventoryEffectRenderer",
+            "event.gui.MixinPlayerControllerMP")
         .setPhase(Phase.EARLY)),
     INTERACTION_EVENT(new MixinBuilder("Hook Interaction Event")
         .addClientMixins("event.interaction.MixinMinecraft", "event.interaction.MixinPlayerControllerMP")

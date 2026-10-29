@@ -58,6 +58,11 @@ public enum Mixins implements IMixins {
                 "itemSharedNBT.MixinPacketBufferNBT")
             .setPhase(Phase.EARLY)),
 
+    // GTNHLIB
+    MUI2(new MixinBuilder("MUI2 Mixin").addClientMixins("mui.MixinItemSlot")
+        .addRequiredMod(TargetMods.MUI2)
+        .setPhase(Phase.EARLY)),
+
     // NETWORK
     NETWORK(new MixinBuilder("Allow registering more than one handler of the same type")
         .addCommonMixins("network.MixinSimpleNetworkWrapper")

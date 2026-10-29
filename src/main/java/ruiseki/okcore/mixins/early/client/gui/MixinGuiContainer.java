@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import ruiseki.okcore.client.gui.ISlotBackground;
 import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
+import ruiseki.okcore.inventory.slot.ISlotBackground;
 
 @Mixin(GuiContainer.class)
 public abstract class MixinGuiContainer {

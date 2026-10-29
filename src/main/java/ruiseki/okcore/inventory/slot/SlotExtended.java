@@ -8,7 +8,6 @@ import net.minecraft.util.ResourceLocation;
 
 import lombok.Getter;
 import lombok.Setter;
-import ruiseki.okcore.client.gui.ISlotBackground;
 
 /**
  * A slot with some fancy and fun extra features.

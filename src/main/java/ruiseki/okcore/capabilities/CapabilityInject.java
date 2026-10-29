@@ -29,16 +29,16 @@ import java.lang.annotation.Target;
  *
  * Example:
  *
- * @CapabilityInject(IExampleCapability.class)
- *                                             private static final Capability<IExampleCapability> TEST_CAP = null;
+ * {@code @CapabilityInject(IExampleCapability.class)}
+ * private static final Capability<IExampleCapability> TEST_CAP = null;
  *
- *                                             When placed on a METHOD, the method will be invoked once the
- *                                             capability is registered. This allows you to have a 'enable features'
- *                                             callback. It MUST have one parameter of type 'Capability;
+ * When placed on a METHOD, the method will be invoked once the
+ * capability is registered. This allows you to have a 'enable features'
+ * callback. It MUST have one parameter of type 'Capability;
  *
- *                                             Example:
- * @CapabilityInject(IExampleCapability.class)
- *                                             private static void capRegistered(Capability<IExampleCapability> cap) {}
+ * Example:
+ * {@code @CapabilityInject(IExampleCapability.class)}
+ * private static void capRegistered(Capability<IExampleCapability> cap) {}
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

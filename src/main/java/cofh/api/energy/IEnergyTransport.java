@@ -87,19 +87,35 @@ public interface IEnergyTransport extends IEnergyProvider, IEnergyReceiver {
     int getEnergyStored(ForgeDirection from);
 
     /**
-     * Indicates to other IEnergyTransports the state of the given side. See {@link #InterfaceType} for details.
-     * <p>
-     * For clarity of state tracking, on a tile update from another IEnergyTransport, if its mode has changed from the
-     * opposite of your own mode on that side, you
-     * should change your mode to the opposite of its mode.
-     * <p>
-     * When the user alters your mode and your state is:<br>
-     * BALANCE, your mode should change to {@link InterFaceType#RECEIVE}.<br>
-     * RECEIVE, your mode should change to {@link InterFaceType#SEND}.<br>
-     * SEND, your mode should change to {@link InterFaceType#BALANCE}.<br>
-     * This is not required, but will be easier for users.
+     * Indicates to other {@link IEnergyTransport} implementations the
+     * transport state of the specified side.
      *
-     * @return The type of connection to establish on this side. <b>null is NOT a valid value</b>
+     * <p>
+     * See {@link InterfaceType} for available connection states.
+     *
+     * <p>
+     * For clarity of state tracking, when another
+     * {@link IEnergyTransport} changes its connection mode, this
+     * transport should update its mode to the opposite of the
+     * neighboring transport's mode.
+     *
+     * <p>
+     * When the user changes the connection mode, the recommended
+     * rotation order is:
+     * <ul>
+     * <li>{@link InterfaceType#BALANCE} to {@link InterfaceType#RECEIVE}</li>
+     * <li>{@link InterfaceType#RECEIVE} to {@link InterfaceType#SEND}</li>
+     * <li>{@link InterfaceType#SEND} to {@link InterfaceType#BALANCE}</li>
+     * </ul>
+     *
+     * <p>
+     * This rotation is recommended for consistency but is not required.
+     *
+     * @param from the side whose transport state is being queried
+     * @return the connection state of the specified side; never {@code null}
+     * @see InterfaceType
+     * @see InterfaceType#rotate()
+     * @see InterfaceType#rotate(boolean)
      */
     InterfaceType getTransportState(ForgeDirection from);
 

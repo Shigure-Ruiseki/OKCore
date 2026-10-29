@@ -92,6 +92,7 @@ public class GuiHelpers {
     public static void drawItemStack(ItemStack stack, int x, int y) {
         glPushMatrix();
         glEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         RenderHelper.enableGUIStandardItemLighting();
         glEnable(GL_RESCALE_NORMAL);

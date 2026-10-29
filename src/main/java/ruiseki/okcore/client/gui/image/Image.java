@@ -1,7 +1,6 @@
 package ruiseki.okcore.client.gui.image;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.ResourceLocation;
@@ -39,49 +38,49 @@ public class Image implements IImage {
     }
 
     @Override
-    public void draw(Gui gui, int x, int y) {
-        drawWithColor(gui, x, y, this.sheetWidth, this.sheetHeight, 1.0F, 1.0F, 1.0F, 1.0F);
+    public void draw(int x, int y) {
+        drawWithColor(x, y, this.sheetWidth, this.sheetHeight, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
-    public void draw(Gui gui, int x, int y, int width, int height) {
-        drawWithColor(gui, x, y, width, height, 1.0F, 1.0F, 1.0F, 1.0F);
+    public void draw(int x, int y, int width, int height) {
+        drawWithColor(x, y, width, height, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
-    public void drawWithColor(Gui gui, int x, int y, float r, float g, float b, float a) {
-        drawWithColor(gui, x, y, this.sheetWidth, this.sheetHeight, r, g, b, a);
+    public void drawWithColor(int x, int y, float r, float g, float b, float a) {
+        drawWithColor(x, y, this.sheetWidth, this.sheetHeight, r, g, b, a);
     }
 
     @Override
-    public void drawWithColor(Gui gui, int x, int y, int width, int height, float r, float g, float b, float a) {
+    public void drawWithColor(int x, int y, int width, int height, float r, float g, float b, float a) {
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glColor4f(r, g, b, a);
+
         Minecraft.getMinecraft().renderEngine.bindTexture(this.resourceLocation);
 
-        float f = 1.0F / (float) this.textureWidth;
-        float f1 = 1.0F / (float) this.textureHeight;
+        float f = 1.0F / this.textureWidth;
+        float f1 = 1.0F / this.textureHeight;
 
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
         tessellator.setColorRGBA_F(r, g, b, a);
-        tessellator.addVertexWithUV(
-            x,
-            y + height,
-            0.0D,
-            (float) this.sheetX * f,
-            (float) (this.sheetY + this.sheetHeight) * f1);
+
+        tessellator.addVertexWithUV(x, y + height, 0.0D, this.sheetX * f, (this.sheetY + this.sheetHeight) * f1);
+
         tessellator.addVertexWithUV(
             x + width,
             y + height,
             0.0D,
-            (float) (this.sheetX + this.sheetWidth) * f,
-            (float) (this.sheetY + this.sheetHeight) * f1);
-        tessellator
-            .addVertexWithUV(x + width, y, 0.0D, (float) (this.sheetX + this.sheetWidth) * f, (float) this.sheetY * f1);
-        tessellator.addVertexWithUV(x, y, 0.0D, (float) this.sheetX * f, (float) this.sheetY * f1);
+            (this.sheetX + this.sheetWidth) * f,
+            (this.sheetY + this.sheetHeight) * f1);
+
+        tessellator.addVertexWithUV(x + width, y, 0.0D, (this.sheetX + this.sheetWidth) * f, this.sheetY * f1);
+
+        tessellator.addVertexWithUV(x, y, 0.0D, this.sheetX * f, this.sheetY * f1);
+
         tessellator.draw();
 
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);

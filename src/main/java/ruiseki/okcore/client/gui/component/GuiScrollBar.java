@@ -1,6 +1,5 @@
 package ruiseki.okcore.client.gui.component;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 import net.minecraft.util.MathHelper;
@@ -60,14 +59,20 @@ public class GuiScrollBar extends GuiWidget {
         this.scollRegion = scollRegion;
     }
 
-    @Override
-    public boolean isMouseOver(double mouseX, double mouseY) {
-        if (scollRegion != null) {
-            if (RenderHelpers.isPointInRegion(scollRegion, new Point((int) mouseX, (int) mouseY))) {
-                return true;
-            }
+    /**
+     * Checks whether the cursor is inside the scrollbar or its
+     * additional mouse wheel scrolling region.
+     *
+     * @param mouseX the mouse X coordinate
+     * @param mouseY the mouse Y coordinate
+     * @return true if scrolling is allowed at the position
+     */
+    public boolean isMouseOverScrollRegion(double mouseX, double mouseY) {
+        if (super.isMouseOver(mouseX, mouseY)) {
+            return true;
         }
-        return super.isMouseOver(mouseX, mouseY);
+
+        return scollRegion != null && scollRegion.contains(mouseX, mouseY);
     }
 
     /**

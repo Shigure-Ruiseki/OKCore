@@ -3,7 +3,6 @@ package ruiseki.okcore.json.item;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -18,9 +17,7 @@ import ruiseki.okcore.helper.GsonHelpers;
 import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.tag.Registries;
-import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
-import ruiseki.okcore.tag.TagManager;
 
 public class ItemMaterial extends IngredientMaterial {
 
@@ -31,10 +28,13 @@ public class ItemMaterial extends IngredientMaterial {
     private int meta = 0;
     private NBTTagCompound nbt;
 
+    private transient TagKey<Item> cachedTagKey;
+
     @Override
     public void read(JsonObject json) {
         this.name = getString(json, "item", null);
         this.item = null;
+        this.cachedTagKey = null;
 
         String tagName = getString(json, "tag", null);
         if (tagName == null || tagName.isEmpty()) tagName = getString(json, "ore", null);
@@ -42,7 +42,8 @@ public class ItemMaterial extends IngredientMaterial {
 
         this.amount = getInt(json, "amount", 1);
         this.meta = getInt(json, "meta", 0);
-        this.nbt = json.has("nbt") ? GsonHelpers.jsonToNBT(json.getAsJsonObject("nbt")) : null;
+        this.nbt = json.has("nbt") && json.get("nbt")
+            .isJsonObject() ? GsonHelpers.jsonToNBT(json.getAsJsonObject("nbt")) : null;
 
         captureUnknownProperties(json, "item", "tag", "ore", "amount", "meta", "nbt");
     }
@@ -69,7 +70,7 @@ public class ItemMaterial extends IngredientMaterial {
 
     @Override
     public boolean validate() {
-        if (this.name == null && this.tag == null) {
+        if ((this.name == null || this.name.isEmpty()) && (this.tag == null || this.tag.isEmpty())) {
             logValidationError("ItemMaterial item or tag cannot be empty!");
             return false;
         }
@@ -113,6 +114,8 @@ public class ItemMaterial extends IngredientMaterial {
             this.amount = 0;
             this.meta = 0;
             this.nbt = null;
+            this.cachedTagKey = null;
+            this.unknownProperties.clear();
             return;
         }
 
@@ -124,6 +127,7 @@ public class ItemMaterial extends IngredientMaterial {
         this.nbt = stack.hasTagCompound() ? (NBTTagCompound) stack.getTagCompound()
             .copy() : null;
         this.tag = null;
+        this.cachedTagKey = null;
         this.unknownProperties.clear();
     }
 
@@ -131,7 +135,7 @@ public class ItemMaterial extends IngredientMaterial {
         int count = this.amount > 0 ? this.amount : 1;
 
         if (this.tag != null && !this.tag.isEmpty()) {
-            if (this.tag.startsWith("#") || this.tag.contains(":")) {
+            if (isRegistryTag(this.tag)) {
                 String tagIdentifier = this.tag.startsWith("#") ? this.tag.substring(1) : this.tag;
                 return resolveFromTag(tagIdentifier, count, this.nbt);
             } else {
@@ -156,31 +160,36 @@ public class ItemMaterial extends IngredientMaterial {
 
     private static ItemStack resolveFromTag(String tagStr, int count, NBTTagCompound nbt) {
         if (tagStr == null || tagStr.isEmpty()) return null;
+
         try {
-            ResourceLocation loc = new ResourceLocation(tagStr);
-            TagKey<ItemStack> tagKey = TagKey.create(Registries.ITEM, loc);
+            TagKey<Item> key = TagKey.create(Registries.ITEM, new ResourceLocation(tagStr));
+            List<ItemStack> candidates = TagHelpers.toItemStacks(key);
+            if (candidates.isEmpty()) return null;
 
-            Set<TagEntry> entries = TagManager.getManager()
-                .getEntries(tagKey);
-            if (entries == null || entries.isEmpty()) return null;
-
-            TagEntry firstEntry = entries.iterator()
-                .next();
-            Item item = GameData.getItemRegistry()
-                .getObject(
-                    firstEntry.id()
-                        .toString());
-            if (item == null) return null;
-
-            int itemMeta = firstEntry.meta() == TagEntry.WILDCARD ? 0 : firstEntry.meta();
-            ItemStack result = new ItemStack(item, count, itemMeta);
-            if (nbt != null) {
-                result.setTagCompound((NBTTagCompound) nbt.copy());
+            // The tag is a set: its first member is not guaranteed to be stable.
+            for (ItemStack candidate : candidates) {
+                if (candidate == null || candidate.getItem() == null) continue;
+                ItemStack result = candidate.copy();
+                result.stackSize = count;
+                if (nbt != null) result.setTagCompound((NBTTagCompound) nbt.copy());
+                return result;
             }
-            return result;
-        } catch (Throwable t) {
-            return null;
+        } catch (RuntimeException ignored) {
+            // Invalid tag identifier or registry resolution failure.
         }
+        return null;
+    }
+
+    private TagKey<Item> getTagKey() {
+        if (this.cachedTagKey == null && isRegistryTag(this.tag)) {
+            String id = this.tag.startsWith("#") ? this.tag.substring(1) : this.tag;
+            this.cachedTagKey = TagKey.create(Registries.ITEM, new ResourceLocation(id));
+        }
+        return this.cachedTagKey;
+    }
+
+    private static boolean isRegistryTag(String value) {
+        return value != null && !value.isEmpty() && (value.startsWith("#") || value.indexOf(':') >= 0);
     }
 
     private static ItemStack resolveFromOre(String ore, int count, NBTTagCompound nbt) {
@@ -235,7 +244,7 @@ public class ItemMaterial extends IngredientMaterial {
 
         if (amount != that.amount) return false;
         if (meta != that.meta) return false;
-        if (!Objects.equals(item, that.item)) return false;
+        if (!Objects.equals(getItem(), that.getItem())) return false;
         return Objects.equals(tag, that.tag) && Objects.equals(nbt, that.nbt);
     }
 
@@ -268,11 +277,12 @@ public class ItemMaterial extends IngredientMaterial {
         }
 
         if (this.tag != null && !this.tag.isEmpty()) {
-            if (this.tag.startsWith("#") || this.tag.contains(":")) {
-                String tagIdentifier = this.tag.startsWith("#") ? this.tag.substring(1) : this.tag;
-                ResourceLocation loc = new ResourceLocation(tagIdentifier);
-                TagKey<Item> tagKey = TagKey.create(Registries.ITEM, loc);
-                return TagHelpers.hasTag(stack, tagKey);
+            if (isRegistryTag(this.tag)) {
+                try {
+                    return TagHelpers.hasTag(stack, getTagKey());
+                } catch (RuntimeException ignored) {
+                    return false;
+                }
             }
 
             List<ItemStack> ores = OreDictionary.getOres(this.tag);
@@ -302,7 +312,7 @@ public class ItemMaterial extends IngredientMaterial {
     public void toNetwork(ExtendedBuffer buffer) throws IOException {
         int mode = 0;
         if (this.tag != null && !this.tag.isEmpty()) {
-            mode = (this.tag.startsWith("#") || this.tag.contains(":")) ? 2 : 1;
+            mode = isRegistryTag(this.tag) ? 2 : 1;
         }
 
         buffer.writeInt(mode);
@@ -331,17 +341,21 @@ public class ItemMaterial extends IngredientMaterial {
     @Override
     public void fromNetwork(ExtendedBuffer buffer) throws IOException {
         this.item = null;
+        this.cachedTagKey = null;
+        this.meta = 0;
         this.unknownProperties.clear();
 
         int mode = buffer.readInt();
         if (mode == 2 || mode == 1) {
             this.tag = buffer.readString();
             this.name = null;
-        } else {
+        } else if (mode == 0) {
             this.name = buffer.readString();
             if (this.name.isEmpty()) this.name = null;
             this.meta = buffer.readInt();
             this.tag = null;
+        } else {
+            throw new IOException("Unknown ItemMaterial mode: " + mode);
         }
 
         this.amount = buffer.readInt();

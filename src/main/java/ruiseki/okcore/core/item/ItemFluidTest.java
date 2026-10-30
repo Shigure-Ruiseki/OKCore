@@ -1,5 +1,6 @@
 package ruiseki.okcore.core.item;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -25,7 +26,6 @@ import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.network.packet.PacketSyncCursorStack;
 import ruiseki.okcore.tag.Registries;
-import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
@@ -111,20 +111,20 @@ public class ItemFluidTest extends ItemBase implements IItemToggle {
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
         super.addInformation(stack, player, list, flag);
+
         TagKey<Item> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "dusts"));
 
-        Set<TagEntry> entries = TagManager.getManager()
-            .getEntries(dustTagKey);
+        Set<String> entries = TagManager.getManager()
+            .getTags()
+            .getOrDefault(dustTagKey, Collections.emptySet());
 
         list.add("§6Items in #forge:dusts:");
+
         if (entries.isEmpty()) {
             list.add(" §7(Empty Tag)");
         } else {
-            for (TagEntry entry : entries) {
-                String itemId = entry.id()
-                    .toString();
-                int meta = entry.meta();
-                list.add(" §7- " + itemId + (meta == TagEntry.WILDCARD ? ":*" : ":" + meta));
+            for (String entry : entries) {
+                list.add(" §7- " + entry);
             }
         }
     }

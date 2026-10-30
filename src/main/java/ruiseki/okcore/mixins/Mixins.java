@@ -69,6 +69,10 @@ public enum Mixins implements IMixins {
         .addExcludedMod(TargetMods.MUI2)
         .setPhase(Phase.EARLY)),
 
+    // Tag
+    TAG(new MixinBuilder("Add tweaks for Tag system").addCommonMixins("tag.MixinItem", "tag.MixinBlock")
+        .setPhase(Phase.EARLY)),
+
     // LATE
     // RECIPE
     NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")

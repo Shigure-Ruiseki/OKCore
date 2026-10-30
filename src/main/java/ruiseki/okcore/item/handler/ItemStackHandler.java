@@ -18,7 +18,7 @@ import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, INBTSerializable {
+public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSerializable {
 
     protected List<ItemStack> stacks;
 
@@ -71,6 +71,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
 
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+        if (!isItemValid(slot, stack)) return stack;
         if (ItemHelpers.isEmpty(stack)) {
             return ItemHelpers.EMPTY;
         } else {
@@ -109,6 +110,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         }
     }
 
+    @Override
     public ItemStack insertItem(ItemStack stack, boolean simulate) {
         if (ItemHelpers.isEmpty(stack)) {
             return ItemHelpers.EMPTY;

@@ -18,11 +18,11 @@ public abstract class MixinSlot {
         return (Slot) (Object) this;
     }
 
-    public int okcorecxy$getItemX() {
+    public int okcorecxy$getSlotX() {
         return this.okcore$getThis().xDisplayPosition;
     }
 
-    public int okcorecxy$getItemY() {
+    public int okcorecxy$getSlotY() {
         return this.okcore$getThis().yDisplayPosition;
     }
 }

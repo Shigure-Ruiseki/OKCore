@@ -4,7 +4,10 @@ import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.event.handler.*;
+import ruiseki.okcore.event.handler.CooldownEventHandler;
+import ruiseki.okcore.event.handler.InteractionEventHandler;
+import ruiseki.okcore.event.handler.RecipeRemainingItemsHandler;
+import ruiseki.okcore.event.handler.TileEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.network.packet.PacketButtonClick;

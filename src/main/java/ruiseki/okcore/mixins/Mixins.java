@@ -38,7 +38,7 @@ public enum Mixins implements IMixins {
         .addClientMixins(
             "event.gui.MixinGuiScreen",
             "event.gui.MixinGuiContainer",
-            "event.gui.Slot",
+            "event.gui.MixinSlot",
             "event.gui.MixinInventoryEffectRenderer",
             "event.gui.MixinPlayerControllerMP")
         .setPhase(Phase.EARLY)),

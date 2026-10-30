@@ -31,6 +31,7 @@ import ruiseki.okcore.inventory.InventorySorter;
 import ruiseki.okcore.inventory.ItemStackKey;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
+import ruiseki.okcore.item.handler.IItemHandlerSimpleInserter;
 
 /**
  * Contains helper methods involving {@link IInventory}S.
@@ -532,6 +533,10 @@ public class InventoryHelpers {
     }
 
     public static ItemStack insertIntoInventory(ItemStack stack, IItemHandler inventory, boolean simulate) {
+        if (inventory instanceof IItemHandlerSimpleInserter itemHandlerSimpleInserter) {
+            return itemHandlerSimpleInserter.insertItem(stack, simulate);
+        }
+
         ItemStack remainingStack = stack.copy();
         int slots = inventory.getSlots();
         for (int slot = 0; slot < slots && !ItemHelpers.isEmpty(remainingStack); slot++) {

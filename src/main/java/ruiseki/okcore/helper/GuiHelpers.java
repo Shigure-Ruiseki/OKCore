@@ -324,7 +324,7 @@ public class GuiHelpers {
     /**
      * Draws a tooltip with text and optional custom tooltip lines.
      */
-    public static void drawHoveringText(@Nonnull final ItemStack stack, List<String> textLines, int mouseX, int mouseY,
+    public static void drawHoveringText(final ItemStack stack, List<String> textLines, int mouseX, int mouseY,
         int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font) {
         if (textLines == null || textLines.isEmpty()) {
             return;
@@ -886,125 +886,12 @@ public class GuiHelpers {
      * @param y     Tooltip Y.
      */
     public static void drawTooltip(GuiContainer gui, List<String> lines, int x, int y) {
-        if (lines == null || lines.isEmpty()) {
-            return;
-        }
+        drawTooltip(gui, null, lines, x, y);
+    }
 
-        int guiLeft = gui.guiLeft;
-        int guiTop = gui.guiTop;
-        int width = gui.width;
-        int height = gui.height;
-        Minecraft mc = Minecraft.getMinecraft();
-
-        GlStateManager.pushMatrix();
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GlStateManager.disableLighting();
-
-        int tooltipWidth = 0;
-        for (String line : lines) {
-            int tempWidth = mc.fontRenderer.getStringWidth(line);
-            if (tempWidth > tooltipWidth) {
-                tooltipWidth = tempWidth;
-            }
-        }
-
-        int xStart = x + 12;
-        int yStart = y - 12;
-        int tooltipHeight = 8;
-
-        if (lines.size() > 1) {
-            tooltipHeight += 2 + (lines.size() - 1) * 10;
-        }
-
-        if (guiLeft + xStart + tooltipWidth + 6 > width) {
-            xStart = width - tooltipWidth - guiLeft - 6;
-        }
-
-        if (guiTop + yStart + tooltipHeight + 6 > height) {
-            yStart = height - tooltipHeight - guiTop - 6;
-        }
-
-        final int zLevel = 300;
-        render.zLevel = 300.0F;
-
-        int color1 = 0xF0100010; // -267386864 in HEX
-        drawGradientRect(xStart - 3, yStart - 4, xStart + tooltipWidth + 3, yStart - 3, color1, color1, zLevel);
-        drawGradientRect(
-            xStart - 3,
-            yStart + tooltipHeight + 3,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 4,
-            color1,
-            color1,
-            zLevel);
-        drawGradientRect(
-            xStart - 3,
-            yStart - 3,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 3,
-            color1,
-            color1,
-            zLevel);
-        drawGradientRect(xStart - 4, yStart - 3, xStart - 3, yStart + tooltipHeight + 3, color1, color1, zLevel);
-        drawGradientRect(
-            xStart + tooltipWidth + 3,
-            yStart - 3,
-            xStart + tooltipWidth + 4,
-            yStart + tooltipHeight + 3,
-            color1,
-            color1,
-            zLevel);
-
-        int color2 = 0x505000FF; // 1347420415 in HEX
-        int color3 = (color2 & 0xFEFEFE) >> 1 | color2 & 0xFF000000;
-        drawGradientRect(
-            xStart - 3,
-            yStart - 3 + 1,
-            xStart - 3 + 1,
-            yStart + tooltipHeight + 3 - 1,
-            color2,
-            color3,
-            zLevel);
-        drawGradientRect(
-            xStart + tooltipWidth + 2,
-            yStart - 3 + 1,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 3 - 1,
-            color2,
-            color3,
-            zLevel);
-        drawGradientRect(xStart - 3, yStart - 3, xStart + tooltipWidth + 3, yStart - 3 + 1, color2, color2, zLevel);
-        drawGradientRect(
-            xStart - 3,
-            yStart + tooltipHeight + 2,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 3,
-            color3,
-            color3,
-            zLevel);
-
-        for (int stringIndex = 0; stringIndex < lines.size(); ++stringIndex) {
-            String line = lines.get(stringIndex);
-
-            if (stringIndex == 0) {
-                line = EnumChatFormatting.WHITE + line;
-            } else {
-                line = EnumChatFormatting.GRAY + line;
-            }
-
-            mc.fontRenderer.drawStringWithShadow(line, xStart, yStart, -1);
-
-            if (stringIndex == 0) {
-                yStart += 2;
-            }
-
-            yStart += 10;
-        }
-
-        GlStateManager.popMatrix();
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-
-        render.zLevel = 0.0F;
+    public static void drawTooltip(GuiContainer gui, @Nullable ItemStack stack, List<String> lines, int x, int y) {
+        if (gui == null || lines == null || lines.isEmpty()) return;
+        drawHoveringText(stack, lines, x, y, gui.width, gui.height, -1, Minecraft.getMinecraft().fontRenderer);
     }
 
     /**

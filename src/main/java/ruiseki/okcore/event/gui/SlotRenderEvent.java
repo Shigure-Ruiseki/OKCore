@@ -7,75 +7,89 @@ import cpw.mods.fml.common.eventhandler.Cancelable;
 import cpw.mods.fml.common.eventhandler.Event;
 
 /**
- * Base event fired during the rendering of an inventory slot.
+ * Base event fired during inventory slot rendering.
  *
  * <p>
- * This event allows other mods to observe or customize slot rendering
- * through the Minecraft Forge event bus.
+ * Provides access to the rendered {@link Slot} and its rendering coordinates.
+ * Coordinates are relative to the active rendering context and may differ
+ * from {@link Slot#xDisplayPosition} and {@link Slot#yDisplayPosition}.
  * </p>
  *
  * <p>
- * All events are client-side only and provide access to the
- * {@link Slot} currently being rendered.
+ * This event is intended for client-side rendering only and does not
+ * modify inventory contents or slot interaction behavior.
  * </p>
  *
  * <p>
- * Event phases:
+ * Supported rendering phases:
+ * </p>
  * <ul>
- * <li>{@link Pre} - Fired before the slot is rendered. Can be canceled
- * to skip the original rendering operation.</li>
- * <li>{@link Post} - Fired after the slot rendering operation.</li>
+ * <li>{@link Pre} - Fired before rendering and may be canceled.</li>
+ * <li>{@link Post} - Fired after rendering for additional visual effects.</li>
  * </ul>
- * </p>
- *
- * <p>
- * These events only affect rendering and do not modify inventory
- * contents or slot interaction behavior.
- * </p>
  *
  * @see Slot
  * @see Pre
  * @see Post
+ * @see ISlotRenderPosition
  */
 public abstract class SlotRenderEvent extends Event {
 
     private final Slot slot;
+    private final int slotX;
+    private final int slotY;
 
     /**
-     * Constructs a new slot rendering event.
+     * Constructs a slot rendering event.
      *
-     * @param slot the slot being rendered
+     * @param slot  the slot being rendered
+     * @param slotX the horizontal position in the active rendering context
+     * @param slotY the vertical position in the active rendering context
      */
-    protected SlotRenderEvent(Slot slot) {
+    protected SlotRenderEvent(Slot slot, int slotX, int slotY) {
         this.slot = slot;
+        this.slotX = slotX;
+        this.slotY = slotY;
     }
 
     /**
-     * Returns the slot associated with this rendering event.
+     * Returns the slot associated with this event.
      *
-     * @return the slot being rendered
+     * @return the rendered slot
      */
     public Slot getSlot() {
         return slot;
     }
 
     /**
-     * Fired before a slot is rendered.
+     * Returns the horizontal rendering position of the slot.
+     *
+     * @return the X coordinate in the active rendering context
+     */
+    public int getSlotX() {
+        return slotX;
+    }
+
+    /**
+     * Returns the vertical rendering position of the slot.
+     *
+     * @return the Y coordinate in the active rendering context
+     */
+    public int getSlotY() {
+        return slotY;
+    }
+
+    /**
+     * Fired before an inventory slot is rendered.
      *
      * <p>
-     * This event is {@link Cancelable}. Canceling it prevents the
-     * original slot rendering operation from executing.
+     * This event is {@link Cancelable}. Canceling it allows the
+     * dispatcher to skip the associated slot rendering operation.
      * </p>
      *
      * <p>
-     * Subscribers may use this event to suppress vanilla slot rendering
-     * or draw custom slot content.
-     * </p>
-     *
-     * <p>
-     * Canceling this event does not automatically prevent other
-     * rendering operations, such as slot hover highlights or tooltips,
-     * from executing.
+     * Cancellation does not necessarily suppress other rendering
+     * operations, such as hover highlights, tooltips, or overlays.
      * </p>
      */
     @Cancelable
@@ -84,30 +98,32 @@ public abstract class SlotRenderEvent extends Event {
         /**
          * Constructs a pre-render event.
          *
-         * @param slot the slot about to be rendered
+         * @param slot  the slot about to be rendered
+         * @param slotX the horizontal rendering position
+         * @param slotY the vertical rendering position
          */
-        public Pre(Slot slot) {
-            super(slot);
+        public Pre(Slot slot, int slotX, int slotY) {
+            super(slot, slotX, slotY);
         }
     }
 
     /**
-     * Fired after a slot has completed its rendering operation.
+     * Fired after an inventory slot has been rendered.
      *
      * <p>
-     * This event cannot be canceled and is intended for additional
-     * rendering effects, decorations, or overlays.
+     * This event is not cancelable and is intended for rendering
+     * additional decorations, indicators, or overlays.
      * </p>
      *
      * <p>
-     * The exact rendering order depends on the injection point used
-     * by the event dispatcher. Rendering operations performed after
-     * this event may still affect the final appearance of the slot.
+     * The actual rendering order depends on the dispatcher.
+     * Subsequent rendering operations may still affect the
+     * final appearance of the slot.
      * </p>
      *
      * <p>
-     * If the pre-render event is canceled, whether this event is
-     * dispatched depends on the implementation of the rendering hook.
+     * If {@link Pre} is canceled, dispatching this event depends
+     * on the implementation of the rendering hook.
      * </p>
      */
     public static class Post extends SlotRenderEvent {
@@ -115,10 +131,42 @@ public abstract class SlotRenderEvent extends Event {
         /**
          * Constructs a post-render event.
          *
-         * @param slot the slot that has finished rendering
+         * @param slot  the slot that has been rendered
+         * @param slotX the horizontal rendering position
+         * @param slotY the vertical rendering position
          */
-        public Post(Slot slot) {
-            super(slot);
+        public Post(Slot slot, int slotX, int slotY) {
+            super(slot, slotX, slotY);
         }
+    }
+
+    /**
+     * Provides the rendering coordinates of an inventory slot.
+     *
+     * <p>
+     * Implementations may use custom positioning logic, such as
+     * centering a 16x16 item within a resizable slot widget.
+     * </p>
+     *
+     * <p>
+     * Coordinates must be expressed in the rendering context
+     * used by the corresponding slot renderer.
+     * </p>
+     */
+    public interface ISlotRenderPosition {
+
+        /**
+         * Returns the horizontal position used to render the slot content.
+         *
+         * @return the X rendering coordinate
+         */
+        int getSlotX();
+
+        /**
+         * Returns the vertical position used to render the slot content.
+         *
+         * @return the Y rendering coordinate
+         */
+        int getSlotY();
     }
 }

@@ -6,7 +6,6 @@ import net.minecraft.inventory.Slot;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -16,9 +15,6 @@ import ruiseki.okcore.event.gui.SlotRenderEvent;
 
 @Mixin(GuiContainer.class)
 public abstract class MixinGuiContainer {
-
-    @Unique
-    private Slot okcore$pendingOverlaySlot;
 
     @Inject(
         method = "drawScreen(IIF)V",
@@ -35,13 +31,15 @@ public abstract class MixinGuiContainer {
 
     @Inject(method = "func_146977_a", at = @At("HEAD"), cancellable = true)
     private void okcore$renderPre(Slot slot, CallbackInfo ci) {
-        if (MinecraftForge.EVENT_BUS.post(new SlotRenderEvent.Pre(slot))) {
+        SlotRenderEvent.ISlotRenderPosition renderPos = (SlotRenderEvent.ISlotRenderPosition) slot;
+        if (MinecraftForge.EVENT_BUS.post(new SlotRenderEvent.Pre(slot, renderPos.getSlotX(), renderPos.getSlotY()))) {
             ci.cancel();
         }
     }
 
     @Inject(method = "func_146977_a", at = @At("TAIL"))
     private void okcore$renderPost(Slot slot, CallbackInfo ci) {
-        MinecraftForge.EVENT_BUS.post(new SlotRenderEvent.Post(slot));
+        SlotRenderEvent.ISlotRenderPosition renderPos = (SlotRenderEvent.ISlotRenderPosition) slot;
+        MinecraftForge.EVENT_BUS.post(new SlotRenderEvent.Post(slot, renderPos.getSlotX(), renderPos.getSlotY()));
     }
 }

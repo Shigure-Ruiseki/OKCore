@@ -6,28 +6,34 @@ import net.minecraft.client.gui.FontRenderer;
  * Defines a custom renderable component within an item tooltip.
  *
  * <p>
- * Implementations provide their own dimensions and rendering logic.
+ * Implementations provide their own sizing, layout, and rendering logic.
  * Unlike ordinary text lines, custom tooltip components can render
- * additional content such as icons, images, progress bars, or other
+ * additional content such as icons, images, progress bars, or interactive
  * GUI elements.
  * </p>
  *
  * <p>
- * The tooltip renderer uses {@link #getWidth(FontRenderer)} and
- * {@link #getHeight(FontRenderer)} to determine the space required
- * by the component before invoking
- * {@link #draw(FontRenderer, int, int, int, int, int, int)}.
+ * The tooltip renderer first determines the component's preferred width
+ * using {@link #getWidth(FontRenderer)}. Returning {@code -1} indicates
+ * that the component should use the available tooltip width.
  * </p>
  *
  * <p>
- * Implementations should report dimensions consistent with their
- * rendering behavior to prevent overlapping adjacent tooltip content.
+ * Once the allocated width is known, the renderer invokes
+ * {@link #getHeight(FontRenderer, int)} to determine the required height.
+ * This allows components to adapt their layout to the available space,
+ * including text wrapping and dynamically sized content.
  * </p>
  *
  * <p>
- * The rendering method receives the mouse position and the allocated
- * component dimensions, allowing implementations to support interactive
- * rendering and adapt their layout to the available space.
+ * Finally, {@link #draw(FontRenderer, int, int, int, int, int, int)}
+ * renders the component within its allocated area.
+ * </p>
+ *
+ * <p>
+ * Implementations should ensure that their measured dimensions are
+ * consistent with their rendering behavior to prevent overlapping
+ * adjacent tooltip components.
  * </p>
  *
  * @see FontRenderer
@@ -36,7 +42,7 @@ import net.minecraft.client.gui.FontRenderer;
 public interface ITooltipLine {
 
     /**
-     * Returns the horizontal space required to render this component.
+     * Returns the preferred horizontal space required by this component.
      *
      * <p>
      * Returning {@code -1} indicates that the component should use
@@ -44,38 +50,42 @@ public interface ITooltipLine {
      * </p>
      *
      * @param font the font renderer used by the tooltip
-     * @return the required width in pixels, or {@code -1} to use
-     *         the available tooltip width
+     * @return the preferred width in pixels, or {@code -1} for automatic width
      */
     int getWidth(FontRenderer font);
 
     /**
-     * Returns the vertical space required to render this component.
+     * Returns the vertical space required to render this component
+     * within the specified allocated width.
      *
-     * @param font the font renderer used by the tooltip
+     * <p>
+     * Implementations can use this value to calculate their layout,
+     * including text wrapping and dynamically sized content.
+     * </p>
+     *
+     * @param font  the font renderer used by the tooltip
+     * @param width the allocated width in pixels
      * @return the required height in pixels
      */
-    int getHeight(FontRenderer font);
+    int getHeight(FontRenderer font, int width);
 
     /**
-     * Renders this component within the allocated tooltip area.
+     * Renders this component within its allocated tooltip area.
      *
      * <p>
      * The coordinates {@code x} and {@code y} represent the top-left
-     * corner of the component. The mouse coordinates are relative to
-     * the GUI screen, allowing implementations to detect hover states
-     * and handle mouse-dependent rendering.
+     * corner of the component. Mouse coordinates are relative to
+     * the GUI screen.
      * </p>
      *
      * <p>
-     * The {@code width} and {@code height} parameters represent the
-     * dimensions allocated to this component by the tooltip renderer.
+     * The allocated dimensions should match those used when calculating
+     * {@link #getHeight(FontRenderer, int)}.
      * </p>
      *
      * <p>
      * Implementations that modify OpenGL rendering state must restore
-     * the previous state before returning to avoid affecting subsequent
-     * tooltip components.
+     * the previous state before returning.
      * </p>
      *
      * @param font   the font renderer used by the tooltip
@@ -83,8 +93,8 @@ public interface ITooltipLine {
      * @param y      the vertical position of the component
      * @param mouseX the horizontal position of the mouse cursor
      * @param mouseY the vertical position of the mouse cursor
-     * @param width  the allocated width of the component in pixels
-     * @param height the allocated height of the component in pixels
+     * @param width  the allocated width in pixels
+     * @param height the allocated height in pixels
      */
     void draw(FontRenderer font, int x, int y, int mouseX, int mouseY, int width, int height);
 }

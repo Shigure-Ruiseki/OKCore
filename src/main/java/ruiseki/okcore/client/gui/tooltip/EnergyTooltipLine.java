@@ -1,16 +1,16 @@
 package ruiseki.okcore.client.gui.tooltip;
 
+import java.util.List;
+
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.StringHelpers;
 
 public class EnergyTooltipLine implements ITooltipLine {
 
-    /**
-     * Use the allocated tooltip width.
-     */
     private static final int DEFAULT_BAR_WIDTH = -1;
     private static final int DEFAULT_BAR_HEIGHT = 5;
 
@@ -21,9 +21,6 @@ public class EnergyTooltipLine implements ITooltipLine {
 
     private final IEnergyStorage energyStorage;
 
-    /**
-     * -1 means automatic width.
-     */
     private int barWidth = DEFAULT_BAR_WIDTH;
     private int barHeight = DEFAULT_BAR_HEIGHT;
 
@@ -106,25 +103,15 @@ public class EnergyTooltipLine implements ITooltipLine {
         return (int) ((long) width * stored / max);
     }
 
-    private String getVisibleEnergyText(FontRenderer font, int width) {
-        String text = this.getEnergyText();
+    // Layout
 
-        if (width <= 0) {
-            return "";
-        }
+    private List<String> getEnergyLines(FontRenderer font, int width) {
+        return StringHelpers.splitLines(this.getEnergyText(), font, Math.max(1, width));
+    }
 
-        if (font.getStringWidth(text) <= width) {
-            return text;
-        }
-
-        String ellipsis = "...";
-        int ellipsisWidth = font.getStringWidth(ellipsis);
-
-        if (width <= ellipsisWidth) {
-            return font.trimStringToWidth(ellipsis, width);
-        }
-
-        return font.trimStringToWidth(text, width - ellipsisWidth) + ellipsis;
+    private int getTextHeight(FontRenderer font, int width) {
+        return this.getEnergyLines(font, width)
+            .size() * font.FONT_HEIGHT;
     }
 
     // ITooltipLine
@@ -135,25 +122,42 @@ public class EnergyTooltipLine implements ITooltipLine {
             return -1;
         }
 
-        return Math.max(this.barWidth + 2, font.getStringWidth(this.getEnergyText()));
+        return this.barWidth + 2;
     }
 
     @Override
-    public int getHeight(FontRenderer font) {
-        return font.FONT_HEIGHT + 2 + this.barHeight + 2;
+    public int getHeight(FontRenderer font, int width) {
+        return this.getTextHeight(font, width) + 2 + this.barHeight + 2;
     }
 
     @Override
     public void draw(FontRenderer font, int x, int y, int mouseX, int mouseY, int width, int height) {
-        // Resolve actual bar dimensions.
-        int actualBarWidth = this.barWidth == -1 ? Math.max(0, width - 2) : this.barWidth;
+        List<String> lines = this.getEnergyLines(font, width);
 
-        int actualBarHeight = Math.min(this.barHeight, Math.max(1, height - font.FONT_HEIGHT - 4));
+        int textHeight = lines.size() * font.FONT_HEIGHT;
+        int textY = y;
 
         // Energy text.
-        font.drawStringWithShadow(this.getVisibleEnergyText(font, width), x, y, this.textColor);
+        for (String line : lines) {
+            font.drawStringWithShadow(line, x, textY, this.textColor);
 
-        int barY = y + font.FONT_HEIGHT + 2;
+            textY += font.FONT_HEIGHT;
+        }
+
+        // Resolve actual bar dimensions.
+        int actualBarWidth = Math.max(0, width - 2);
+
+        if (this.barWidth != -1) {
+            actualBarWidth = Math.min(actualBarWidth, this.barWidth);
+        }
+
+        int actualBarHeight = Math.min(this.barHeight, Math.max(0, height - textHeight - 4));
+
+        if (actualBarHeight <= 0 || width < 2) {
+            return;
+        }
+
+        int barY = y + textHeight + 2;
 
         // Border.
         Gui.drawRect(x, barY, x + actualBarWidth + 2, barY + actualBarHeight + 2, this.borderColor);

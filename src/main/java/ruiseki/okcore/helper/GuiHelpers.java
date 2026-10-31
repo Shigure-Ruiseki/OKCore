@@ -488,7 +488,9 @@ public class GuiHelpers {
             ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
 
             if (handler != null) {
-                tooltipTextHeight += Math.max(0, handler.getHeight(font));
+                int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
+
+                tooltipTextHeight += Math.max(0, handler.getHeight(font, width));
             } else {
                 tooltipTextHeight += 10;
             }
@@ -648,16 +650,9 @@ public class GuiHelpers {
             ITooltipLine handler = TooltipLineHandler.getTipLine(line);
 
             if (handler != null) {
-                int width = handler.getWidth(font);
+                int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
 
-                // -1 means use the current tooltip width.
-                if (width < 0) {
-                    width = tooltipTextWidth;
-                } else {
-                    width = Math.min(width, tooltipTextWidth);
-                }
-
-                int height = Math.max(0, handler.getHeight(font));
+                int height = Math.max(0, handler.getHeight(font, width));
 
                 handler.draw(font, tooltipX, textY, mouseX, mouseY, width, height);
 
@@ -696,6 +691,20 @@ public class GuiHelpers {
         GlStateManager.enableDepth();
         RenderHelper.enableStandardItemLighting();
         GlStateManager.enableRescaleNormal();
+    }
+
+    /**
+     * Resolves the actual width allocated to a tooltip component.
+     *
+     * @param handler      the tooltip component
+     * @param font         the font renderer
+     * @param tooltipWidth the available tooltip width
+     * @return the allocated component width
+     */
+    private static int getTooltipLineWidth(ITooltipLine handler, FontRenderer font, int tooltipWidth) {
+        int width = handler.getWidth(font);
+        if (width < 0) return tooltipWidth;
+        return Math.min(width, tooltipWidth);
     }
 
     public static void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor,

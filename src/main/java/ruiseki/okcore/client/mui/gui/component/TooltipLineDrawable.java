@@ -12,24 +12,28 @@ public final class TooltipLineDrawable implements IDrawable {
 
     private final ITooltipLine line;
     private final FontRenderer font;
+    private final int defaultWidth;
 
-    public TooltipLineDrawable(ITooltipLine line, FontRenderer font) {
+    public TooltipLineDrawable(ITooltipLine line, FontRenderer font, int maxWidth) {
         this.line = line;
         this.font = font;
+        int preferredWidth = line.getWidth(font);
+        int availableWidth = Math.max(1, maxWidth);
+        this.defaultWidth = preferredWidth < 0 ? availableWidth : Math.min(preferredWidth, availableWidth);
     }
 
     @Override
     public int getDefaultWidth() {
-        return Math.max(0, line.getWidth(font));
+        return this.defaultWidth;
     }
 
     @Override
     public int getDefaultHeight() {
-        return Math.max(0, line.getHeight(font));
+        return Math.max(0, this.line.getHeight(this.font, this.defaultWidth));
     }
 
     @Override
     public void draw(GuiContext context, int x, int y, int width, int height, WidgetTheme widgetTheme) {
-        line.draw(font, x, y, context.getMouseX(), context.getMouseY(), width, height);
+        this.line.draw(this.font, x, y, context.getMouseX(), context.getMouseY(), width, height);
     }
 }

@@ -28,7 +28,7 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author rubensworks
  *
  */
-public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IItemSharedTag {
+public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IItemSharedTag, IItemTooltip {
 
     protected InformationProviderComponent informationProvider;
     protected IBlockRarityProvider rarityProvider = null;

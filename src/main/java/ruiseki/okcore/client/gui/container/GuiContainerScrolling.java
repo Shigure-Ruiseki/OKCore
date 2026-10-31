@@ -170,6 +170,22 @@ public abstract class GuiContainerScrolling<T extends ScrollingInventoryContaine
         return super.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
     }
 
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        // Let child widgets handle scrolling first.
+        if (super.mouseScrolled(mouseX, mouseY, delta)) {
+            return true;
+        }
+
+        // Fallback to the scrollbar when scrolling inside
+        // the configured scroll region.
+        if (this.scrollbar != null && this.scrollbar.isMouseOverScrollRegion(mouseX, mouseY)) {
+            return this.scrollbar.mouseScrolled(mouseX, mouseY, delta);
+        }
+
+        return false;
+    }
+
     protected void updateSearch(String searchString) {
         getContainer().updateFilter(searchString);
         this.scrollbar.setTotalRows(getContainer().getFilteredItemCount() / getContainer().getColumns());

@@ -93,3 +93,5 @@ config.okcore.general.versionChecker=Version check
 
 ## Mod compatibility settings
 config.okcore.Waila=Waila
+
+gui.okcore.tooltip.energy.tooltip_line=%s RF out of %s RF

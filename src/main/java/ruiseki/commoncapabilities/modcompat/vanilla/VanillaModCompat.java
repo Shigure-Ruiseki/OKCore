@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cofh.api.energy.IEnergyConnection;
+import cofh.api.energy.IEnergyContainerItem;
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.commoncapabilities.CommonCapabilities;
 import ruiseki.commoncapabilities.Reference;
@@ -35,6 +36,7 @@ import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.commoncapabilities.capability.recipehandler.RecipeHandlerConfig;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
+import ruiseki.commoncapabilities.modcompat.vanilla.capability.energystorage.CoFHEnergyItemWrapper;
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.energystorage.CoFHEnergyWrapper;
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.energystorage.VanillaEntityItemEnergyStorage;
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.energystorage.VanillaEntityItemFrameEnergyStorage;
@@ -237,7 +239,7 @@ public class VanillaModCompat implements IModCompat {
                 });
             registry.registerInheritableTile(
                 IInventory.class,
-                new ICapabilityConstructor<IItemHandler, TileEntity, TileEntity>() {
+                new ICapabilityConstructor<IItemHandler, IInventory, TileEntity>() {
 
                     @Override
                     public Capability<IItemHandler> getCapability() {
@@ -245,11 +247,10 @@ public class VanillaModCompat implements IModCompat {
                     }
 
                     @Override
-                    public @NotNull ICapabilityProvider createProvider(TileEntity hostType, TileEntity host) {
+                    public @NotNull ICapabilityProvider createProvider(IInventory hostType, TileEntity host) {
                         return new DefaultSidedCapabilityProvider<>(
-                            DefaultSidedCapabilityProvider.forAllSides(
-                                getCapability(),
-                                side -> new InventoryHandlerWrapper((IInventory) hostType, side)));
+                            DefaultSidedCapabilityProvider
+                                .forAllSides(getCapability(), side -> new InventoryHandlerWrapper(hostType, side)));
                     }
                 });
 
@@ -350,7 +351,7 @@ public class VanillaModCompat implements IModCompat {
                 });
             registry.registerInheritableTile(
                 net.minecraftforge.fluids.IFluidHandler.class,
-                new ICapabilityConstructor<ruiseki.okcore.fluid.handler.IFluidHandler, TileEntity, TileEntity>() {
+                new ICapabilityConstructor<ruiseki.okcore.fluid.handler.IFluidHandler, net.minecraftforge.fluids.IFluidHandler, TileEntity>() {
 
                     @Override
                     public Capability<ruiseki.okcore.fluid.handler.IFluidHandler> getCapability() {
@@ -358,18 +359,15 @@ public class VanillaModCompat implements IModCompat {
                     }
 
                     @Override
-                    public @Nullable ICapabilityProvider createProvider(TileEntity hostType, TileEntity host) {
+                    public @NotNull ICapabilityProvider createProvider(net.minecraftforge.fluids.IFluidHandler hostType,
+                        TileEntity host) {
                         if (hostType instanceof ruiseki.okcore.fluid.handler.IFluidHandler) {
-                            return ICapabilityProvider.EMPTY;
-                        }
-
-                        if (!(hostType instanceof net.minecraftforge.fluids.IFluidHandler forgeHandler)) {
                             return ICapabilityProvider.EMPTY;
                         }
 
                         return new DefaultSidedCapabilityProvider<>(
                             DefaultSidedCapabilityProvider
-                                .forAllSides(getCapability(), side -> new FluidHandlerWrapper(forgeHandler, side)));
+                                .forAllSides(getCapability(), side -> new FluidHandlerWrapper(hostType, side)));
                     }
                 });
 
@@ -428,7 +426,7 @@ public class VanillaModCompat implements IModCompat {
                 });
             registry.registerInheritableTile(
                 IEnergyConnection.class,
-                new ICapabilityConstructor<IEnergyStorage, TileEntity, TileEntity>() {
+                new ICapabilityConstructor<IEnergyStorage, IEnergyConnection, TileEntity>() {
 
                     @Override
                     public Capability<IEnergyStorage> getCapability() {
@@ -436,10 +434,24 @@ public class VanillaModCompat implements IModCompat {
                     }
 
                     @Override
-                    public @Nullable ICapabilityProvider createProvider(TileEntity hostType, TileEntity host) {
+                    public @NotNull ICapabilityProvider createProvider(IEnergyConnection hostType, TileEntity host) {
                         return new DefaultSidedCapabilityProvider<>(
                             DefaultSidedCapabilityProvider
                                 .forAllSides(getCapability(), side -> new CoFHEnergyWrapper(host, side)));
+                    }
+                });
+            registry.registerInheritableItem(
+                IEnergyContainerItem.class,
+                new ICapabilityConstructor<IEnergyStorage, IEnergyContainerItem, ItemStack>() {
+
+                    @Override
+                    public Capability<IEnergyStorage> getCapability() {
+                        return CapabilityEnergy.ENERGY;
+                    }
+
+                    @Override
+                    public @NotNull ICapabilityProvider createProvider(IEnergyContainerItem hostType, ItemStack host) {
+                        return new DefaultCapabilityProvider<>(this, new CoFHEnergyItemWrapper(host, hostType));
                     }
                 });
 

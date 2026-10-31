@@ -9,6 +9,8 @@ import net.minecraft.item.ItemStack;
 
 import org.lwjgl.input.Mouse;
 
+import com.gtnewhorizon.gtnhlib.client.event.RenderTooltipEvent;
+
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -18,7 +20,10 @@ import ruiseki.okcore.client.IContainerEventHandler;
 import ruiseki.okcore.event.input.IGuiInputHandle;
 import ruiseki.okcore.event.input.KeyboardInputEvent;
 import ruiseki.okcore.event.input.MouseInputEvent;
+import ruiseki.okcore.helper.GuiHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.IItemToggle;
+import ruiseki.okcore.item.IItemTooltip;
 import ruiseki.okcore.network.packet.PacketItemToggle;
 
 public class InputEventHandler {
@@ -26,6 +31,25 @@ public class InputEventHandler {
     public static final InputEventHandler INSTANCE = new InputEventHandler();
 
     public InputEventHandler() {}
+
+    // GTNHLib -> OkCore renderer
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public void onRenderTooltip(RenderTooltipEvent event) {
+        ItemStack stack = event.itemStack;
+        if (ItemHelpers.isEmpty(stack)) return;
+        if (!(stack.getItem() instanceof IItemTooltip tooltip)) return;
+
+        event.alternativeRenderer = lines -> GuiHelpers.drawHoveringText(
+            stack,
+            lines,
+            event.x,
+            event.y,
+            event.gui.width,
+            event.gui.height,
+            tooltip.getMaxTooltipWidth(stack),
+            event.font);
+    }
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent(priority = EventPriority.HIGH)

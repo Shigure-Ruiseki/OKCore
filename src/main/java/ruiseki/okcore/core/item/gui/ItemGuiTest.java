@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import com.cleanroommc.modularui.api.IGuiHolder;
 import com.cleanroommc.modularui.factory.GuiFactories;
 import com.cleanroommc.modularui.factory.PlayerInventoryGuiData;
+import com.cleanroommc.modularui.screen.ModularContainer;
 import com.cleanroommc.modularui.screen.ModularPanel;
 import com.cleanroommc.modularui.screen.ModularScreen;
 import com.cleanroommc.modularui.screen.UISettings;
@@ -52,20 +53,20 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
     public @Nullable ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
         return new ICapabilityProvider() {
 
-            private TestGuiWrapper wrapper = null;
+            private GuiTestWrapper wrapper = null;
 
             @Override
             public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap,
                 @Nullable ForgeDirection side) {
                 initCap();
 
-                if (cap == CapabilityTestGuiWrapperConfig.CAPABILITY) {
+                if (cap == CapabilityGuiTestWrapperConfig.CAPABILITY) {
                     return LazyOptional.of(() -> wrapper)
                         .cast();
                 }
 
                 if (cap == CapabilityItemHandler.ITEM_HANDLER) {
-                    return LazyOptional.of(() -> wrapper.getItemHandler())
+                    return LazyOptional.of(() -> wrapper.getInventoryHandler())
                         .cast();
                 }
 
@@ -74,7 +75,7 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
 
             private void initCap() {
                 if (wrapper == null) {
-                    wrapper = new TestGuiWrapper(stack);
+                    wrapper = new GuiTestWrapper(stack);
                 }
             }
         };
@@ -97,8 +98,10 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
     @Override
     public ModularPanel buildUI(PlayerInventoryGuiData data, PanelSyncManager manager, UISettings settings) {
 
-        LazyOptional<TestGuiWrapper> wrapperCap = CapabilityHelpers
-            .getCapability(data.getUsedItemStack(), CapabilityTestGuiWrapperConfig.CAPABILITY);
+        LazyOptional<GuiTestWrapper> wrapperCap = CapabilityHelpers
+            .getCapability(data.getUsedItemStack(), CapabilityGuiTestWrapperConfig.CAPABILITY);
+
+        settings.customContainer(() -> new GuiTestContainer(wrapperCap));
 
         final int panelHeight = 216;
         final ModularPanel panel = ModularPanel.defaultPanel("golden_bag", 176, panelHeight);
@@ -110,7 +113,7 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
             .coverChildren();
 
         wrapperCap.ifPresent(wrapper -> {
-            IItemHandler handler = wrapper.getItemHandler();
+            IItemHandler handler = wrapper.getInventoryHandler();
             SlotGroupWidget grid = SlotGroupWidget.builder()
                 .row("IIIIIIIII")
                 .row("IIIIIIIII")
@@ -129,5 +132,14 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
         });
 
         return panel;
+    }
+
+    public static class GuiTestContainer extends ModularContainer {
+
+        public final LazyOptional<GuiTestWrapper> cap;
+
+        public GuiTestContainer(LazyOptional<GuiTestWrapper> cap) {
+            this.cap = cap;
+        }
     }
 }

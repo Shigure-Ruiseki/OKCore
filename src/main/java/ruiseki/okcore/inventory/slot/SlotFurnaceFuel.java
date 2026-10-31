@@ -5,6 +5,8 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityFurnace;
 
+import ruiseki.okcore.helper.ItemHelpers;
+
 public class SlotFurnaceFuel extends SlotExtended {
 
     public SlotFurnaceFuel(IInventory inventoryIn, int slotIndex, int xPosition, int yPosition) {
@@ -25,6 +27,6 @@ public class SlotFurnaceFuel extends SlotExtended {
     }
 
     public static boolean isBucket(ItemStack stack) {
-        return stack.getItem() == Items.bucket;
+        return ItemHelpers.getItem(stack) == Items.bucket;
     }
 }

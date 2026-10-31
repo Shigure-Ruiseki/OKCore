@@ -17,6 +17,7 @@ import codechicken.nei.NEIClientConfig;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.recipe.ShapelessRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
 
@@ -30,32 +31,17 @@ public abstract class MixinShapelessRecipeHandler extends TemplateRecipeHandler 
             target = "Lnet/minecraft/item/crafting/CraftingManager;getRecipeList()Ljava/util/List;",
             shift = At.Shift.AFTER))
     private void injectLoadCraftingRecipes(String outputId, Object[] results, CallbackInfo ci) {
+        if (okcore$getThis().getClass() != ShapelessRecipeHandler.class) return;
+        boolean crafting = "crafting".equals(outputId);
+        boolean crafting2x2 = "crafting2x2".equals(outputId);
+        if (!crafting && !crafting2x2) return;
         ShapelessRecipeHandler handler = (ShapelessRecipeHandler) (Object) this;
-
-        if (outputId.equals("crafting") && handler.getClass() == ShapelessRecipeHandler.class) {
-            for (IRecipe irecipe : CraftingManager.getInstance()
-                .getRecipeList()) {
-                if (irecipe instanceof ShapelessRecipe shapeless) {
-                    ShapelessRecipeHandler.CachedShapelessRecipe recipe = okcore$createNeiCachedRecipe(
-                        handler,
-                        shapeless);
-                    if (recipe != null) {
-                        handler.arecipes.add(recipe);
-                    }
-                }
-            }
-        } else if (outputId.equals("crafting2x2") && handler.getClass() == ShapelessRecipeHandler.class) {
-            for (IRecipe irecipe : CraftingManager.getInstance()
-                .getRecipeList()) {
-                if (irecipe instanceof ShapelessRecipe shapeless && shapeless.getRecipeSize() <= 4) {
-                    ShapelessRecipeHandler.CachedShapelessRecipe recipe = okcore$createNeiCachedRecipe(
-                        handler,
-                        shapeless);
-                    if (recipe != null) {
-                        handler.arecipes.add(recipe);
-                    }
-                }
-            }
+        for (IRecipe recipe : CraftingManager.getInstance()
+            .getRecipeList()) {
+            if (!(recipe instanceof ShapelessRecipe shapeless)) continue;
+            if (crafting2x2 && shapeless.getRecipeSize() > 4) continue;
+            ShapelessRecipeHandler.CachedShapelessRecipe cached = okcore$createNeiCachedRecipe(handler, shapeless);
+            if (cached != null) handler.arecipes.add(cached);
         }
     }
 
@@ -86,7 +72,7 @@ public abstract class MixinShapelessRecipeHandler extends TemplateRecipeHandler 
             .getRecipeList()) {
             if (irecipe instanceof ShapelessRecipe shapeless) {
                 ShapelessRecipeHandler.CachedShapelessRecipe recipe = okcore$createNeiCachedRecipe(handler, shapeless);
-                if (recipe == null || !recipe.contains(recipe.ingredients, ingredient.getItem())) continue;
+                if (recipe == null || !recipe.contains(recipe.ingredients, ItemHelpers.getItem(ingredient))) continue;
 
                 if (recipe.contains(recipe.ingredients, ingredient)) {
                     recipe.setIngredientPermutation(recipe.ingredients, ingredient);
@@ -99,24 +85,32 @@ public abstract class MixinShapelessRecipeHandler extends TemplateRecipeHandler 
     @Unique
     private ShapelessRecipeHandler.CachedShapelessRecipe okcore$createNeiCachedRecipe(ShapelessRecipeHandler handler,
         ShapelessRecipe recipe) {
+
         try {
             List<Ingredient> ingredients = recipe.getIngredients();
-            if (ingredients == null || ingredients.isEmpty()) {
-                return null;
-            }
+            if (ingredients == null || ingredients.isEmpty()) return null;
 
             List<Object> rawInputs = new ArrayList<>();
 
             for (Ingredient ingredient : ingredients) {
-                if (ingredient.isEmpty()) continue;
+                if (ingredient == null || ingredient.isEmpty()) continue;
 
-                List<ItemStack> displayStacks = List.of(ingredient.getItems());
-                if (displayStacks.isEmpty()) {
-                    return null;
+                ItemStack[] items = ingredient.getItems();
+                if (items == null || items.length == 0) return null;
+
+                List<ItemStack> stacks = new ArrayList<>();
+                for (ItemStack stack : items) {
+                    if (!ItemHelpers.isEmpty(stack)) {
+                        stacks.add(stack);
+                    }
                 }
 
-                rawInputs.add((displayStacks.size() == 1) ? displayStacks.getFirst() : displayStacks);
+                if (stacks.isEmpty()) return null;
+
+                rawInputs.add(stacks.size() == 1 ? stacks.getFirst() : stacks);
             }
+
+            if (rawInputs.isEmpty()) return null;
 
             return handler.new CachedShapelessRecipe(rawInputs, recipe.getRecipeOutput());
 
@@ -124,5 +118,10 @@ public abstract class MixinShapelessRecipeHandler extends TemplateRecipeHandler 
             NEIClientConfig.logger.error("Error injecting custom OKCore shapeless recipe into NEI: ", e);
             return null;
         }
+    }
+
+    @Unique
+    private ShapelessRecipeHandler okcore$getThis() {
+        return (ShapelessRecipeHandler) (Object) this;
     }
 }

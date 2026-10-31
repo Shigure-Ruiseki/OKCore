@@ -21,8 +21,39 @@ import ruiseki.okcore.nbt.path.NbtPath;
 import ruiseki.okcore.nbt.path.NbtPathExpressionMatches;
 
 /**
- * A handler that handles filter expressions in the form of "[?(expression)]", such as "[?(@.childName)]" or
- * "[?(@.childName < 10)]".
+ * Parses and handles filter expressions in NBT path queries.
+ *
+ * <p>
+ * Filter expressions select NBT elements that satisfy a specified
+ * condition. They use the syntax {@code [?(expression)]}.
+ *
+ * <h2>Examples</h2>
+ *
+ * <ul>
+ * <li>{@code [?(@.childName)]} - Filters elements based on a child tag.</li>
+ * <li>{@code [?(@.childName < 10)]} - Filters elements whose child value
+ * satisfies a comparison.</li>
+ * </ul>
+ *
+ * <h2>Supported NBT Types</h2>
+ *
+ * <p>
+ * Filters can be applied to:
+ * <ul>
+ * <li>{@link net.minecraft.nbt.NBTTagList} - Evaluates the filter against
+ * the collected list elements.</li>
+ * <li>{@link net.minecraft.nbt.NBTTagCompound} - Evaluates the filter
+ * against the compound's child tags.</li>
+ * </ul>
+ *
+ * <p>
+ * Matching elements are collected into a new
+ * {@link net.minecraft.nbt.NBTTagList}.
+ *
+ * @see INbtPathExpressionParseHandler
+ * @see INbtPathExpression
+ * @see NbtPath
+ * @see NbtPathExpressionMatches
  */
 public class NbtPathExpressionParseHandlerFilterExpression implements INbtPathExpressionParseHandler {
 

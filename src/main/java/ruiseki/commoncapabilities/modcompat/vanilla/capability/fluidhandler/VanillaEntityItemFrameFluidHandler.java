@@ -1,3 +1,4 @@
+
 package ruiseki.commoncapabilities.modcompat.vanilla.capability.fluidhandler;
 
 import net.minecraft.entity.item.EntityItemFrame;
@@ -9,11 +10,10 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 /**
  * A fluid handler for entity item frames that have a fluid handler.
- * 
+ *
  * @author rubensworks
  */
 public class VanillaEntityItemFrameFluidHandler extends VanillaEntityItemFrameCapabilityDelegator<IFluidHandlerItem>
@@ -29,12 +29,27 @@ public class VanillaEntityItemFrameFluidHandler extends VanillaEntityItemFrameCa
     }
 
     @Override
-    public IFluidTankProperties[] getTankProperties() {
+    public int getTanks() {
         IFluidHandlerItem fluidHandler = getCapability().getOrNull();
-        if (fluidHandler != null) {
-            return fluidHandler.getTankProperties();
-        }
-        return new IFluidTankProperties[0];
+        return fluidHandler != null ? fluidHandler.getTanks() : 0;
+    }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        IFluidHandlerItem fluidHandler = getCapability().getOrNull();
+        return fluidHandler != null ? fluidHandler.getFluidInTank(tank) : null;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        IFluidHandlerItem fluidHandler = getCapability().getOrNull();
+        return fluidHandler != null ? fluidHandler.getTankCapacity(tank) : 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, FluidStack stack) {
+        IFluidHandlerItem fluidHandler = getCapability().getOrNull();
+        return fluidHandler != null && fluidHandler.isFluidValid(tank, stack);
     }
 
     @Override

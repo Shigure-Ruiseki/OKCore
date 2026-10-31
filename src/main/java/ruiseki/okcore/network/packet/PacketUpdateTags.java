@@ -1,6 +1,8 @@
+
 package ruiseki.okcore.network.packet;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,39 +17,46 @@ import org.apache.logging.log4j.Level;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
-import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
 public class PacketUpdateTags extends PacketCodec {
 
-    private Map<TagKey<?>, Set<TagEntry>> tagsMap = new HashMap<>();
+    private Map<TagKey<?>, Set<String>> tagsMap = Collections.emptyMap();
 
     public PacketUpdateTags() {}
 
-    public PacketUpdateTags(Map<TagKey<?>, Set<TagEntry>> tagsMap) {
-        this.tagsMap = tagsMap;
+    public PacketUpdateTags(Map<TagKey<?>, Set<String>> tagsMap) {
+        this.tagsMap = new HashMap<>(tagsMap);
     }
 
     @Override
     public void decode(ExtendedBuffer input) {
-        this.tagsMap = new HashMap<>();
+        Map<TagKey<?>, Set<String>> decoded = new HashMap<>();
+
         try {
             int tagCount = input.readVarIntFromBuffer();
+            if (tagCount < 0) {
+                throw new IOException("Invalid tag count: " + tagCount);
+            }
             for (int i = 0; i < tagCount; i++) {
                 TagKey<?> tagKey = TagKey.fromNetwork(input);
                 int entryCount = input.readVarIntFromBuffer();
-
-                Set<TagEntry> entries = new HashSet<>();
-                for (int j = 0; j < entryCount; j++) {
-                    entries.add(TagEntry.fromNetwork(input));
+                if (entryCount < 0) {
+                    throw new IOException("Invalid entry count: " + entryCount);
                 }
-
-                if (!entries.isEmpty()) {
-                    this.tagsMap.put(tagKey, entries);
+                Set<String> entries = new HashSet<>();
+                for (int j = 0; j < entryCount; j++) {
+                    String value = input.readStringFromBuffer(32767);
+                    entries.add(value);
+                }
+                if (tagKey != null) {
+                    decoded.put(tagKey, entries);
                 }
             }
-        } catch (IOException e) {
+            this.tagsMap = decoded;
+        } catch (IOException | RuntimeException e) {
+            this.tagsMap = Collections.emptyMap();
             OKCore.okLog(Level.ERROR, "Failed to decode datapack tags network packet", e);
         }
     }
@@ -56,19 +65,13 @@ public class PacketUpdateTags extends PacketCodec {
     public void encode(ExtendedBuffer output) {
         try {
             output.writeVarIntToBuffer(this.tagsMap.size());
-
-            for (Map.Entry<TagKey<?>, Set<TagEntry>> entry : this.tagsMap.entrySet()) {
+            for (Map.Entry<TagKey<?>, Set<String>> entry : this.tagsMap.entrySet()) {
                 TagKey<?> tagKey = entry.getKey();
-                Set<TagEntry> entries = entry.getValue();
-
+                Set<String> entries = entry.getValue();
                 tagKey.toNetwork(output);
-
                 output.writeVarIntToBuffer(entries.size());
-                for (TagEntry entryValue : entries) {
-                    if (entryValue != null) {
-                        output.writeResourceLocation(entryValue.id());
-                        output.writeVarIntToBuffer(entryValue.meta());
-                    }
+                for (String value : entries) {
+                    output.writeStringToBuffer(value);
                 }
             }
         } catch (IOException e) {

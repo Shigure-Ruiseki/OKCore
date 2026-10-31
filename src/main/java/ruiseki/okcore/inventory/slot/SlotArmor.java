@@ -43,10 +43,10 @@ public class SlotArmor extends SlotExtended {
     }
 
     @Override
-    public boolean isItemValid(ItemStack itemStack) {
-        if (ItemHelpers.isEmpty(itemStack)) return false;
-        return itemStack.getItem()
-            .isValidArmor(itemStack, armorIndex, player);
+    public boolean isItemValid(ItemStack stack) {
+        return ItemHelpers.getItemOptional(stack)
+            .map(item -> item.isValidArmor(stack, armorIndex, player))
+            .orElse(false);
     }
 
     @Override

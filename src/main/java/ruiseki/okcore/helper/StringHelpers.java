@@ -2,6 +2,7 @@ package ruiseki.okcore.helper;
 
 import java.util.List;
 
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.StringUtils;
@@ -26,39 +27,132 @@ public class StringHelpers {
     public static final boolean matchWildcard = true;
 
     private static final String SPACE = " ";
-    private static final String NEWLINE_PATTERN = "\\\\n";
+    private static final String NEWLINE_PATTERN = "\\\\n|\\r\\n|\\r|\\n";
 
     /**
-     * Split the input string into lines while preserving the full words.
-     * This will also forcefully add newlines when '\n' is found in the input string.
+     * Splits the input string into lines while preserving complete words.
      *
-     * @param input     The input sentence.
-     * @param maxLength The maximum length of a line.
-     * @param prefix    A prefix to add to each produced line. This will not increase the character
-     *                  count per line.
-     * @return The sentence split into lines.
+     * <p>
+     * Explicit newline characters and literal {@code \n} sequences
+     * are treated as line breaks.
+     * </p>
+     *
+     * <p>
+     * Words are kept intact, even when an individual word exceeds
+     * the specified maximum length.
+     * </p>
+     *
+     * @param input     the input text
+     * @param maxLength the maximum number of characters per line
+     * @param prefix    a prefix added to each resulting line
+     * @return the resulting lines
      */
     public static List<String> splitLines(String input, int maxLength, String prefix) {
-        List<String> list = Lists.newLinkedList();
+        List<String> lines = Lists.newArrayList();
 
-        for (String partialInput : input.split(NEWLINE_PATTERN)) {
+        if (input == null) {
+            return lines;
+        }
+
+        maxLength = Math.max(1, maxLength);
+        prefix = prefix == null ? "" : prefix;
+
+        for (String paragraph : input.split(NEWLINE_PATTERN, -1)) {
+            if (paragraph.trim()
+                .isEmpty()) {
+                lines.add(prefix);
+                continue;
+            }
+
             StringBuilder buffer = new StringBuilder();
-            for (String word : partialInput.split(SPACE)) {
+
+            for (String word : paragraph.trim()
+                .split("\\s+")) {
+                int requiredLength = buffer.isEmpty() ? word.length() : buffer.length() + 1 + word.length();
+
+                if (!buffer.isEmpty() && requiredLength > maxLength) {
+                    lines.add(prefix + buffer);
+                    buffer.setLength(0);
+                }
+
                 if (!buffer.isEmpty()) {
                     buffer.append(SPACE);
                 }
+
                 buffer.append(word);
-                if (buffer.length() >= maxLength) {
-                    list.add(prefix + buffer.toString());
-                    buffer = new StringBuilder();
-                }
             }
+
             if (!buffer.isEmpty()) {
-                list.add(prefix + buffer.toString());
+                lines.add(prefix + buffer);
             }
         }
 
-        return list;
+        return lines;
+    }
+
+    /**
+     * Splits the input string into lines based on the maximum pixel width.
+     *
+     * <p>
+     * Text is wrapped at word boundaries using the specified font renderer.
+     * Explicit newline characters and literal {@code \n} sequences
+     * are also preserved.
+     * </p>
+     *
+     * <p>
+     * Minecraft formatting codes are handled by {@link FontRenderer},
+     * allowing formatted text to be wrapped without measuring raw
+     * character lengths.
+     * </p>
+     *
+     * @param input    the input text
+     * @param font     the font renderer used to measure and wrap text
+     * @param maxWidth the maximum width of each line in pixels
+     * @param prefix   a prefix added to each resulting line
+     * @return the wrapped lines
+     */
+    public static List<String> splitLines(String input, FontRenderer font, int maxWidth, String prefix) {
+        List<String> lines = Lists.newArrayList();
+
+        if (input == null || font == null || maxWidth <= 0) {
+            return lines;
+        }
+
+        prefix = prefix == null ? "" : prefix;
+
+        int availableWidth = Math.max(1, maxWidth - font.getStringWidth(prefix));
+
+        for (String paragraph : input.split(NEWLINE_PATTERN, -1)) {
+            if (paragraph.isEmpty()) {
+                lines.add(prefix);
+                continue;
+            }
+
+            List<String> wrappedLines = font.listFormattedStringToWidth(paragraph, availableWidth);
+
+            if (wrappedLines.isEmpty()) {
+                lines.add(prefix);
+                continue;
+            }
+
+            for (String line : wrappedLines) {
+                lines.add(prefix + line);
+            }
+        }
+
+        return lines;
+    }
+
+    /**
+     * Splits the input string into lines based on the maximum pixel width.
+     *
+     * @param input    the input text
+     * @param font     the font renderer used to measure and wrap text
+     * @param maxWidth the maximum width of each line in pixels
+     * @return the wrapped lines
+     */
+    public static List<String> splitLines(String input, FontRenderer font, int maxWidth) {
+        return splitLines(input, font, maxWidth, "");
     }
 
     public static String getFormattedString(String string, ChatFormatting formatting) {
@@ -66,7 +160,7 @@ public class StringHelpers {
     }
 
     public static String getFormattedString(ChatFormatting pre, String string, ChatFormatting post) {
-        return ChatFormatting.RESET + "" + pre + string + ChatFormatting.RESET + "" + post;
+        return ChatFormatting.RESET + "" + pre + string + ChatFormatting.RESET + post;
     }
 
     public static ChatFormatting getValidFormatting(String formatting) {

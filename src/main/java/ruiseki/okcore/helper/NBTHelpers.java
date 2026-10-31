@@ -14,6 +14,8 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import ruiseki.okcore.datastructure.StringRepresentable;
+
 public class NBTHelpers {
 
     private NBTHelpers() {}
@@ -73,23 +75,24 @@ public class NBTHelpers {
     }
 
     public static <E, C extends Collection<E>> Optional<C> getCollection(ItemStack stack, String parentKey,
-        String tagName, byte listType, Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
-        return getTagValue(stack, parentKey, tagName, (c, n) -> c.getTagList(n, listType)).map(listNbt -> {
-            C ret = initCollection.get();
-            for (int i = 0; i < listNbt.tagCount(); i++) {
-                getElement.apply(listNbt.getCompoundTagAt(i))
-                    .ifPresent(ret::add);
-            }
-            return ret;
-        });
+        String tagName, int listType, Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
+        return getTagValue(stack, parentKey, tagName, (compound, name) -> compound.getTagList(name, listType))
+            .map(listNbt -> {
+                C ret = initCollection.get();
+                for (int i = 0; i < listNbt.tagCount(); i++) {
+                    getElement.apply((NBTBase) listNbt.tagList.get(i))
+                        .ifPresent(ret::add);
+                }
+                return ret;
+            });
     }
 
-    public static <E, C extends Collection<E>> Optional<C> getCollection(NBTTagCompound tag, String key, byte listType,
+    public static <E, C extends Collection<E>> Optional<C> getCollection(NBTTagCompound tag, String key, int listType,
         Function<NBTBase, Optional<E>> getElement, Supplier<C> initCollection) {
-        return getTagValue(tag, key, (c, n) -> c.getTagList(n, listType)).map(listNbt -> {
+        return getTagValue(tag, key, (compound, name) -> compound.getTagList(name, listType)).map(listNbt -> {
             C ret = initCollection.get();
             for (int i = 0; i < listNbt.tagCount(); i++) {
-                getElement.apply(listNbt.getCompoundTagAt(i))
+                getElement.apply((NBTBase) listNbt.tagList.get(i))
                     .ifPresent(ret::add);
             }
             return ret;
@@ -140,17 +143,16 @@ public class NBTHelpers {
         return getTagValue(stack, key, (compound, k) -> UUID.fromString(compound.getString(k)));
     }
 
-    public static void setCompoundNBT(ItemStack stack, String key, NBTTagCompound tag) {
-        setCompoundNBT(stack, "", key, tag);
+    public static void setCompoundNBT(ItemStack stack, String key, NBTTagCompound value) {
+        setCompoundNBT(stack, "", key, value);
     }
 
     public static void setCompoundNBT(ItemStack stack, String parentKey, String key, NBTTagCompound value) {
-        NBTTagCompound tag = getOrCreateTag(stack);
         if (parentKey.isEmpty()) {
-            getOrCreateTag(stack).setTag(key, tag);
+            getOrCreateTag(stack).setTag(key, value);
             return;
         }
-        getOrCreateTagElement(stack, parentKey).setTag(key, tag);
+        getOrCreateTagElement(stack, parentKey).setTag(key, value);
     }
 
     public static void setBoolean(ItemStack stack, String parentKey, String key, boolean value) {
@@ -167,6 +169,26 @@ public class NBTHelpers {
 
     public static NBTTagCompound setBoolean(NBTTagCompound tag, String key, boolean value) {
         tag.setBoolean(key, value);
+        return tag;
+    }
+
+    public static <T extends Enum<T> & StringRepresentable> void setEnumConstant(ItemStack stack, String parentKey,
+        String key, T enumConstant) {
+        if (parentKey.isEmpty()) {
+            setEnumConstant(stack, key, enumConstant);
+            return;
+        }
+        setEnumConstant(getOrCreateTagElement(stack, parentKey), key, enumConstant);
+    }
+
+    public static <T extends Enum<T> & StringRepresentable> void setEnumConstant(ItemStack stack, String key,
+        T enumConstant) {
+        getOrCreateTag(stack).setString(key, enumConstant.getSerializedName());
+    }
+
+    public static <T extends Enum<T> & StringRepresentable> NBTTagCompound setEnumConstant(NBTTagCompound tag,
+        String key, T enumConstant) {
+        tag.setString(key, enumConstant.getSerializedName());
         return tag;
     }
 
@@ -190,6 +212,18 @@ public class NBTHelpers {
 
     public static void setUniqueId(ItemStack stack, String key, UUID uuid) {
         getOrCreateTag(stack).setString(key, uuid.toString());
+    }
+
+    public static void setString(ItemStack stack, String key, String string) {
+        getOrCreateTag(stack).setString(key, string);
+    }
+
+    public static void setCompoundTag(ItemStack stack, String key, NBTTagCompound value) {
+        setCompoundNBT(stack, key, value);
+    }
+
+    public static void setCompoundTag(ItemStack stack, String parentKey, String key, NBTTagCompound value) {
+        setCompoundNBT(stack, parentKey, key, value);
     }
 
     public static void removeTag(ItemStack stack, String key) {
@@ -269,6 +303,7 @@ public class NBTHelpers {
     }
 
     private static NBTTagCompound getOrCreateTag(ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) return new NBTTagCompound();
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());
         }

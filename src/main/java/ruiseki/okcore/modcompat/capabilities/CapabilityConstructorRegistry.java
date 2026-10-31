@@ -113,7 +113,7 @@ public class CapabilityConstructorRegistry {
         }
     }
 
-    public <K, V> void registerInheritableTile(Class<K> clazz, ICapabilityConstructor<?, V, V> constructor) {
+    public <K, V> void registerInheritableTile(Class<K> clazz, ICapabilityConstructor<?, K, V> constructor) {
         checkNotBaked();
         capabilityConstructorsTileSuper.add(Pair.of(clazz, constructor));
 

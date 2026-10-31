@@ -6,6 +6,10 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
+import org.jetbrains.annotations.NotNull;
+
+import ruiseki.okcore.helper.FluidHelpers;
+
 /**
  * Implement this interface as a capability which should handle fluids, generally storing them in
  * one or more internal {@link IFluidTank} objects.
@@ -13,31 +17,68 @@ import net.minecraftforge.fluids.IFluidTank;
 public interface IFluidHandler extends net.minecraftforge.fluids.IFluidHandler {
 
     /**
-     * Returns an array of objects which represent the internal tanks.
-     * These objects cannot be used to manipulate the internal tanks.
+     * Returns the number of fluid storage units ("tanks") available
      *
-     * @return Properties for the relevant internal tanks.
+     * @return The number of tanks available
      */
-    IFluidTankProperties[] getTankProperties();
+    int getTanks();
+
+    /**
+     * Returns the FluidStack in a given tank.
+     *
+     * <p>
+     * <strong>IMPORTANT:</strong> This FluidStack <em>MUST NOT</em> be modified. This method is not for
+     * altering internal contents. Any implementers who are able to detect modification via this method
+     * should throw an exception. It is ENTIRELY reasonable and likely that the stack returned here will be a copy.
+     * </p>
+     *
+     * <p>
+     * <strong><em>SERIOUSLY: DO NOT MODIFY THE RETURNED FLUIDSTACK</em></strong>
+     * </p>
+     *
+     * @param tank Tank to query.
+     * @return FluidStack in a given tank. FluidStack.EMPTY if the tank is empty.
+     */
+    FluidStack getFluidInTank(int tank);
+
+    /**
+     * Retrieves the maximum fluid amount for a given tank.
+     *
+     * @param tank Tank to query.
+     * @return The maximum fluid amount held by the tank.
+     */
+    int getTankCapacity(int tank);
+
+    /**
+     * This function is a way to determine which fluids can exist inside a given handler. General purpose tanks will
+     * basically always return TRUE for this.
+     *
+     * @param tank  Tank to query for validity
+     * @param stack Stack to test with for validity
+     * @return TRUE if the tank can hold the FluidStack, not considering current state.
+     *         (Basically, is a given fluid EVER allowed in this tank?) Return FALSE if the answer to that question is
+     *         'no.'
+     */
+    boolean isFluidValid(int tank, @NotNull FluidStack stack);
 
     /**
      * Fills fluid into internal tanks, distribution is left entirely to the IFluidHandler.
      *
      * @param resource FluidStack representing the Fluid and maximum amount of fluid to be filled.
-     * @param doFill   If false, fill will only be simulated.
+     * @param action   If SIMULATE, fill will only be simulated.
      * @return Amount of resource that was (or would have been, if simulated) filled.
      */
-    int fill(FluidStack resource, boolean doFill);
+    int fill(FluidStack resource, boolean action);
 
     /**
      * Drains fluid out of internal tanks, distribution is left entirely to the IFluidHandler.
      *
      * @param resource FluidStack representing the Fluid and maximum amount of fluid to be drained.
-     * @param doDrain  If SIMULATE, drain will only be simulated.
+     * @param action   If SIMULATE, drain will only be simulated.
      * @return FluidStack representing the Fluid and amount that was (or would have been, if
      *         simulated) drained.
      */
-    FluidStack drain(FluidStack resource, boolean doDrain);
+    FluidStack drain(FluidStack resource, boolean action);
 
     /**
      * Drains fluid out of internal tanks, distribution is left entirely to the IFluidHandler.
@@ -45,13 +86,11 @@ public interface IFluidHandler extends net.minecraftforge.fluids.IFluidHandler {
      * This method is not Fluid-sensitive.
      *
      * @param maxDrain Maximum amount of fluid to drain.
-     * @param doDrain  If false, drain will only be simulated.
+     * @param action   If SIMULATE, drain will only be simulated.
      * @return FluidStack representing the Fluid and amount that was (or would have been, if
      *         simulated) drained.
      */
-    FluidStack drain(int maxDrain, boolean doDrain);
-
-    // Wrapper
+    FluidStack drain(int maxDrain, boolean action);
 
     @Override
     default FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
@@ -70,14 +109,10 @@ public interface IFluidHandler extends net.minecraftforge.fluids.IFluidHandler {
 
     @Override
     default FluidTankInfo[] getTankInfo(ForgeDirection from) {
-        IFluidTankProperties[] properties = getTankProperties();
-        if (properties == null) {
-            return new FluidTankInfo[0];
-        }
-
-        FluidTankInfo[] infos = new FluidTankInfo[properties.length];
-        for (int i = 0; i < properties.length; i++) {
-            infos[i] = new FluidTankInfo(properties[i].getContents(), properties[i].getCapacity());
+        int tanks = getTanks();
+        FluidTankInfo[] infos = new FluidTankInfo[tanks];
+        for (int i = 0; i < tanks; i++) {
+            infos[i] = new FluidTankInfo(getFluidInTank(i), getTankCapacity(i));
         }
         return infos;
     }
@@ -85,12 +120,9 @@ public interface IFluidHandler extends net.minecraftforge.fluids.IFluidHandler {
     @Override
     default boolean canFill(ForgeDirection from, Fluid fluid) {
         if (fluid == null) return false;
-        IFluidTankProperties[] properties = getTankProperties();
-        if (properties == null) return false;
-
-        FluidStack mockStack = new FluidStack(fluid, 1);
-        for (IFluidTankProperties prop : properties) {
-            if (prop != null && prop.canFill() && prop.canFillFluidType(mockStack)) {
+        FluidStack mock = new FluidStack(fluid, 1);
+        for (int i = 0; i < getTanks(); i++) {
+            if (isFluidValid(i, mock)) {
                 return true;
             }
         }
@@ -100,12 +132,9 @@ public interface IFluidHandler extends net.minecraftforge.fluids.IFluidHandler {
     @Override
     default boolean canDrain(ForgeDirection from, Fluid fluid) {
         if (fluid == null) return false;
-        IFluidTankProperties[] properties = getTankProperties();
-        if (properties == null) return false;
-
-        FluidStack mockStack = new FluidStack(fluid, 1);
-        for (IFluidTankProperties prop : properties) {
-            if (prop != null && prop.canDrain() && prop.canDrainFluidType(mockStack)) {
+        for (int i = 0; i < getTanks(); i++) {
+            FluidStack stored = getFluidInTank(i);
+            if (!FluidHelpers.isEmpty(stored) && stored.getFluid() == fluid) {
                 return true;
             }
         }

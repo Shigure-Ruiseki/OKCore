@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import ruiseki.okcore.helper.CooldownHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 @Mixin(RenderItem.class)
 public abstract class MixinRenderItem {
@@ -26,43 +27,41 @@ public abstract class MixinRenderItem {
         at = @At("RETURN"))
     private void okcore$injectCooldownOverlay(FontRenderer fontRenderer, TextureManager textureManager, ItemStack stack,
         int x, int y, String text, CallbackInfo ci) {
-        if (stack == null || stack.getItem() == null) return;
+        if (ItemHelpers.isEmpty(stack)) return;
 
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+        Minecraft mc = Minecraft.getMinecraft();
+        EntityPlayerSP player = mc.thePlayer;
         if (player == null) return;
-        float f3 = CooldownHelpers.getCooldownPercent(stack, player, Minecraft.getMinecraft().timer.renderPartialTicks);
 
-        if (f3 > 0.0F) {
+        float cooldown = CooldownHelpers.getCooldownPercent(stack, player, mc.timer.renderPartialTicks);
+        if (cooldown <= 0.0F) return;
 
-            GL11.glDisable(GL11.GL_LIGHTING);
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glDisable(GL11.GL_ALPHA_TEST);
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        int height = (int) Math.ceil(16.0F * cooldown);
+        int yOffset = 16 - height;
 
-            Tessellator tessellator = TessellatorManager.get();
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-            int renderHeight = (int) Math.ceil(16.0F * f3);
-            int yOffset = (int) Math.floor(16.0F * (1.0F - f3));
+        Tessellator tessellator = TessellatorManager.get();
+        tessellator.startDrawingQuads();
+        tessellator.setColorRGBA_I(0xFFFFFF, 127);
 
-            tessellator.startDrawingQuads();
+        tessellator.addVertex(x, y + 16, 0.0D);
+        tessellator.addVertex(x + 16, y + 16, 0.0D);
+        tessellator.addVertex(x + 16, y + yOffset, 0.0D);
+        tessellator.addVertex(x, y + yOffset, 0.0D);
 
-            tessellator.setColorRGBA_I(0xFFFFFF, 127);
+        tessellator.draw();
 
-            tessellator.addVertex((x), (y + yOffset + renderHeight), 0.0D);
-            tessellator.addVertex((x + 16), (y + yOffset + renderHeight), 0.0D);
-            tessellator.addVertex((x + 16), (y + yOffset), 0.0D);
-            tessellator.addVertex((x), (y + yOffset), 0.0D);
-
-            tessellator.draw();
-
-            GL11.glDisable(GL11.GL_BLEND);
-            GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glEnable(GL11.GL_TEXTURE_2D);
-            GL11.glEnable(GL11.GL_LIGHTING);
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        }
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

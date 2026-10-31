@@ -51,6 +51,8 @@ import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
+import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.event.gui.RenderTooltipEvent;
 
@@ -89,6 +91,7 @@ public class GuiHelpers {
      */
     public static void drawItemStack(ItemStack stack, int x, int y) {
         glPushMatrix();
+        glEnable(GL_BLEND);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         RenderHelper.enableGUIStandardItemLighting();
@@ -319,13 +322,12 @@ public class GuiHelpers {
     }
 
     /**
-     * Use this version if calling from somewhere where ItemStack context is available.
-     *
-     * @see #drawHoveringText(List, int, int, int, int, int, FontRenderer)
+     * Draws a tooltip with text and optional custom tooltip lines.
      */
-    public static void drawHoveringText(@Nonnull final ItemStack stack, List<String> textLines, int mouseX, int mouseY,
+
+    public static void drawHoveringText(ItemStack stack, List<String> textLines, int mouseX, int mouseY,
         int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font) {
-        if (!textLines.isEmpty()) {
+        if (textLines != null && !textLines.isEmpty()) {
             RenderTooltipEvent.Pre event = new RenderTooltipEvent.Pre(
                 stack,
                 textLines,
@@ -336,222 +338,301 @@ public class GuiHelpers {
                 maxTextWidth,
                 font);
             if (MinecraftForge.EVENT_BUS.post(event)) {
-                return;
-            }
-            mouseX = event.getX();
-            mouseY = event.getY();
-            screenWidth = event.getScreenWidth();
-            screenHeight = event.getScreenHeight();
-            maxTextWidth = event.getMaxWidth();
-            font = event.getFontRenderer();
+                TooltipLineHandler.clear();
+            } else {
+                mouseX = event.getX();
+                mouseY = event.getY();
+                screenWidth = event.getScreenWidth();
+                screenHeight = event.getScreenHeight();
+                maxTextWidth = event.getMaxWidth();
+                font = event.getFontRenderer();
+                GlStateManager.disableRescaleNormal();
+                RenderHelper.disableStandardItemLighting();
+                GlStateManager.disableLighting();
+                GlStateManager.disableDepth();
+                int tooltipTextWidth = 0;
+                boolean hasFlexibleWidth = false;
 
-            GlStateManager.disableRescaleNormal();
-            RenderHelper.disableStandardItemLighting();
-            GlStateManager.disableLighting();
-            GlStateManager.disableDepth();
-            int tooltipTextWidth = 0;
-
-            for (String textLine : textLines) {
-                int textLineWidth = font.getStringWidth(textLine);
-
-                if (textLineWidth > tooltipTextWidth) {
-                    tooltipTextWidth = textLineWidth;
-                }
-            }
-
-            boolean needsWrap = false;
-
-            int titleLinesCount = 1;
-            int tooltipX = mouseX + 12;
-            if (tooltipX + tooltipTextWidth + 4 > screenWidth) {
-                tooltipX = mouseX - 16 - tooltipTextWidth;
-                if (tooltipX < 4) // if the tooltip doesn't fit on the screen
-                {
-                    if (mouseX > screenWidth / 2) {
-                        tooltipTextWidth = mouseX - 12 - 8;
+                for (String textLine : textLines) {
+                    ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
+                    if (handler != null) {
+                        int width = handler.getWidth(font);
+                        if (width < 0) {
+                            hasFlexibleWidth = true;
+                        } else {
+                            tooltipTextWidth = Math.max(tooltipTextWidth, width);
+                        }
                     } else {
-                        tooltipTextWidth = screenWidth - 16 - mouseX;
+                        int width = font.getStringWidth(textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, ""));
+                        tooltipTextWidth = Math.max(tooltipTextWidth, width);
                     }
+                }
+
+                if (tooltipTextWidth <= 0 && hasFlexibleWidth) {
+                    int availableWidth = mouseX > screenWidth / 2 ? mouseX - 20 : screenWidth - 16 - mouseX;
+                    if (maxTextWidth > 0) {
+                        availableWidth = Math.min(availableWidth, maxTextWidth);
+                    }
+
+                    tooltipTextWidth = Math.max(1, availableWidth);
+                }
+
+                boolean needsWrap = false;
+                int titleLinesCount = 1;
+                int tooltipX = mouseX + 12;
+                if (tooltipX + tooltipTextWidth + 4 > screenWidth) {
+                    tooltipX = mouseX - 16 - tooltipTextWidth;
+                    if (tooltipX < 4) {
+                        if (mouseX > screenWidth / 2) {
+                            tooltipTextWidth = mouseX - 20;
+                        } else {
+                            tooltipTextWidth = screenWidth - 16 - mouseX;
+                        }
+
+                        needsWrap = true;
+                    }
+                }
+
+                if (maxTextWidth > 0 && tooltipTextWidth > maxTextWidth) {
+                    tooltipTextWidth = maxTextWidth;
                     needsWrap = true;
                 }
-            }
 
-            if (maxTextWidth > 0 && tooltipTextWidth > maxTextWidth) {
-                tooltipTextWidth = maxTextWidth;
-                needsWrap = true;
-            }
+                if (needsWrap) {
+                    int wrappedTooltipWidth = 0;
+                    List<String> wrappedTextLines = new ArrayList<>();
+                    tooltipTextWidth = Math.max(1, tooltipTextWidth);
 
-            if (needsWrap) {
-                int wrappedTooltipWidth = 0;
-                List<String> wrappedTextLines = new ArrayList<String>();
-                for (int i = 0; i < textLines.size(); i++) {
-                    String textLine = textLines.get(i);
-                    List<String> wrappedLine = font.listFormattedStringToWidth(textLine, tooltipTextWidth);
-                    if (i == 0) {
-                        titleLinesCount = wrappedLine.size();
-                    }
+                    for (int i = 0; i < textLines.size(); i++) {
+                        String textLine = textLines.get(i);
+                        ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
+                        if (handler != null) {
+                            wrappedTextLines.add(textLine);
+                            int width = handler.getWidth(font);
+                            if (width >= 0) {
+                                wrappedTooltipWidth = Math.max(wrappedTooltipWidth, Math.min(width, tooltipTextWidth));
+                            }
+                        } else {
+                            boolean hasSpacing = textLine.contains(TooltipLineHandler.TOOLTIP_LINESPACE);
+                            String cleanText = textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
+                            List<String> wrappedLine = font.listFormattedStringToWidth(cleanText, tooltipTextWidth);
+                            if (i == 0) {
+                                titleLinesCount = wrappedLine.size();
+                            }
 
-                    for (String line : wrappedLine) {
-                        int lineWidth = font.getStringWidth(line);
-                        if (lineWidth > wrappedTooltipWidth) {
-                            wrappedTooltipWidth = lineWidth;
+                            for (int j = 0; j < wrappedLine.size(); j++) {
+                                String line = wrappedLine.get(j);
+                                wrappedTooltipWidth = Math.max(wrappedTooltipWidth, font.getStringWidth(line));
+                                if (hasSpacing && j == wrappedLine.size() - 1) {
+                                    line += TooltipLineHandler.TOOLTIP_LINESPACE;
+                                }
+
+                                wrappedTextLines.add(line);
+                            }
                         }
-                        wrappedTextLines.add(line);
                     }
-                }
-                tooltipTextWidth = wrappedTooltipWidth;
-                textLines = wrappedTextLines;
 
-                if (mouseX > screenWidth / 2) {
+                    if (wrappedTooltipWidth <= 0 && hasFlexibleWidth) {
+                        wrappedTooltipWidth = tooltipTextWidth;
+                    }
+
+                    tooltipTextWidth = Math.max(1, wrappedTooltipWidth);
+                    textLines = wrappedTextLines;
+                }
+
+                if (mouseX + 12 + tooltipTextWidth + 4 <= screenWidth) {
+                    tooltipX = mouseX + 12;
+                } else if (mouseX - 16 - tooltipTextWidth >= 4) {
                     tooltipX = mouseX - 16 - tooltipTextWidth;
                 } else {
-                    tooltipX = mouseX + 12;
+                    tooltipX = Math.max(4, screenWidth - tooltipTextWidth - 4);
                 }
-            }
 
-            int tooltipY = mouseY - 12;
-            int tooltipHeight = 8;
+                int tooltipTextHeight = 0;
 
-            if (textLines.size() > 1) {
-                tooltipHeight += (textLines.size() - 1) * 10;
-                if (textLines.size() > titleLinesCount) {
-                    tooltipHeight += 2; // gap between title lines and next lines
+                for (int i = 0; i < textLines.size(); ++i) {
+                    String textLine = textLines.get(i);
+                    ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
+                    if (handler != null) {
+                        int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
+                        tooltipTextHeight += Math.max(0, handler.getHeight(font, width));
+                    } else {
+                        tooltipTextHeight += 10;
+                    }
+
+                    if (i + 1 == titleLinesCount && i + 1 < textLines.size()) {
+                        tooltipTextHeight += 2;
+                    }
+
+                    if (i + 1 < textLines.size() && textLine.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
+                        tooltipTextHeight += 2;
+                    }
                 }
-            }
 
-            if (tooltipY < 4) {
-                tooltipY = 4;
-            } else if (tooltipY + tooltipHeight + 4 > screenHeight) {
-                tooltipY = screenHeight - tooltipHeight - 4;
-            }
+                if (!textLines.isEmpty() && TooltipLineHandler.getTipLine(textLines.getLast()) == null) {
+                    tooltipTextHeight -= 2;
+                }
 
-            final int zLevel = 300;
-            int backgroundColor = 0xF0100010;
-            int borderColorStart = 0x505000FF;
-            int borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
-            RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(
-                stack,
-                textLines,
-                tooltipX,
-                tooltipY,
-                font,
-                backgroundColor,
-                borderColorStart,
-                borderColorEnd);
-            MinecraftForge.EVENT_BUS.post(colorEvent);
-            backgroundColor = colorEvent.getBackground();
-            borderColorStart = colorEvent.getBorderStart();
-            borderColorEnd = colorEvent.getBorderEnd();
-            drawGradientRect(
-                tooltipX - 3,
-                tooltipY - 4,
-                tooltipX + tooltipTextWidth + 3,
-                tooltipY - 3,
-                backgroundColor,
-                backgroundColor,
-                zLevel);
-            drawGradientRect(
-                tooltipX - 3,
-                tooltipY + tooltipHeight + 3,
-                tooltipX + tooltipTextWidth + 3,
-                tooltipY + tooltipHeight + 4,
-                backgroundColor,
-                backgroundColor,
-                zLevel);
-            drawGradientRect(
-                tooltipX - 3,
-                tooltipY - 3,
-                tooltipX + tooltipTextWidth + 3,
-                tooltipY + tooltipHeight + 3,
-                backgroundColor,
-                backgroundColor,
-                zLevel);
-            drawGradientRect(
-                tooltipX - 4,
-                tooltipY - 3,
-                tooltipX - 3,
-                tooltipY + tooltipHeight + 3,
-                backgroundColor,
-                backgroundColor,
-                zLevel);
-            drawGradientRect(
-                tooltipX + tooltipTextWidth + 3,
-                tooltipY - 3,
-                tooltipX + tooltipTextWidth + 4,
-                tooltipY + tooltipHeight + 3,
-                backgroundColor,
-                backgroundColor,
-                zLevel);
-            drawGradientRect(
-                tooltipX - 3,
-                tooltipY - 3 + 1,
-                tooltipX - 3 + 1,
-                tooltipY + tooltipHeight + 3 - 1,
-                borderColorStart,
-                borderColorEnd,
-                zLevel);
-            drawGradientRect(
-                tooltipX + tooltipTextWidth + 2,
-                tooltipY - 3 + 1,
-                tooltipX + tooltipTextWidth + 3,
-                tooltipY + tooltipHeight + 3 - 1,
-                borderColorStart,
-                borderColorEnd,
-                zLevel);
-            drawGradientRect(
-                tooltipX - 3,
-                tooltipY - 3,
-                tooltipX + tooltipTextWidth + 3,
-                tooltipY - 3 + 1,
-                borderColorStart,
-                borderColorStart,
-                zLevel);
-            drawGradientRect(
-                tooltipX - 3,
-                tooltipY + tooltipHeight + 2,
-                tooltipX + tooltipTextWidth + 3,
-                tooltipY + tooltipHeight + 3,
-                borderColorEnd,
-                borderColorEnd,
-                zLevel);
+                int tooltipY = mouseY - 12;
+                if (tooltipY < 4) {
+                    tooltipY = 4;
+                } else if (tooltipY + tooltipTextHeight + 4 > screenHeight) {
+                    tooltipY = screenHeight - tooltipTextHeight - 4;
+                }
 
-            MinecraftForge.EVENT_BUS.post(
-                new RenderTooltipEvent.PostBackground(
+                tooltipY = Math.max(4, tooltipY);
+                int backgroundColor = 0xF0100010;
+                int borderColorStart = 0x505000FF;
+                int borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
+                RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(
                     stack,
                     textLines,
                     tooltipX,
                     tooltipY,
                     font,
-                    tooltipTextWidth,
-                    tooltipHeight));
-            int tooltipTop = tooltipY;
+                    backgroundColor,
+                    borderColorStart,
+                    borderColorEnd);
+                MinecraftForge.EVENT_BUS.post(colorEvent);
+                backgroundColor = colorEvent.getBackground();
+                borderColorStart = colorEvent.getBorderStart();
+                borderColorEnd = colorEvent.getBorderEnd();
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 4,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY - 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 4,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 3,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 4,
+                    tooltipY - 3,
+                    tooltipX - 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY - 3,
+                    tooltipX + tooltipTextWidth + 4,
+                    tooltipY + tooltipTextHeight + 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 2,
+                    tooltipX - 2,
+                    tooltipY + tooltipTextHeight + 2,
+                    borderColorStart,
+                    borderColorEnd,
+                    300);
+                drawGradientRect(
+                    tooltipX + tooltipTextWidth + 2,
+                    tooltipY - 2,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 2,
+                    borderColorStart,
+                    borderColorEnd,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 3,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY - 2,
+                    borderColorStart,
+                    borderColorStart,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY + tooltipTextHeight + 2,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    borderColorEnd,
+                    borderColorEnd,
+                    300);
+                MinecraftForge.EVENT_BUS.post(
+                    new RenderTooltipEvent.PostBackground(
+                        stack,
+                        textLines,
+                        tooltipX,
+                        tooltipY,
+                        font,
+                        tooltipTextWidth,
+                        tooltipTextHeight));
+                int textY = tooltipY;
 
-            for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
-                String line = textLines.get(lineNumber);
-                font.drawStringWithShadow(line, tooltipX, tooltipY, -1);
+                for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
+                    String line = textLines.get(lineNumber);
+                    ITooltipLine handler = TooltipLineHandler.getTipLine(line);
+                    if (handler != null) {
+                        int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
+                        int height = Math.max(0, handler.getHeight(font, width));
+                        handler.draw(font, tooltipX, textY, mouseX, mouseY, width, height);
+                        textY += height;
+                    } else {
+                        String cleanText = line.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
+                        font.drawStringWithShadow(cleanText, tooltipX, textY, -1);
+                        textY += 10;
+                    }
 
-                if (lineNumber + 1 == titleLinesCount) {
-                    tooltipY += 2;
+                    if (lineNumber + 1 == titleLinesCount && lineNumber + 1 < textLines.size()) {
+                        textY += 2;
+                    }
+
+                    if (lineNumber + 1 < textLines.size() && line.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
+                        textY += 2;
+                    }
                 }
 
-                tooltipY += 10;
+                MinecraftForge.EVENT_BUS.post(
+                    new RenderTooltipEvent.PostText(
+                        stack,
+                        textLines,
+                        tooltipX,
+                        tooltipY,
+                        font,
+                        tooltipTextWidth,
+                        tooltipTextHeight));
+                TooltipLineHandler.clear();
+                GlStateManager.enableLighting();
+                GlStateManager.enableDepth();
+                RenderHelper.enableStandardItemLighting();
+                GlStateManager.enableRescaleNormal();
             }
-
-            MinecraftForge.EVENT_BUS.post(
-                new RenderTooltipEvent.PostText(
-                    stack,
-                    textLines,
-                    tooltipX,
-                    tooltipTop,
-                    font,
-                    tooltipTextWidth,
-                    tooltipHeight));
-
-            GlStateManager.enableLighting();
-            GlStateManager.enableDepth();
-            RenderHelper.enableStandardItemLighting();
-            GlStateManager.enableRescaleNormal();
         }
+    }
+
+    /**
+     * Resolves the actual width allocated to a tooltip component.
+     *
+     * @param handler      the tooltip component
+     * @param font         the font renderer
+     * @param tooltipWidth the available tooltip width
+     * @return the allocated component width
+     */
+    private static int getTooltipLineWidth(ITooltipLine handler, FontRenderer font, int tooltipWidth) {
+        int width = handler.getWidth(font);
+        if (width < 0) return tooltipWidth;
+        return Math.min(width, tooltipWidth);
     }
 
     public static void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor,
@@ -788,125 +869,12 @@ public class GuiHelpers {
      * @param y     Tooltip Y.
      */
     public static void drawTooltip(GuiContainer gui, List<String> lines, int x, int y) {
-        if (lines == null || lines.isEmpty()) {
-            return;
-        }
+        drawTooltip(gui, null, lines, x, y);
+    }
 
-        int guiLeft = gui.guiLeft;
-        int guiTop = gui.guiTop;
-        int width = gui.width;
-        int height = gui.height;
-        Minecraft mc = Minecraft.getMinecraft();
-
-        GlStateManager.pushMatrix();
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GlStateManager.disableLighting();
-
-        int tooltipWidth = 0;
-        for (String line : lines) {
-            int tempWidth = mc.fontRenderer.getStringWidth(line);
-            if (tempWidth > tooltipWidth) {
-                tooltipWidth = tempWidth;
-            }
-        }
-
-        int xStart = x + 12;
-        int yStart = y - 12;
-        int tooltipHeight = 8;
-
-        if (lines.size() > 1) {
-            tooltipHeight += 2 + (lines.size() - 1) * 10;
-        }
-
-        if (guiLeft + xStart + tooltipWidth + 6 > width) {
-            xStart = width - tooltipWidth - guiLeft - 6;
-        }
-
-        if (guiTop + yStart + tooltipHeight + 6 > height) {
-            yStart = height - tooltipHeight - guiTop - 6;
-        }
-
-        final int zLevel = 300;
-        render.zLevel = 300.0F;
-
-        int color1 = 0xF0100010; // -267386864 in HEX
-        drawGradientRect(xStart - 3, yStart - 4, xStart + tooltipWidth + 3, yStart - 3, color1, color1, zLevel);
-        drawGradientRect(
-            xStart - 3,
-            yStart + tooltipHeight + 3,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 4,
-            color1,
-            color1,
-            zLevel);
-        drawGradientRect(
-            xStart - 3,
-            yStart - 3,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 3,
-            color1,
-            color1,
-            zLevel);
-        drawGradientRect(xStart - 4, yStart - 3, xStart - 3, yStart + tooltipHeight + 3, color1, color1, zLevel);
-        drawGradientRect(
-            xStart + tooltipWidth + 3,
-            yStart - 3,
-            xStart + tooltipWidth + 4,
-            yStart + tooltipHeight + 3,
-            color1,
-            color1,
-            zLevel);
-
-        int color2 = 0x505000FF; // 1347420415 in HEX
-        int color3 = (color2 & 0xFEFEFE) >> 1 | color2 & 0xFF000000;
-        drawGradientRect(
-            xStart - 3,
-            yStart - 3 + 1,
-            xStart - 3 + 1,
-            yStart + tooltipHeight + 3 - 1,
-            color2,
-            color3,
-            zLevel);
-        drawGradientRect(
-            xStart + tooltipWidth + 2,
-            yStart - 3 + 1,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 3 - 1,
-            color2,
-            color3,
-            zLevel);
-        drawGradientRect(xStart - 3, yStart - 3, xStart + tooltipWidth + 3, yStart - 3 + 1, color2, color2, zLevel);
-        drawGradientRect(
-            xStart - 3,
-            yStart + tooltipHeight + 2,
-            xStart + tooltipWidth + 3,
-            yStart + tooltipHeight + 3,
-            color3,
-            color3,
-            zLevel);
-
-        for (int stringIndex = 0; stringIndex < lines.size(); ++stringIndex) {
-            String line = lines.get(stringIndex);
-
-            if (stringIndex == 0) {
-                line = EnumChatFormatting.WHITE + line;
-            } else {
-                line = EnumChatFormatting.GRAY + line;
-            }
-
-            mc.fontRenderer.drawStringWithShadow(line, xStart, yStart, -1);
-
-            if (stringIndex == 0) {
-                yStart += 2;
-            }
-
-            yStart += 10;
-        }
-
-        GlStateManager.popMatrix();
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-
-        render.zLevel = 0.0F;
+    public static void drawTooltip(GuiContainer gui, @Nullable ItemStack stack, List<String> lines, int x, int y) {
+        if (gui == null || lines == null || lines.isEmpty()) return;
+        drawHoveringText(stack, lines, x, y, gui.width, gui.height, -1, Minecraft.getMinecraft().fontRenderer);
     }
 
     /**
@@ -947,7 +915,7 @@ public class GuiHelpers {
             color1,
             zLevel);
         int color2 = 1347420415;
-        int color3 = (color2 & 16711422) >> 1 | color2 & -16777216;
+        int color3 = (color2 & 0xFEFEFE) >> 1 | color2 & 0xFF000000;
         fillGradient(
             xStart - 3,
             yStart - 3 + 1,

@@ -709,20 +709,31 @@ public abstract class PacketCodec extends PacketBase {
     }
 
     private void loopCodecFields(ICodecRunnable runnable) {
-        try {
-            for (Field field : fieldCache.get(null)) {
-                Class<?> clazz = field.getType();
-                ICodecAction action = getAction(clazz);
+        for (Field field : fieldCache.get(null)) {
+            ICodecAction action = getAction(field.getType());
 
-                // Make private fields temporarily accessible.
-                boolean accessible = field.isAccessible();
-                if (!accessible) {
+            if (action == null) {
+                throw new IllegalStateException(
+                    "Missing codec for " + field.getType()
+                        .getName());
+            }
+
+            try {
+                if (!field.isAccessible()) {
                     field.setAccessible(true);
                 }
+
                 runnable.run(field, action);
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                    "Failed to process packet " + getClass().getName()
+                        + ", field="
+                        + field.getName()
+                        + ", type="
+                        + field.getType()
+                            .getName(),
+                    e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.fluid.capability.wrapper;
 
 import java.util.Objects;
@@ -18,15 +19,14 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
-import ruiseki.okcore.fluid.handler.FluidTankProperties;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.FluidHelpers;
 
 public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvider {
 
     @NotNull
     protected ItemStack container;
+
     private final LazyOptional<IFluidHandlerItem> holder = LazyOptional.of(() -> this);
 
     public FluidBucketWrapper(@NotNull ItemStack container) {
@@ -38,6 +38,7 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
         if (cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM) {
             return holder.cast();
         }
+
         return LazyOptional.empty();
     }
 
@@ -47,93 +48,118 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
     }
 
     public boolean canFillFluidType(FluidStack fluidStack) {
-        if (fluidStack == null || fluidStack.getFluid() == null) {
+        if (FluidHelpers.isEmpty(fluidStack)) {
             return false;
         }
 
         Fluid fluid = fluidStack.getFluid();
-        if (fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA || "milk".equals(fluid.getName())) {
-            return true;
-        }
 
-        return FluidHelpers.getFilledBucket(fluidStack) != null;
+        return fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA
+            || "milk".equals(fluid.getName())
+            || FluidHelpers.getFilledBucket(fluidStack) != null;
     }
 
     @Nullable
     public FluidStack getFluid() {
         Item item = container.getItem();
+
         if (item == Items.water_bucket) {
             return new FluidStack(FluidRegistry.WATER, FluidHelpers.BUCKET_VOLUME);
-        } else if (item == Items.lava_bucket) {
+        }
+
+        if (item == Items.lava_bucket) {
             return new FluidStack(FluidRegistry.LAVA, FluidHelpers.BUCKET_VOLUME);
-        } else if (item == Items.milk_bucket) {
+        }
+
+        if (item == Items.milk_bucket) {
             return FluidRegistry.getFluidStack("milk", FluidHelpers.BUCKET_VOLUME);
         }
+
         return FluidHelpers.getFluidFromContainer(container);
     }
 
     protected void setFluid(@Nullable FluidStack fluidStack) {
         if (fluidStack == null) {
-            this.container = new ItemStack(Items.bucket);
-        } else {
-            ItemStack filledBucket = FluidHelpers.getFilledBucket(fluidStack);
-            this.container = Objects.requireNonNullElseGet(filledBucket, () -> new ItemStack(Items.bucket));
+            container = new ItemStack(Items.bucket);
+            return;
         }
+
+        ItemStack filledBucket = FluidHelpers.getFilledBucket(fluidStack);
+
+        container = Objects.requireNonNullElseGet(filledBucket, () -> new ItemStack(Items.bucket));
     }
 
     @Override
-    public IFluidTankProperties[] getTankProperties() {
-        return new FluidTankProperties[] { new FluidTankProperties(getFluid(), FluidHelpers.BUCKET_VOLUME) };
+    public int getTanks() {
+        return 1;
+    }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        if (tank != 0) {
+            return FluidHelpers.EMPTY;
+        }
+
+        FluidStack fluid = getFluid();
+
+        return FluidHelpers.isEmpty(fluid) ? FluidHelpers.EMPTY : fluid;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return tank == 0 ? FluidHelpers.BUCKET_VOLUME : 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+        return tank == 0 && canFillFluidType(stack)
+            && getFluid() == null
+            && container.stackSize == 1
+            && !(container.getItem() instanceof ItemBucketMilk);
     }
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
-        if (container.stackSize != 1 || resource == null
+        if (container.stackSize != 1 || FluidHelpers.isEmpty(resource)
             || resource.amount < FluidHelpers.BUCKET_VOLUME
             || container.getItem() instanceof ItemBucketMilk
             || getFluid() != null
             || !canFillFluidType(resource)) {
             return 0;
         }
-
         if (doFill) {
             setFluid(resource);
         }
-
         return FluidHelpers.BUCKET_VOLUME;
     }
 
     @Override
     public FluidStack drain(FluidStack stack, boolean doDrain) {
-        if (container.stackSize != 1 || stack == null || stack.amount < FluidHelpers.BUCKET_VOLUME) {
-            return null;
+        if (container.stackSize != 1 || FluidHelpers.isEmpty(stack) || stack.amount < FluidHelpers.BUCKET_VOLUME) {
+            return FluidHelpers.EMPTY;
         }
-
         FluidStack fluidStack = getFluid();
-        if (fluidStack != null && fluidStack.isFluidEqual(stack)) {
-            if (doDrain) {
-                setFluid(null);
-            }
-            return fluidStack;
+        if (FluidHelpers.isEmpty(fluidStack) || !fluidStack.isFluidEqual(stack)) {
+            return FluidHelpers.EMPTY;
         }
-
-        return null;
+        if (doDrain) {
+            setFluid(null);
+        }
+        return fluidStack;
     }
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
         if (container.stackSize != 1 || maxDrain < FluidHelpers.BUCKET_VOLUME) {
-            return null;
+            return FluidHelpers.EMPTY;
         }
-
         FluidStack fluidStack = getFluid();
-        if (fluidStack != null) {
-            if (doDrain) {
-                setFluid(null);
-            }
-            return fluidStack;
+        if (FluidHelpers.isEmpty(fluidStack)) {
+            return FluidHelpers.EMPTY;
         }
-
-        return null;
+        if (doDrain) {
+            setFluid(null);
+        }
+        return fluidStack;
     }
 }

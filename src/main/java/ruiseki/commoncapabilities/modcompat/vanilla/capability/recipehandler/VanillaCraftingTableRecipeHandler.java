@@ -1,5 +1,7 @@
 package ruiseki.commoncapabilities.modcompat.vanilla.capability.recipehandler;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -125,11 +127,11 @@ public class VanillaCraftingTableRecipeHandler implements IRecipeHandler {
         List<Object> rawInputs = null;
 
         if (recipe instanceof ShapedRecipes shaped) {
-            rawInputs = Lists.newArrayList(shaped.recipeItems);
+            rawInputs = new ArrayList<>(Arrays.asList(shaped.recipeItems));
         } else if (recipe instanceof ShapelessRecipes shapeless) {
             rawInputs = Lists.newArrayList(shapeless.recipeItems);
         } else if (recipe instanceof ShapedOreRecipe shapedOre) {
-            rawInputs = Lists.newArrayList(shapedOre.getInput());
+            rawInputs = new ArrayList<>(Arrays.asList(shapedOre.getInput()));
         } else if (recipe instanceof ShapelessOreRecipe shapelessOre) {
             rawInputs = shapelessOre.getInput();
         } else if (recipe instanceof ShapedRecipe customShaped) {

@@ -1,6 +1,7 @@
 package ruiseki.okcore.inventory;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -17,18 +18,14 @@ import ruiseki.okcore.enums.Mods;
 @Optional.Interface(modid = "Baubles", iface = "baubles.api.IBauble")
 public class PlayerExtendedInventoryIterator implements Iterator<ItemStack> {
 
-    private PlayerInventoryIterator innerIt;
-    private boolean hasIteratedInner = false;
-    private int maxBaublesSize = 4;
-    private int baublesIterator = maxBaublesSize;
+    private final PlayerInventoryIterator innerIt;
+    private int maxBaublesSize;
+    private int baublesIterator;
+    private boolean lastFromBaubles;
 
-    /**
-     * Create a new HotbarIterator.
-     *
-     * @param player The player to iterate the hotbar from.
-     */
     public PlayerExtendedInventoryIterator(EntityPlayer player) {
         innerIt = new PlayerInventoryIterator(player);
+
         if (Mods.Baubles.isModLoaded()) {
             setBaublesData();
         }
@@ -36,22 +33,22 @@ public class PlayerExtendedInventoryIterator implements Iterator<ItemStack> {
 
     @Override
     public boolean hasNext() {
-        return !hasIteratedInner || baublesIterator < maxBaublesSize;
+        return innerIt.hasNext() || baublesIterator < maxBaublesSize;
     }
 
     @Override
     public ItemStack next() {
-        if (hasIteratedInner && hasNext()) {
-            ItemStack itemStack = getBaublesStack(baublesIterator);
-            baublesIterator++;
-            return itemStack;
-        } else {
-            ItemStack next = innerIt.next();
-            if (!innerIt.hasNext()) {
-                hasIteratedInner = true;
-            }
-            return next;
+        if (innerIt.hasNext()) {
+            lastFromBaubles = false;
+            return innerIt.next();
         }
+
+        if (baublesIterator < maxBaublesSize) {
+            lastFromBaubles = true;
+            return getBaublesStack(baublesIterator++);
+        }
+
+        throw new NoSuchElementException();
     }
 
     @Optional.Method(modid = "Baubles")
@@ -61,9 +58,9 @@ public class PlayerExtendedInventoryIterator implements Iterator<ItemStack> {
     }
 
     @Optional.Method(modid = "Baubles")
-    protected void setBaublesStack(int index, ItemStack itemStack) {
+    protected void setBaublesStack(int index, ItemStack stack) {
         BaublesApi.getBaubles(innerIt.getPlayer())
-            .setInventorySlotContents(index, itemStack);
+            .setInventorySlotContents(index, stack);
     }
 
     @Optional.Method(modid = "Baubles")
@@ -75,20 +72,14 @@ public class PlayerExtendedInventoryIterator implements Iterator<ItemStack> {
 
     @Override
     public void remove() {
-        throw new RuntimeException("Not implemented.");
+        throw new UnsupportedOperationException();
     }
 
-    /**
-     * Replaces the itemstack on the position of the last returned itemstack.
-     *
-     * @param itemStack The itemstack to place.
-     */
-    public void replace(ItemStack itemStack) {
-        if (hasIteratedInner && baublesIterator > 0) {
-            setBaublesStack(baublesIterator - 1, itemStack);
+    public void replace(ItemStack stack) {
+        if (lastFromBaubles) {
+            setBaublesStack(baublesIterator - 1, stack);
         } else {
-            innerIt.replace(itemStack);
+            innerIt.replace(stack);
         }
     }
-
 }

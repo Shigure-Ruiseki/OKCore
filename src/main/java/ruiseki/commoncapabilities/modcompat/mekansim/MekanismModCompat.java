@@ -42,7 +42,7 @@ public class MekanismModCompat implements IModCompat {
             // GasHandler
             registry.registerInheritableTile(
                 mekanism.api.gas.IGasHandler.class,
-                new ICapabilityConstructor<IGasHandler, TileEntity, TileEntity>() {
+                new ICapabilityConstructor<IGasHandler, mekanism.api.gas.IGasHandler, TileEntity>() {
 
                     @Override
                     public Capability<IGasHandler> getCapability() {
@@ -50,7 +50,8 @@ public class MekanismModCompat implements IModCompat {
                     }
 
                     @Override
-                    public @NotNull ICapabilityProvider createProvider(TileEntity hostType, TileEntity host) {
+                    public @NotNull ICapabilityProvider createProvider(mekanism.api.gas.IGasHandler hostType,
+                        TileEntity host) {
                         if (host instanceof TileEntityGasTank gasTankTile) {
                             return new DefaultSidedCapabilityProvider<>(
                                 DefaultSidedCapabilityProvider.forAllSides(

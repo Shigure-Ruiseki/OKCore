@@ -8,14 +8,14 @@ import net.minecraft.util.ResourceLocation;
 
 import lombok.Getter;
 import lombok.Setter;
-import ruiseki.okcore.client.gui.ISlotBackground;
+import ruiseki.okcore.event.gui.SlotRenderEvent;
 
 /**
  * A slot with some fancy and fun extra features.
  *
  * @author rubensworks
  */
-public class SlotExtended extends Slot implements ISlotBackground {
+public class SlotExtended extends Slot implements ISlotBackground, SlotRenderEvent.ISlotRenderPosition {
 
     protected ResourceLocation backgroundTexture;
 
@@ -57,5 +57,15 @@ public class SlotExtended extends Slot implements ISlotBackground {
     @Override
     public void setBackgroundTexture(ResourceLocation backgroundTexture) {
         this.backgroundTexture = backgroundTexture;
+    }
+
+    @Override
+    public int getSlotX() {
+        return this.xDisplayPosition;
+    }
+
+    @Override
+    public int getSlotY() {
+        return this.yDisplayPosition;
     }
 }

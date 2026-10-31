@@ -24,7 +24,6 @@ import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.item.UseCooldown;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.tag.Registries;
-import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
@@ -91,17 +90,13 @@ public class ItemInventoryTest extends ItemBase implements IItemCooldown, IItemT
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
         super.addInformation(stack, player, list, flag);
-        TagKey<Item> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
+        TagKey<Item> rodsTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
 
-        Set<TagEntry> entries = TagManager.getManager()
-            .getEntries(dustTagKey);
-
+        Set<String> entries = TagManager.getManager()
+            .getEntries(rodsTagKey);
         list.add("§6Items in #forge:rods:");
-        for (TagEntry entry : entries) {
-            String itemId = entry.id()
-                .toString();
-            int meta = entry.meta();
-            list.add(" §7- " + itemId + (meta == TagEntry.WILDCARD ? ":*" : ":" + meta));
+        for (String entry : entries) {
+            list.add(" §7- " + entry);
         }
     }
 }

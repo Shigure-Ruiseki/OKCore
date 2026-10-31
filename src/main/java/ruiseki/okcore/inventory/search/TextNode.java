@@ -1,5 +1,7 @@
 package ruiseki.okcore.inventory.search;
 
+import java.util.Locale;
+
 import ruiseki.okcore.inventory.ItemStackKey;
 
 final class TextNode implements SearchNode {
@@ -11,8 +13,10 @@ final class TextNode implements SearchNode {
     }
 
     @Override
-    public boolean matches(ItemStackKey k) {
-        return k.getDisplayName()
-            .contains(query);
+    public boolean matches(ItemStackKey key) {
+        return key != null && key.getDisplayName() != null
+            && key.getDisplayName()
+                .toLowerCase(Locale.ROOT)
+                .contains(query);
     }
 }

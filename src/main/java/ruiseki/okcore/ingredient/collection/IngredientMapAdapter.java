@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.IngredientInstanceWrapper;
 
 /**
  * An abstract collection that wraps instances in a {@link IngredientInstanceWrapper}

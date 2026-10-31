@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.fluid;
 
 import net.minecraft.tileentity.TileEntity;
@@ -8,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.FluidHelpers;
 
 @SuppressWarnings({ "unused", "UnusedReturnValue" })
@@ -19,11 +19,13 @@ public class FluidTransfer {
 
     @Setter
     protected int maxPerTransfer = Integer.MAX_VALUE;
+
     @Setter
     protected int maxTotalTransferred = Integer.MAX_VALUE;
 
     @Getter
     protected int totalFluidTransferred = 0;
+
     @Getter
     protected int prevFluidTransferred = 0;
 
@@ -74,6 +76,7 @@ public class FluidTransfer {
 
     public int transfer() {
         if (!source.isPresent() || !sink.isPresent()) {
+            prevFluidTransferred = 0;
             return 0;
         }
 
@@ -85,19 +88,23 @@ public class FluidTransfer {
 
         int maxTransfer = Math.min(maxPerTransfer, remainingAllowance);
 
-        return source.map(srcHandler -> sink.map(sinkHandler -> {
-            IFluidTankProperties[] infos = srcHandler.getTankProperties();
-            if (infos == null) {
-                prevFluidTransferred = 0;
-                return 0;
-            }
+        if (maxTransfer <= 0) {
+            prevFluidTransferred = 0;
+            return 0;
+        }
 
+        return source.map(srcHandler -> sink.map(sinkHandler -> {
+            int tanks = srcHandler.getTanks();
             int totalTransferredInThisCall = 0;
 
-            for (IFluidTankProperties info : infos) {
-                if (info == null) continue;
+            for (int tank = 0; tank < tanks; tank++) {
+                int currentMax = maxTransfer - totalTransferredInThisCall;
+                if (currentMax <= 0) {
+                    break;
+                }
 
-                FluidStack contents = info.getContents();
+                FluidStack contents = srcHandler.getFluidInTank(tank);
+
                 if (contents == null || contents.amount <= 0 || contents.getFluid() == null) {
                     continue;
                 }
@@ -106,32 +113,43 @@ public class FluidTransfer {
                     continue;
                 }
 
-                int currentMax = maxTransfer - totalTransferredInThisCall;
-                if (currentMax <= 0) break;
-
                 int toExtract = Math.min(contents.amount, currentMax);
 
-                FluidStack simulatedPulled = srcHandler.drain(toExtract, false);
+                // Simulate draining the specific fluid from the source.
+                FluidStack requested = contents.copy();
+                requested.amount = toExtract;
+
+                FluidStack simulatedPulled = srcHandler.drain(requested, false);
+
                 if (simulatedPulled == null || simulatedPulled.amount <= 0) {
                     continue;
                 }
 
+                // Simulate filling the sink.
                 int simulatedAccepted = sinkHandler.fill(simulatedPulled, false);
+
                 if (simulatedAccepted <= 0) {
                     continue;
                 }
 
                 int actualTransferAmount = Math.min(simulatedPulled.amount, simulatedAccepted);
+
                 FluidStack actualTransferStack = simulatedPulled.copy();
                 actualTransferStack.amount = actualTransferAmount;
 
+                // Execute draining from the source.
                 FluidStack realDrained = srcHandler.drain(actualTransferStack, true);
+
                 if (realDrained == null || realDrained.amount <= 0) {
                     continue;
                 }
 
+                // Execute filling into the sink.
                 int insertedAmount = sinkHandler.fill(realDrained, true);
 
+                insertedAmount = Math.max(0, Math.min(realDrained.amount, insertedAmount));
+
+                // Restore fluid that the sink could not accept.
                 if (insertedAmount < realDrained.amount) {
                     FluidStack remainder = realDrained.copy();
                     remainder.amount = realDrained.amount - insertedAmount;

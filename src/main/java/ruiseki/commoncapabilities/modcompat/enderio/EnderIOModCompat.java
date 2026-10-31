@@ -47,7 +47,7 @@ public class EnderIOModCompat implements IModCompat {
             // EnergyStorage
             registry.registerInheritableTile(
                 IPowerStorage.class,
-                new ICapabilityConstructor<IEnergyStorage, TileEntity, TileEntity>() {
+                new ICapabilityConstructor<IEnergyStorage, IPowerStorage, TileEntity>() {
 
                     @Override
                     public Capability<IEnergyStorage> getCapability() {
@@ -55,7 +55,7 @@ public class EnderIOModCompat implements IModCompat {
                     }
 
                     @Override
-                    public @NotNull ICapabilityProvider createProvider(TileEntity hostType, TileEntity host) {
+                    public @NotNull ICapabilityProvider createProvider(IPowerStorage hostType, TileEntity host) {
                         return new DefaultSidedCapabilityProvider<>(
                             DefaultSidedCapabilityProvider
                                 .forAllSides(getCapability(), side -> new EnderIOPowerWrapper(host, side)));
@@ -63,7 +63,7 @@ public class EnderIOModCompat implements IModCompat {
                 });
             registry.registerInheritableTile(
                 IInternalPoweredTile.class,
-                new ICapabilityConstructor<IEnergyStorage, TileEntity, TileEntity>() {
+                new ICapabilityConstructor<IEnergyStorage, IInternalPoweredTile, TileEntity>() {
 
                     @Override
                     public Capability<IEnergyStorage> getCapability() {
@@ -71,7 +71,7 @@ public class EnderIOModCompat implements IModCompat {
                     }
 
                     @Override
-                    public @NotNull ICapabilityProvider createProvider(TileEntity hostType, TileEntity host) {
+                    public @NotNull ICapabilityProvider createProvider(IInternalPoweredTile hostType, TileEntity host) {
                         return new DefaultSidedCapabilityProvider<>(
                             DefaultSidedCapabilityProvider
                                 .forAllSides(getCapability(), side -> new EnderIOPowerWrapper(host, side)));

@@ -18,7 +18,7 @@ import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, INBTSerializable {
+public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSerializable {
 
     protected List<ItemStack> stacks;
 
@@ -71,6 +71,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
 
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+        if (!isItemValid(slot, stack)) return stack;
         if (ItemHelpers.isEmpty(stack)) {
             return ItemHelpers.EMPTY;
         } else {
@@ -110,6 +111,49 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
     }
 
     @Override
+    public ItemStack insertItem(ItemStack stack, boolean simulate) {
+        if (ItemHelpers.isEmpty(stack)) {
+            return ItemHelpers.EMPTY;
+        }
+
+        ItemStack remaining = stack;
+
+        // Pass 1: Merge into existing stacks first
+        for (int slot = 0; slot < getSlots(); slot++) {
+            ItemStack existing = getStackInSlot(slot);
+
+            if (ItemHelpers.isEmpty(existing)) {
+                continue;
+            }
+
+            if (!ItemHandlerHelpers.canItemStacksStack(remaining, existing)) {
+                continue;
+            }
+
+            remaining = insertItem(slot, remaining, simulate);
+
+            if (ItemHelpers.isEmpty(remaining)) {
+                return ItemHelpers.EMPTY;
+            }
+        }
+
+        // Pass 2: Insert into empty slots
+        for (int slot = 0; slot < getSlots(); slot++) {
+            if (!ItemHelpers.isEmpty(getStackInSlot(slot))) {
+                continue;
+            }
+
+            remaining = insertItem(slot, remaining, simulate);
+
+            if (ItemHelpers.isEmpty(remaining)) {
+                return ItemHelpers.EMPTY;
+            }
+        }
+
+        return remaining;
+    }
+
+    @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (amount <= 0) {
             return ItemHelpers.EMPTY;
@@ -145,7 +189,7 @@ public class ItemStackHandler implements IItemHandler, IItemHandlerModifiable, I
         return 64;
     }
 
-    protected int getStackLimit(int slot, @Nullable ItemStack stack) {
+    public int getStackLimit(int slot, @Nullable ItemStack stack) {
         if (ItemHelpers.isEmpty(stack)) {
             return 0;
         }

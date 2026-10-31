@@ -2,6 +2,7 @@ package ruiseki.okcore.item.capability.wrapper;
 
 import java.util.Iterator;
 
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
@@ -125,5 +126,13 @@ public class CombinedInvWrapper implements IItemHandlerModifiable, Iterable<IIte
     @Override
     public @NotNull Iterator<IItemHandlerModifiable> iterator() {
         return Iterators.forArray(this.itemHandler);
+    }
+
+    @Override
+    public boolean isSlotFromInventory(int index, IInventory inventory, int invIndex) {
+        int handlerIndex = getIndexForSlot(index);
+        if (handlerIndex < 0) return false;
+        int localSlot = getSlotFromIndex(index, handlerIndex);
+        return getHandlerFromIndex(handlerIndex).isSlotFromInventory(localSlot, inventory, invIndex);
     }
 }

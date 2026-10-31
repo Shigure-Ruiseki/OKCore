@@ -2,9 +2,9 @@ package ruiseki.okcore.helper.obfuscation;
 
 /**
  * Entries used for getting private fields and methods by using it in
- * {@link ReflectionHelper#getPrivateValue(Class, Object, String...)}.
+ * {@link cpw.mods.fml.relauncher.ReflectionHelper#getPrivateValue(Class, Object, String...)}.
  * These MCP mappings should be updated with every MC update!
- * 
+ *
  * @author rubensworks *
  */
 public class ObfuscationData {

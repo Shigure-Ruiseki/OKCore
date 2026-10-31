@@ -188,9 +188,8 @@ public abstract class ContainerExtended extends Container
         int slots = getSizeInventory();
 
         if (slot != null && slot.getHasStack()) {
-            ItemStack stackInSlot = slot.getStack()
-                .copy();
-            stack = stackInSlot.copy();
+            ItemStack stackInSlot = ItemHelpers.copy(slot.getStack());
+            stack = ItemHelpers.copy(stackInSlot);
 
             if (slotID < slots) { // Click in tile -> player inventory
                 if (!mergeItemStack(
@@ -208,7 +207,7 @@ public abstract class ContainerExtended extends Container
                     return ItemHelpers.EMPTY;
                 }
 
-            if (stackInSlot.stackSize == 0) {
+            if (ItemHelpers.isEmpty(stackInSlot)) {
                 slot.putStack(null);
             } else {
                 slot.onSlotChanged();
@@ -226,76 +225,56 @@ public abstract class ContainerExtended extends Container
 
     @Override
     protected boolean mergeItemStack(ItemStack stack, int slotStart, int slotRange, boolean reverse) {
+        if (ItemHelpers.isEmpty(stack)) return false;
+
         boolean successful = false;
-        int slotIndex = slotStart;
         int maxStack = stack.getMaxStackSize();
-
-        if (reverse) {
-            slotIndex = slotRange - 1;
-        }
-
-        Slot slot;
-        ItemStack existingStack;
+        int step = reverse ? -1 : 1;
+        int index = reverse ? slotRange - 1 : slotStart;
 
         if (stack.isStackable()) {
-            while (stack.stackSize > 0 && (!reverse && slotIndex < slotRange || reverse && slotIndex >= slotStart)) {
-                slot = this.inventorySlots.get(slotIndex);
-                int maxSlotSize = Math.min(slot.getSlotStackLimit(), maxStack);
-                existingStack = !ItemHelpers.isEmpty(slot.getStack()) ? slot.getStack()
-                    .copy() : ItemHelpers.EMPTY;
+            while (stack.stackSize > 0 && index >= slotStart && index < slotRange) {
+                Slot slot = inventorySlots.get(index);
+                ItemStack existing = slot.getStack();
 
-                if (slot.isItemValid(stack) && !ItemHelpers.isEmpty(existingStack)
-                    && existingStack.getItem() == stack.getItem()
-                    && (!stack.getHasSubtypes() || stack.getItemDamage() == existingStack.getItemDamage())
-                    && ItemStack.areItemStackTagsEqual(stack, existingStack)) {
-                    int existingSize = existingStack.stackSize + stack.stackSize;
-                    if (existingSize <= maxSlotSize) {
-                        stack.stackSize = 0;
-                        existingStack.stackSize = existingSize;
-                        slot.putStack(existingStack);
-                        successful = true;
-                    } else if (existingStack.stackSize < maxSlotSize) {
-                        stack.stackSize -= maxSlotSize - existingStack.stackSize;
-                        existingStack.stackSize = maxSlotSize;
-                        slot.putStack(existingStack);
+                if (slot.isItemValid(stack) && ItemHelpers.isSameItem(stack, existing)
+                    && (!stack.getHasSubtypes()
+                        || ItemHelpers.getStackMeta(stack) == ItemHelpers.getStackMeta(existing))
+                    && ItemStack.areItemStackTagsEqual(stack, existing)) {
+
+                    int limit = Math.min(slot.getSlotStackLimit(), maxStack);
+                    int space = limit - ItemHelpers.getCount(existing);
+
+                    if (space > 0) {
+                        int moved = Math.min(stack.stackSize, space);
+
+                        ItemHelpers.grow(existing, moved);
+                        ItemHelpers.shrink(stack, moved);
+                        slot.onSlotChanged();
                         successful = true;
                     }
                 }
 
-                if (reverse) {
-                    --slotIndex;
-                } else {
-                    ++slotIndex;
-                }
+                index += step;
             }
         }
 
-        if (stack.stackSize > 0) {
-            if (reverse) {
-                slotIndex = slotRange - 1;
-            } else {
-                slotIndex = slotStart;
-            }
+        index = reverse ? slotRange - 1 : slotStart;
 
-            while (stack.stackSize > 0 && (!reverse && slotIndex < slotRange || reverse && slotIndex >= slotStart)) {
-                slot = (Slot) this.inventorySlots.get(slotIndex);
-                existingStack = slot.getStack();
+        while (stack.stackSize > 0 && index >= slotStart && index < slotRange) {
+            Slot slot = inventorySlots.get(index);
 
-                if (slot.isItemValid(stack) && existingStack == null) {
-                    int placedAmount = Math.min(stack.stackSize, slot.getSlotStackLimit());
-                    ItemStack toPut = stack.copy();
-                    toPut.stackSize = placedAmount;
-                    slot.putStack(toPut);
-                    stack.stackSize -= placedAmount;
+            if (slot.isItemValid(stack) && ItemHelpers.isEmpty(slot.getStack())) {
+                int amount = Math.min(stack.stackSize, Math.min(slot.getSlotStackLimit(), maxStack));
+
+                if (amount > 0) {
+                    slot.putStack(ItemHelpers.copyWithSize(stack, amount));
+                    ItemHelpers.shrink(stack, amount);
                     successful = true;
                 }
-
-                if (reverse) {
-                    --slotIndex;
-                } else {
-                    ++slotIndex;
-                }
             }
+
+            index += step;
         }
 
         return successful;
@@ -325,7 +304,7 @@ public abstract class ContainerExtended extends Container
 
             if ((previousDragEvent != 1 || this.dragEvent != 2) && previousDragEvent != this.dragEvent) {
                 this.func_94533_d();
-            } else if (inventoryplayer.getItemStack() == null) {
+            } else if (ItemHelpers.isEmpty(inventoryplayer.getItemStack())) {
                 this.func_94533_d();
             } else if (this.dragEvent == 0) {
                 this.dragMode = func_94529_b(clickedButton);
@@ -348,9 +327,8 @@ public abstract class ContainerExtended extends Container
                 }
             } else if (this.dragEvent == 2) {
                 if (!this.dragSlots.isEmpty()) {
-                    ItemStack originalHeld = inventoryplayer.getItemStack()
-                        .copy();
-                    int remainingCount = inventoryplayer.getItemStack().stackSize;
+                    ItemStack originalHeld = ItemHelpers.copy(inventoryplayer.getItemStack());
+                    int remainingCount = ItemHelpers.getCount(inventoryplayer.getItemStack());
                     int phantomCount = 0;
 
                     for (Slot targetSlot : this.dragSlots) {
@@ -361,7 +339,7 @@ public abstract class ContainerExtended extends Container
                             && (this.dragMode == 2 || currentHeld.stackSize >= this.dragSlots.size())
                             && this.canDragIntoSlot(targetSlot)) {
                             ItemStack calculatedStack = originalHeld.copy();
-                            int currentSlotCount = targetSlot.getHasStack() ? targetSlot.getStack().stackSize : 0;
+                            int currentSlotCount = ItemHelpers.getCount(targetSlot.getStack());
                             func_94525_a(this.dragSlots, this.dragMode, calculatedStack, currentSlotCount);
                             int maxAllowed = Math
                                 .min(calculatedStack.getMaxStackSize(), targetSlot.getSlotStackLimit());
@@ -417,20 +395,19 @@ public abstract class ContainerExtended extends Container
             ItemStack stackSlot = slot.getStack();
             ItemStack stackHeld = playerInv.getItemStack();
 
-            if (stackSlot != null) {
-                stack = stackSlot.copy();
+            if (!ItemHelpers.isEmpty(stackSlot)) {
+                stack = ItemHelpers.copy(stackSlot);
             }
 
-            if (stackSlot == null) {
-                if (stackHeld != null && slot.isItemValid(stackHeld)) {
+            if (ItemHelpers.isEmpty(stackSlot)) {
+                if (!ItemHelpers.isEmpty(stackHeld) && slot.isItemValid(stackHeld)) {
                     fillPhantomSlot(slot, stackHeld, mouseButton, clickType);
                 }
-            } else if (stackHeld == null) {
+            } else if (ItemHelpers.isEmpty(stackHeld)) {
                 adjustPhantomSlot(slot, mouseButton, clickType);
                 slot.onPickupFromSlot(player, playerInv.getItemStack());
             } else if (slot.isItemValid(stackHeld)) {
-                if (ItemStack.areItemStacksEqual(stackSlot, stackHeld)
-                    && ItemStack.areItemStackTagsEqual(stackSlot, stackHeld)) {
+                if (ItemHelpers.areItemStacksIdentical(stackSlot, stackHeld)) {
                     adjustPhantomSlot(slot, mouseButton, clickType);
                 } else {
                     fillPhantomSlot(slot, stackHeld, mouseButton, clickType);
@@ -445,38 +422,27 @@ public abstract class ContainerExtended extends Container
             return;
         }
         ItemStack stackSlot = slot.getStack();
-        if (stackSlot == null) return;
+        if (ItemHelpers.isEmpty(stackSlot)) return;
 
-        int stackSize;
-        if (clickType == ClickType.QUICK_MOVE) {
-            stackSize = mouseButton == 0 ? (stackSlot.stackSize + 1) / 2 : stackSlot.stackSize * 2;
-        } else {
-            stackSize = mouseButton == 0 ? stackSlot.stackSize - 1 : stackSlot.stackSize + 1;
-        }
+        int count = ItemHelpers.getCount(stackSlot);
 
-        if (stackSize > slot.getSlotStackLimit()) {
-            stackSize = slot.getSlotStackLimit();
-        }
+        int newCount = clickType == ClickType.QUICK_MOVE ? mouseButton == 0 ? (count + 1) / 2 : count * 2
+            : mouseButton == 0 ? count - 1 : count + 1;
 
-        stackSlot.stackSize = stackSize;
+        newCount = Math.min(newCount, slot.getSlotStackLimit());
 
-        if (stackSlot.stackSize <= 0) {
-            slot.putStack(null);
+        ItemHelpers.setCount(stackSlot, newCount);
+
+        if (newCount <= 0) {
+            slot.putStack(ItemHelpers.EMPTY);
         }
     }
 
     protected void fillPhantomSlot(Slot slot, ItemStack stackHeld, int mouseButton, ClickType clickType) {
-        if (!((SlotExtended) slot).isAdjustable()) {
-            return;
-        }
-        int stackSize = mouseButton == 0 ? stackHeld.stackSize : 1;
-        if (stackSize > slot.getSlotStackLimit()) {
-            stackSize = slot.getSlotStackLimit();
-        }
-        ItemStack phantomStack = stackHeld.copy();
-        phantomStack.stackSize = stackSize;
-
-        slot.putStack(phantomStack);
+        if (!((SlotExtended) slot).isAdjustable() || ItemHelpers.isEmpty(stackHeld)) return;
+        int count = mouseButton == 0 ? ItemHelpers.getCount(stackHeld) : 1;
+        count = Math.min(count, slot.getSlotStackLimit());
+        slot.putStack(ItemHelpers.copyWithSize(stackHeld, count));
     }
 
     @Override

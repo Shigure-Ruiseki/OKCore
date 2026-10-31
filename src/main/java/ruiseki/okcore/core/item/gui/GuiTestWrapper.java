@@ -10,10 +10,9 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.NBTHelpers;
-import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.InventoryHandler;
 
-public class TestGuiWrapper {
+public class GuiTestWrapper {
 
     private static final String CONTENTS_UUID_TAG = "contentsUuid";
 
@@ -24,7 +23,7 @@ public class TestGuiWrapper {
     @Nullable
     private InventoryHandler handler;
 
-    public TestGuiWrapper(ItemStack stack) {
+    public GuiTestWrapper(@Nullable ItemStack stack) {
         this.stack = stack;
     }
 
@@ -32,23 +31,23 @@ public class TestGuiWrapper {
         inventorySlotChangeHandler = slotChangeHandler;
     }
 
-    public IItemHandler getItemHandler() {
+    public InventoryHandler getInventoryHandler() {
         if (handler == null) {
             handler = new InventoryHandler(54, getBackpackContentsNbt(), () -> {
                 this.markContentsDirty();
                 this.inventorySlotChangeHandler.run();
-            }, 64);
+            });
         }
         return handler;
     }
 
     private NBTTagCompound getBackpackContentsNbt() {
-        return TestGuiStorage.getInstance(OKCore._instance)
+        return GuiTestStorage.getInstance(OKCore._instance)
             .getOrCreateContents(getOrCreateContentsUuid());
     }
 
     private void markContentsDirty() {
-        TestGuiStorage.getInstance(OKCore._instance)
+        GuiTestStorage.getInstance(OKCore._instance)
             .markDirty();
     }
 
@@ -59,7 +58,7 @@ public class TestGuiWrapper {
         }
         UUID newUuid = UUID.randomUUID();
         setContentsUuid(newUuid);
-        migrateBackpackContents(newUuid);
+        migrateContents(newUuid);
         return newUuid;
     }
 
@@ -72,7 +71,7 @@ public class TestGuiWrapper {
     }
 
     public void removeContentsUuid() {
-        getContentsUuid().ifPresent(TestGuiStorage.getInstance(OKCore._instance)::removeContents);
+        getContentsUuid().ifPresent(GuiTestStorage.getInstance(OKCore._instance)::removeContents);
         removeContentsUUIDTag();
     }
 
@@ -80,14 +79,14 @@ public class TestGuiWrapper {
         NBTHelpers.removeTag(stack, CONTENTS_UUID_TAG);
     }
 
-    private void migrateBackpackContents(UUID newUuid) {
+    private void migrateContents(UUID newUuid) {
         migrateNbtTag(newUuid, InventoryHandler.INVENTORY_TAG);
     }
 
     private void migrateNbtTag(UUID newUuid, String key) {
         NBTHelpers.getCompoundTag(stack, key)
             .ifPresent(nbt -> {
-                TestGuiStorage.getInstance(OKCore._instance)
+                GuiTestStorage.getInstance(OKCore._instance)
                     .getOrCreateContents(newUuid)
                     .setTag(key, nbt);
                 markContentsDirty();

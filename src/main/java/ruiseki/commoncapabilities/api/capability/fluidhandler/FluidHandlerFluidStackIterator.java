@@ -1,3 +1,4 @@
+
 package ruiseki.commoncapabilities.api.capability.fluidhandler;
 
 import java.util.Iterator;
@@ -6,20 +7,21 @@ import java.util.NoSuchElementException;
 import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 /**
- * An iterator over all slots in a fluid handler.
- * 
+ * An iterator over all tanks in a fluid handler.
+ *
  * @author rubensworks
  */
 public class FluidHandlerFluidStackIterator implements Iterator<FluidStack> {
 
-    private final IFluidTankProperties[] fluidTankProperties;
+    private final IFluidHandler fluidHandler;
+    private final int tanks;
     private int slot;
 
     public FluidHandlerFluidStackIterator(IFluidHandler fluidHandler, int offset) {
-        this.fluidTankProperties = fluidHandler.getTankProperties();
+        this.fluidHandler = fluidHandler;
+        this.tanks = fluidHandler.getTanks();
         this.slot = offset;
     }
 
@@ -29,7 +31,7 @@ public class FluidHandlerFluidStackIterator implements Iterator<FluidStack> {
 
     @Override
     public boolean hasNext() {
-        return slot < fluidTankProperties.length;
+        return slot < tanks;
     }
 
     @Override
@@ -37,6 +39,7 @@ public class FluidHandlerFluidStackIterator implements Iterator<FluidStack> {
         if (!hasNext()) {
             throw new NoSuchElementException("Slot out of bounds");
         }
-        return fluidTankProperties[slot++].getContents();
+
+        return fluidHandler.getFluidInTank(slot++);
     }
 }

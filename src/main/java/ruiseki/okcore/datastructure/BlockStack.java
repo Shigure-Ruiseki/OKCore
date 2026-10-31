@@ -1,6 +1,7 @@
 package ruiseki.okcore.datastructure;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -8,6 +9,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
+
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.okcore.helper.ItemHelpers;
 
 public class BlockStack {
 
@@ -76,13 +81,11 @@ public class BlockStack {
         return new BlockStack(block, meta);
     }
 
-    public static BlockStack fromItemStack(ItemStack stack) {
-        if (stack == null) return empty();
-
-        Block block = Block.getBlockFromItem(stack.getItem());
-        if (block == null) return empty();
-
-        return new BlockStack(block, stack.getItemDamage());
+    public static BlockStack fromItemStack(@Nullable ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) return empty();
+        Block block = Block.getBlockFromItem(ItemHelpers.getItem(stack));
+        if (block == null || block == Blocks.air) return empty();
+        return new BlockStack(block, ItemHelpers.getStackMeta(stack));
     }
 
     public static BlockStack empty() {

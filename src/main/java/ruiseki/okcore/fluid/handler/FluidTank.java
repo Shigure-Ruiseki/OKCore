@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.fluid.handler;
 
 import javax.annotation.Nullable;
@@ -10,17 +11,18 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
-import ruiseki.okcore.fluid.capability.wrapper.FluidTankPropertiesWrapper;
+import ruiseki.okcore.helper.FluidHelpers;
 
 public class FluidTank implements IFluidTank, IFluidHandler {
 
     @Nullable
     protected FluidStack fluid;
+
     protected int capacity;
     protected TileEntity tile;
+
     protected boolean canFill = true;
     protected boolean canDrain = true;
-    protected IFluidTankProperties[] tankProperties;
 
     public FluidTank(int capacity) {
         this(null, capacity);
@@ -43,14 +45,12 @@ public class FluidTank implements IFluidTank, IFluidHandler {
 
     public void setFluid(@Nullable FluidStack fluid) {
         this.fluid = fluid;
+        onContentsChanged();
     }
 
     @Override
     public int getFluidAmount() {
-        if (fluid == null) {
-            return 0;
-        }
-        return fluid.amount;
+        return fluid == null ? 0 : fluid.amount;
     }
 
     @Override
@@ -71,13 +71,37 @@ public class FluidTank implements IFluidTank, IFluidHandler {
         return new FluidTankInfo(this);
     }
 
+    // ---------------------------------------------------------------------
+    // New tank API
+    // ---------------------------------------------------------------------
+
     @Override
-    public IFluidTankProperties[] getTankProperties() {
-        if (this.tankProperties == null) {
-            this.tankProperties = new IFluidTankProperties[] { new FluidTankPropertiesWrapper(this) };
-        }
-        return this.tankProperties;
+    public int getTanks() {
+        return 1;
     }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        if (tank != 0 || fluid == null || fluid.amount <= 0) {
+            return FluidHelpers.EMPTY;
+        }
+
+        return fluid;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return tank == 0 ? capacity : 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, FluidStack stack) {
+        return tank == 0 && stack != null && stack.amount > 0 && canFillFluidType(stack);
+    }
+
+    // ---------------------------------------------------------------------
+    // Fill
+    // ---------------------------------------------------------------------
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
@@ -89,28 +113,46 @@ public class FluidTank implements IFluidTank, IFluidHandler {
     }
 
     /**
-     * Use this method to bypass the restrictions from {@link #canFillFluidType(FluidStack)}
-     * Meant for use by the owner of the tank when they have {@link #canFill() set to false}.
+     * Bypasses the canFillFluidType restriction.
+     * Intended for internal use by the tank owner.
      */
     public int fillInternal(FluidStack resource, boolean doFill) {
-        if (resource == null || resource.amount <= 0) {
+        if (resource == null || resource.amount <= 0 || capacity <= 0) {
             return 0;
         }
 
-        if (!doFill) {
-            if (fluid == null) {
-                return Math.min(capacity, resource.amount);
+        if (fluid == null) {
+            int fillAmount = Math.min(capacity, resource.amount);
+
+            if (doFill) {
+                fluid = new FluidStack(resource, fillAmount);
+
+                onContentsChanged();
+
+                if (tile != null) {
+                    FluidEvent.fireEvent(
+                        new FluidEvent.FluidFillingEvent(
+                            fluid,
+                            tile.getWorldObj(),
+                            tile.xCoord,
+                            tile.yCoord,
+                            tile.zCoord,
+                            this,
+                            fillAmount));
+                }
             }
 
-            if (!fluid.isFluidEqual(resource)) {
-                return 0;
-            }
-
-            return Math.min(capacity - fluid.amount, resource.amount);
+            return fillAmount;
         }
 
-        if (fluid == null) {
-            fluid = new FluidStack(resource, Math.min(capacity, resource.amount));
+        if (!fluid.isFluidEqual(resource)) {
+            return 0;
+        }
+
+        int filled = Math.min(Math.max(0, capacity - fluid.amount), resource.amount);
+
+        if (doFill && filled > 0) {
+            fluid.amount += filled;
 
             onContentsChanged();
 
@@ -123,85 +165,65 @@ public class FluidTank implements IFluidTank, IFluidHandler {
                         tile.yCoord,
                         tile.zCoord,
                         this,
-                        fluid.amount));
+                        filled));
             }
-            return fluid.amount;
         }
 
-        if (!fluid.isFluidEqual(resource)) {
-            return 0;
-        }
-        int filled = capacity - fluid.amount;
-
-        if (resource.amount < filled) {
-            fluid.amount += resource.amount;
-            filled = resource.amount;
-        } else {
-            fluid.amount = capacity;
-        }
-
-        onContentsChanged();
-
-        if (tile != null) {
-            FluidEvent.fireEvent(
-                new FluidEvent.FluidFillingEvent(
-                    fluid,
-                    tile.getWorldObj(),
-                    tile.xCoord,
-                    tile.yCoord,
-                    tile.zCoord,
-                    this,
-                    filled));
-        }
         return filled;
     }
 
+    // ---------------------------------------------------------------------
+    // Drain
+    // ---------------------------------------------------------------------
+
     @Override
     public FluidStack drain(FluidStack resource, boolean doDrain) {
-        if (!canDrainFluidType(getFluid())) {
-            return null;
+        if (!canDrainFluidType(fluid)) {
+            return FluidHelpers.EMPTY;
         }
+
         return drainInternal(resource, doDrain);
     }
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
         if (!canDrainFluidType(fluid)) {
-            return null;
+            return FluidHelpers.EMPTY;
         }
+
         return drainInternal(maxDrain, doDrain);
     }
 
     /**
-     * Use this method to bypass the restrictions from {@link #canDrainFluidType(FluidStack)}
-     * Meant for use by the owner of the tank when they have {@link #canDrain()} set to false}.
+     * Bypasses the canDrainFluidType restriction.
+     * Intended for internal use by the tank owner.
      */
     @Nullable
     public FluidStack drainInternal(FluidStack resource, boolean doDrain) {
-        if (resource == null || !resource.isFluidEqual(getFluid())) {
-            return null;
+        if (resource == null || fluid == null || !resource.isFluidEqual(fluid)) {
+            return FluidHelpers.EMPTY;
         }
+
         return drainInternal(resource.amount, doDrain);
     }
 
     /**
-     * Use this method to bypass the restrictions from {@link #canDrainFluidType(FluidStack)}
-     * Meant for use by the owner of the tank when they have {@link #canDrain()} set to false}.
+     * Bypasses the canDrainFluidType restriction.
+     * Intended for internal use by the tank owner.
      */
     @Nullable
     public FluidStack drainInternal(int maxDrain, boolean doDrain) {
-        if (fluid == null || maxDrain <= 0) {
-            return null;
+        if (fluid == null || fluid.amount <= 0 || maxDrain <= 0) {
+            return FluidHelpers.EMPTY;
         }
 
-        int drained = maxDrain;
-        if (fluid.amount < drained) {
-            drained = fluid.amount;
-        }
+        int drained = Math.min(maxDrain, fluid.amount);
 
-        FluidStack stack = new FluidStack(fluid, drained);
+        FluidStack result = new FluidStack(fluid, drained);
+
         if (doDrain) {
             fluid.amount -= drained;
+
             if (fluid.amount <= 0) {
                 fluid = null;
             }
@@ -211,7 +233,7 @@ public class FluidTank implements IFluidTank, IFluidHandler {
             if (tile != null) {
                 FluidEvent.fireEvent(
                     new FluidEvent.FluidDrainingEvent(
-                        fluid,
+                        result,
                         tile.getWorldObj(),
                         tile.xCoord,
                         tile.yCoord,
@@ -220,80 +242,52 @@ public class FluidTank implements IFluidTank, IFluidHandler {
                         drained));
             }
         }
-        return stack;
+
+        return result;
     }
 
-    /**
-     * Whether this tank can be filled with {@link IFluidHandler}
-     *
-     * @see IFluidTankProperties#canFill()
-     */
+    // ---------------------------------------------------------------------
+    // Fill / Drain permissions
+    // ---------------------------------------------------------------------
+
     public boolean canFill() {
         return canFill;
     }
 
-    /**
-     * Whether this tank can be drained with {@link IFluidHandler}
-     *
-     * @see IFluidTankProperties#canDrain()
-     */
     public boolean canDrain() {
         return canDrain;
     }
 
-    /**
-     * Set whether this tank can be filled with {@link IFluidHandler}
-     *
-     * @see IFluidTankProperties#canFill()
-     */
     public void setCanFill(boolean canFill) {
         this.canFill = canFill;
     }
 
-    /**
-     * Set whether this tank can be drained with {@link IFluidHandler}
-     *
-     * @see IFluidTankProperties#canDrain()
-     */
     public void setCanDrain(boolean canDrain) {
         this.canDrain = canDrain;
     }
 
-    /**
-     * Returns true if the tank can be filled with this type of fluid.
-     * Used as a filter for fluid types.
-     * Does not consider the current contents or capacity of the tank,
-     * only whether it could ever fill with this type of fluid.
-     *
-     * @see IFluidTankProperties#canFillFluidType(FluidStack)
-     */
     public boolean canFillFluidType(FluidStack fluid) {
         return canFill();
     }
 
-    /**
-     * Returns true if the tank can drain out this type of fluid.
-     * Used as a filter for fluid types.
-     * Does not consider the current contents or capacity of the tank,
-     * only whether it could ever drain out this type of fluid.
-     *
-     * @see IFluidTankProperties#canDrainFluidType(FluidStack)
-     */
     public boolean canDrainFluidType(@Nullable FluidStack fluid) {
         return fluid != null && canDrain();
     }
 
-    protected void onContentsChanged() {
+    protected void onContentsChanged() {}
 
-    }
+    // ---------------------------------------------------------------------
+    // NBT
+    // ---------------------------------------------------------------------
 
     public FluidTank readFromNBT(NBTTagCompound nbt) {
         if (!nbt.hasKey("Empty")) {
-            FluidStack fluid = FluidStack.loadFluidStackFromNBT(nbt);
-            setFluid(fluid);
+            FluidStack loaded = FluidStack.loadFluidStackFromNBT(nbt);
+            setFluid(loaded);
         } else {
             setFluid(null);
         }
+
         return this;
     }
 
@@ -303,6 +297,7 @@ public class FluidTank implements IFluidTank, IFluidHandler {
         } else {
             nbt.setString("Empty", "");
         }
+
         return nbt;
     }
 }

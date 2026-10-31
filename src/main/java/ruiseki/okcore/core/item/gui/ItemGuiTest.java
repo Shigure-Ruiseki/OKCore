@@ -23,6 +23,8 @@ import com.cleanroommc.modularui.widgets.SlotGroupWidget;
 import com.cleanroommc.modularui.widgets.layout.Flow;
 import com.cleanroommc.modularui.widgets.slot.ItemSlot;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
@@ -91,6 +93,7 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public ModularScreen createScreen(PlayerInventoryGuiData data, ModularPanel mainPanel) {
         return new ModularScreen(OKCore._instance.getModId(), mainPanel);
     }

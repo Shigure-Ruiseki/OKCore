@@ -13,6 +13,9 @@ public class EnergyTooltipLine implements ITooltipLine {
 
     private static final int DEFAULT_BAR_WIDTH = -1;
     private static final int DEFAULT_BAR_HEIGHT = 5;
+    private static final int BAR_TOP_PADDING = 2;
+    private static final int BAR_BOTTOM_PADDING = 2;
+    private static final int BAR_BORDER_SIZE = 1;
 
     private static final int DEFAULT_BORDER_COLOR = 0xFF111111;
     private static final int DEFAULT_BACKGROUND_COLOR = 0xFF404040;
@@ -127,7 +130,10 @@ public class EnergyTooltipLine implements ITooltipLine {
 
     @Override
     public int getHeight(FontRenderer font, int width) {
-        return this.getTextHeight(font, width) + 2 + this.barHeight + 2;
+        return this.getTextHeight(font, width) + BAR_TOP_PADDING
+            + this.barHeight
+            + BAR_BORDER_SIZE * 2
+            + BAR_BOTTOM_PADDING;
     }
 
     @Override
@@ -150,14 +156,15 @@ public class EnergyTooltipLine implements ITooltipLine {
         if (this.barWidth != -1) {
             actualBarWidth = Math.min(actualBarWidth, this.barWidth);
         }
-
-        int actualBarHeight = Math.min(this.barHeight, Math.max(0, height - textHeight - 4));
+        int actualBarHeight = Math.min(
+            this.barHeight,
+            Math.max(0, height - textHeight - BAR_TOP_PADDING - BAR_BORDER_SIZE * 2 - BAR_BOTTOM_PADDING));
 
         if (actualBarHeight <= 0 || width < 2) {
             return;
         }
 
-        int barY = y + textHeight + 2;
+        int barY = y + textHeight + BAR_TOP_PADDING;
 
         // Border.
         Gui.drawRect(x, barY, x + actualBarWidth + 2, barY + actualBarHeight + 2, this.borderColor);

@@ -67,6 +67,7 @@ public final class TooltipEventHandler {
 
         FontRenderer renderFont = forwarded.getFontRenderer();
         List<String> originalLines = new ArrayList<>(getLines(event));
+        int fallbackWidth = Math.max(1, forwarded.getScreenWidth() - 16);
 
         for (String text : originalLines) {
             if (text == null) {
@@ -82,8 +83,7 @@ public final class TooltipEventHandler {
                 builder.moveCursorToStart();
                 builder.replace(marker, key -> null);
                 builder.newLine();
-                builder.addLine(new TooltipLineDrawable(handler, renderFont, forwarded.getMaxWidth()));
-
+                builder.addLine(new TooltipLineDrawable(handler, renderFont, forwarded.getMaxWidth(), fallbackWidth));
                 continue;
             }
 

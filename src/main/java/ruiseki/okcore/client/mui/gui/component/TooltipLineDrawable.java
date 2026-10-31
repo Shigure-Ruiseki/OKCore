@@ -14,12 +14,17 @@ public final class TooltipLineDrawable implements IDrawable {
     private final FontRenderer font;
     private final int defaultWidth;
 
-    public TooltipLineDrawable(ITooltipLine line, FontRenderer font, int maxWidth) {
+    public TooltipLineDrawable(ITooltipLine line, FontRenderer font, int maxWidth, int fallbackWidth) {
         this.line = line;
         this.font = font;
+
         int preferredWidth = line.getWidth(font);
-        int availableWidth = Math.max(1, maxWidth);
-        this.defaultWidth = preferredWidth < 0 ? availableWidth : Math.min(preferredWidth, availableWidth);
+
+        if (preferredWidth < 0) {
+            this.defaultWidth = maxWidth > 0 ? maxWidth : Math.max(1, fallbackWidth);
+        } else {
+            this.defaultWidth = maxWidth > 0 ? Math.min(preferredWidth, maxWidth) : preferredWidth;
+        }
     }
 
     @Override

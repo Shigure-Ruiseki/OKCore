@@ -10,21 +10,26 @@ import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 
 public final class TooltipLineDrawable implements IDrawable {
 
+    private static final int DEFAULT_WIDTH = 100;
     private final ITooltipLine line;
     private final FontRenderer font;
     private final int defaultWidth;
 
-    public TooltipLineDrawable(ITooltipLine line, FontRenderer font, int maxWidth, int fallbackWidth) {
+    public TooltipLineDrawable(ITooltipLine line, FontRenderer font, int maxWidth) {
         this.line = line;
         this.font = font;
 
         int preferredWidth = line.getWidth(font);
+        int availableWidth = maxWidth > 0 ? maxWidth : DEFAULT_WIDTH;
 
-        if (preferredWidth < 0) {
-            this.defaultWidth = maxWidth > 0 ? maxWidth : Math.max(1, fallbackWidth);
-        } else {
-            this.defaultWidth = maxWidth > 0 ? Math.min(preferredWidth, maxWidth) : preferredWidth;
-        }
+        this.defaultWidth = preferredWidth < 0 ? availableWidth : Math.min(preferredWidth, availableWidth);
+
+        System.out.println(
+            "[TooltipLineDrawable] preferredWidth=" + preferredWidth
+                + ", maxWidth="
+                + maxWidth
+                + ", defaultWidth="
+                + this.defaultWidth);
     }
 
     @Override

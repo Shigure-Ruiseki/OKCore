@@ -1,6 +1,7 @@
 package ruiseki.okcore.helper;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
@@ -51,19 +52,51 @@ public class FluidHelpers {
     public static final FluidStack EMPTY = null;
 
     public static boolean isEmpty(@Nullable FluidStack stack) {
-        return stack == null || stack.getFluid() == null || stack.amount <= 0;
+        return isEmpty(stack, true);
+    }
+
+    public static boolean isEmpty(@Nullable FluidStack stack, boolean checkAmount) {
+        return stack == null || stack.getFluid() == null || (checkAmount && stack.amount <= 0);
+    }
+
+    public static void setAmount(FluidStack stack, int amount) {
+        if (!isEmpty(stack, false)) {
+            stack.amount = amount;
+        }
+    }
+
+    @Nullable
+    public static Fluid getFluid(@Nullable FluidStack stack) {
+        return !isEmpty(stack) ? stack.getFluid() : null;
+    }
+
+    public static <T> Optional<T> getFluid(@Nullable FluidStack stack, Class<T> clazz) {
+        return getFluidOptional(stack).filter(clazz::isInstance)
+            .map(clazz::cast);
+    }
+
+    public static Optional<Fluid> getFluidOptional(@Nullable FluidStack stack) {
+        return Optional.ofNullable(getFluid(stack));
+    }
+
+    public static boolean hasFluid(@Nullable FluidStack stack) {
+        return getFluidOptional(stack).isPresent();
+    }
+
+    public static boolean hasFluid(@Nullable FluidStack stack, Class<?> clazz) {
+        return getFluid(stack, clazz).isPresent();
     }
 
     @Nullable
     public static FluidStack copy(@Nullable FluidStack stack) {
-        return isEmpty(stack) ? null : stack.copy();
+        return isEmpty(stack) ? EMPTY : stack.copy();
     }
 
     @Nullable
     public static FluidStack copyWithAmount(@Nullable FluidStack stack, int amount) {
         if (isEmpty(stack)) return EMPTY;
         FluidStack copy = stack.copy();
-        copy.amount = amount;
+        setAmount(copy, amount);
         return copy;
     }
 
@@ -99,7 +132,7 @@ public class FluidHelpers {
      * @return The fluid.
      */
     public static FluidStack getFluid(@Nullable IFluidHandler fluidHandler) {
-        return fluidHandler != null ? fluidHandler.drain(Integer.MAX_VALUE, false) : null;
+        return fluidHandler != null ? fluidHandler.drain(Integer.MAX_VALUE, false) : EMPTY;
     }
 
     /**
@@ -120,9 +153,7 @@ public class FluidHelpers {
      */
     public static int getCapacity(@Nullable IFluidHandler fluidHandler) {
         if (fluidHandler != null) {
-            for (IFluidTankProperties properties : fluidHandler.getTankProperties()) {
-                return properties.getCapacity();
-            }
+            return fluidHandler.getTankCapacity(0);
         }
         return 0;
     }

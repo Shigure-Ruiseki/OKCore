@@ -58,12 +58,6 @@ public class FluidHelpers {
         return stack == null || stack.getFluid() == null || (checkAmount && stack.amount <= 0);
     }
 
-    public static void setAmount(FluidStack stack, int amount) {
-        if (!isEmpty(stack, false)) {
-            stack.amount = amount;
-        }
-    }
-
     @Nullable
     public static Fluid getFluid(@Nullable FluidStack stack) {
         return !isEmpty(stack) ? stack.getFluid() : null;
@@ -91,6 +85,10 @@ public class FluidHelpers {
         return isEmpty(stack) ? EMPTY : stack.copy();
     }
 
+    public static int getAmount(@Nullable FluidStack fluidStack) {
+        return isEmpty(fluidStack) ? 0 : fluidStack.amount;
+    }
+
     @Nullable
     public static FluidStack copyWithAmount(@Nullable FluidStack stack, int amount) {
         if (isEmpty(stack)) return EMPTY;
@@ -99,8 +97,79 @@ public class FluidHelpers {
         return copy;
     }
 
-    public static int getAmount(@Nullable FluidStack fluidStack) {
-        return isEmpty(fluidStack) ? 0 : fluidStack.amount;
+    public static void grow(@Nullable FluidStack stack, int amount) {
+        if (!isEmpty(stack, false)) {
+            stack.amount += amount;
+        }
+    }
+
+    public static void shrink(@Nullable FluidStack stack, int amount) {
+        grow(stack, -amount);
+    }
+
+    public static void setAmount(FluidStack stack, int amount) {
+        if (!isEmpty(stack, false)) {
+            stack.amount = amount;
+        }
+    }
+
+    @Nullable
+    public static FluidStack split(@Nullable FluidStack stack, int amount) {
+        if (isEmpty(stack)) return EMPTY;
+
+        int i = Math.min(amount, stack.amount);
+        FluidStack copy = copy(stack);
+        setAmount(copy, i);
+        shrink(stack, i);
+        return copy;
+    }
+
+    @Nullable
+    public static FluidStack merge(@Nullable FluidStack a, @Nullable FluidStack b) {
+        if (isEmpty(a)) return b;
+        if (isEmpty(b)) return a;
+        a.amount += b.amount;
+        return a;
+    }
+
+    /**
+     * Checks if two FluidStacks contain the same fluid.
+     * Ignores amount and NBT data.
+     */
+    public static boolean areFluidsEqual(@Nullable FluidStack a, @Nullable FluidStack b) {
+        if (a == b) return true;
+        if (isEmpty(a) || isEmpty(b)) return false;
+        return a.getFluid() == b.getFluid();
+    }
+
+    /**
+     * Checks if two FluidStacks contain the same fluid and NBT data.
+     * Ignores amount.
+     */
+    public static boolean areFluidTagsEqual(@Nullable FluidStack a, @Nullable FluidStack b) {
+        if (a == b) return true;
+        if (isEmpty(a) || isEmpty(b)) return false;
+        return a.getFluid() == b.getFluid() && FluidStack.areFluidStackTagsEqual(a, b);
+    }
+
+    /**
+     * Checks if two FluidStacks are completely equal.
+     * Compares fluid, amount and NBT data.
+     */
+    public static boolean areFluidStacksEqual(@Nullable FluidStack a, @Nullable FluidStack b) {
+        if (a == b) return true;
+        if (isEmpty(a) || isEmpty(b)) return false;
+        return a.getFluid() == b.getFluid() && a.amount == b.amount && FluidStack.areFluidStackTagsEqual(a, b);
+    }
+
+    /**
+     * Checks if two FluidStacks have the same fluid and amount.
+     * Ignores NBT data.
+     */
+    public static boolean areFluidsAndAmountsEqual(@Nullable FluidStack a, @Nullable FluidStack b) {
+        if (a == b) return true;
+        if (isEmpty(a) || isEmpty(b)) return false;
+        return a.getFluid() == b.getFluid() && a.amount == b.amount;
     }
 
     public static String getModId(Fluid fluid) {

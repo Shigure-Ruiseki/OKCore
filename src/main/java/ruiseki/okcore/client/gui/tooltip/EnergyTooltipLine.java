@@ -8,7 +8,10 @@ import ruiseki.okcore.helper.LangHelpers;
 
 public class EnergyTooltipLine implements ITooltipLine {
 
-    private static final int DEFAULT_BAR_WIDTH = 100;
+    /**
+     * Use the allocated tooltip width.
+     */
+    private static final int DEFAULT_BAR_WIDTH = -1;
     private static final int DEFAULT_BAR_HEIGHT = 5;
 
     private static final int DEFAULT_BORDER_COLOR = 0xFF111111;
@@ -18,6 +21,9 @@ public class EnergyTooltipLine implements ITooltipLine {
 
     private final IEnergyStorage energyStorage;
 
+    /**
+     * -1 means automatic width.
+     */
     private int barWidth = DEFAULT_BAR_WIDTH;
     private int barHeight = DEFAULT_BAR_HEIGHT;
 
@@ -33,7 +39,7 @@ public class EnergyTooltipLine implements ITooltipLine {
     // Configuration
 
     public EnergyTooltipLine setWidth(int width) {
-        this.barWidth = Math.max(1, width);
+        this.barWidth = width == -1 ? -1 : Math.max(1, width);
         return this;
     }
 
@@ -88,48 +94,78 @@ public class EnergyTooltipLine implements ITooltipLine {
             .localize("gui.okcore.tooltip.energy.tooltip_line", this.getEnergyStored(), this.getMaxEnergyStored());
     }
 
-    private int getEnergyRatioWidth() {
-        int max = getMaxEnergyStored();
+    private int getEnergyRatioWidth(int width) {
+        int max = this.getMaxEnergyStored();
 
-        if (max <= 0) {
+        if (max <= 0 || width <= 0) {
             return 0;
         }
 
-        int stored = Math.min(getEnergyStored(), max);
+        int stored = Math.min(this.getEnergyStored(), max);
 
-        return (int) ((long) barWidth * stored / max);
+        return (int) ((long) width * stored / max);
+    }
+
+    private String getVisibleEnergyText(FontRenderer font, int width) {
+        String text = this.getEnergyText();
+
+        if (width <= 0) {
+            return "";
+        }
+
+        if (font.getStringWidth(text) <= width) {
+            return text;
+        }
+
+        String ellipsis = "...";
+        int ellipsisWidth = font.getStringWidth(ellipsis);
+
+        if (width <= ellipsisWidth) {
+            return font.trimStringToWidth(ellipsis, width);
+        }
+
+        return font.trimStringToWidth(text, width - ellipsisWidth) + ellipsis;
     }
 
     // ITooltipLine
 
     @Override
     public int getWidth(FontRenderer font) {
-        return Math.max(barWidth + 2, font.getStringWidth(getEnergyText()));
+        if (this.barWidth == -1) {
+            return -1;
+        }
+
+        return Math.max(this.barWidth + 2, font.getStringWidth(this.getEnergyText()));
     }
 
     @Override
     public int getHeight(FontRenderer font) {
-        return font.FONT_HEIGHT + 2 + barHeight + 2;
+        return font.FONT_HEIGHT + 2 + this.barHeight + 2;
     }
 
     @Override
     public void draw(FontRenderer font, int x, int y, int mouseX, int mouseY, int width, int height) {
-        // Energy text
-        font.drawStringWithShadow(getEnergyText(), x, y, textColor);
+        // Resolve actual bar dimensions.
+        int actualBarWidth = this.barWidth == -1 ? Math.max(0, width - 2) : this.barWidth;
+
+        int actualBarHeight = Math.min(this.barHeight, Math.max(1, height - font.FONT_HEIGHT - 4));
+
+        // Energy text.
+        font.drawStringWithShadow(this.getVisibleEnergyText(font, width), x, y, this.textColor);
 
         int barY = y + font.FONT_HEIGHT + 2;
 
-        // Border
-        Gui.drawRect(x, barY, x + barWidth + 2, barY + barHeight + 2, borderColor);
+        // Border.
+        Gui.drawRect(x, barY, x + actualBarWidth + 2, barY + actualBarHeight + 2, this.borderColor);
 
-        // Background
-        Gui.drawRect(x + 1, barY + 1, x + barWidth + 1, barY + barHeight + 1, backgroundColor);
+        // Background.
+        Gui.drawRect(x + 1, barY + 1, x + actualBarWidth + 1, barY + actualBarHeight + 1, this.backgroundColor);
 
-        // Energy fill
-        int fillWidth = getEnergyRatioWidth();
+        // Energy fill.
+        int fillWidth = this.getEnergyRatioWidth(actualBarWidth);
 
         if (fillWidth > 0) {
-            Gui.drawRect(x + 1, barY + 1, x + 1 + fillWidth, barY + barHeight + 1, fillColor);
+            Gui.drawRect(x + 1, barY + 1, x + 1 + fillWidth, barY + actualBarHeight + 1, this.fillColor);
         }
     }
 }

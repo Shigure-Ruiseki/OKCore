@@ -324,373 +324,301 @@ public class GuiHelpers {
     /**
      * Draws a tooltip with text and optional custom tooltip lines.
      */
-    public static void drawHoveringText(final ItemStack stack, List<String> textLines, int mouseX, int mouseY,
+
+    public static void drawHoveringText(ItemStack stack, List<String> textLines, int mouseX, int mouseY,
         int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font) {
-        if (textLines == null || textLines.isEmpty()) {
-            return;
-        }
-
-        RenderTooltipEvent.Pre event = new RenderTooltipEvent.Pre(
-            stack,
-            textLines,
-            mouseX,
-            mouseY,
-            screenWidth,
-            screenHeight,
-            maxTextWidth,
-            font);
-
-        if (MinecraftForge.EVENT_BUS.post(event)) {
-            TooltipLineHandler.clear();
-            return;
-        }
-
-        mouseX = event.getX();
-        mouseY = event.getY();
-        screenWidth = event.getScreenWidth();
-        screenHeight = event.getScreenHeight();
-        maxTextWidth = event.getMaxWidth();
-        font = event.getFontRenderer();
-
-        GlStateManager.disableRescaleNormal();
-        RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableLighting();
-        GlStateManager.disableDepth();
-
-        // Measure tooltip content width.
-        int tooltipTextWidth = 0;
-        boolean hasFlexibleWidth = false;
-
-        for (String textLine : textLines) {
-            ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
-
-            if (handler != null) {
-                int width = handler.getWidth(font);
-
-                if (width < 0) {
-                    hasFlexibleWidth = true;
-                } else {
-                    tooltipTextWidth = Math.max(tooltipTextWidth, width);
-                }
-            } else {
-                int width = font.getStringWidth(textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, ""));
-
-                tooltipTextWidth = Math.max(tooltipTextWidth, width);
-            }
-        }
-
-        // Handle tooltip containing only flexible-width components.
-        if (tooltipTextWidth <= 0 && hasFlexibleWidth) {
-            int availableWidth = mouseX > screenWidth / 2 ? mouseX - 20 : screenWidth - 16 - mouseX;
-
-            if (maxTextWidth > 0) {
-                availableWidth = Math.min(availableWidth, maxTextWidth);
-            }
-
-            tooltipTextWidth = Math.max(1, availableWidth);
-        }
-
-        boolean needsWrap = false;
-        int titleLinesCount = 1;
-
-        int tooltipX = mouseX + 12;
-
-        if (tooltipX + tooltipTextWidth + 4 > screenWidth) {
-            tooltipX = mouseX - 16 - tooltipTextWidth;
-
-            if (tooltipX < 4) {
-                if (mouseX > screenWidth / 2) {
-                    tooltipTextWidth = mouseX - 20;
-                } else {
-                    tooltipTextWidth = screenWidth - 16 - mouseX;
-                }
-
-                needsWrap = true;
-            }
-        }
-
-        if (maxTextWidth > 0 && tooltipTextWidth > maxTextWidth) {
-            tooltipTextWidth = maxTextWidth;
-            needsWrap = true;
-        }
-
-        // Wrap text before calculating the final tooltip width.
-        if (needsWrap) {
-            int wrappedTooltipWidth = 0;
-            List<String> wrappedTextLines = new ArrayList<>();
-
-            tooltipTextWidth = Math.max(1, tooltipTextWidth);
-
-            for (int i = 0; i < textLines.size(); i++) {
-                String textLine = textLines.get(i);
-
-                ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
-
-                if (handler != null) {
-                    wrappedTextLines.add(textLine);
-
-                    int width = handler.getWidth(font);
-
-                    if (width >= 0) {
-                        wrappedTooltipWidth = Math.max(wrappedTooltipWidth, Math.min(width, tooltipTextWidth));
-                    }
-
-                    continue;
-                }
-
-                boolean hasSpacing = textLine.contains(TooltipLineHandler.TOOLTIP_LINESPACE);
-
-                String cleanText = textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
-
-                List<String> wrappedLine = font.listFormattedStringToWidth(cleanText, tooltipTextWidth);
-
-                if (i == 0) {
-                    titleLinesCount = wrappedLine.size();
-                }
-
-                for (int j = 0; j < wrappedLine.size(); j++) {
-                    String line = wrappedLine.get(j);
-
-                    wrappedTooltipWidth = Math.max(wrappedTooltipWidth, font.getStringWidth(line));
-
-                    if (hasSpacing && j == wrappedLine.size() - 1) {
-                        line += TooltipLineHandler.TOOLTIP_LINESPACE;
-                    }
-
-                    wrappedTextLines.add(line);
-                }
-            }
-
-            // Preserve available width when all components are flexible.
-            if (wrappedTooltipWidth <= 0 && hasFlexibleWidth) {
-                wrappedTooltipWidth = tooltipTextWidth;
-            }
-
-            tooltipTextWidth = Math.max(1, wrappedTooltipWidth);
-            textLines = wrappedTextLines;
-        }
-
-        // Keep tooltip inside horizontal screen bounds.
-        if (mouseX + 12 + tooltipTextWidth + 4 <= screenWidth) {
-            tooltipX = mouseX + 12;
-        } else if (mouseX - 16 - tooltipTextWidth >= 4) {
-            tooltipX = mouseX - 16 - tooltipTextWidth;
-        } else {
-            tooltipX = Math.max(4, screenWidth - tooltipTextWidth - 4);
-        }
-
-        // Calculate tooltip height.
-        int tooltipTextHeight = 0;
-
-        for (int i = 0; i < textLines.size(); i++) {
-            String textLine = textLines.get(i);
-
-            ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
-
-            if (handler != null) {
-                int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
-
-                tooltipTextHeight += Math.max(0, handler.getHeight(font, width));
-            } else {
-                tooltipTextHeight += 10;
-            }
-
-            if (i + 1 == titleLinesCount && i + 1 < textLines.size()) {
-                tooltipTextHeight += 2;
-            }
-
-            if (i + 1 < textLines.size() && textLine.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
-                tooltipTextHeight += 2;
-            }
-        }
-
-        if (!textLines.isEmpty() && TooltipLineHandler.getTipLine(textLines.get(textLines.size() - 1)) == null) {
-            tooltipTextHeight -= 2;
-        }
-
-        int tooltipY = mouseY - 12;
-
-        if (tooltipY < 4) {
-            tooltipY = 4;
-        } else if (tooltipY + tooltipTextHeight + 4 > screenHeight) {
-            tooltipY = screenHeight - tooltipTextHeight - 4;
-        }
-
-        tooltipY = Math.max(4, tooltipY);
-
-        final int zLevel = 300;
-
-        int backgroundColor = 0xF0100010;
-        int borderColorStart = 0x505000FF;
-        int borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
-
-        RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(
-            stack,
-            textLines,
-            tooltipX,
-            tooltipY,
-            font,
-            backgroundColor,
-            borderColorStart,
-            borderColorEnd);
-
-        MinecraftForge.EVENT_BUS.post(colorEvent);
-
-        backgroundColor = colorEvent.getBackground();
-        borderColorStart = colorEvent.getBorderStart();
-        borderColorEnd = colorEvent.getBorderEnd();
-
-        // Top background.
-        drawGradientRect(
-            tooltipX - 3,
-            tooltipY - 4,
-            tooltipX + tooltipTextWidth + 3,
-            tooltipY - 3,
-            backgroundColor,
-            backgroundColor,
-            zLevel);
-
-        // Bottom background.
-        drawGradientRect(
-            tooltipX - 3,
-            tooltipY + tooltipTextHeight + 3,
-            tooltipX + tooltipTextWidth + 3,
-            tooltipY + tooltipTextHeight + 4,
-            backgroundColor,
-            backgroundColor,
-            zLevel);
-
-        // Main background.
-        drawGradientRect(
-            tooltipX - 3,
-            tooltipY - 3,
-            tooltipX + tooltipTextWidth + 3,
-            tooltipY + tooltipTextHeight + 3,
-            backgroundColor,
-            backgroundColor,
-            zLevel);
-
-        // Left background.
-        drawGradientRect(
-            tooltipX - 4,
-            tooltipY - 3,
-            tooltipX - 3,
-            tooltipY + tooltipTextHeight + 3,
-            backgroundColor,
-            backgroundColor,
-            zLevel);
-
-        // Right background.
-        drawGradientRect(
-            tooltipX + tooltipTextWidth + 3,
-            tooltipY - 3,
-            tooltipX + tooltipTextWidth + 4,
-            tooltipY + tooltipTextHeight + 3,
-            backgroundColor,
-            backgroundColor,
-            zLevel);
-
-        // Left border.
-        drawGradientRect(
-            tooltipX - 3,
-            tooltipY - 2,
-            tooltipX - 2,
-            tooltipY + tooltipTextHeight + 2,
-            borderColorStart,
-            borderColorEnd,
-            zLevel);
-
-        // Right border.
-        drawGradientRect(
-            tooltipX + tooltipTextWidth + 2,
-            tooltipY - 2,
-            tooltipX + tooltipTextWidth + 3,
-            tooltipY + tooltipTextHeight + 2,
-            borderColorStart,
-            borderColorEnd,
-            zLevel);
-
-        // Top border.
-        drawGradientRect(
-            tooltipX - 3,
-            tooltipY - 3,
-            tooltipX + tooltipTextWidth + 3,
-            tooltipY - 2,
-            borderColorStart,
-            borderColorStart,
-            zLevel);
-
-        // Bottom border.
-        drawGradientRect(
-            tooltipX - 3,
-            tooltipY + tooltipTextHeight + 2,
-            tooltipX + tooltipTextWidth + 3,
-            tooltipY + tooltipTextHeight + 3,
-            borderColorEnd,
-            borderColorEnd,
-            zLevel);
-
-        // Background rendered.
-        MinecraftForge.EVENT_BUS.post(
-            new RenderTooltipEvent.PostBackground(
+        if (textLines != null && !textLines.isEmpty()) {
+            RenderTooltipEvent.Pre event = new RenderTooltipEvent.Pre(
                 stack,
                 textLines,
-                tooltipX,
-                tooltipY,
-                font,
-                tooltipTextWidth,
-                tooltipTextHeight));
-
-        // Render tooltip content.
-        int textY = tooltipY;
-
-        for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
-            String line = textLines.get(lineNumber);
-
-            ITooltipLine handler = TooltipLineHandler.getTipLine(line);
-
-            if (handler != null) {
-                int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
-
-                int height = Math.max(0, handler.getHeight(font, width));
-
-                handler.draw(font, tooltipX, textY, mouseX, mouseY, width, height);
-
-                textY += height;
+                mouseX,
+                mouseY,
+                screenWidth,
+                screenHeight,
+                maxTextWidth,
+                font);
+            if (MinecraftForge.EVENT_BUS.post(event)) {
+                TooltipLineHandler.clear();
             } else {
-                String cleanText = line.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
+                mouseX = event.getX();
+                mouseY = event.getY();
+                screenWidth = event.getScreenWidth();
+                screenHeight = event.getScreenHeight();
+                maxTextWidth = event.getMaxWidth();
+                font = event.getFontRenderer();
+                GlStateManager.disableRescaleNormal();
+                RenderHelper.disableStandardItemLighting();
+                GlStateManager.disableLighting();
+                GlStateManager.disableDepth();
+                int tooltipTextWidth = 0;
+                boolean hasFlexibleWidth = false;
 
-                font.drawStringWithShadow(cleanText, tooltipX, textY, -1);
+                for (String textLine : textLines) {
+                    ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
+                    if (handler != null) {
+                        int width = handler.getWidth(font);
+                        if (width < 0) {
+                            hasFlexibleWidth = true;
+                        } else {
+                            tooltipTextWidth = Math.max(tooltipTextWidth, width);
+                        }
+                    } else {
+                        int width = font.getStringWidth(textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, ""));
+                        tooltipTextWidth = Math.max(tooltipTextWidth, width);
+                    }
+                }
 
-                textY += 10;
-            }
+                if (tooltipTextWidth <= 0 && hasFlexibleWidth) {
+                    int availableWidth = mouseX > screenWidth / 2 ? mouseX - 20 : screenWidth - 16 - mouseX;
+                    if (maxTextWidth > 0) {
+                        availableWidth = Math.min(availableWidth, maxTextWidth);
+                    }
 
-            if (lineNumber + 1 == titleLinesCount && lineNumber + 1 < textLines.size()) {
-                textY += 2;
-            }
+                    tooltipTextWidth = Math.max(1, availableWidth);
+                }
 
-            if (lineNumber + 1 < textLines.size() && line.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
-                textY += 2;
+                boolean needsWrap = false;
+                int titleLinesCount = 1;
+                int tooltipX = mouseX + 12;
+                if (tooltipX + tooltipTextWidth + 4 > screenWidth) {
+                    tooltipX = mouseX - 16 - tooltipTextWidth;
+                    if (tooltipX < 4) {
+                        if (mouseX > screenWidth / 2) {
+                            tooltipTextWidth = mouseX - 20;
+                        } else {
+                            tooltipTextWidth = screenWidth - 16 - mouseX;
+                        }
+
+                        needsWrap = true;
+                    }
+                }
+
+                if (maxTextWidth > 0 && tooltipTextWidth > maxTextWidth) {
+                    tooltipTextWidth = maxTextWidth;
+                    needsWrap = true;
+                }
+
+                if (needsWrap) {
+                    int wrappedTooltipWidth = 0;
+                    List<String> wrappedTextLines = new ArrayList<>();
+                    tooltipTextWidth = Math.max(1, tooltipTextWidth);
+
+                    for (int i = 0; i < textLines.size(); i++) {
+                        String textLine = textLines.get(i);
+                        ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
+                        if (handler != null) {
+                            wrappedTextLines.add(textLine);
+                            int width = handler.getWidth(font);
+                            if (width >= 0) {
+                                wrappedTooltipWidth = Math.max(wrappedTooltipWidth, Math.min(width, tooltipTextWidth));
+                            }
+                        } else {
+                            boolean hasSpacing = textLine.contains(TooltipLineHandler.TOOLTIP_LINESPACE);
+                            String cleanText = textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
+                            List<String> wrappedLine = font.listFormattedStringToWidth(cleanText, tooltipTextWidth);
+                            if (i == 0) {
+                                titleLinesCount = wrappedLine.size();
+                            }
+
+                            for (int j = 0; j < wrappedLine.size(); j++) {
+                                String line = wrappedLine.get(j);
+                                wrappedTooltipWidth = Math.max(wrappedTooltipWidth, font.getStringWidth(line));
+                                if (hasSpacing && j == wrappedLine.size() - 1) {
+                                    line += TooltipLineHandler.TOOLTIP_LINESPACE;
+                                }
+
+                                wrappedTextLines.add(line);
+                            }
+                        }
+                    }
+
+                    if (wrappedTooltipWidth <= 0 && hasFlexibleWidth) {
+                        wrappedTooltipWidth = tooltipTextWidth;
+                    }
+
+                    tooltipTextWidth = Math.max(1, wrappedTooltipWidth);
+                    textLines = wrappedTextLines;
+                }
+
+                if (mouseX + 12 + tooltipTextWidth + 4 <= screenWidth) {
+                    tooltipX = mouseX + 12;
+                } else if (mouseX - 16 - tooltipTextWidth >= 4) {
+                    tooltipX = mouseX - 16 - tooltipTextWidth;
+                } else {
+                    tooltipX = Math.max(4, screenWidth - tooltipTextWidth - 4);
+                }
+
+                int tooltipTextHeight = 0;
+
+                for (int i = 0; i < textLines.size(); ++i) {
+                    String textLine = textLines.get(i);
+                    ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
+                    if (handler != null) {
+                        int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
+                        tooltipTextHeight += Math.max(0, handler.getHeight(font, width));
+                    } else {
+                        tooltipTextHeight += 10;
+                    }
+
+                    if (i + 1 == titleLinesCount && i + 1 < textLines.size()) {
+                        tooltipTextHeight += 2;
+                    }
+
+                    if (i + 1 < textLines.size() && textLine.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
+                        tooltipTextHeight += 2;
+                    }
+                }
+
+                if (!textLines.isEmpty() && TooltipLineHandler.getTipLine(textLines.getLast()) == null) {
+                    tooltipTextHeight -= 2;
+                }
+
+                int tooltipY = mouseY - 12;
+                if (tooltipY < 4) {
+                    tooltipY = 4;
+                } else if (tooltipY + tooltipTextHeight + 4 > screenHeight) {
+                    tooltipY = screenHeight - tooltipTextHeight - 4;
+                }
+
+                tooltipY = Math.max(4, tooltipY);
+                int backgroundColor = 0xF0100010;
+                int borderColorStart = 0x505000FF;
+                int borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
+                RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(
+                    stack,
+                    textLines,
+                    tooltipX,
+                    tooltipY,
+                    font,
+                    backgroundColor,
+                    borderColorStart,
+                    borderColorEnd);
+                MinecraftForge.EVENT_BUS.post(colorEvent);
+                backgroundColor = colorEvent.getBackground();
+                borderColorStart = colorEvent.getBorderStart();
+                borderColorEnd = colorEvent.getBorderEnd();
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 4,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY - 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 4,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 3,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 4,
+                    tooltipY - 3,
+                    tooltipX - 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY - 3,
+                    tooltipX + tooltipTextWidth + 4,
+                    tooltipY + tooltipTextHeight + 3,
+                    backgroundColor,
+                    backgroundColor,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 2,
+                    tooltipX - 2,
+                    tooltipY + tooltipTextHeight + 2,
+                    borderColorStart,
+                    borderColorEnd,
+                    300);
+                drawGradientRect(
+                    tooltipX + tooltipTextWidth + 2,
+                    tooltipY - 2,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 2,
+                    borderColorStart,
+                    borderColorEnd,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY - 3,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY - 2,
+                    borderColorStart,
+                    borderColorStart,
+                    300);
+                drawGradientRect(
+                    tooltipX - 3,
+                    tooltipY + tooltipTextHeight + 2,
+                    tooltipX + tooltipTextWidth + 3,
+                    tooltipY + tooltipTextHeight + 3,
+                    borderColorEnd,
+                    borderColorEnd,
+                    300);
+                MinecraftForge.EVENT_BUS.post(
+                    new RenderTooltipEvent.PostBackground(
+                        stack,
+                        textLines,
+                        tooltipX,
+                        tooltipY,
+                        font,
+                        tooltipTextWidth,
+                        tooltipTextHeight));
+                int textY = tooltipY;
+
+                for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
+                    String line = textLines.get(lineNumber);
+                    ITooltipLine handler = TooltipLineHandler.getTipLine(line);
+                    if (handler != null) {
+                        int width = getTooltipLineWidth(handler, font, tooltipTextWidth);
+                        int height = Math.max(0, handler.getHeight(font, width));
+                        handler.draw(font, tooltipX, textY, mouseX, mouseY, width, height);
+                        textY += height;
+                    } else {
+                        String cleanText = line.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
+                        font.drawStringWithShadow(cleanText, tooltipX, textY, -1);
+                        textY += 10;
+                    }
+
+                    if (lineNumber + 1 == titleLinesCount && lineNumber + 1 < textLines.size()) {
+                        textY += 2;
+                    }
+
+                    if (lineNumber + 1 < textLines.size() && line.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
+                        textY += 2;
+                    }
+                }
+
+                MinecraftForge.EVENT_BUS.post(
+                    new RenderTooltipEvent.PostText(
+                        stack,
+                        textLines,
+                        tooltipX,
+                        tooltipY,
+                        font,
+                        tooltipTextWidth,
+                        tooltipTextHeight));
+                TooltipLineHandler.clear();
+                GlStateManager.enableLighting();
+                GlStateManager.enableDepth();
+                RenderHelper.enableStandardItemLighting();
+                GlStateManager.enableRescaleNormal();
             }
         }
-
-        // All tooltip content has been rendered.
-        MinecraftForge.EVENT_BUS.post(
-            new RenderTooltipEvent.PostText(
-                stack,
-                textLines,
-                tooltipX,
-                tooltipY,
-                font,
-                tooltipTextWidth,
-                tooltipTextHeight));
-
-        TooltipLineHandler.clear();
-
-        GlStateManager.enableLighting();
-        GlStateManager.enableDepth();
-        RenderHelper.enableStandardItemLighting();
-        GlStateManager.enableRescaleNormal();
     }
 
     /**
@@ -987,7 +915,7 @@ public class GuiHelpers {
             color1,
             zLevel);
         int color2 = 1347420415;
-        int color3 = (color2 & 16711422) >> 1 | color2 & -16777216;
+        int color3 = (color2 & 0xFEFEFE) >> 1 | color2 & 0xFF000000;
         fillGradient(
             xStart - 3,
             yStart - 3 + 1,

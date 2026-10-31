@@ -20,16 +20,9 @@ public final class TooltipLineDrawable implements IDrawable {
         this.font = font;
 
         int preferredWidth = line.getWidth(font);
-        int availableWidth = maxWidth > 0 ? maxWidth : DEFAULT_WIDTH;
+        int availableWidth = maxWidth > 0 ? Math.min(maxWidth, DEFAULT_WIDTH) : DEFAULT_WIDTH;
 
         this.defaultWidth = preferredWidth < 0 ? availableWidth : Math.min(preferredWidth, availableWidth);
-
-        System.out.println(
-            "[TooltipLineDrawable] preferredWidth=" + preferredWidth
-                + ", maxWidth="
-                + maxWidth
-                + ", defaultWidth="
-                + this.defaultWidth);
     }
 
     @Override

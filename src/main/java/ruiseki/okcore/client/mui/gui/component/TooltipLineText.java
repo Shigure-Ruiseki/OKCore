@@ -8,7 +8,7 @@ import com.cleanroommc.modularui.screen.viewport.GuiContext;
 
 import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 
-public final class TooltipLineText implements ITextLine {
+public class TooltipLineText implements ITextLine {
 
     private static final int DEFAULT_WIDTH = 100;
 
@@ -20,7 +20,7 @@ public final class TooltipLineText implements ITextLine {
     public TooltipLineText(ITooltipLine line, FontRenderer font, int maxWidth) {
         this.line = line;
         this.font = font;
-        this.width = maxWidth > 0 ? Math.min(maxWidth, DEFAULT_WIDTH) : DEFAULT_WIDTH;
+        this.width = maxWidth > 0 ? maxWidth : DEFAULT_WIDTH;
         this.height = Math.max(0, line.getHeight(font, this.width));
     }
 

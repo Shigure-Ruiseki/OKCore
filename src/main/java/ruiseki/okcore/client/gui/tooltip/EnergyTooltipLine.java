@@ -119,14 +119,20 @@ public class EnergyTooltipLine implements ITooltipLine {
             .size() * font.FONT_HEIGHT;
     }
 
-    private int getBarWidth(int width) {
-        int availableWidth = Math.max(0, width - BAR_BORDER_SIZE * 2);
+    private int getTextWidth(FontRenderer font, int width) {
+        int maxWidth = 0;
+        for (String line : this.getEnergyLines(font, width)) {
+            maxWidth = Math.max(maxWidth, font.getStringWidth(line));
+        }
+        return maxWidth;
+    }
 
+    private int getBarWidth(FontRenderer font, int width) {
+        int availableWidth = Math.max(0, width - BAR_BORDER_SIZE * 2);
         if (this.barWidth != -1) {
             return Math.min(availableWidth, this.barWidth);
         }
-
-        return availableWidth;
+        return Math.min(availableWidth, this.getTextWidth(font, width));
     }
 
     private int getRequiredHeight(FontRenderer font, int width) {
@@ -169,7 +175,7 @@ public class EnergyTooltipLine implements ITooltipLine {
         }
 
         // Energy bar.
-        int actualBarWidth = this.getBarWidth(width);
+        int actualBarWidth = this.getBarWidth(font, width);
 
         int barHeight = Math.min(
             this.barHeight,

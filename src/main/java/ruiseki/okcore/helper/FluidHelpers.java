@@ -41,7 +41,6 @@ import ruiseki.okcore.fluid.capability.wrapper.FluidBlockWrapper;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItemCapacity;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 

@@ -1,3 +1,4 @@
+
 package ruiseki.commoncapabilities.api.capability.fluidhandler;
 
 import java.util.Iterator;
@@ -6,35 +7,39 @@ import java.util.NoSuchElementException;
 import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 /**
- * A filtered iterator over all slots in a fluid handler.
- * 
+ * A filtered iterator over all tanks in a fluid handler.
+ *
  * @author rubensworks
  */
 public class FilteredFluidHandlerFluidStackIterator implements Iterator<FluidStack> {
 
-    private final IFluidTankProperties[] fluidTankProperties;
+    private final IFluidHandler fluidHandler;
+    private final int tanks;
     private final FluidStack prototype;
     private final int matchFlags;
+
     private int slot = 0;
     private FluidStack next;
 
     public FilteredFluidHandlerFluidStackIterator(IFluidHandler fluidHandler, FluidStack prototype, int matchFlags) {
-        this.fluidTankProperties = fluidHandler.getTankProperties();
+        this.fluidHandler = fluidHandler;
+        this.tanks = fluidHandler.getTanks();
         this.prototype = prototype;
         this.matchFlags = matchFlags;
         this.next = findNext();
     }
 
     protected FluidStack findNext() {
-        while (slot < fluidTankProperties.length) {
-            FluidStack fluidStack = fluidTankProperties[slot++].getContents();
+        while (slot < tanks) {
+            FluidStack fluidStack = fluidHandler.getFluidInTank(slot++);
+
             if (FluidMatch.areFluidStacksEqual(fluidStack, prototype, matchFlags)) {
                 return fluidStack;
             }
         }
+
         return null;
     }
 
@@ -48,8 +53,10 @@ public class FilteredFluidHandlerFluidStackIterator implements Iterator<FluidSta
         if (!hasNext()) {
             throw new NoSuchElementException("Slot out of bounds");
         }
-        FluidStack next = this.next;
+
+        FluidStack result = this.next;
         this.next = findNext();
-        return next;
+
+        return result;
     }
 }

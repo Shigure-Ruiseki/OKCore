@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.fluid.capability.wrapper;
 
 import net.minecraft.item.ItemStack;
@@ -12,9 +13,8 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
-import ruiseki.okcore.fluid.handler.FluidTankProperties;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.helper.FluidHelpers;
 
 public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProvider {
 
@@ -42,35 +42,58 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
     }
 
     @Override
+    public int getTanks() {
+        return legacy.getCapacity(stack) > 0 ? 1 : 0;
+    }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        if (tank != 0 || getTanks() == 0) {
+            return FluidHelpers.EMPTY;
+        }
+        FluidStack fluid = legacy.getFluid(stack);
+        return FluidHelpers.isEmpty(fluid) ? FluidHelpers.EMPTY : fluid;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return tank == 0 ? Math.max(0, legacy.getCapacity(stack)) : 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, @NotNull FluidStack fluid) {
+        if (tank != 0 || FluidHelpers.isEmpty(fluid) || getTanks() == 0) {
+            return false;
+        }
+        return legacy.fill(stack, fluid, false) > 0;
+    }
+
+    @Override
     public int fill(FluidStack resource, boolean doFill) {
+        if (FluidHelpers.isEmpty(resource) || getTanks() == 0) {
+            return 0;
+        }
         return legacy.fill(stack, resource, doFill);
     }
 
     @Override
     public FluidStack drain(FluidStack resource, boolean doDrain) {
-        if (resource == null) return null;
-
-        FluidStack current = legacy.getFluid(stack);
-        if (current == null || !current.isFluidEqual(resource)) {
-            return null;
+        if (FluidHelpers.isEmpty(resource) || getTanks() == 0) {
+            return FluidHelpers.EMPTY;
         }
-
+        FluidStack current = legacy.getFluid(stack);
+        if (FluidHelpers.isEmpty(current) || !current.isFluidEqual(resource)) {
+            return FluidHelpers.EMPTY;
+        }
         return legacy.drain(stack, resource.amount, doDrain);
     }
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
-        if (maxDrain <= 0) return null;
-        return legacy.drain(stack, maxDrain, doDrain);
-    }
-
-    @Override
-    public IFluidTankProperties[] getTankProperties() {
-        int capacity = legacy.getCapacity(stack);
-        if (capacity <= 0) {
-            return new IFluidTankProperties[0];
+        if (maxDrain <= 0 || getTanks() == 0) {
+            return FluidHelpers.EMPTY;
         }
-
-        return new IFluidTankProperties[] { new FluidTankProperties(legacy.getFluid(stack), capacity, true, true) };
+        FluidStack result = legacy.drain(stack, maxDrain, doDrain);
+        return FluidHelpers.isEmpty(result) ? FluidHelpers.EMPTY : result;
     }
 }

@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.fluid.capability.wrapper;
 
 import net.minecraft.block.Block;
@@ -8,10 +9,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.jetbrains.annotations.NotNull;
+
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.fluid.handler.FluidTankProperties;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.FluidHelpers;
 
 public class BlockLiquidWrapper implements IFluidHandler {
@@ -27,99 +28,106 @@ public class BlockLiquidWrapper implements IFluidHandler {
     }
 
     @Override
-    public IFluidTankProperties[] getTankProperties() {
-        FluidStack containedStack = null;
-        Block blockState = blockPos.getBlock(world);
-        if (blockState == blockLiquid) {
-            containedStack = getStack();
+    public int getTanks() {
+        return 1;
+    }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        if (tank != 0 || !isSourceBlock()) {
+            return FluidHelpers.EMPTY;
         }
-        return new FluidTankProperties[] {
-            new FluidTankProperties(containedStack, FluidHelpers.BUCKET_VOLUME, false, true) };
+
+        FluidStack stack = getStack();
+        return stack == null ? FluidHelpers.EMPTY : stack;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return tank == 0 ? FluidHelpers.BUCKET_VOLUME : 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+        if (tank != 0 || FluidHelpers.isEmpty(stack)) {
+            return false;
+        }
+        FluidStack accepted = getAcceptedFluid();
+        return accepted != null && accepted.isFluidEqual(stack);
     }
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
-        if (resource == null || resource.amount < FluidHelpers.BUCKET_VOLUME) {
+        if (FluidHelpers.isEmpty(resource) || resource.amount < FluidHelpers.BUCKET_VOLUME
+            || !isFluidValid(0, resource)) {
             return 0;
         }
-
         if (doFill) {
             int x = blockPos.getX();
             int y = blockPos.getY();
             int z = blockPos.getZ();
-
             FluidHelpers.destroyBlockOnFluidPlacement(world, blockPos);
-
-            Material material = blockLiquid.getMaterial();
-            Block targetBlock = (material == Material.lava) ? Blocks.flowing_lava : Blocks.flowing_water;
-
+            Block targetBlock = blockLiquid.getMaterial() == Material.lava ? Blocks.flowing_lava : Blocks.flowing_water;
             world.setBlock(x, y, z, targetBlock, 0, 3);
         }
-
         return FluidHelpers.BUCKET_VOLUME;
     }
 
     @Override
     public FluidStack drain(FluidStack resource, boolean doDrain) {
-        if (resource == null || resource.amount < FluidHelpers.BUCKET_VOLUME) {
-            return null;
+        if (FluidHelpers.isEmpty(resource) || resource.amount < FluidHelpers.BUCKET_VOLUME || !isSourceBlock()) {
+            return FluidHelpers.EMPTY;
         }
-
-        int x = blockPos.getX();
-        int y = blockPos.getY();
-        int z = blockPos.getZ();
-        Block block = world.getBlock(x, y, z);
-        int meta = world.getBlockMetadata(x, y, z);
-
-        if (block == blockLiquid && meta == 0) {
-            FluidStack containedStack = getStack();
-            if (containedStack != null && containedStack.isFluidEqual(resource)) {
-                if (doDrain) {
-                    world.setBlockToAir(x, y, z);
-                }
-                return containedStack;
-            }
+        FluidStack contained = getStack();
+        if (contained == null || !contained.isFluidEqual(resource)) {
+            return FluidHelpers.EMPTY;
         }
-        return null;
+        if (doDrain) {
+            world.setBlockToAir(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        }
+        return contained;
     }
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
-        if (maxDrain < FluidHelpers.BUCKET_VOLUME) {
-            return null;
+        if (maxDrain < FluidHelpers.BUCKET_VOLUME || !isSourceBlock()) {
+            return FluidHelpers.EMPTY;
         }
+        FluidStack contained = getStack();
+        if (contained == null || contained.amount > maxDrain) {
+            return FluidHelpers.EMPTY;
+        }
+        if (doDrain) {
+            world.setBlockToAir(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        }
+        return contained;
+    }
 
-        int x = blockPos.getX();
-        int y = blockPos.getY();
-        int z = blockPos.getZ();
-        Block block = world.getBlock(x, y, z);
+    private boolean isSourceBlock() {
+        return blockPos.getBlock(world) == blockLiquid
+            && world.getBlockMetadata(blockPos.getX(), blockPos.getY(), blockPos.getZ()) == 0;
+    }
 
-        if (block == blockLiquid) {
-            FluidStack containedStack = getStack();
-            if (containedStack != null && containedStack.amount <= maxDrain) {
-                if (doDrain) {
-                    world.setBlockToAir(x, y, z);
-                }
-                return containedStack;
-            }
+    private FluidStack getAcceptedFluid() {
+        Material material = blockLiquid.getMaterial();
+        if (material == Material.water) {
+            return new FluidStack(FluidRegistry.WATER, 1);
+        }
+        if (material == Material.lava) {
+            return new FluidStack(FluidRegistry.LAVA, 1);
         }
         return null;
     }
 
     private FluidStack getStack() {
-        int x = blockPos.getX();
-        int y = blockPos.getY();
-        int z = blockPos.getZ();
-        Block block = world.getBlock(x, y, z);
-        int meta = world.getBlockMetadata(x, y, z);
-
-        Material material = block.getMaterial();
-        if (material == Material.water && meta == 0) {
+        if (!isSourceBlock()) return null;
+        Material material = blockLiquid.getMaterial();
+        if (material == Material.water) {
             return new FluidStack(FluidRegistry.WATER, FluidHelpers.BUCKET_VOLUME);
-        } else if (material == Material.lava && meta == 0) {
+        }
+        if (material == Material.lava) {
             return new FluidStack(FluidRegistry.LAVA, FluidHelpers.BUCKET_VOLUME);
         }
-
         return null;
     }
 }

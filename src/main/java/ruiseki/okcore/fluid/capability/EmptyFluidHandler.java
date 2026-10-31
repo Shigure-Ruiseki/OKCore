@@ -6,24 +6,16 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
-import ruiseki.okcore.fluid.handler.FluidTankProperties;
+import org.jetbrains.annotations.NotNull;
+
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 public class EmptyFluidHandler implements IFluidHandler, IFluidTank {
 
     public static final EmptyFluidHandler INSTANCE = new EmptyFluidHandler();
     public static final FluidTankInfo EMPTY_TANK_INFO = new FluidTankInfo(null, 0);
-    public static final IFluidTankProperties EMPTY_TANK_PROPERTIES = new FluidTankProperties(null, 0, false, false);
-    public static final IFluidTankProperties[] EMPTY_TANK_PROPERTIES_ARRAY = new IFluidTankProperties[] {
-        EMPTY_TANK_PROPERTIES };
 
     protected EmptyFluidHandler() {}
-
-    @Override
-    public IFluidTankProperties[] getTankProperties() {
-        return EMPTY_TANK_PROPERTIES_ARRAY;
-    }
 
     @Override
     @Nullable
@@ -44,6 +36,26 @@ public class EmptyFluidHandler implements IFluidHandler, IFluidTank {
     @Override
     public FluidTankInfo getInfo() {
         return EMPTY_TANK_INFO;
+    }
+
+    @Override
+    public int getTanks() {
+        return 0;
+    }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        return null;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+        return false;
     }
 
     @Override

@@ -1,7 +1,5 @@
-package ruiseki.okcore.fluid.capability;
 
-import static ruiseki.okcore.fluid.capability.EmptyFluidHandler.EMPTY_TANK_INFO;
-import static ruiseki.okcore.fluid.capability.EmptyFluidHandler.EMPTY_TANK_PROPERTIES_ARRAY;
+package ruiseki.okcore.fluid.capability;
 
 import javax.annotation.Nullable;
 
@@ -9,23 +7,46 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidTank;
 
+import org.jetbrains.annotations.NotNull;
+
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 
 /**
- * VoidFluidHandler is a template fluid handler that can be filled indefinitely without ever getting full.
- * It does not store fluid that gets filled into it, but "destroys" it upon receiving it.
+ * VoidFluidHandler is a template fluid handler that can be filled indefinitely
+ * without ever getting full.
+ *
+ * It does not store fluid that gets filled into it, but "destroys" it upon
+ * receiving it.
  */
 public class VoidFluidHandler implements IFluidHandler, IFluidTank {
 
-    public static final EmptyFluidHandler INSTANCE = new EmptyFluidHandler();
+    public static final VoidFluidHandler INSTANCE = new VoidFluidHandler();
 
     public VoidFluidHandler() {}
 
+    // New fluid handler API
+
     @Override
-    public IFluidTankProperties[] getTankProperties() {
-        return EMPTY_TANK_PROPERTIES_ARRAY;
+    public int getTanks() {
+        return 1;
     }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        return null;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+        return true;
+    }
+
+    // Legacy IFluidTank API
 
     @Override
     @Nullable
@@ -45,12 +66,14 @@ public class VoidFluidHandler implements IFluidHandler, IFluidTank {
 
     @Override
     public FluidTankInfo getInfo() {
-        return EMPTY_TANK_INFO;
+        return new FluidTankInfo(this);
     }
+
+    // Fluid operations
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
-        return resource.amount;
+        return resource != null ? resource.amount : 0;
     }
 
     @Override

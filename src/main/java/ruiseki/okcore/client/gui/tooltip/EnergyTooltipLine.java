@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.client.gui.tooltip;
 
 import java.util.List;
@@ -13,6 +14,7 @@ public class EnergyTooltipLine implements ITooltipLine {
 
     private static final int DEFAULT_BAR_WIDTH = -1;
     private static final int DEFAULT_BAR_HEIGHT = 5;
+
     private static final int BAR_TOP_PADDING = 2;
     private static final int BAR_BOTTOM_PADDING = 2;
     private static final int BAR_BORDER_SIZE = 1;
@@ -117,66 +119,94 @@ public class EnergyTooltipLine implements ITooltipLine {
             .size() * font.FONT_HEIGHT;
     }
 
+    private int getBarWidth(int width) {
+        int availableWidth = Math.max(0, width - BAR_BORDER_SIZE * 2);
+
+        if (this.barWidth != -1) {
+            return Math.min(availableWidth, this.barWidth);
+        }
+
+        return availableWidth;
+    }
+
+    private int getRequiredHeight(FontRenderer font, int width) {
+        int textHeight = this.getTextHeight(font, width);
+
+        return textHeight + BAR_TOP_PADDING + this.barHeight + BAR_BORDER_SIZE * 2 + BAR_BOTTOM_PADDING;
+    }
+
     // ITooltipLine
 
     @Override
     public int getWidth(FontRenderer font) {
-        if (this.barWidth == -1) {
-            return -1;
-        }
-
-        return this.barWidth + 2;
+        return this.barWidth == -1 ? -1 : this.barWidth + BAR_BORDER_SIZE * 2;
     }
 
     @Override
     public int getHeight(FontRenderer font, int width) {
-        return this.getTextHeight(font, width) + BAR_TOP_PADDING
-            + this.barHeight
-            + BAR_BORDER_SIZE * 2
-            + BAR_BOTTOM_PADDING;
+        return Math.max(0, this.getRequiredHeight(font, width));
     }
 
     @Override
     public void draw(FontRenderer font, int x, int y, int mouseX, int mouseY, int width, int height) {
+        width = Math.max(0, width);
+        height = Math.max(0, height);
+
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+
         List<String> lines = this.getEnergyLines(font, width);
 
         int textHeight = lines.size() * font.FONT_HEIGHT;
-        int textY = y;
 
         // Energy text.
+        int textY = y;
+
         for (String line : lines) {
             font.drawStringWithShadow(line, x, textY, this.textColor);
-
             textY += font.FONT_HEIGHT;
         }
 
-        // Resolve actual bar dimensions.
-        int actualBarWidth = Math.max(0, width - 2);
+        // Energy bar.
+        int actualBarWidth = this.getBarWidth(width);
 
-        if (this.barWidth != -1) {
-            actualBarWidth = Math.min(actualBarWidth, this.barWidth);
-        }
-        int actualBarHeight = Math.min(
+        int barHeight = Math.min(
             this.barHeight,
-            Math.max(0, height - textHeight - BAR_TOP_PADDING - BAR_BORDER_SIZE * 2 - BAR_BOTTOM_PADDING));
+            Math.max(0, height - textHeight - BAR_TOP_PADDING - BAR_BOTTOM_PADDING - BAR_BORDER_SIZE * 2));
 
-        if (actualBarHeight <= 0 || width < 2) {
+        if (actualBarWidth <= 0 || barHeight <= 0) {
             return;
         }
 
         int barY = y + textHeight + BAR_TOP_PADDING;
 
         // Border.
-        Gui.drawRect(x, barY, x + actualBarWidth + 2, barY + actualBarHeight + 2, this.borderColor);
+        Gui.drawRect(
+            x,
+            barY,
+            x + actualBarWidth + BAR_BORDER_SIZE * 2,
+            barY + barHeight + BAR_BORDER_SIZE * 2,
+            this.borderColor);
 
         // Background.
-        Gui.drawRect(x + 1, barY + 1, x + actualBarWidth + 1, barY + actualBarHeight + 1, this.backgroundColor);
+        Gui.drawRect(
+            x + BAR_BORDER_SIZE,
+            barY + BAR_BORDER_SIZE,
+            x + BAR_BORDER_SIZE + actualBarWidth,
+            barY + BAR_BORDER_SIZE + barHeight,
+            this.backgroundColor);
 
         // Energy fill.
         int fillWidth = this.getEnergyRatioWidth(actualBarWidth);
 
         if (fillWidth > 0) {
-            Gui.drawRect(x + 1, barY + 1, x + 1 + fillWidth, barY + actualBarHeight + 1, this.fillColor);
+            Gui.drawRect(
+                x + BAR_BORDER_SIZE,
+                barY + BAR_BORDER_SIZE,
+                x + BAR_BORDER_SIZE + fillWidth,
+                barY + BAR_BORDER_SIZE + barHeight,
+                this.fillColor);
         }
     }
 }

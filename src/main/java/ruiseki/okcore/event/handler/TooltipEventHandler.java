@@ -21,7 +21,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
-import ruiseki.okcore.client.mui.gui.component.TooltipLineDrawable;
+import ruiseki.okcore.client.mui.gui.component.TooltipLineText;
 import ruiseki.okcore.event.gui.RenderTooltipEvent;
 import ruiseki.okcore.helper.ItemHelpers;
 
@@ -73,7 +73,6 @@ public final class TooltipEventHandler {
                 continue;
             }
 
-            // Replace custom tooltip handler markers.
             ITooltipLine handler = TooltipLineHandler.getTipLine(text);
 
             if (handler != null) {
@@ -81,12 +80,13 @@ public final class TooltipEventHandler {
 
                 builder.moveCursorToStart();
                 builder.replace(marker, key -> null);
-                builder.newLine();
-                builder.addLine(new TooltipLineDrawable(handler, renderFont, forwarded.getMaxWidth()));
+
+                // Insert an independent text line at the marker position.
+                builder.addLine(new TooltipLineText(handler, renderFont, forwarded.getMaxWidth()));
+
                 continue;
             }
 
-            // Replace line spacing markers.
             if (text.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
                 boolean standalone = text.equals(TooltipLineHandler.TOOLTIP_LINESPACE);
 
@@ -99,10 +99,7 @@ public final class TooltipEventHandler {
                 } else {
                     String cleanText = text.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
 
-                    builder.replace(marker, key -> {
-                        // Preserve the original text instead of deleting it.
-                        return IKey.str(cleanText);
-                    });
+                    builder.replace(marker, key -> IKey.str(cleanText));
                 }
 
                 builder.spaceLine(2);

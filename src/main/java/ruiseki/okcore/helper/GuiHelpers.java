@@ -357,14 +357,37 @@ public class GuiHelpers {
         GlStateManager.disableLighting();
         GlStateManager.disableDepth();
 
-        // Measure text width.
+        // Measure tooltip content width.
         int tooltipTextWidth = 0;
+        boolean hasFlexibleWidth = false;
 
         for (String textLine : textLines) {
             ITooltipLine handler = TooltipLineHandler.getTipLine(textLine);
-            int width = handler != null ? Math.max(0, handler.getWidth(font))
-                : font.getStringWidth(textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, ""));
-            tooltipTextWidth = Math.max(tooltipTextWidth, width);
+
+            if (handler != null) {
+                int width = handler.getWidth(font);
+
+                if (width < 0) {
+                    hasFlexibleWidth = true;
+                } else {
+                    tooltipTextWidth = Math.max(tooltipTextWidth, width);
+                }
+            } else {
+                int width = font.getStringWidth(textLine.replace(TooltipLineHandler.TOOLTIP_LINESPACE, ""));
+
+                tooltipTextWidth = Math.max(tooltipTextWidth, width);
+            }
+        }
+
+        // Handle tooltip containing only flexible-width components.
+        if (tooltipTextWidth <= 0 && hasFlexibleWidth) {
+            int availableWidth = mouseX > screenWidth / 2 ? mouseX - 20 : screenWidth - 16 - mouseX;
+
+            if (maxTextWidth > 0) {
+                availableWidth = Math.min(availableWidth, maxTextWidth);
+            }
+
+            tooltipTextWidth = Math.max(1, availableWidth);
         }
 
         boolean needsWrap = false;
@@ -405,7 +428,13 @@ public class GuiHelpers {
 
                 if (handler != null) {
                     wrappedTextLines.add(textLine);
-                    wrappedTooltipWidth = Math.max(wrappedTooltipWidth, Math.max(0, handler.getWidth(font)));
+
+                    int width = handler.getWidth(font);
+
+                    if (width >= 0) {
+                        wrappedTooltipWidth = Math.max(wrappedTooltipWidth, Math.min(width, tooltipTextWidth));
+                    }
+
                     continue;
                 }
 
@@ -432,7 +461,12 @@ public class GuiHelpers {
                 }
             }
 
-            tooltipTextWidth = wrappedTooltipWidth;
+            // Preserve available width when all components are flexible.
+            if (wrappedTooltipWidth <= 0 && hasFlexibleWidth) {
+                wrappedTooltipWidth = tooltipTextWidth;
+            }
+
+            tooltipTextWidth = Math.max(1, wrappedTooltipWidth);
             textLines = wrappedTextLines;
         }
 
@@ -445,7 +479,7 @@ public class GuiHelpers {
             tooltipX = Math.max(4, screenWidth - tooltipTextWidth - 4);
         }
 
-        // Calculate text height.
+        // Calculate tooltip height.
         int tooltipTextHeight = 0;
 
         for (int i = 0; i < textLines.size(); i++) {
@@ -605,6 +639,7 @@ public class GuiHelpers {
                 tooltipTextWidth,
                 tooltipTextHeight));
 
+        // Render tooltip content.
         int textY = tooltipY;
 
         for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
@@ -613,9 +648,20 @@ public class GuiHelpers {
             ITooltipLine handler = TooltipLineHandler.getTipLine(line);
 
             if (handler != null) {
-                handler.draw(font, tooltipX, textY);
+                int width = handler.getWidth(font);
 
-                textY += Math.max(0, handler.getHeight(font));
+                // -1 means use the current tooltip width.
+                if (width < 0) {
+                    width = tooltipTextWidth;
+                } else {
+                    width = Math.min(width, tooltipTextWidth);
+                }
+
+                int height = Math.max(0, handler.getHeight(font));
+
+                handler.draw(font, tooltipX, textY, mouseX, mouseY, width, height);
+
+                textY += height;
             } else {
                 String cleanText = line.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
 

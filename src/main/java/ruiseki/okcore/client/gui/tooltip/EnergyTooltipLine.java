@@ -113,7 +113,7 @@ public class EnergyTooltipLine implements ITooltipLine {
     }
 
     @Override
-    public void draw(FontRenderer font, int x, int y) {
+    public void draw(FontRenderer font, int x, int y, int mouseX, int mouseY, int width, int height) {
         // Energy text
         font.drawStringWithShadow(getEnergyText(), x, y, textColor);
 

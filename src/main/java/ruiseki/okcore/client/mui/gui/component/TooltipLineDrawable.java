@@ -30,6 +30,6 @@ public final class TooltipLineDrawable implements IDrawable {
 
     @Override
     public void draw(GuiContext context, int x, int y, int width, int height, WidgetTheme widgetTheme) {
-        line.draw(font, x, y);
+        line.draw(font, x, y, context.getMouseX(), context.getMouseY(), width, height);
     }
 }

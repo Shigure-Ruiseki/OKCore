@@ -20,9 +20,7 @@ public final class TooltipLineText implements ITextLine {
     public TooltipLineText(ITooltipLine line, FontRenderer font, int maxWidth) {
         this.line = line;
         this.font = font;
-        int availableWidth = maxWidth > 0 ? Math.min(maxWidth, DEFAULT_WIDTH) : DEFAULT_WIDTH;
-        int preferredWidth = line.getWidth(font);
-        this.width = Math.max(1, preferredWidth < 0 ? availableWidth : Math.min(preferredWidth, availableWidth));
+        this.width = maxWidth > 0 ? Math.min(maxWidth, DEFAULT_WIDTH) : DEFAULT_WIDTH;
         this.height = Math.max(0, line.getHeight(font, this.width));
     }
 

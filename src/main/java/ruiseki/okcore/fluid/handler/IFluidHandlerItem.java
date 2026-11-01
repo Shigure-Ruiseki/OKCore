@@ -2,7 +2,7 @@ package ruiseki.okcore.fluid.handler;
 
 import net.minecraft.item.ItemStack;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * ItemStacks handled by an {@link IFluidHandler} may change, so this class allows
@@ -16,6 +16,6 @@ public interface IFluidHandlerItem extends IFluidHandler {
      * for their filled and empty states.
      * May be an empty item if the container was drained and is consumable.
      */
-    @NotNull
+    @Nullable
     ItemStack getContainer();
 }

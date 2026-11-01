@@ -20,9 +20,10 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
 
     private final ItemStack stack;
     private final IFluidContainerItem legacy;
+
     private final LazyOptional<IFluidHandlerItem> holder = LazyOptional.of(() -> this);
 
-    public FluidContainerWrapper(ItemStack stack, IFluidContainerItem legacy) {
+    public FluidContainerWrapper(@NotNull ItemStack stack, @NotNull IFluidContainerItem legacy) {
         this.stack = stack;
         this.legacy = legacy;
     }
@@ -41,9 +42,13 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
         return stack;
     }
 
+    private int getCapacity() {
+        return Math.max(0, legacy.getCapacity(stack));
+    }
+
     @Override
     public int getTanks() {
-        return legacy.getCapacity(stack) > 0 ? 1 : 0;
+        return getCapacity() > 0 ? 1 : 0;
     }
 
     @Override
@@ -52,17 +57,17 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
             return FluidHelpers.EMPTY;
         }
         FluidStack fluid = legacy.getFluid(stack);
-        return FluidHelpers.isEmpty(fluid) ? FluidHelpers.EMPTY : fluid;
+        return FluidHelpers.isEmpty(fluid) ? FluidHelpers.EMPTY : fluid.copy();
     }
 
     @Override
     public int getTankCapacity(int tank) {
-        return tank == 0 ? Math.max(0, legacy.getCapacity(stack)) : 0;
+        return tank == 0 ? getCapacity() : 0;
     }
 
     @Override
     public boolean isFluidValid(int tank, @NotNull FluidStack fluid) {
-        if (tank != 0 || FluidHelpers.isEmpty(fluid) || getTanks() == 0) {
+        if (tank != 0 || getTanks() == 0 || FluidHelpers.isEmpty(fluid) || getCapacity() <= 0) {
             return false;
         }
         return legacy.fill(stack, fluid, false) > 0;
@@ -85,7 +90,11 @@ public class FluidContainerWrapper implements IFluidHandlerItem, ICapabilityProv
         if (FluidHelpers.isEmpty(current) || !current.isFluidEqual(resource)) {
             return FluidHelpers.EMPTY;
         }
-        return legacy.drain(stack, resource.amount, doDrain);
+        int amount = Math.min(resource.amount, current.amount);
+        if (amount <= 0) {
+            return FluidHelpers.EMPTY;
+        }
+        return drain(amount, doDrain);
     }
 
     @Override

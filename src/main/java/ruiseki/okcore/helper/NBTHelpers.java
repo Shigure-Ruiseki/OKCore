@@ -302,7 +302,7 @@ public class NBTHelpers {
         tag.setTag(key, list);
     }
 
-    private static NBTTagCompound getOrCreateTag(ItemStack stack) {
+    public static NBTTagCompound getOrCreateTag(ItemStack stack) {
         if (ItemHelpers.isEmpty(stack)) return new NBTTagCompound();
         if (!stack.hasTagCompound()) {
             stack.setTagCompound(new NBTTagCompound());

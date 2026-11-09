@@ -26,4 +26,8 @@ public class GhastTargetEvent extends LivingEvent {
     public Entity getTarget() {
         return target;
     }
+
+    public void setTarget(Entity target) {
+        this.target = target;
+    }
 }

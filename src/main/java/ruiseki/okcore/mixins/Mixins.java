@@ -45,6 +45,9 @@ public enum Mixins implements IMixins {
     INTERACTION_EVENT(new MixinBuilder("Hook Interaction Event")
         .addClientMixins("event.interaction.MixinMinecraft", "event.interaction.MixinPlayerControllerMP")
         .setPhase(Phase.EARLY)),
+    ENTITY_EVENT(new MixinBuilder("Hook Entity Event")
+        .addClientMixins("event.entity.MixinEntityLivingBase", "event.entity.MixinEntityGhast")
+        .setPhase(Phase.EARLY)),
 
     // GTNHLIB
     GTNHLIB(new MixinBuilder("GTNHLib Mixin").addClientMixins("gtnhlib.JSONModelAccessor")

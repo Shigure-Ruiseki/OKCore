@@ -117,7 +117,7 @@ public class ItemHelpers {
         return copy;
     }
 
-    public static int getItemStackSize(@NotNull ItemStack stack) {
+    public static int getMaxStackSize(@NotNull ItemStack stack) {
         return isEmpty(stack) ? 0 : stack.getMaxStackSize();
     }
 

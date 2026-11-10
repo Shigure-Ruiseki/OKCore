@@ -127,7 +127,7 @@ public class ItemTransfer {
                     if (filter != null && !filter.test(simulatedExtracted)) break;
 
                     ItemStack remainder = ItemHelpers.copy(simulatedExtracted);
-                    int initialCount = ItemHelpers.getItemStackSize(remainder);
+                    int initialCount = ItemHelpers.getMaxStackSize(remainder);
 
                     for (int dstSlot : sinkIndices) {
                         if (dstSlot < 0 || dstSlot >= sinkHandler.getSlots()) continue;
@@ -142,7 +142,7 @@ public class ItemTransfer {
                         if (ItemHelpers.isEmpty(remainder)) break;
                     }
 
-                    int acceptedCount = initialCount - ItemHelpers.getItemStackSize(remainder);
+                    int acceptedCount = initialCount - ItemHelpers.getMaxStackSize(remainder);
                     if (acceptedCount <= 0) break;
 
                     ItemStack actualExtracted = sourceHandler.extractItem(srcSlot, acceptedCount, false);
@@ -163,7 +163,7 @@ public class ItemTransfer {
                         }
                     }
 
-                    int transferred = actualExtracted.stackSize - ItemHelpers.getItemStackSize(realRemainder);
+                    int transferred = actualExtracted.stackSize - ItemHelpers.getMaxStackSize(realRemainder);
                     if (transferred <= 0) break;
 
                     itemsTransferred += transferred;

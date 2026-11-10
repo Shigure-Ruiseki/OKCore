@@ -72,7 +72,7 @@ public class InventoryHandlerWrapper implements IItemHandlerModifiable {
         }
 
         ItemStack existing = inventory.getStackInSlot(realSlot);
-        int limit = Math.min(inventory.getInventoryStackLimit(), ItemHelpers.getItemStackSize(stack));
+        int limit = Math.min(inventory.getInventoryStackLimit(), ItemHelpers.getMaxStackSize(stack));
 
         if (ItemHelpers.isEmpty(existing)) {
             int accept = Math.min(ItemHelpers.getCount(stack), limit);

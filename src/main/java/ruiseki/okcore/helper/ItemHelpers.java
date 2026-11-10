@@ -394,7 +394,7 @@ public class ItemHelpers {
 
         for (int i = 0; i < nbttaglist.tagCount(); ++i) {
             NBTTagCompound itemTag = nbttaglist.getCompoundTagAt(i);
-            int slot = itemTag.getInteger("Slot") & 255;
+            int slot = itemTag.getInteger("Slot");
 
             if (slot < list.size()) {
                 ItemStack stack = readFromNBT(itemTag);

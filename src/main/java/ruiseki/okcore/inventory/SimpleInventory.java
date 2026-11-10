@@ -192,14 +192,10 @@ public class SimpleInventory implements INBTInventory {
 
         for (int j = 0; j < nbttaglist.tagCount(); ++j) {
             NBTTagCompound slot = nbttaglist.getCompoundTagAt(j);
-            int index;
-            if (slot.hasKey("index")) {
-                index = slot.getInteger("index");
-            } else {
-                index = slot.getByte("Slot");
-            }
+            int index = slot.getInteger("Slot");
             if (index >= 0 && index < getSizeInventory()) {
-                _contents[index] = ItemStack.loadItemStackFromNBT(slot);
+                ItemStack stack = ItemHelpers.readFromNBT(slot);
+                _contents[index] = ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack;
             }
         }
     }
@@ -218,12 +214,12 @@ public class SimpleInventory implements INBTInventory {
     public void writeToNBT(NBTTagCompound data, String tag) {
         NBTTagList slots = new NBTTagList();
         for (byte index = 0; index < getSizeInventory(); ++index) {
-            ItemStack itemStack = getStackInSlot(index);
-            if (!ItemHelpers.isEmpty(itemStack)) {
+            ItemStack stack = getStackInSlot(index);
+            if (!ItemHelpers.isEmpty(stack)) {
                 NBTTagCompound slot = new NBTTagCompound();
+                slot.setInteger("Slot", index);
+                ItemHelpers.writeToNBT(stack, slot);
                 slots.appendTag(slot);
-                slot.setByte("Slot", index);
-                itemStack.writeToNBT(slot);
             }
         }
         data.setTag(tag, slots);

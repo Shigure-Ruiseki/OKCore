@@ -32,6 +32,7 @@ import ruiseki.okcore.inventory.InventorySorter;
 import ruiseki.okcore.inventory.ItemStackKey;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
+import ruiseki.okcore.item.handler.IItemHandlerSimpleExtractor;
 import ruiseki.okcore.item.handler.IItemHandlerSimpleInserter;
 
 /**
@@ -122,7 +123,8 @@ public class InventoryHelpers {
 
             if (index >= 0 && index < handler.getSlots()) {
                 if (handler instanceof IItemHandlerModifiable modifiable) {
-                    modifiable.setStackInSlot(index, ItemStack.loadItemStackFromNBT(slot));
+                    ItemStack stack = ItemHelpers.readFromNBT(slot);
+                    modifiable.setStackInSlot(index, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
                 }
             }
         }
@@ -144,8 +146,8 @@ public class InventoryHelpers {
             if (!ItemHelpers.isEmpty(itemStack)) {
                 NBTTagCompound slot = new NBTTagCompound();
                 slot.setInteger("index", index);
+                ItemHelpers.writeToNBT(itemStack, slot);
                 slots.appendTag(slot);
-                itemStack.writeToNBT(slot);
             }
         }
         data.setTag(tagName, slots);
@@ -610,6 +612,10 @@ public class InventoryHelpers {
     }
 
     public static ItemStack extractFromInventory(ItemStack stack, IItemHandler inventory, boolean simulate) {
+        if (inventory instanceof IItemHandlerSimpleExtractor itemHandlerSimpleExtractor) {
+            return itemHandlerSimpleExtractor.extractItem(stack, simulate);
+        }
+
         int extractedCount = 0;
         int slots = inventory.getSlots();
         for (int slot = 0; slot < slots && extractedCount < ItemHelpers.getCount(stack); slot++) {

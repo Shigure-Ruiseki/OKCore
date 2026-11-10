@@ -195,11 +195,12 @@ public class ItemNBTHelpers {
 
     public static NBTTagCompound stackToNbt(ItemStack stack) {
         NBTTagCompound tag = new NBTTagCompound();
-        stack.writeToNBT(tag);
+        ItemHelpers.writeToNBT(stack, tag);
         return tag;
     }
 
     public static ItemStack nbtToStack(NBTTagCompound tag) {
-        return ItemStack.loadItemStackFromNBT(tag);
+        ItemStack stack = ItemHelpers.readFromNBT(tag);
+        return ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack;
     }
 }

@@ -373,23 +373,19 @@ public class ItemHelpers {
     }
 
     public static NBTTagCompound saveAllItems(NBTTagCompound tag, List<ItemStack> list, boolean saveEmpty) {
-        NBTTagList nbttaglist = new NBTTagList();
-
+        NBTTagList tagList = new NBTTagList();
         for (int i = 0; i < list.size(); ++i) {
-            ItemStack itemstack = list.get(i);
-
-            if (!isEmpty(itemstack)) {
-                NBTTagCompound nbttagcompound = new NBTTagCompound();
-                nbttagcompound.setByte("Slot", (byte) i);
-                itemstack.writeToNBT(nbttagcompound);
-                nbttaglist.appendTag(nbttagcompound);
+            ItemStack stack = list.get(i);
+            if (!isEmpty(stack)) {
+                NBTTagCompound itemTag = new NBTTagCompound();
+                itemTag.setInteger("Slot", i);
+                writeToNBT(stack, itemTag);
+                tagList.appendTag(itemTag);
             }
         }
-
-        if (nbttaglist.tagCount() > 0 || saveEmpty) {
-            tag.setTag("Items", nbttaglist);
+        if (tagList.tagCount() > 0 || saveEmpty) {
+            tag.setTag("Items", tagList);
         }
-
         return tag;
     }
 
@@ -397,11 +393,12 @@ public class ItemHelpers {
         NBTTagList nbttaglist = tag.getTagList("Items", 10);
 
         for (int i = 0; i < nbttaglist.tagCount(); ++i) {
-            NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
-            int j = nbttagcompound.getByte("Slot") & 255;
+            NBTTagCompound itemTag = nbttaglist.getCompoundTagAt(i);
+            int slot = itemTag.getInteger("Slot") & 255;
 
-            if (j >= 0 && j < list.size()) {
-                list.set(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
+            if (slot < list.size()) {
+                ItemStack stack = readFromNBT(itemTag);
+                list.set(slot, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
             }
         }
     }
@@ -432,6 +429,20 @@ public class ItemHelpers {
             }
         }
         return new ItemStack(item, amount, meta);
+    }
+
+    public static NBTTagCompound writeToNBT(ItemStack stack, NBTTagCompound tag) {
+        stack.writeToNBT(tag);
+        tag.setInteger("Count", ItemHelpers.getCount(stack));
+        return tag;
+    }
+
+    public static ItemStack readFromNBT(NBTTagCompound tag) {
+        ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
+        if (tag.hasKey("Count")) {
+            ItemHelpers.setCount(stack, tag.getInteger("Count"));
+        }
+        return stack;
     }
 
     // 6. SUB-ITEMS & ORE DICTIONARY VARIANTS

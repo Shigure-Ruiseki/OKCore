@@ -1,6 +1,5 @@
 package ruiseki.okcore.item.handler;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -9,7 +8,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -18,9 +16,9 @@ import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSerializable {
+public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSerializable {
 
-    protected List<ItemStack> stacks;
+    protected NonNullList<ItemStack> stacks;
 
     public ItemStackHandler() {
         this(1);
@@ -31,11 +29,13 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
     }
 
     public ItemStackHandler(List<ItemStack> stacks) {
-        this.stacks = stacks != null ? stacks : new ArrayList<>();
+        this.stacks = stacks == null ? NonNullList.withSize(0, ItemHelpers.EMPTY)
+            : NonNullList.from(ItemHelpers.EMPTY, stacks.toArray(new ItemStack[0]));
     }
 
     public ItemStackHandler(ItemStack[] stacks) {
-        this.stacks = stacks != null ? NonNullList.from(ItemHelpers.EMPTY, stacks) : new ArrayList<>();
+        this.stacks = stacks == null ? NonNullList.withSize(0, ItemHelpers.EMPTY)
+            : NonNullList.from(ItemHelpers.EMPTY, stacks);
     }
 
     public void setEmpty() {
@@ -185,6 +185,36 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
     }
 
     @Override
+    public ItemStack extractItem(ItemStack stack, boolean simulate) {
+        if (ItemHelpers.isEmpty(stack)) return ItemHelpers.EMPTY;
+
+        int remaining = stack.stackSize;
+        ItemStack extractedStack = ItemHelpers.EMPTY;
+
+        for (int slot = 0; slot < getSlots() && remaining > 0; slot++) {
+            ItemStack existing = this.getStackInSlot(slot);
+
+            if (ItemHelpers.isEmpty(existing)) continue;
+
+            if (!ItemHandlerHelpers.canItemStacksStack(stack, existing)) continue;
+
+            ItemStack extracted = this.extractItem(slot, remaining, simulate);
+
+            if (ItemHelpers.isEmpty(extracted)) continue;
+
+            if (ItemHelpers.isEmpty(extractedStack)) {
+                extractedStack = extracted;
+            } else {
+                ItemHelpers.grow(extractedStack, extracted.stackSize);
+            }
+
+            remaining -= extracted.stackSize;
+        }
+
+        return extractedStack;
+    }
+
+    @Override
     public int getSlotLimit(int slot) {
         return 64;
     }
@@ -210,8 +240,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
             if (!ItemHelpers.isEmpty(stack)) {
                 NBTTagCompound itemTag = new NBTTagCompound();
                 itemTag.setInteger("Slot", i);
-                stack.writeToNBT(itemTag);
-                itemTag.setInteger("Count", stack.stackSize);
+                ItemHelpers.writeToNBT(stack, itemTag);
                 nbtTagList.appendTag(itemTag);
             }
         }
@@ -231,10 +260,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
             NBTTagCompound itemTags = tagList.getCompoundTagAt(i);
             int slot = itemTags.getInteger("Slot");
             if (slot >= 0 && slot < this.stacks.size()) {
-                ItemStack loadedStack = ItemStack.loadItemStackFromNBT(itemTags);
-                if (!ItemHelpers.isEmpty(loadedStack) && itemTags.hasKey("Count", Constants.NBT.TAG_INT)) {
-                    loadedStack.stackSize = itemTags.getInteger("Count");
-                }
+                ItemStack loadedStack = ItemHelpers.readFromNBT(itemTags);
                 this.stacks.set(slot, ItemHelpers.isEmpty(loadedStack) ? ItemHelpers.EMPTY : loadedStack);
             }
         }

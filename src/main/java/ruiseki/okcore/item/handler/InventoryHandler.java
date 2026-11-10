@@ -84,27 +84,23 @@ public class InventoryHandler extends ItemStackHandler {
 
     @Override
     public void deserializeNBT(NBTTagCompound nbt) {
-        super.deserializeNBT(nbt);
-        setSize(nbt.hasKey("Size", Constants.NBT.TAG_INT) ? nbt.getInteger("Size") : stacks.size());
+        this.setSize(nbt.hasKey("Size", Constants.NBT.TAG_INT) ? nbt.getInteger("Size") : this.stacks.size());
         NBTTagList tagList = nbt.getTagList("Items", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < tagList.tagCount(); i++) {
             NBTTagCompound itemTags = tagList.getCompoundTagAt(i);
             int slot = itemTags.getInteger("Slot");
 
-            if (slot >= 0 && slot < stacks.size()) {
-                ItemStack slotStack = ItemStack.loadItemStackFromNBT(itemTags);
-                if (itemTags.hasKey(REAL_COUNT_TAG)) {
-                    ItemHelpers.setCount(slotStack, itemTags.getInteger(REAL_COUNT_TAG));
-                }
-                stacks.set(slot, slotStack);
+            if (slot >= 0 && slot < this.stacks.size()) {
+                ItemStack slotStack = ItemHelpers.readFromNBT(itemTags);
+                this.stacks.set(slot, slotStack);
             }
         }
-        onLoad();
+        this.onLoad();
     }
 
     public void saveInventory() {
-        contentsNbt.setTag(INVENTORY_TAG, serializeNBT());
-        saveHandler.run();
+        this.contentsNbt.setTag(INVENTORY_TAG, serializeNBT());
+        this.saveHandler.run();
     }
 
     public void addListener(IntConsumer onContentsChanged) {

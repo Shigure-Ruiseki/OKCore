@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -50,96 +51,89 @@ public class ItemHelpers {
         return stack == null || stack.getItem() == null || (checkStackSize && stack.stackSize <= 0);
     }
 
-    @Nullable
-    public static Item getItem(@Nullable ItemStack stack) {
-        return !isEmpty(stack) ? stack.getItem() : null;
+    public static Item getItem(@NotNull ItemStack stack) {
+        return stack.getItem();
     }
 
-    public static <T> Optional<T> getItem(@Nullable ItemStack stack, Class<T> clazz) {
+    public static <T> Optional<T> getItem(@NotNull ItemStack stack, Class<T> clazz) {
         return getItemOptional(stack).filter(clazz::isInstance)
             .map(clazz::cast);
     }
 
-    public static Optional<Item> getItemOptional(@Nullable ItemStack stack) {
+    public static Optional<Item> getItemOptional(@NotNull ItemStack stack) {
         return Optional.ofNullable(getItem(stack));
     }
 
-    public static boolean hasItem(@Nullable ItemStack stack) {
+    public static boolean hasItem(@NotNull ItemStack stack) {
         return getItemOptional(stack).isPresent();
     }
 
-    public static boolean hasItem(@Nullable ItemStack stack, Class<?> clazz) {
+    public static boolean hasItem(@NotNull ItemStack stack, Class<?> clazz) {
         return getItem(stack, clazz).isPresent();
     }
 
-    public static boolean isSameItem(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean isSameItem(ItemStack a, ItemStack b) {
         return !isEmpty(a) && !isEmpty(b) && a.getItem() == b.getItem();
     }
 
-    public static boolean isSameItemAndMeta(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean isSameItemAndMeta(ItemStack a, ItemStack b) {
         return isSameItem(a, b) && getStackMeta(a) == getStackMeta(b);
     }
 
-    public static boolean hasContainerItem(@Nullable ItemStack stack) {
-        Item item = getItem(stack);
-        return item != null && item.hasContainerItem(stack);
+    public static boolean hasContainerItem(@NotNull ItemStack stack) {
+        return getItem(stack).hasContainerItem(stack);
     }
 
-    @Nullable
-    public static ItemStack getContainerItem(@Nullable ItemStack stack) {
-        Item item = getItem(stack);
-        return item != null && item.hasContainerItem(stack) ? item.getContainerItem(stack) : EMPTY;
+    public static ItemStack getContainerItem(@NotNull ItemStack stack) {
+        return hasContainerItem(stack) ? getItem(stack).getContainerItem(stack) : EMPTY;
     }
 
-    @Nullable
-    public static ItemStack copy(@Nullable ItemStack stack) {
+    public static ItemStack copy(@NotNull ItemStack stack) {
         return isEmpty(stack) ? EMPTY : stack.copy();
     }
 
-    public static int getCount(@Nullable ItemStack stack) {
+    public static int getCount(@NotNull ItemStack stack) {
         if (!isEmpty(stack)) return stack.stackSize;
         return 0;
     }
 
-    @Nullable
-    public static ItemStack copyWithSize(@Nullable ItemStack stack, int size) {
+    public static ItemStack copyWithSize(@NotNull ItemStack stack, int size) {
         if (isEmpty(stack)) return EMPTY;
         ItemStack copy = copy(stack);
         setCount(copy, size);
         return copy;
     }
 
-    public static int getItemStackSize(@Nullable ItemStack stack) {
+    public static int getItemStackSize(@NotNull ItemStack stack) {
         return isEmpty(stack) ? 0 : stack.getMaxStackSize();
     }
 
-    public static int getStackMeta(@Nullable ItemStack stack) {
+    public static int getStackMeta(@NotNull ItemStack stack) {
         return isEmpty(stack) ? 0 : stack.getItemDamage();
     }
 
-    public static int getSpace(@Nullable ItemStack stack) {
+    public static int getSpace(@NotNull ItemStack stack) {
         if (isEmpty(stack)) return 64;
         return stack.getMaxStackSize() - getCount(stack);
     }
 
-    public static void grow(@Nullable ItemStack stack, int amount) {
+    public static void grow(@NotNull ItemStack stack, int amount) {
         if (!isEmpty(stack, false)) {
             stack.stackSize += amount;
         }
     }
 
-    public static void shrink(@Nullable ItemStack stack, int amount) {
+    public static void shrink(@NotNull ItemStack stack, int amount) {
         grow(stack, -amount);
     }
 
-    public static void setCount(@Nullable ItemStack stack, int count) {
+    public static void setCount(@NotNull ItemStack stack, int count) {
         if (!isEmpty(stack, false)) {
             stack.stackSize = count;
         }
     }
 
-    @Nullable
-    public static ItemStack split(@Nullable ItemStack stack, int amount) {
+    public static ItemStack split(@NotNull ItemStack stack, int amount) {
         if (isEmpty(stack)) return EMPTY;
 
         int i = Math.min(amount, stack.stackSize);
@@ -149,8 +143,7 @@ public class ItemHelpers {
         return itemstack;
     }
 
-    @Nullable
-    public static ItemStack merge(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static ItemStack merge(@NotNull ItemStack a, @NotNull ItemStack b) {
         if (isEmpty(a)) return b;
         if (isEmpty(b)) return a;
         a.stackSize += b.stackSize;
@@ -159,11 +152,11 @@ public class ItemHelpers {
 
     // 2. EQUALITY & MERGE CHECKS
 
-    public static boolean areItemsEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2) {
+    public static boolean areItemsEqual(ItemStack stack1, ItemStack stack2) {
         return areItemsEqual(stack1, stack2, false);
     }
 
-    public static boolean areItemsEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2, boolean ignoreNBT) {
+    public static boolean areItemsEqual(ItemStack stack1, ItemStack stack2, boolean ignoreNBT) {
         if (isEmpty(stack1)) return isEmpty(stack2);
         if (isEmpty(stack2)) return false;
 
@@ -171,7 +164,7 @@ public class ItemHelpers {
             && (ignoreNBT || areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound()));
     }
 
-    public static boolean areItemsEqualIgnoreDurability(@Nullable ItemStack stack1, @Nullable ItemStack stack2) {
+    public static boolean areItemsEqualIgnoreDurability(ItemStack stack1, ItemStack stack2) {
         if (isEmpty(stack1)) return isEmpty(stack2);
         if (isEmpty(stack2)) return false;
 
@@ -181,7 +174,7 @@ public class ItemHelpers {
         return areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound());
     }
 
-    public static boolean areTagsEqualIgnoreDurability(NBTTagCompound tagA, @Nullable NBTTagCompound tagB) {
+    public static boolean areTagsEqualIgnoreDurability(NBTTagCompound tagA, NBTTagCompound tagB) {
         if (tagA == tagB) {
             return true;
         }
@@ -203,19 +196,19 @@ public class ItemHelpers {
         return true;
     }
 
-    public static boolean areItemStacksIdentical(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean areItemStacksIdentical(ItemStack a, ItemStack b) {
         if (isEmpty(a)) return isEmpty(b);
         if (isEmpty(b)) return false;
         return ItemStack.areItemStacksEqual(a, b) && getCount(a) == getCount(b);
     }
 
-    public static boolean canStack(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean canStack(ItemStack a, ItemStack b) {
         if (isEmpty(a) || isEmpty(b)) return false;
 
         return isSameItemAndMeta(a, b) && ItemStack.areItemStackTagsEqual(a, b);
     }
 
-    public static boolean areItemsMergable(@Nullable ItemStack s1, @Nullable ItemStack s2) {
+    public static boolean areItemsMergable(ItemStack s1, ItemStack s2) {
         if (isEmpty(s1) || isEmpty(s2) || !s1.isStackable() || !s2.isStackable()) {
             return false;
         }
@@ -232,7 +225,7 @@ public class ItemHelpers {
         return meta1 == meta2;
     }
 
-    public static boolean areItemStackShareTagsEqual(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean areItemStackShareTagsEqual(ItemStack a, ItemStack b) {
         if (isEmpty(a)) return isEmpty(b);
         if (isEmpty(b)) return false;
 
@@ -245,7 +238,7 @@ public class ItemHelpers {
         return areTagsEqualIgnoreDurability(tagA, tagB);
     }
 
-    public static boolean areItemStacksEqualUsingNBTShareTag(@Nullable ItemStack stackA, @Nullable ItemStack stackB) {
+    public static boolean areItemStacksEqualUsingNBTShareTag(ItemStack stackA, ItemStack stackB) {
         if (isEmpty(stackA)) return isEmpty(stackB);
         return !isEmpty(stackB) && isItemStackEqualUsingNBTShareTag(stackA, stackB);
     }
@@ -255,23 +248,23 @@ public class ItemHelpers {
             && areItemStackShareTagsEqual(self, other);
     }
 
-    public static int getItemStackHashCode(@Nullable ItemStack stack) {
+    public static int getItemStackHashCode(ItemStack stack) {
         if (isEmpty(stack)) return 0;
         int result = 1;
         result = 37 * result + getCount(stack);
-        result = 37 * result + stack.getItem()
+        result = 37 * result + getItem(stack)
             .hashCode();
-        result = 37 * result + stack.getItemDamage();
+        result = 37 * result + getStackMeta(stack);
         return result;
     }
 
     // 3. WORLD & PLAYER INTERACTIONS
 
-    public static void spawnItemStack(World world, BlockPos pos, @Nullable ItemStack itemStack) {
+    public static void spawnItemStack(World world, BlockPos pos, ItemStack itemStack) {
         spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemStack);
     }
 
-    public static void spawnItemStack(World world, double x, double y, double z, @Nullable ItemStack itemStack) {
+    public static void spawnItemStack(World world, double x, double y, double z, ItemStack itemStack) {
         if (world == null || isEmpty(itemStack)) return;
 
         float offsetX = RANDOM.nextFloat() * 0.8F + 0.1F;
@@ -308,7 +301,7 @@ public class ItemHelpers {
         }
     }
 
-    public static void spawnItemStackToPlayer(World world, BlockPos pos, @Nullable ItemStack stack,
+    public static void spawnItemStackToPlayer(World world, BlockPos pos, ItemStack stack,
         EntityPlayer player) {
         if (world == null || player == null || world.isRemote || isEmpty(stack)) return;
 
@@ -439,6 +432,7 @@ public class ItemHelpers {
 
     public static ItemStack readFromNBT(NBTTagCompound tag) {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
+        if (ItemHelpers.isEmpty(stack)) return EMPTY;
         if (tag.hasKey("Count")) {
             ItemHelpers.setCount(stack, tag.getInteger("Count"));
         }
@@ -447,24 +441,24 @@ public class ItemHelpers {
 
     // 6. SUB-ITEMS & ORE DICTIONARY VARIANTS
 
-    public static List<ItemStack> getSubItems(@Nullable ItemStack stack) {
+    public static List<ItemStack> getSubItems(ItemStack stack) {
         List<ItemStack> subItems = new ArrayList<>();
         if (isEmpty(stack)) return subItems;
         getItemOptional(stack).ifPresent(item -> { item.getSubItems(stack.getItem(), null, subItems); });
         return subItems;
     }
 
-    public static List<ItemStack> getVariants(@Nullable ItemStack itemStack) {
+    public static List<ItemStack> getVariants(ItemStack itemStack) {
         return getSubItemsIfWildcardMeta(itemStack);
     }
 
-    public static List<ItemStack> getSubItemsIfWildcardMeta(@Nullable ItemStack stack) {
+    public static List<ItemStack> getSubItemsIfWildcardMeta(ItemStack stack) {
         if (isEmpty(stack)) return Collections.emptyList();
         return stack.getItemDamage() == OreDictionary.WILDCARD_VALUE ? getSubItems(stack)
             : Collections.singletonList(stack);
     }
 
-    public static boolean isValidCreativeTab(Item item, @Nullable CreativeTabs creativeTab) {
+    public static boolean isValidCreativeTab(Item item, CreativeTabs creativeTab) {
         if (item == null) return false;
         for (CreativeTabs itemTab : item.getCreativeTabs()) {
             if (itemTab == creativeTab) {

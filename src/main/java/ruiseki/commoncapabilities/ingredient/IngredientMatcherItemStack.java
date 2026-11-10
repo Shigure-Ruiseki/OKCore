@@ -67,7 +67,7 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
 
     @Override
     public int hash(ItemStack instance) {
-        return ItemHelpers.getItemStackHashCode(instance);
+        return ItemHelpers.getHashCode(instance);
     }
 
     @Override
@@ -125,8 +125,8 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
             "%s:%d %d %s",
             itemName,
             ItemHelpers.getStackMeta(instance),
-            instance.stackSize,
-            instance.getTagCompound());
+            ItemHelpers.getCount(instance),
+            ItemHelpers.getTagCompound(instance));
     }
 
     @Override
@@ -142,15 +142,17 @@ public class IngredientMatcherItemStack implements IIngredientMatcher<ItemStack,
             int m1 = ItemHelpers.getStackMeta(o1);
             int m2 = ItemHelpers.getStackMeta(o2);
             if (m1 == m2) {
-                int c1 = o1.stackSize;
-                int c2 = o2.stackSize;
+                int c1 = ItemHelpers.getCount(o1);
+                int c2 = ItemHelpers.getCount(o2);
                 if (c1 == c2) {
-                    return IngredientHelpers.compareTags(o1.getTagCompound(), o2.getTagCompound());
+                    return IngredientHelpers
+                        .compareTags(ItemHelpers.getTagCompound(o1), ItemHelpers.getTagCompound(o2));
                 }
                 return Integer.compare(c1, c2);
             }
             return Integer.compare(m1, m2);
         }
-        return Integer.compare(Item.getIdFromItem(o1.getItem()), Item.getIdFromItem(o2.getItem()));
+        return Integer
+            .compare(Item.getIdFromItem(ItemHelpers.getItem(o1)), Item.getIdFromItem(ItemHelpers.getItem(o2)));
     }
 }

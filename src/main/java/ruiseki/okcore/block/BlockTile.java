@@ -25,6 +25,7 @@ import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.inventory.IGuiConstructor;
@@ -183,14 +184,14 @@ public class BlockTile extends BlockContainer
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
         if (entity != null) {
             TileEntityOK tile = TileHelpers.getSafeTile(world, x, y, z, TileEntityOK.class);
-            if (tile != null && stack.getTagCompound() != null) {
-                stack.getTagCompound()
+            if (tile != null && ItemHelpers.hasTagCompound(stack)) {
+                ItemHelpers.getTagCompound(stack)
                     .setInteger("x", x);
-                stack.getTagCompound()
+                ItemHelpers.getTagCompound(stack)
                     .setInteger("y", y);
-                stack.getTagCompound()
+                ItemHelpers.getTagCompound(stack)
                     .setInteger("z", z);
-                tile.readFromNBT(stack.getTagCompound());
+                tile.readFromNBT(ItemHelpers.getTagCompound(stack));
             }
 
             if (tile instanceof TileEntityOK.ITickingTile ticking) {

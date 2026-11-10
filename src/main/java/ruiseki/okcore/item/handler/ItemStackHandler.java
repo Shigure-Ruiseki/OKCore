@@ -84,13 +84,13 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
                     return stack;
                 }
 
-                limit -= existing.stackSize;
+                limit -= ItemHelpers.getCount(existing);
             }
 
             if (limit <= 0) {
                 return stack;
             } else {
-                boolean reachedLimit = stack.stackSize > limit;
+                boolean reachedLimit = ItemHelpers.getCount(stack) > limit;
                 if (!simulate) {
                     if (ItemHelpers.isEmpty(existing)) {
                         this.stacks.set(
@@ -98,13 +98,13 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
                             reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, limit)
                                 : ItemHelpers.copy(stack));
                     } else {
-                        ItemHelpers.grow(existing, reachedLimit ? limit : stack.stackSize);
+                        ItemHelpers.grow(existing, reachedLimit ? limit : ItemHelpers.getCount(stack));
                     }
 
                     this.onContentsChanged(slot);
                 }
 
-                return reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, stack.stackSize - limit)
+                return reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, ItemHelpers.getCount(stack) - limit)
                     : ItemHelpers.EMPTY;
             }
         }
@@ -164,7 +164,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
                 return ItemHelpers.EMPTY;
             } else {
                 int toExtract = Math.min(amount, existing.getMaxStackSize());
-                if (existing.stackSize <= toExtract) {
+                if (ItemHelpers.getCount(existing) <= toExtract) {
                     if (!simulate) {
                         this.stacks.set(slot, ItemHelpers.EMPTY);
                         this.onContentsChanged(slot);
@@ -173,8 +173,9 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
                     return existing;
                 } else {
                     if (!simulate) {
-                        this.stacks
-                            .set(slot, ItemHandlerHelpers.copyStackWithSize(existing, existing.stackSize - toExtract));
+                        this.stacks.set(
+                            slot,
+                            ItemHandlerHelpers.copyStackWithSize(existing, ItemHelpers.getCount(existing) - toExtract));
                         this.onContentsChanged(slot);
                     }
 
@@ -188,7 +189,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
     public ItemStack extractItem(ItemStack stack, boolean simulate) {
         if (ItemHelpers.isEmpty(stack)) return ItemHelpers.EMPTY;
 
-        int remaining = stack.stackSize;
+        int remaining = ItemHelpers.getCount(stack);
         ItemStack extractedStack = ItemHelpers.EMPTY;
 
         for (int slot = 0; slot < getSlots() && remaining > 0; slot++) {
@@ -205,10 +206,10 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
             if (ItemHelpers.isEmpty(extractedStack)) {
                 extractedStack = extracted;
             } else {
-                ItemHelpers.grow(extractedStack, extracted.stackSize);
+                ItemHelpers.grow(extractedStack, ItemHelpers.getCount(extracted));
             }
 
-            remaining -= extracted.stackSize;
+            remaining -= ItemHelpers.getCount(extracted);
         }
 
         return extractedStack;
@@ -296,7 +297,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
         ItemStack stack = getStackInSlot(slot);
         if (ItemHelpers.isEmpty(stack)) return amount;
 
-        int oldCount = stack.stackSize;
+        int oldCount = ItemHelpers.getCount(stack);
         int toVoid = Math.min(oldCount, amount);
 
         ItemHelpers.shrink(stack, toVoid);
@@ -315,7 +316,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
         ItemStack stack = getStackInSlot(slot);
         if (ItemHelpers.isEmpty(stack)) return amount;
 
-        int oldCount = stack.stackSize;
+        int oldCount = ItemHelpers.getCount(stack);
         int max = stack.getMaxStackSize();
 
         int toAdd = Math.min(amount, max - oldCount);
@@ -330,7 +331,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
             return false;
         }
 
-        int remaining = stack.stackSize;
+        int remaining = ItemHelpers.getCount(stack);
 
         for (int i = 0; i < getSlots(); i++) {
             ItemStack slotStack = getStackInSlot(i);
@@ -338,7 +339,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
             if (ItemHelpers.isEmpty(slotStack)) {
                 remaining -= Math.min(stack.getMaxStackSize(), remaining);
             } else if (ItemHelpers.areItemsEqual(slotStack, stack)) {
-                int space = slotStack.getMaxStackSize() - slotStack.stackSize;
+                int space = slotStack.getMaxStackSize() - ItemHelpers.getCount(slotStack);
                 if (space > 0) {
                     remaining -= Math.min(space, remaining);
                 }
@@ -367,7 +368,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
             return 0;
         }
 
-        int remaining = stack.stackSize;
+        int remaining = ItemHelpers.getCount(stack);
 
         for (int i = 0; i < getSlots() && remaining > 0; i++) {
             ItemStack slotStack = getStackInSlot(i);
@@ -376,7 +377,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
 
             if (ItemHelpers.canStack(slotStack, stack)) {
                 int max = slotStack.getMaxStackSize();
-                int canAdd = max - slotStack.stackSize;
+                int canAdd = max - ItemHelpers.getCount(slotStack);
 
                 if (canAdd > 0) {
                     int toAdd = Math.min(canAdd, remaining);
@@ -394,7 +395,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
 
             ItemStack newStack = ItemHelpers.copy(stack);
             int toAdd = Math.min(newStack.getMaxStackSize(), remaining);
-            newStack.stackSize = toAdd;
+            ItemHelpers.setCount(newStack, toAdd);
 
             setStackInSlot(i, newStack);
             remaining -= toAdd;

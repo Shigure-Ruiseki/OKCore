@@ -64,6 +64,19 @@ public class ItemHelpers {
         return Optional.ofNullable(getItem(stack));
     }
 
+    public static boolean hasTagCompound(@NotNull ItemStack stack) {
+        return !isEmpty(stack) && stack.hasTagCompound();
+    }
+
+    public static NBTTagCompound getTagCompound(@NotNull ItemStack stack) {
+        return stack.getTagCompound();
+    }
+
+    public static void setTagCompound(@NotNull ItemStack stack, NBTTagCompound tag) {
+        if (isEmpty(stack)) return;
+        stack.setTagCompound(tag);
+    }
+
     public static boolean hasItem(@NotNull ItemStack stack) {
         return getItemOptional(stack).isPresent();
     }
@@ -161,7 +174,7 @@ public class ItemHelpers {
         if (isEmpty(stack2)) return false;
 
         return stack1.getItem() == stack2.getItem() && doMetasMatch(getStackMeta(stack1), getStackMeta(stack2))
-            && (ignoreNBT || areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound()));
+            && (ignoreNBT || areTagsEqualIgnoreDurability(getTagCompound(stack1), getTagCompound(stack2)));
     }
 
     public static boolean areItemsEqualIgnoreDurability(ItemStack stack1, ItemStack stack2) {
@@ -171,7 +184,7 @@ public class ItemHelpers {
         if (stack1.getItem() != stack2.getItem()) {
             return false;
         }
-        return areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound());
+        return areTagsEqualIgnoreDurability(getTagCompound(stack1), getTagCompound(stack2));
     }
 
     public static boolean areTagsEqualIgnoreDurability(NBTTagCompound tagA, NBTTagCompound tagB) {
@@ -219,10 +232,7 @@ public class ItemHelpers {
     }
 
     public static boolean doMetasMatch(int meta1, int meta2) {
-        if (meta1 == OreDictionary.WILDCARD_VALUE || meta2 == OreDictionary.WILDCARD_VALUE) {
-            return true;
-        }
-        return meta1 == meta2;
+        return meta1 == meta2 || meta1 == OreDictionary.WILDCARD_VALUE || meta2 == OreDictionary.WILDCARD_VALUE;
     }
 
     public static boolean areItemStackShareTagsEqual(ItemStack a, ItemStack b) {
@@ -230,10 +240,10 @@ public class ItemHelpers {
         if (isEmpty(b)) return false;
 
         NBTTagCompound tagA = getItem(a, IItemSharedTag.class).map(item -> item.getNBTShareTag(a))
-            .orElseGet(a::getTagCompound);
+            .orElseGet(() -> getTagCompound(a));
 
         NBTTagCompound tagB = getItem(b, IItemSharedTag.class).map(item -> item.getNBTShareTag(b))
-            .orElseGet(b::getTagCompound);
+            .orElseGet(() -> getTagCompound(b));
 
         return areTagsEqualIgnoreDurability(tagA, tagB);
     }
@@ -248,12 +258,11 @@ public class ItemHelpers {
             && areItemStackShareTagsEqual(self, other);
     }
 
-    public static int getItemStackHashCode(ItemStack stack) {
+    public static int getHashCode(ItemStack stack) {
         if (isEmpty(stack)) return 0;
         int result = 1;
         result = 37 * result + getCount(stack);
-        result = 37 * result + getItem(stack)
-            .hashCode();
+        result = 37 * result + getItem(stack).hashCode();
         result = 37 * result + getStackMeta(stack);
         return result;
     }
@@ -286,11 +295,9 @@ public class ItemHelpers {
                 z + (double) offsetZ,
                 new ItemStack(itemStack.getItem(), i, itemStack.getItemDamage()));
 
-            if (itemStack.hasTagCompound()) {
+            if (hasTagCompound(itemStack)) {
                 entityitem.getEntityItem()
-                    .setTagCompound(
-                        (NBTTagCompound) itemStack.getTagCompound()
-                            .copy());
+                    .setTagCompound((NBTTagCompound) getTagCompound(itemStack).copy());
             }
 
             float motion = 0.05F;
@@ -301,8 +308,7 @@ public class ItemHelpers {
         }
     }
 
-    public static void spawnItemStackToPlayer(World world, BlockPos pos, ItemStack stack,
-        EntityPlayer player) {
+    public static void spawnItemStackToPlayer(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
         if (world == null || player == null || world.isRemote || isEmpty(stack)) return;
 
         float f = 0.5F;

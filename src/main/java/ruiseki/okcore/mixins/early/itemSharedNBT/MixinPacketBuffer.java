@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.PacketHelpers;
 import ruiseki.okcore.item.IItemSharedTag;
 
@@ -39,7 +40,7 @@ public abstract class MixinPacketBuffer {
     private void okcore$postRead(CallbackInfoReturnable<ItemStack> cir) {
         ItemStack stack = cir.getReturnValue();
         if (stack != null && stack.getItem() instanceof IItemSharedTag sharedTag) {
-            sharedTag.readNBTShareTag(stack, stack.getTagCompound());
+            sharedTag.readNBTShareTag(stack, ItemHelpers.getTagCompound(stack));
         }
     }
 }

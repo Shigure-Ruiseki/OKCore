@@ -86,18 +86,14 @@ public class InventoryHelpers {
      * Validate the NBT storage of the given inventory in the given item.
      * Should be called in constructors of inventories.
      *
-     * @param handler   The inventory.
-     * @param itemStack The item stack to read/write.
-     * @param tagName   The tag name to read from.
+     * @param handler The inventory.
+     * @param stack   The item stack to read/write.
+     * @param tagName The tag name to read from.
      */
-    public static void validateNBTStorage(IItemHandler handler, ItemStack itemStack, String tagName) {
-        if (ItemHelpers.isEmpty(itemStack)) return;
+    public static void validateNBTStorage(IItemHandler handler, ItemStack stack, String tagName) {
+        if (ItemHelpers.isEmpty(stack)) return;
 
-        NBTTagCompound tag = itemStack.getTagCompound();
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            itemStack.setTagCompound(tag);
-        }
+        NBTTagCompound tag = NBTHelpers.getOrCreateTag(stack);
         if (!tag.hasKey(tagName)) {
             tag.setTag(tagName, new NBTTagList());
         }

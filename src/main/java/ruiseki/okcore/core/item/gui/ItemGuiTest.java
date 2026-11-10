@@ -31,6 +31,7 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.client.mui.gui.component.slot.ModularItemSlot;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
@@ -42,11 +43,11 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean flag) {
-        super.addInformation(itemStack, entityPlayer, list, flag);
-        if (itemStack.hasTagCompound()) {
+    public void addInformation(ItemStack stack, EntityPlayer entityPlayer, List<String> list, boolean flag) {
+        super.addInformation(stack, entityPlayer, list, flag);
+        if (ItemHelpers.hasTagCompound(stack)) {
             list.add(
-                itemStack.getTagCompound()
+                ItemHelpers.getTagCompound(stack)
                     .toString());
         }
     }

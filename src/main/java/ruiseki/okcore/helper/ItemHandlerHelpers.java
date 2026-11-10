@@ -31,39 +31,19 @@ public class ItemHandlerHelpers {
     }
 
     public static boolean canItemStacksStack(@Nullable ItemStack a, @Nullable ItemStack b) {
-        if (ItemHelpers.isEmpty(a) || ItemHelpers.isEmpty(b)) {
-            return false;
-        }
-        if (a.isItemEqual(b) && a.hasTagCompound() == b.hasTagCompound()) {
-            return !a.hasTagCompound() || a.getTagCompound()
-                .equals(b.getTagCompound());
-        }
-        return false;
+        return ItemHelpers.canStack(a, b);
     }
 
     public static boolean canItemStacksStackRelaxed(@Nullable ItemStack a, @Nullable ItemStack b) {
-        if (ItemHelpers.isEmpty(a) || ItemHelpers.isEmpty(b)) {
+        if (ItemHelpers.isEmpty(a) || ItemHelpers.isEmpty(b)) return false;
+        if (!ItemHelpers.isSameItem(a, b) || !a.isStackable()) return false;
+        if (a.getHasSubtypes() && ItemHelpers.getStackMeta(a) != ItemHelpers.getStackMeta(b)) {
             return false;
         }
-        if (a.getItem() != b.getItem()) {
-            return false;
-        }
-        if (!a.isStackable()) {
-            return false;
-        }
-        if (a.getHasSubtypes() && a.getItemDamage() != b.getItemDamage()) {
-            return false;
-        }
-        if (a.hasTagCompound() != b.hasTagCompound()) {
-            return false;
-        }
-
-        return !a.hasTagCompound() || a.getTagCompound()
-            .equals(b.getTagCompound());
+        return ItemHelpers.areItemStackShareTagsEqual(a, b);
     }
 
-    @Nullable
-    public static ItemStack copyStackWithSize(@Nullable ItemStack itemStack, int size) {
+    public static ItemStack copyStackWithSize(ItemStack itemStack, int size) {
         return ItemHelpers.copyWithSize(itemStack, size);
     }
 

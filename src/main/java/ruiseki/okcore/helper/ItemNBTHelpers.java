@@ -17,7 +17,7 @@ public class ItemNBTHelpers {
      * Checks if an ItemStack has a Tag Compound
      **/
     public static boolean detectNBT(ItemStack stack) {
-        return stack.hasTagCompound();
+        return ItemHelpers.hasTagCompound(stack);
     }
 
     /**
@@ -45,7 +45,7 @@ public class ItemNBTHelpers {
      **/
     public static NBTTagCompound getNBT(ItemStack stack) {
         initNBT(stack);
-        return stack.getTagCompound();
+        return NBTHelpers.getOrCreateTag(stack);
     }
 
     // SETTERS ///////////////////////////////////////////////////////////////////
@@ -176,7 +176,7 @@ public class ItemNBTHelpers {
     }
 
     public static List<String> listKeys(ItemStack stack) {
-        if (stack == null || !stack.hasTagCompound()) {
+        if (!ItemHelpers.hasTagCompound(stack)) {
             return Collections.emptyList();
         }
 

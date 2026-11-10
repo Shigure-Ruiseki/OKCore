@@ -77,7 +77,7 @@ public class InventoryHandler extends ItemStackHandler {
     private NBTTagCompound getSlotsStackNbt(int slot, ItemStack slotStack) {
         NBTTagCompound itemTag = new NBTTagCompound();
         itemTag.setInteger("Slot", slot);
-        itemTag.setInteger(REAL_COUNT_TAG, slotStack.stackSize);
+        itemTag.setInteger(REAL_COUNT_TAG, ItemHelpers.getCount(slotStack));
         slotStack.writeToNBT(itemTag);
         return itemTag;
     }

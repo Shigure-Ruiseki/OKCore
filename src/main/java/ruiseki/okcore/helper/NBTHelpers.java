@@ -40,7 +40,7 @@ public class NBTHelpers {
     public static <T> Optional<T> getTagValue(ItemStack stack, String parentKey, String key,
         BiFunction<NBTTagCompound, String, T> getValue) {
         if (ItemHelpers.isEmpty(stack)) return Optional.empty();
-        NBTTagCompound tag = stack.getTagCompound();
+        NBTTagCompound tag = ItemHelpers.getTagCompound(stack);
 
         if (tag == null) {
             return Optional.empty();
@@ -227,8 +227,8 @@ public class NBTHelpers {
     }
 
     public static void removeTag(ItemStack stack, String key) {
-        if (ItemHelpers.isEmpty(stack) || !stack.hasTagCompound()) return;
-        stack.getTagCompound()
+        if (ItemHelpers.isEmpty(stack) || !ItemHelpers.hasTagCompound(stack)) return;
+        ItemHelpers.getTagCompound(stack)
             .removeTag(key);
     }
 
@@ -246,7 +246,7 @@ public class NBTHelpers {
 
     public static <K, V> Optional<Map<K, V>> getMap(ItemStack stack, String key, Function<String, K> getKey,
         BiFunction<String, NBTBase, Optional<V>> getValue) {
-        NBTTagCompound tag = stack.getTagCompound();
+        NBTTagCompound tag = ItemHelpers.getTagCompound(stack);
 
         if (tag == null) {
             return Optional.empty();
@@ -304,10 +304,10 @@ public class NBTHelpers {
 
     public static NBTTagCompound getOrCreateTag(ItemStack stack) {
         if (ItemHelpers.isEmpty(stack)) return new NBTTagCompound();
-        if (!stack.hasTagCompound()) {
-            stack.setTagCompound(new NBTTagCompound());
+        if (!ItemHelpers.hasTagCompound(stack)) {
+            ItemHelpers.setTagCompound(stack, new NBTTagCompound());
         }
-        return stack.getTagCompound();
+        return ItemHelpers.getTagCompound(stack);
     }
 
     public static NBTTagCompound getOrCreateTagElement(ItemStack stack, String key) {

@@ -29,11 +29,12 @@ import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.item.IInformationProvider;
 import ruiseki.okcore.tileentity.TileEntityNBTStorage;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
 public class BlockTile extends BlockContainer
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IInformationProvider {
 
     protected Random random;
     private Class<? extends TileEntityOK> tileEntity;

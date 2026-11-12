@@ -3,6 +3,8 @@ package ruiseki.okcore.item;
 import java.util.List;
 import java.util.UUID;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.EntityLivingBase;
@@ -147,8 +149,9 @@ public class ItemBlockBauble extends ItemBlockMetadata implements IBaubleExpande
 
     @Override
     @Optional.Method(modid = "Baubles|Expanded")
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        super.addInformation(stack, player, list, flag);
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
         if (GuiScreen.isShiftKeyDown() && Mods.BaublesExpanded.isModLoaded()) {
             String[] types = getBaubleTypes(stack);
             BaubleItemHelper.addSlotInformation(list, types);

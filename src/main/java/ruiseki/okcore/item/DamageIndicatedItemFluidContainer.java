@@ -64,9 +64,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
 
     @Override
     public String getInfo(ItemStack itemStack) {
-        if (ItemHelpers.isEmpty(itemStack)) {
-            return "";
-        }
+        if (ItemHelpers.isEmpty(itemStack)) return null;
         return component.getInfo(itemStack);
     }
 

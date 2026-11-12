@@ -15,6 +15,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.capabilities.IItemCapability;
+import ruiseki.okcore.client.gui.tooltip.TooltipBuilder;
 import ruiseki.okcore.fluid.capability.wrapper.FluidBucketWrapper;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -25,6 +26,8 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  */
 public class ItemBucketBase extends ItemBucket implements IItemCapability, IItemSharedTag, IItemTooltip {
+
+    private final TooltipBuilder tooltipBuilder = new TooltipBuilder();
 
     protected boolean canPickUp = true;
 
@@ -48,5 +51,10 @@ public class ItemBucketBase extends ItemBucket implements IItemCapability, IItem
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
         return new FluidBucketWrapper(stack);
+    }
+
+    @Override
+    public TooltipBuilder getTooltipBuilder() {
+        return tooltipBuilder;
     }
 }

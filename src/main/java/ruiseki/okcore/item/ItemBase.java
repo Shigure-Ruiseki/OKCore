@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.capabilities.IItemCapability;
+import ruiseki.okcore.client.gui.tooltip.TooltipBuilder;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -18,6 +19,8 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  */
 public class ItemBase extends Item implements IItemCapability, IItemSharedTag, IItemTooltip {
+
+    private final TooltipBuilder tooltipBuilder = new TooltipBuilder();
 
     /**
      * Make a new item instance.
@@ -32,4 +35,8 @@ public class ItemBase extends Item implements IItemCapability, IItemSharedTag, I
         LangHelpers.addOptionalInfo(list, getUnlocalizedName(itemStack));
     }
 
+    @Override
+    public TooltipBuilder getTooltipBuilder() {
+        return this.tooltipBuilder;
+    }
 }

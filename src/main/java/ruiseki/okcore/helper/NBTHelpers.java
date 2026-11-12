@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.StringRepresentable;
 
 public class NBTHelpers {
@@ -192,13 +193,17 @@ public class NBTHelpers {
         return tag;
     }
 
-    public static NBTTagCompound setInteger(NBTTagCompound tag, String key, int value) {
-        tag.setInteger(key, value);
+    public static NBTTagCompound setString(NBTTagCompound tag, String key, String value) {
+        tag.setString(key, value);
         return tag;
     }
 
-    public static NBTTagCompound setString(NBTTagCompound tag, String key, String value) {
-        tag.setString(key, value);
+    public static void setString(ItemStack stack, String key, String string) {
+        getOrCreateTag(stack).setString(key, string);
+    }
+
+    public static NBTTagCompound setLong(NBTTagCompound tag, String key, long value) {
+        tag.setLong(key, value);
         return tag;
     }
 
@@ -206,16 +211,26 @@ public class NBTHelpers {
         getOrCreateTag(stack).setLong(key, value);
     }
 
+    public static NBTTagCompound setInteger(NBTTagCompound tag, String key, int value) {
+        tag.setInteger(key, value);
+        return tag;
+    }
+
     public static void setInteger(ItemStack stack, String key, int value) {
         getOrCreateTag(stack).setInteger(key, value);
     }
 
-    public static void setUniqueId(ItemStack stack, String key, UUID uuid) {
-        getOrCreateTag(stack).setString(key, uuid.toString());
+    public static NBTTagCompound setBlockPos(NBTTagCompound tag, String key, BlockPos value) {
+        tag.setLong(key, value.toLong());
+        return tag;
     }
 
-    public static void setString(ItemStack stack, String key, String string) {
-        getOrCreateTag(stack).setString(key, string);
+    public static void setBlockPos(ItemStack stack, String key, BlockPos value) {
+        getOrCreateTag(stack).setLong(key, value.toLong());
+    }
+
+    public static void setUniqueId(ItemStack stack, String key, UUID uuid) {
+        getOrCreateTag(stack).setString(key, uuid.toString());
     }
 
     public static void setCompoundTag(ItemStack stack, String key, NBTTagCompound value) {
@@ -238,6 +253,14 @@ public class NBTHelpers {
 
     public static Optional<String> getString(ItemStack stack, String key) {
         return getTagValue(stack, key, NBTTagCompound::getString);
+    }
+
+    public static Optional<BlockPos> getBlockPos(NBTTagCompound tag, String key) {
+        return getTagValue(tag, key, (nbt, s) -> BlockPos.fromLong(nbt.getLong(s)));
+    }
+
+    public static Optional<BlockPos> getBlockPos(ItemStack stack, String key) {
+        return getTagValue(stack, key, (nbt, s) -> BlockPos.fromLong(nbt.getLong(s)));
     }
 
     public static Optional<Float> getFloat(ItemStack stack, String key) {

@@ -3,7 +3,7 @@ package ruiseki.okcore.client.gui.tooltip;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack;
 
 import ruiseki.okcore.helper.LangHelpers;
 
-public class TooltipBuilder {
+public final class TooltipBuilder {
 
     @FunctionalInterface
     public interface TooltipProvider {
@@ -22,45 +22,47 @@ public class TooltipBuilder {
     private final List<TooltipProvider> lines = new ArrayList<>();
 
     public TooltipBuilder addLine(String key, Object... params) {
-        return addLine((stack, player, list, advanced) -> list.add(LangHelpers.localize(key, params)));
-    }
-
-    public TooltipBuilder addLine(Function<ItemStack, String> provider) {
-        return addLine((stack, player, list, advanced) -> addText(list, provider.apply(stack)));
+        return this.addLine((stack, player, list, advanced) -> addText(list, LangHelpers.localize(key, params)));
     }
 
     public TooltipBuilder addLine(TooltipProvider provider) {
-        lines.add(provider);
+        this.lines.add(Objects.requireNonNull(provider, "provider"));
+        return this;
+    }
+
+    public TooltipBuilder addLines(String... keys) {
+        if (keys == null) return this;
+        for (String key : keys) {
+            this.addLine(key);
+        }
         return this;
     }
 
     public TooltipBuilder addNewLine() {
-        return addLine((stack, player, list, advanced) -> list.add(""));
+        return this.addLine((stack, player, list, advanced) -> list.add(""));
     }
 
     public TooltipBuilder clear() {
-        lines.clear();
+        this.lines.clear();
         return this;
     }
 
     public TooltipBuilder replace(String regex, String key, Object... params) {
-        return replace(regex, (stack, player, list, advanced) -> LangHelpers.localize(key, params));
-    }
-
-    public TooltipBuilder replace(String regex, Function<ItemStack, String> provider) {
-        return replace(regex, (stack, player, list, advanced) -> provider.apply(stack));
+        return this.replace(regex, (stack, player, list, advanced) -> addText(list, LangHelpers.localize(key, params)));
     }
 
     public TooltipBuilder replace(String regex, TooltipProvider provider) {
-        Pattern pattern = Pattern.compile(regex);
-        lines.replaceAll(original -> (stack, player, list, advanced) -> {
+        Pattern pattern = Pattern.compile(Objects.requireNonNull(regex, "regex"));
+        Objects.requireNonNull(provider, "provider");
+        this.lines.replaceAll(original -> (stack, player, list, advanced) -> {
             List<String> temporary = new ArrayList<>();
             original.accept(stack, player, temporary, advanced);
             for (String text : temporary) {
-                if (text != null && pattern.matcher(text)
+                if (text == null) continue;
+                if (pattern.matcher(text)
                     .find()) {
                     provider.accept(stack, player, list, advanced);
-                } else if (text != null) {
+                } else {
                     list.add(text);
                 }
             }
@@ -69,7 +71,7 @@ public class TooltipBuilder {
     }
 
     public void build(ItemStack stack, EntityPlayer player, boolean advanced, List<String> tooltip) {
-        for (TooltipProvider line : lines) {
+        for (TooltipProvider line : this.lines) {
             line.accept(stack, player, tooltip, advanced);
         }
     }

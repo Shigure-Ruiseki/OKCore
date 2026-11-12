@@ -15,6 +15,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.BlockDoorBase;
 import ruiseki.okcore.block.IBlockRarityProvider;
+import ruiseki.okcore.client.gui.tooltip.TooltipBuilder;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -23,8 +24,9 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author josephcsible
  *
  */
-public class ItemDoorMetadata extends ItemDoor {
+public class ItemDoorMetadata extends ItemDoor implements IItemTooltip {
 
+    private final TooltipBuilder tooltipBuilder = new TooltipBuilder();
     protected InformationProviderComponent informationProvider;
     protected IBlockRarityProvider rarityProvider = null;
 
@@ -59,7 +61,6 @@ public class ItemDoorMetadata extends ItemDoor {
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack itemStack, EntityPlayer player, List<String> list, boolean flag) {
         super.addInformation(itemStack, player, list, flag);
-        block.addInformation(itemStack, player, list, flag);
         LangHelpers.addOptionalInfo(list, getUnlocalizedName());
         informationProvider.addInformation(itemStack, player, list, flag);
     }
@@ -90,5 +91,10 @@ public class ItemDoorMetadata extends ItemDoor {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public TooltipBuilder getTooltipBuilder() {
+        return tooltipBuilder;
     }
 }

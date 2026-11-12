@@ -43,9 +43,11 @@ public class ItemBucketBase extends ItemBucket implements IItemCapability, IItem
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
-        super.addInformation(itemStack, entityPlayer, list, par4);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
         LangHelpers.addOptionalInfo(list, getUnlocalizedName());
+        this.getTooltipBuilder()
+            .build(stack, player, list, advanced);
     }
 
     @Override

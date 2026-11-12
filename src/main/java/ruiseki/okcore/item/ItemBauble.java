@@ -137,10 +137,10 @@ public class ItemBauble extends ItemBase implements IBaubleExpanded {
     }
 
     @Override
-    public void addInformation(ItemStack itemstack, EntityPlayer entityplayer, List<String> list, boolean flag) {
-        super.addInformation(itemstack, entityplayer, list, flag);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
         if (GuiScreen.isShiftKeyDown() && Mods.BaublesExpanded.isModLoaded()) {
-            String[] types = getBaubleTypes(itemstack);
+            String[] types = getBaubleTypes(stack);
             BaubleItemHelper.addSlotInformation(list, types);
         }
     }

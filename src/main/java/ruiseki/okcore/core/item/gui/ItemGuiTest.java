@@ -43,8 +43,8 @@ public class ItemGuiTest extends ItemBase implements IGuiHolder<PlayerInventoryG
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer entityPlayer, List<String> list, boolean flag) {
-        super.addInformation(stack, entityPlayer, list, flag);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
         if (ItemHelpers.hasTagCompound(stack)) {
             list.add(
                 ItemHelpers.getTagCompound(stack)

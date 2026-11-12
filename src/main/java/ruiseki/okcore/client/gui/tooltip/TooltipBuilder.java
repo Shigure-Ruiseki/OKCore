@@ -70,7 +70,7 @@ public final class TooltipBuilder {
         return this;
     }
 
-    public void build(ItemStack stack, EntityPlayer player, boolean advanced, List<String> tooltip) {
+    public void build(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced) {
         for (TooltipProvider line : this.lines) {
             line.accept(stack, player, tooltip, advanced);
         }

@@ -32,7 +32,7 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
 
     private final TooltipBuilder tooltipBuilder = new TooltipBuilder();
     protected InformationProviderComponent informationProvider;
-    protected IBlockRarityProvider rarityProvider = null;
+    protected IBlockRarityProvider rarity = null;
 
     /**
      * Make a new instance.
@@ -44,7 +44,7 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
         this.setHasSubtypes(true);
         informationProvider = new InformationProviderComponent(block);
         if (block instanceof IBlockRarityProvider) {
-            rarityProvider = (IBlockRarityProvider) block;
+            rarity = (IBlockRarityProvider) block;
         }
     }
 
@@ -59,14 +59,13 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
         super.addInformation(stack, player, list, advanced);
         LangHelpers.addOptionalInfo(list, getUnlocalizedName());
         informationProvider.addInformation(stack, player, list, advanced);
-        tooltipBuilder.build(stack, player, advanced, list);
+        this.getTooltipBuilder()
+            .build(stack, player, list, advanced);
     }
 
     @Override
     public EnumRarity getRarity(ItemStack itemStack) {
-        if (rarityProvider != null) {
-            return rarityProvider.getRarity(itemStack);
-        }
+        if (rarity != null) return rarity.getRarity(itemStack);
         return super.getRarity(itemStack);
     }
 

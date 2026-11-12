@@ -109,8 +109,8 @@ public class ItemFluidTest extends ItemBase implements IItemToggle {
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        super.addInformation(stack, player, list, flag);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
 
         TagKey<Item> dustTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "dusts"));
 

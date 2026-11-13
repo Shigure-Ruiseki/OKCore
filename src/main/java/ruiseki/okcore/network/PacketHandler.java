@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
@@ -19,6 +20,7 @@ import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.channel.ChannelHandler.Sharable;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
@@ -168,6 +170,24 @@ public class PacketHandler {
 
     public void sendToAllAround(PacketBase packet, EntityPlayer player) {
         sendToAllAround(packet, player, 64);
+    }
+
+    /**
+     * Send a packet to all players around a BlockPos.
+     *
+     * @param packet The packet.
+     * @param world  The world.
+     * @param pos    The target position.
+     * @param range  The maximum distance.
+     */
+    public void sendToAllAround(PacketBase packet, World world, BlockPos pos, double range) {
+        sendToAllAround(
+            packet,
+            new NetworkRegistry.TargetPoint(world.provider.dimensionId, pos.getX(), pos.getY(), pos.getZ(), range));
+    }
+
+    public void sendToAllAround(PacketBase packet, World world, BlockPos pos) {
+        sendToAllAround(packet, world, pos, 64);
     }
 
     /**

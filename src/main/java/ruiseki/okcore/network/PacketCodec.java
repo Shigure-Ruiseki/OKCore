@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -82,6 +83,18 @@ public abstract class PacketCodec extends PacketBase {
             @Override
             public Object decode(ExtendedBuffer input) {
                 return input.readResourceLocation();
+            }
+        });
+        codecActions.put(UUID.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) throws IOException {
+                output.writeString(((UUID) object).toString());
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return UUID.fromString(input.readString());
             }
         });
 
@@ -338,32 +351,45 @@ public abstract class PacketCodec extends PacketBase {
             @SuppressWarnings({ "rawtypes", "unchecked" })
             @Override
             public void encode(Object object, ExtendedBuffer output) throws IOException {
-                Map map = (Map) object;
-                output.writeInt(map.size());
-                Set<Map.Entry> entries = map.entrySet();
-                ICodecAction keyAction = null;
-                ICodecAction valueAction = null;
-                for (Map.Entry entry : entries) {
-                    if (keyAction == null) {
-                        keyAction = getAction(
-                            entry.getKey()
-                                .getClass());
-                        output.writeString(
-                            entry.getKey()
-                                .getClass()
-                                .getName());
+                Map<?, ?> map = (Map<?, ?>) object;
+                int size = map.size();
+
+                output.writeInt(size);
+                if (size == 0) return;
+
+                Map.Entry<?, ?> firstEntry = map.entrySet().iterator().next();
+
+                Object firstKey = firstEntry.getKey();
+                Object firstValue = firstEntry.getValue();
+
+                if (firstKey == null || firstValue == null) {
+                    throw new IllegalArgumentException("Map keys and values cannot be null");
+                }
+
+                Class<?> keyClass = firstKey.getClass();
+                Class<?> valueClass = firstValue.getClass();
+
+                ICodecAction keyAction = getAction(keyClass);
+                ICodecAction valueAction = getAction(valueClass);
+
+                output.writeString(keyClass.getName());
+                output.writeString(valueClass.getName());
+
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    Object key = entry.getKey();
+                    Object value = entry.getValue();
+
+                    if (key == null || value == null) {
+                        throw new IllegalArgumentException("Map keys and values cannot be null");
                     }
-                    if (valueAction == null) {
-                        valueAction = getAction(
-                            entry.getValue()
-                                .getClass());
-                        output.writeString(
-                            entry.getValue()
-                                .getClass()
-                                .getName());
+
+                    if (key.getClass() != keyClass || value.getClass() != valueClass) {
+                        throw new IllegalArgumentException(
+                            "Map entries must have consistent key and value types");
                     }
-                    keyAction.encode(entry.getKey(), output);
-                    valueAction.encode(entry.getValue(), output);
+
+                    keyAction.encode(key, output);
+                    valueAction.encode(value, output);
                 }
             }
 
@@ -372,6 +398,11 @@ public abstract class PacketCodec extends PacketBase {
             public Object decode(ExtendedBuffer input) {
                 Map map = Maps.newHashMap();
                 int size = input.readInt();
+
+                if (size < 0) {
+                    throw new IllegalStateException("Invalid map size: " + size);
+                }
+
                 if (size == 0) {
                     return map;
                 }
@@ -384,7 +415,7 @@ public abstract class PacketCodec extends PacketBase {
                         map.put(key, value);
                     }
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    throw new IllegalStateException("Failed to resolve Map codec class", e);
                 }
                 return map;
             }
@@ -535,77 +566,114 @@ public abstract class PacketCodec extends PacketBase {
                 return DimPos.of(dim, BlockPos.fromLong(extendedBuffer.readLong()));
             }
         });
-
         codecActions.put(List.class, new ICodecAction() {
 
             // Packet structure:
-            // list length (int)
+            // List length (int)
             // --- end if length == 0
             // Value class name (UTF)
-            // id + value
+            // index + value
             // -1
 
             @Override
             public void encode(Object object, ExtendedBuffer output) throws IOException {
                 List<?> list = (List<?>) object;
-                output.writeInt(list.size());
-                if (list.size() == 0) return;
+                int size = list.size();
+
+                output.writeInt(size);
+
+                if (size == 0) return;
+
+                Class<?> valueClass = null;
                 ICodecAction valueAction = null;
-                for (int i = 0; i < list.size(); i++) {
-                    Object value = list.get(i);
-                    if (value != null) {
-                        if (valueAction == null) {
-                            valueAction = getAction(value.getClass());
-                            output.writeString(
-                                value.getClass()
-                                    .getName());
-                        }
-                        output.writeInt(i);
-                        valueAction.encode(value, output);
+
+                for (Object value : list) {
+                    if (value == null) continue;
+
+                    if (valueClass == null) {
+                        valueClass = value.getClass();
+                        valueAction = getAction(valueClass);
+                    } else if (value.getClass() != valueClass) {
+                        throw new IllegalArgumentException(
+                            "List elements must have the same runtime type");
                     }
                 }
+
                 if (valueAction == null) {
                     output.writeString("__noclass");
-                } else {
-                    output.writeInt(-1);
+                    return;
                 }
+
+                output.writeString(valueClass.getName());
+
+                for (int i = 0; i < size; i++) {
+                    Object value = list.get(i);
+
+                    if (value == null) continue;
+
+                    output.writeInt(i);
+                    valueAction.encode(value, output);
+                }
+
+                output.writeInt(-1);
             }
 
             @SuppressWarnings({ "rawtypes", "unchecked" })
             @Override
             public Object decode(ExtendedBuffer input) {
-                List list;
                 int size = input.readInt();
+
+                if (size < 0) {
+                    throw new IllegalStateException("Invalid list size: " + size);
+                }
+
                 if (size == 0) {
                     return Collections.emptyList();
-                } else {
-                    list = Lists.newArrayListWithExpectedSize(size);
                 }
+
+                List list = Lists.newArrayListWithExpectedSize(size);
                 try {
                     String className = input.readString();
-                    if (!className.equals("__noclass")) {
-                        ICodecAction valueAction = getAction(Class.forName(className));
-                        int i, currentLength = 0;
-                        while ((i = input.readInt()) >= 0) {
-                            while (currentLength < i) {
-                                list.add(null);
-                                currentLength++;
-                            }
-                            Object value = valueAction.decode(input);
-                            list.add(value);
-                            currentLength++;
-                        }
-                        while (currentLength < size) {
-                            list.add(null);
-                            currentLength++;
-                        }
-                    } else {
+
+                    if (className.equals("__noclass")) {
                         for (int i = 0; i < size; i++) {
                             list.add(null);
                         }
+
+                        return list;
+                    }
+
+                    ICodecAction valueAction = getAction(Class.forName(className));
+
+                    int currentLength = 0;
+                    int previousIndex = -1;
+
+                    while (true) {
+                        int index = input.readInt();
+
+                        if (index == -1) break;
+
+                        if (index <= previousIndex || index >= size) {
+                            throw new IllegalStateException(
+                                "Invalid list index: " + index + ", size: " + size);
+                        }
+
+                        while (currentLength < index) {
+                            list.add(null);
+                            currentLength++;
+                        }
+
+                        list.add(valueAction.decode(input));
+
+                        currentLength++;
+                        previousIndex = index;
+                    }
+                    while (currentLength < size) {
+                        list.add(null);
+                        currentLength++;
                     }
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    throw new IllegalStateException("Failed to resolve List codec class", e);
                 }
                 return list;
             }

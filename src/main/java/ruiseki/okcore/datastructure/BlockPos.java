@@ -334,6 +334,10 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPo
         return this.distanceSq((double) to.x, (double) to.y, (double) to.z());
     }
 
+    public static BlockPos atCenterOf(BlockPos pos) {
+        return new BlockPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+    }
+
     public BiomeGenBase getBiomeGen(World world) {
         return world.getBiomeGenForCoords(getX(), getZ());
     }

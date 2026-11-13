@@ -14,6 +14,7 @@ import ruiseki.okcore.network.packet.PacketButtonClick;
 import ruiseki.okcore.network.packet.PacketCooldown;
 import ruiseki.okcore.network.packet.PacketItemToggle;
 import ruiseki.okcore.network.packet.PacketOpenGuiWithData;
+import ruiseki.okcore.network.packet.PacketPermissionLevel;
 import ruiseki.okcore.network.packet.PacketSound;
 import ruiseki.okcore.network.packet.PacketSyncConfig;
 import ruiseki.okcore.network.packet.PacketSyncCursorStack;
@@ -45,6 +46,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(PacketSyncConfig.class);
         packetHandler.register(PacketOpenGuiWithData.class);
         packetHandler.register(PacketUseEntityAt.class);
+        packetHandler.register(PacketPermissionLevel.class);
     }
 
     @Override

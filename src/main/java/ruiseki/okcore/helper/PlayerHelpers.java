@@ -13,6 +13,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.UserListOps;
+import net.minecraft.server.management.UserListOpsEntry;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -22,6 +25,7 @@ import net.minecraftforge.common.util.FakePlayerFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.ApiStatus;
 
 import com.mojang.authlib.GameProfile;
 
@@ -31,6 +35,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.entity.permission.IPlayerPermission;
 import ruiseki.okcore.event.OKHooks;
 import ruiseki.okcore.event.interaction.IEntityInteractAt;
 import ruiseki.okcore.event.interaction.InteractionResult;
@@ -222,5 +227,22 @@ public class PlayerHelpers {
         } catch (Exception ignore) {}
 
         return fakePlayer;
+    }
+
+    @ApiStatus.Internal
+    public static int getPermissionLevel(GameProfile profile) {
+        MinecraftServer server = MinecraftServer.getServer();
+        UserListOps ops = server.getConfigurationManager()
+            .func_152603_m();
+        UserListOpsEntry entry = (UserListOpsEntry) ops.func_152683_b(profile);
+        return entry == null ? 0 : entry.func_152644_a();
+    }
+
+    public static int getPermissionLevel(EntityPlayer player) {
+        return ((IPlayerPermission) player).getPermissionLevel();
+    }
+
+    public static boolean hasPermissions(EntityPlayer player, int level) {
+        return ((IPlayerPermission) player).hasPermissions(level);
     }
 }

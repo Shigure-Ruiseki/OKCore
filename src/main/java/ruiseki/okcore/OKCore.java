@@ -129,6 +129,7 @@ public class OKCore extends ModBaseVersionable {
     @Mod.EventHandler
     public void onServerStopped(FMLServerStoppedEvent event) {
         super.onServerStopped(event);
+        RecordSoundRegistry.invalidate();
     }
 
     @Override

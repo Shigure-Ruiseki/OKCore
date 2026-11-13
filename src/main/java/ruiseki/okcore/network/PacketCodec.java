@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import net.minecraft.item.Item;
@@ -28,6 +27,7 @@ import com.google.common.collect.Maps;
 
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.EncoderException;
+import ruiseki.okcore.client.audio.RecordData;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
 import ruiseki.okcore.datastructure.DimPos;
@@ -95,6 +95,18 @@ public abstract class PacketCodec extends PacketBase {
             @Override
             public Object decode(ExtendedBuffer input) {
                 return UUID.fromString(input.readString());
+            }
+        });
+        codecActions.put(RecordData.class, new ICodecAction() {
+
+            @Override
+            public void encode(Object object, ExtendedBuffer output) throws IOException {
+                ((RecordData) object).toNetwork(output);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer input) {
+                return RecordData.fromNetwork(input);
             }
         });
 
@@ -357,7 +369,9 @@ public abstract class PacketCodec extends PacketBase {
                 output.writeInt(size);
                 if (size == 0) return;
 
-                Map.Entry<?, ?> firstEntry = map.entrySet().iterator().next();
+                Map.Entry<?, ?> firstEntry = map.entrySet()
+                    .iterator()
+                    .next();
 
                 Object firstKey = firstEntry.getKey();
                 Object firstValue = firstEntry.getValue();
@@ -384,8 +398,7 @@ public abstract class PacketCodec extends PacketBase {
                     }
 
                     if (key.getClass() != keyClass || value.getClass() != valueClass) {
-                        throw new IllegalArgumentException(
-                            "Map entries must have consistent key and value types");
+                        throw new IllegalArgumentException("Map entries must have consistent key and value types");
                     }
 
                     keyAction.encode(key, output);
@@ -594,8 +607,7 @@ public abstract class PacketCodec extends PacketBase {
                         valueClass = value.getClass();
                         valueAction = getAction(valueClass);
                     } else if (value.getClass() != valueClass) {
-                        throw new IllegalArgumentException(
-                            "List elements must have the same runtime type");
+                        throw new IllegalArgumentException("List elements must have the same runtime type");
                     }
                 }
 
@@ -654,8 +666,7 @@ public abstract class PacketCodec extends PacketBase {
                         if (index == -1) break;
 
                         if (index <= previousIndex || index >= size) {
-                            throw new IllegalStateException(
-                                "Invalid list index: " + index + ", size: " + size);
+                            throw new IllegalStateException("Invalid list index: " + index + ", size: " + size);
                         }
 
                         while (currentLength < index) {

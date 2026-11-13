@@ -76,7 +76,7 @@ public enum Mixins implements IMixins {
     // PERMISSION
     PERMISSION(new MixinBuilder("Synchronize player permission levels between server and client")
         .addCommonMixins("permission.MixinEntityPlayerMP", "permission.MixinServerConfigurationManager")
-        .addClientMixins("event.entity.MixinEntityPlayerSP")
+        .addClientMixins("permission.MixinEntityPlayerSP")
         .setPhase(Phase.EARLY)),
 
     // Tag

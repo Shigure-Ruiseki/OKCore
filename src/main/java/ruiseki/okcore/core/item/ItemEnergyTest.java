@@ -41,8 +41,8 @@ public class ItemEnergyTest extends ItemBase {
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        super.addInformation(stack, player, list, flag);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
         for (TagKey<?> key : TagHelpers.getTags(stack)) {
             list.add(key.toString());
         }

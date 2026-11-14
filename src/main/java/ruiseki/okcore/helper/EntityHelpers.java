@@ -1,7 +1,12 @@
 package ruiseki.okcore.helper;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.entity.projectile.EntityFireball;
+import net.minecraft.entity.projectile.EntityThrowable;
+import net.minecraft.util.DamageSource;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.entity.cooldown.ICooldownHandler;
@@ -58,5 +63,28 @@ public class EntityHelpers {
 
         entity.rotationYawHead = yaw;
         entity.prevRotationYawHead = yaw;
+    }
+
+    public static EntityPlayer getAttackingPlayer(DamageSource source) {
+        if (source == null) return null;
+
+        Entity attacker = source.getEntity();
+        if (attacker instanceof EntityPlayer player) return player;
+
+        Entity directDamage = source.getSourceOfDamage();
+        if (directDamage instanceof EntityArrow arrow && arrow.shootingEntity instanceof EntityPlayer player) {
+            return player;
+        }
+
+        if (directDamage instanceof EntityThrowable throwable
+            && throwable.getThrower() instanceof EntityPlayer player) {
+            return player;
+        }
+
+        if (directDamage instanceof EntityFireball fireball && fireball.shootingEntity instanceof EntityPlayer player) {
+            return player;
+        }
+
+        return null;
     }
 }

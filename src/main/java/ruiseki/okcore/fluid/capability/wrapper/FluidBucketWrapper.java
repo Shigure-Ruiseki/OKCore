@@ -1,8 +1,6 @@
 
 package ruiseki.okcore.fluid.capability.wrapper;
 
-import java.util.Objects;
-
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBucketMilk;
@@ -21,25 +19,21 @@ import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvider {
+
+    private static final int TANK_COUNT = 1;
+    private static final int TANK_INDEX = 0;
+    private static final int BUCKET_VOLUME = FluidHelpers.BUCKET_VOLUME;
+
+    private final LazyOptional<IFluidHandlerItem> holder = LazyOptional.of(() -> this);
 
     @NotNull
     protected ItemStack container;
 
-    private final LazyOptional<IFluidHandlerItem> holder = LazyOptional.of(() -> this);
-
     public FluidBucketWrapper(@NotNull ItemStack container) {
         this.container = container;
-    }
-
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable ForgeDirection side) {
-        if (cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM) {
-            return holder.cast();
-        }
-
-        return LazyOptional.empty();
     }
 
     @Override
@@ -47,119 +41,155 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
         return container;
     }
 
-    public boolean canFillFluidType(FluidStack fluidStack) {
+    public boolean canFillFluidType(@Nullable FluidStack fluidStack) {
         if (FluidHelpers.isEmpty(fluidStack)) {
             return false;
         }
-
         Fluid fluid = fluidStack.getFluid();
-
-        return fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA
-            || "milk".equals(fluid.getName())
-            || FluidHelpers.getFilledBucket(fluidStack) != null;
+        if (fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA) {
+            return true;
+        }
+        return !ItemHelpers.isEmpty(FluidHelpers.getFilledBucket(fluidStack));
     }
 
-    @Nullable
-    public FluidStack getFluid() {
+    public @Nullable FluidStack getFluid() {
+        if (ItemHelpers.isEmpty(container)) {
+            return FluidHelpers.EMPTY;
+        }
         Item item = container.getItem();
-
         if (item == Items.water_bucket) {
-            return new FluidStack(FluidRegistry.WATER, FluidHelpers.BUCKET_VOLUME);
+            return new FluidStack(FluidRegistry.WATER, BUCKET_VOLUME);
         }
-
         if (item == Items.lava_bucket) {
-            return new FluidStack(FluidRegistry.LAVA, FluidHelpers.BUCKET_VOLUME);
+            return new FluidStack(FluidRegistry.LAVA, BUCKET_VOLUME);
         }
-
-        if (item == Items.milk_bucket) {
-            return FluidRegistry.getFluidStack("milk", FluidHelpers.BUCKET_VOLUME);
+        if (item instanceof ItemBucketMilk) {
+            return FluidRegistry.getFluidStack("milk", BUCKET_VOLUME);
         }
-
-        return FluidHelpers.getFluidFromContainer(container);
+        FluidStack fluidStack = FluidHelpers.getFluidFromContainer(container);
+        return FluidHelpers.isEmpty(fluidStack) ? FluidHelpers.EMPTY : FluidHelpers.copy(fluidStack);
     }
 
     protected void setFluid(@Nullable FluidStack fluidStack) {
-        if (fluidStack == null) {
+        if (FluidHelpers.isEmpty(fluidStack)) {
             container = new ItemStack(Items.bucket);
             return;
         }
-
+        Fluid fluid = fluidStack.getFluid();
+        if (fluid == FluidRegistry.WATER) {
+            container = new ItemStack(Items.water_bucket);
+            return;
+        }
+        if (fluid == FluidRegistry.LAVA) {
+            container = new ItemStack(Items.lava_bucket);
+            return;
+        }
+        if ("milk".equals(fluid.getName())) {
+            container = new ItemStack(Items.milk_bucket);
+            return;
+        }
         ItemStack filledBucket = FluidHelpers.getFilledBucket(fluidStack);
-
-        container = Objects.requireNonNullElseGet(filledBucket, () -> new ItemStack(Items.bucket));
+        if (ItemHelpers.isEmpty(filledBucket)) {
+            return;
+        }
+        container = filledBucket.copy();
+        container.stackSize = 1;
     }
 
     @Override
     public int getTanks() {
-        return 1;
+        return TANK_COUNT;
     }
 
     @Override
     public FluidStack getFluidInTank(int tank) {
-        if (tank != 0) {
-            return FluidHelpers.EMPTY;
-        }
-
-        FluidStack fluid = getFluid();
-
-        return FluidHelpers.isEmpty(fluid) ? FluidHelpers.EMPTY : fluid;
+        return tank == TANK_INDEX ? getFluid() : FluidHelpers.EMPTY;
     }
 
     @Override
     public int getTankCapacity(int tank) {
-        return tank == 0 ? FluidHelpers.BUCKET_VOLUME : 0;
+        return tank == TANK_INDEX ? BUCKET_VOLUME : 0;
     }
 
     @Override
     public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-        return tank == 0 && canFillFluidType(stack)
-            && getFluid() == null
+        return tank == TANK_INDEX && !ItemHelpers.isEmpty(container)
             && container.stackSize == 1
-            && !(container.getItem() instanceof ItemBucketMilk);
+            && !(container.getItem() instanceof ItemBucketMilk)
+            && FluidHelpers.isEmpty(getFluid())
+            && !FluidHelpers.isEmpty(stack)
+            && canFillFluidType(stack);
     }
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
-        if (container.stackSize != 1 || FluidHelpers.isEmpty(resource)
-            || resource.amount < FluidHelpers.BUCKET_VOLUME
+        if (ItemHelpers.isEmpty(container) || container.stackSize != 1
             || container.getItem() instanceof ItemBucketMilk
-            || getFluid() != null
+            || !FluidHelpers.isEmpty(getFluid())
+            || FluidHelpers.isEmpty(resource)
+            || resource.amount < BUCKET_VOLUME
             || !canFillFluidType(resource)) {
             return 0;
         }
+
         if (doFill) {
             setFluid(resource);
+
+            // Verify that the container actually accepted the fluid.
+            FluidStack filledFluid = getFluid();
+
+            if (FluidHelpers.isEmpty(filledFluid) || !filledFluid.isFluidEqual(resource)) {
+                return 0;
+            }
         }
-        return FluidHelpers.BUCKET_VOLUME;
+
+        return BUCKET_VOLUME;
     }
 
     @Override
-    public FluidStack drain(FluidStack stack, boolean doDrain) {
-        if (container.stackSize != 1 || FluidHelpers.isEmpty(stack) || stack.amount < FluidHelpers.BUCKET_VOLUME) {
+    public FluidStack drain(FluidStack resource, boolean doDrain) {
+        if (ItemHelpers.isEmpty(container) || container.stackSize != 1
+            || FluidHelpers.isEmpty(resource)
+            || resource.amount < BUCKET_VOLUME) {
             return FluidHelpers.EMPTY;
         }
         FluidStack fluidStack = getFluid();
-        if (FluidHelpers.isEmpty(fluidStack) || !fluidStack.isFluidEqual(stack)) {
+        if (FluidHelpers.isEmpty(fluidStack) || fluidStack.amount < BUCKET_VOLUME
+            || !fluidStack.isFluidEqual(resource)) {
             return FluidHelpers.EMPTY;
         }
         if (doDrain) {
-            setFluid(null);
+            setFluid(FluidHelpers.EMPTY);
+            if (!FluidHelpers.isEmpty(getFluid())) {
+                return FluidHelpers.EMPTY;
+            }
         }
         return fluidStack;
     }
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
-        if (container.stackSize != 1 || maxDrain < FluidHelpers.BUCKET_VOLUME) {
+        if (ItemHelpers.isEmpty(container) || container.stackSize != 1 || maxDrain < BUCKET_VOLUME) {
             return FluidHelpers.EMPTY;
         }
         FluidStack fluidStack = getFluid();
-        if (FluidHelpers.isEmpty(fluidStack)) {
+        if (FluidHelpers.isEmpty(fluidStack) || fluidStack.amount < BUCKET_VOLUME) {
             return FluidHelpers.EMPTY;
         }
         if (doDrain) {
-            setFluid(null);
+            setFluid(FluidHelpers.EMPTY);
+            if (!FluidHelpers.isEmpty(getFluid())) {
+                return FluidHelpers.EMPTY;
+            }
         }
         return fluidStack;
+    }
+
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable ForgeDirection side) {
+        if (cap == CapabilityFluidHandler.FLUID_HANDLER_ITEM) {
+            return holder.cast();
+        }
+        return LazyOptional.empty();
     }
 }

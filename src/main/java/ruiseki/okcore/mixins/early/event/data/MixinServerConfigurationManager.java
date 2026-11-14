@@ -28,7 +28,7 @@ public class MixinServerConfigurationManager {
             target = "Lnet/minecraft/network/NetHandlerPlayServer;sendPacket(Lnet/minecraft/network/Packet;)V",
             shift = At.Shift.AFTER,
             ordinal = 4))
-    private void onInitializeConnectionPostHeldItem(NetworkManager netManager, EntityPlayerMP player,
+    private void okcore$onInitializeConnectionPostHeldItem(NetworkManager netManager, EntityPlayerMP player,
         NetHandlerPlayServer nethandlerplayserver, CallbackInfo ci) {
         MinecraftForge.EVENT_BUS.post(new OnDatapackSyncEvent((ServerConfigurationManager) (Object) this, player));
         OKCore._instance.getPacketHandler()

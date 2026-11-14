@@ -8,6 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.block.BlockTile;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * An extended {@link ItemBlockMetadata} that will add the NBT data that is stored inside
@@ -37,8 +38,8 @@ public class ItemBlockNBT extends ItemBlockMetadata {
         if (super.placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata)) {
             TileEntity tile = world.getTileEntity(x, y, z);
 
-            if (tile != null && stack.getTagCompound() != null) {
-                tile.readFromNBT(stack.getTagCompound());
+            if (tile != null && ItemHelpers.getTagCompound(stack) != null) {
+                tile.readFromNBT(ItemHelpers.getTagCompound(stack));
                 itemStackDataToTile(stack, tile);
             }
 

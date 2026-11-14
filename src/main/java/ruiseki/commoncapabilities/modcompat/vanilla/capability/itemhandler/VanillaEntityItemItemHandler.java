@@ -6,6 +6,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.commoncapabilities.modcompat.vanilla.capability.VanillaEntityItemCapabilityDelegator;
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
@@ -49,7 +50,7 @@ public class VanillaEntityItemItemHandler extends VanillaEntityItemCapabilityDel
         return getCapability().map(itemHandler -> {
             ItemStack innerStack = getItemStack();
             ItemStack ret = itemHandler.insertItem(slot, stack, simulate);
-            if (ret != null && stack.stackSize != ret.stackSize && !simulate) {
+            if (ret != null && ItemHelpers.getCount(stack) != ItemHelpers.getCount(ret) && !simulate) {
                 updateItemStack(innerStack);
             }
             return ret;

@@ -1,7 +1,5 @@
 package ruiseki.okcore.entity;
 
-import java.util.Iterator;
-
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -107,7 +105,7 @@ public class EntityImmortalItem extends EntityItemOK {
         if (this.getEntityItem() == null) {
             this.setDead();
         } else {
-            super.onUpdate();
+            super.onEntityUpdate();
 
             if (this.delayBeforeCanPickup > 0) {
                 --this.delayBeforeCanPickup;
@@ -201,12 +199,8 @@ public class EntityImmortalItem extends EntityItemOK {
     }
 
     private void searchForOtherItemsNearby2() {
-        Iterator<EntityItem> iterator = this.worldObj
-            .getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(0.5D, 0.0D, 0.5D))
-            .iterator();
-
-        while (iterator.hasNext()) {
-            EntityItem entityitem = iterator.next();
+        for (EntityItem entityitem : this.worldObj
+            .getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(0.5D, 0.0D, 0.5D))) {
             this.combineItems(entityitem);
         }
     }

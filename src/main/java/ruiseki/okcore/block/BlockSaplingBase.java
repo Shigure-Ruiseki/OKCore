@@ -17,10 +17,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.item.IInformationProvider;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
 
 public class BlockSaplingBase extends BlockSapling
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IInformationProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);

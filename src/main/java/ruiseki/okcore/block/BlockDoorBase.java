@@ -13,12 +13,13 @@ import net.minecraft.world.World;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.item.IInformationProvider;
 
 /**
  * Door block that can hold ExtendedConfigs.
  */
 public class BlockDoorBase extends BlockDoor
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IInformationProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);
@@ -60,5 +61,4 @@ public class BlockDoorBase extends BlockDoor
         this.field_150017_a[1] = new IconFlipped(this.field_150017_a[0], true, false);
         this.field_150016_b[1] = new IconFlipped(this.field_150016_b[0], true, false);
     }
-
 }

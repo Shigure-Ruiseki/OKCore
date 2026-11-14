@@ -14,6 +14,8 @@ import baubles.api.BaubleType;
 import baubles.api.expanded.BaubleItemHelper;
 import baubles.api.expanded.IBaubleExpanded;
 import cpw.mods.fml.common.Optional;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.entity.EntityDoppleganger;
 import ruiseki.okcore.enums.Mods;
@@ -147,8 +149,9 @@ public class ItemBlockBauble extends ItemBlockMetadata implements IBaubleExpande
 
     @Override
     @Optional.Method(modid = "Baubles|Expanded")
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        super.addInformation(stack, player, list, flag);
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
         if (GuiScreen.isShiftKeyDown() && Mods.BaublesExpanded.isModLoaded()) {
             String[] types = getBaubleTypes(stack);
             BaubleItemHelper.addSlotInformation(list, types);

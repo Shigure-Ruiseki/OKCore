@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.item.ItemStack;
 
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
@@ -63,7 +64,7 @@ public class DefaultSlotlessItemHandlerWrapper implements ISlotlessItemHandler {
     public ItemStack extractItem(@Nonnull ItemStack matchStack, int matchFlags, boolean simulate) {
         IItemHandler itemHandler = getItemHandler();
         for (int i = 0; i < itemHandler.getSlots(); i++) {
-            int amount = matchStack.stackSize;
+            int amount = ItemHelpers.getCount(matchStack);
             ItemStack tempItemStack;
             if (simulate || ((tempItemStack = itemHandler.extractItem(i, amount, true)) != null
                 && ItemMatch.areItemStacksEqual(matchStack, tempItemStack, matchFlags))) {

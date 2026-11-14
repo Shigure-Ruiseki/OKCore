@@ -87,7 +87,6 @@ public interface ISlotlessItemHandler {
      * @param simulate   If true, the insertion is only simulated
      * @return ItemStack extracted from the slot
      */
-    @Nonnull
     ItemStack extractItem(@Nonnull ItemStack matchStack, int matchFlags, boolean simulate);
 
     /**

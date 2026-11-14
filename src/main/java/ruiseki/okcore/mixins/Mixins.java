@@ -25,8 +25,8 @@ public enum Mixins implements IMixins {
         .setPhase(Phase.EARLY)),
 
     // COOLDOWN
-    COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("cooldown.MixinEntityPlayer")
-        .addClientMixins("cooldown.MixinRenderItem")
+    COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("entity.cooldown.MixinEntityPlayer")
+        .addClientMixins("entity.cooldown.MixinRenderItem")
         .setPhase(Phase.EARLY)),
 
     // EVENT
@@ -44,6 +44,9 @@ public enum Mixins implements IMixins {
         .setPhase(Phase.EARLY)),
     INTERACTION_EVENT(new MixinBuilder("Hook Interaction Event")
         .addClientMixins("event.interaction.MixinMinecraft", "event.interaction.MixinPlayerControllerMP")
+        .setPhase(Phase.EARLY)),
+    ENTITY_EVENT(new MixinBuilder("Hook Entity Event")
+        .addCommonMixins("event.entity.MixinEntityLivingBase", "event.entity.MixinEntityGhast")
         .setPhase(Phase.EARLY)),
 
     // GTNHLIB
@@ -68,6 +71,12 @@ public enum Mixins implements IMixins {
     NETWORK(new MixinBuilder("Allow registering more than one handler of the same type")
         .addCommonMixins("network.MixinSimpleNetworkWrapper")
         .addExcludedMod(TargetMods.MUI2)
+        .setPhase(Phase.EARLY)),
+
+    // PERMISSION
+    PERMISSION(new MixinBuilder("Synchronize player permission levels between server and client")
+        .addCommonMixins("entity.permission.MixinEntityPlayerMP", "entity.permission.MixinServerConfigurationManager")
+        .addClientMixins("entity.permission.MixinEntityPlayerSP")
         .setPhase(Phase.EARLY)),
 
     // Tag

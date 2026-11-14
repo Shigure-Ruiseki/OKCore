@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -50,96 +51,102 @@ public class ItemHelpers {
         return stack == null || stack.getItem() == null || (checkStackSize && stack.stackSize <= 0);
     }
 
-    @Nullable
-    public static Item getItem(@Nullable ItemStack stack) {
-        return !isEmpty(stack) ? stack.getItem() : null;
+    public static Item getItem(@NotNull ItemStack stack) {
+        return stack.getItem();
     }
 
-    public static <T> Optional<T> getItem(@Nullable ItemStack stack, Class<T> clazz) {
+    public static <T> Optional<T> getItem(@NotNull ItemStack stack, Class<T> clazz) {
         return getItemOptional(stack).filter(clazz::isInstance)
             .map(clazz::cast);
     }
 
-    public static Optional<Item> getItemOptional(@Nullable ItemStack stack) {
+    public static Optional<Item> getItemOptional(@NotNull ItemStack stack) {
         return Optional.ofNullable(getItem(stack));
     }
 
-    public static boolean hasItem(@Nullable ItemStack stack) {
+    public static boolean hasTagCompound(@NotNull ItemStack stack) {
+        return !isEmpty(stack) && stack.hasTagCompound();
+    }
+
+    public static NBTTagCompound getTagCompound(@NotNull ItemStack stack) {
+        return stack.getTagCompound();
+    }
+
+    public static void setTagCompound(@NotNull ItemStack stack, NBTTagCompound tag) {
+        if (isEmpty(stack)) return;
+        stack.setTagCompound(tag);
+    }
+
+    public static boolean hasItem(@NotNull ItemStack stack) {
         return getItemOptional(stack).isPresent();
     }
 
-    public static boolean hasItem(@Nullable ItemStack stack, Class<?> clazz) {
+    public static boolean hasItem(@NotNull ItemStack stack, Class<?> clazz) {
         return getItem(stack, clazz).isPresent();
     }
 
-    public static boolean isSameItem(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean isSameItem(ItemStack a, ItemStack b) {
         return !isEmpty(a) && !isEmpty(b) && a.getItem() == b.getItem();
     }
 
-    public static boolean isSameItemAndMeta(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean isSameItemAndMeta(ItemStack a, ItemStack b) {
         return isSameItem(a, b) && getStackMeta(a) == getStackMeta(b);
     }
 
-    public static boolean hasContainerItem(@Nullable ItemStack stack) {
-        Item item = getItem(stack);
-        return item != null && item.hasContainerItem(stack);
+    public static boolean hasContainerItem(@NotNull ItemStack stack) {
+        return getItem(stack).hasContainerItem(stack);
     }
 
-    @Nullable
-    public static ItemStack getContainerItem(@Nullable ItemStack stack) {
-        Item item = getItem(stack);
-        return item != null && item.hasContainerItem(stack) ? item.getContainerItem(stack) : EMPTY;
+    public static ItemStack getContainerItem(@NotNull ItemStack stack) {
+        return hasContainerItem(stack) ? getItem(stack).getContainerItem(stack) : EMPTY;
     }
 
-    @Nullable
-    public static ItemStack copy(@Nullable ItemStack stack) {
+    public static ItemStack copy(@NotNull ItemStack stack) {
         return isEmpty(stack) ? EMPTY : stack.copy();
     }
 
-    public static int getCount(@Nullable ItemStack stack) {
+    public static int getCount(@NotNull ItemStack stack) {
         if (!isEmpty(stack)) return stack.stackSize;
         return 0;
     }
 
-    @Nullable
-    public static ItemStack copyWithSize(@Nullable ItemStack stack, int size) {
+    public static ItemStack copyWithSize(@NotNull ItemStack stack, int size) {
         if (isEmpty(stack)) return EMPTY;
         ItemStack copy = copy(stack);
         setCount(copy, size);
         return copy;
     }
 
-    public static int getItemStackSize(@Nullable ItemStack stack) {
+    public static int getMaxStackSize(@NotNull ItemStack stack) {
         return isEmpty(stack) ? 0 : stack.getMaxStackSize();
     }
 
-    public static int getStackMeta(@Nullable ItemStack stack) {
+    public static int getStackMeta(@NotNull ItemStack stack) {
         return isEmpty(stack) ? 0 : stack.getItemDamage();
     }
 
-    public static int getSpace(@Nullable ItemStack stack) {
+    public static int getSpace(@NotNull ItemStack stack) {
         if (isEmpty(stack)) return 64;
         return stack.getMaxStackSize() - getCount(stack);
     }
 
-    public static void grow(@Nullable ItemStack stack, int amount) {
+    public static void grow(@NotNull ItemStack stack, int amount) {
         if (!isEmpty(stack, false)) {
             stack.stackSize += amount;
         }
     }
 
-    public static void shrink(@Nullable ItemStack stack, int amount) {
+    public static void shrink(@NotNull ItemStack stack, int amount) {
         grow(stack, -amount);
     }
 
-    public static void setCount(@Nullable ItemStack stack, int count) {
+    public static void setCount(@NotNull ItemStack stack, int count) {
         if (!isEmpty(stack, false)) {
             stack.stackSize = count;
         }
     }
 
-    @Nullable
-    public static ItemStack split(@Nullable ItemStack stack, int amount) {
+    public static ItemStack split(@NotNull ItemStack stack, int amount) {
         if (isEmpty(stack)) return EMPTY;
 
         int i = Math.min(amount, stack.stackSize);
@@ -149,8 +156,7 @@ public class ItemHelpers {
         return itemstack;
     }
 
-    @Nullable
-    public static ItemStack merge(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static ItemStack merge(@NotNull ItemStack a, @NotNull ItemStack b) {
         if (isEmpty(a)) return b;
         if (isEmpty(b)) return a;
         a.stackSize += b.stackSize;
@@ -159,29 +165,29 @@ public class ItemHelpers {
 
     // 2. EQUALITY & MERGE CHECKS
 
-    public static boolean areItemsEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2) {
+    public static boolean areItemsEqual(ItemStack stack1, ItemStack stack2) {
         return areItemsEqual(stack1, stack2, false);
     }
 
-    public static boolean areItemsEqual(@Nullable ItemStack stack1, @Nullable ItemStack stack2, boolean ignoreNBT) {
+    public static boolean areItemsEqual(ItemStack stack1, ItemStack stack2, boolean ignoreNBT) {
         if (isEmpty(stack1)) return isEmpty(stack2);
         if (isEmpty(stack2)) return false;
 
         return stack1.getItem() == stack2.getItem() && doMetasMatch(getStackMeta(stack1), getStackMeta(stack2))
-            && (ignoreNBT || areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound()));
+            && (ignoreNBT || areTagsEqualIgnoreDurability(getTagCompound(stack1), getTagCompound(stack2)));
     }
 
-    public static boolean areItemsEqualIgnoreDurability(@Nullable ItemStack stack1, @Nullable ItemStack stack2) {
+    public static boolean areItemsEqualIgnoreDurability(ItemStack stack1, ItemStack stack2) {
         if (isEmpty(stack1)) return isEmpty(stack2);
         if (isEmpty(stack2)) return false;
 
         if (stack1.getItem() != stack2.getItem()) {
             return false;
         }
-        return areTagsEqualIgnoreDurability(stack1.getTagCompound(), stack2.getTagCompound());
+        return areTagsEqualIgnoreDurability(getTagCompound(stack1), getTagCompound(stack2));
     }
 
-    public static boolean areTagsEqualIgnoreDurability(NBTTagCompound tagA, @Nullable NBTTagCompound tagB) {
+    public static boolean areTagsEqualIgnoreDurability(NBTTagCompound tagA, NBTTagCompound tagB) {
         if (tagA == tagB) {
             return true;
         }
@@ -203,19 +209,19 @@ public class ItemHelpers {
         return true;
     }
 
-    public static boolean areItemStacksIdentical(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean areItemStacksIdentical(ItemStack a, ItemStack b) {
         if (isEmpty(a)) return isEmpty(b);
         if (isEmpty(b)) return false;
         return ItemStack.areItemStacksEqual(a, b) && getCount(a) == getCount(b);
     }
 
-    public static boolean canStack(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean canStack(ItemStack a, ItemStack b) {
         if (isEmpty(a) || isEmpty(b)) return false;
 
         return isSameItemAndMeta(a, b) && ItemStack.areItemStackTagsEqual(a, b);
     }
 
-    public static boolean areItemsMergable(@Nullable ItemStack s1, @Nullable ItemStack s2) {
+    public static boolean areItemsMergable(ItemStack s1, ItemStack s2) {
         if (isEmpty(s1) || isEmpty(s2) || !s1.isStackable() || !s2.isStackable()) {
             return false;
         }
@@ -226,26 +232,23 @@ public class ItemHelpers {
     }
 
     public static boolean doMetasMatch(int meta1, int meta2) {
-        if (meta1 == OreDictionary.WILDCARD_VALUE || meta2 == OreDictionary.WILDCARD_VALUE) {
-            return true;
-        }
-        return meta1 == meta2;
+        return meta1 == meta2 || meta1 == OreDictionary.WILDCARD_VALUE || meta2 == OreDictionary.WILDCARD_VALUE;
     }
 
-    public static boolean areItemStackShareTagsEqual(@Nullable ItemStack a, @Nullable ItemStack b) {
+    public static boolean areItemStackShareTagsEqual(ItemStack a, ItemStack b) {
         if (isEmpty(a)) return isEmpty(b);
         if (isEmpty(b)) return false;
 
         NBTTagCompound tagA = getItem(a, IItemSharedTag.class).map(item -> item.getNBTShareTag(a))
-            .orElseGet(a::getTagCompound);
+            .orElseGet(() -> getTagCompound(a));
 
         NBTTagCompound tagB = getItem(b, IItemSharedTag.class).map(item -> item.getNBTShareTag(b))
-            .orElseGet(b::getTagCompound);
+            .orElseGet(() -> getTagCompound(b));
 
         return areTagsEqualIgnoreDurability(tagA, tagB);
     }
 
-    public static boolean areItemStacksEqualUsingNBTShareTag(@Nullable ItemStack stackA, @Nullable ItemStack stackB) {
+    public static boolean areItemStacksEqualUsingNBTShareTag(ItemStack stackA, ItemStack stackB) {
         if (isEmpty(stackA)) return isEmpty(stackB);
         return !isEmpty(stackB) && isItemStackEqualUsingNBTShareTag(stackA, stackB);
     }
@@ -255,49 +258,46 @@ public class ItemHelpers {
             && areItemStackShareTagsEqual(self, other);
     }
 
-    public static int getItemStackHashCode(@Nullable ItemStack stack) {
+    public static int getHashCode(ItemStack stack) {
         if (isEmpty(stack)) return 0;
         int result = 1;
         result = 37 * result + getCount(stack);
-        result = 37 * result + stack.getItem()
-            .hashCode();
-        result = 37 * result + stack.getItemDamage();
+        result = 37 * result + getItem(stack).hashCode();
+        result = 37 * result + getStackMeta(stack);
         return result;
     }
 
     // 3. WORLD & PLAYER INTERACTIONS
 
-    public static void spawnItemStack(World world, BlockPos pos, @Nullable ItemStack itemStack) {
-        spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemStack);
+    public static void spawnItemStack(World world, BlockPos pos, ItemStack stack) {
+        spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
     }
 
-    public static void spawnItemStack(World world, double x, double y, double z, @Nullable ItemStack itemStack) {
-        if (world == null || isEmpty(itemStack)) return;
+    public static void spawnItemStack(World world, double x, double y, double z, ItemStack stack) {
+        if (world == null || isEmpty(stack)) return;
 
         float offsetX = RANDOM.nextFloat() * 0.8F + 0.1F;
         float offsetY = RANDOM.nextFloat() * 0.8F + 0.1F;
         float offsetZ = RANDOM.nextFloat() * 0.8F + 0.1F;
 
-        while (!isEmpty(itemStack)) {
+        while (!isEmpty(stack)) {
             int i = RANDOM.nextInt(21) + 10;
 
-            if (i > itemStack.stackSize) {
-                i = itemStack.stackSize;
+            if (i > stack.stackSize) {
+                i = stack.stackSize;
             }
 
-            itemStack.stackSize -= i;
+            stack.stackSize -= i;
             EntityItem entityitem = new EntityItem(
                 world,
                 x + (double) offsetX,
                 y + (double) offsetY,
                 z + (double) offsetZ,
-                new ItemStack(itemStack.getItem(), i, itemStack.getItemDamage()));
+                new ItemStack(stack.getItem(), i, stack.getItemDamage()));
 
-            if (itemStack.hasTagCompound()) {
+            if (!isEmpty(stack) && hasTagCompound(stack)) {
                 entityitem.getEntityItem()
-                    .setTagCompound(
-                        (NBTTagCompound) itemStack.getTagCompound()
-                            .copy());
+                    .setTagCompound((NBTTagCompound) getTagCompound(stack).copy());
             }
 
             float motion = 0.05F;
@@ -308,8 +308,7 @@ public class ItemHelpers {
         }
     }
 
-    public static void spawnItemStackToPlayer(World world, BlockPos pos, @Nullable ItemStack stack,
-        EntityPlayer player) {
+    public static void spawnItemStackToPlayer(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
         if (world == null || player == null || world.isRemote || isEmpty(stack)) return;
 
         float f = 0.5F;
@@ -373,23 +372,19 @@ public class ItemHelpers {
     }
 
     public static NBTTagCompound saveAllItems(NBTTagCompound tag, List<ItemStack> list, boolean saveEmpty) {
-        NBTTagList nbttaglist = new NBTTagList();
-
+        NBTTagList tagList = new NBTTagList();
         for (int i = 0; i < list.size(); ++i) {
-            ItemStack itemstack = list.get(i);
-
-            if (!isEmpty(itemstack)) {
-                NBTTagCompound nbttagcompound = new NBTTagCompound();
-                nbttagcompound.setByte("Slot", (byte) i);
-                itemstack.writeToNBT(nbttagcompound);
-                nbttaglist.appendTag(nbttagcompound);
+            ItemStack stack = list.get(i);
+            if (!isEmpty(stack)) {
+                NBTTagCompound itemTag = new NBTTagCompound();
+                itemTag.setInteger("Slot", i);
+                writeToNBT(stack, itemTag);
+                tagList.appendTag(itemTag);
             }
         }
-
-        if (nbttaglist.tagCount() > 0 || saveEmpty) {
-            tag.setTag("Items", nbttaglist);
+        if (tagList.tagCount() > 0 || saveEmpty) {
+            tag.setTag("Items", tagList);
         }
-
         return tag;
     }
 
@@ -397,11 +392,12 @@ public class ItemHelpers {
         NBTTagList nbttaglist = tag.getTagList("Items", 10);
 
         for (int i = 0; i < nbttaglist.tagCount(); ++i) {
-            NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
-            int j = nbttagcompound.getByte("Slot") & 255;
+            NBTTagCompound itemTag = nbttaglist.getCompoundTagAt(i);
+            int slot = itemTag.getInteger("Slot");
 
-            if (j >= 0 && j < list.size()) {
-                list.set(j, ItemStack.loadItemStackFromNBT(nbttagcompound));
+            if (slot < list.size()) {
+                ItemStack stack = readFromNBT(itemTag);
+                list.set(slot, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
             }
         }
     }
@@ -434,26 +430,42 @@ public class ItemHelpers {
         return new ItemStack(item, amount, meta);
     }
 
+    public static NBTTagCompound writeToNBT(ItemStack stack, NBTTagCompound tag) {
+        stack.writeToNBT(tag);
+        tag.setInteger("Count", ItemHelpers.getCount(stack));
+        return tag;
+    }
+
+    public static ItemStack readFromNBT(NBTTagCompound tag) {
+        ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
+        if (ItemHelpers.isEmpty(stack, false)) return EMPTY;
+        if (tag.hasKey("Count")) {
+            ItemHelpers.setCount(stack, tag.getInteger("Count"));
+        }
+        if (ItemHelpers.isEmpty(stack)) return EMPTY;
+        return stack;
+    }
+
     // 6. SUB-ITEMS & ORE DICTIONARY VARIANTS
 
-    public static List<ItemStack> getSubItems(@Nullable ItemStack stack) {
+    public static List<ItemStack> getSubItems(ItemStack stack) {
         List<ItemStack> subItems = new ArrayList<>();
         if (isEmpty(stack)) return subItems;
         getItemOptional(stack).ifPresent(item -> { item.getSubItems(stack.getItem(), null, subItems); });
         return subItems;
     }
 
-    public static List<ItemStack> getVariants(@Nullable ItemStack itemStack) {
+    public static List<ItemStack> getVariants(ItemStack itemStack) {
         return getSubItemsIfWildcardMeta(itemStack);
     }
 
-    public static List<ItemStack> getSubItemsIfWildcardMeta(@Nullable ItemStack stack) {
+    public static List<ItemStack> getSubItemsIfWildcardMeta(ItemStack stack) {
         if (isEmpty(stack)) return Collections.emptyList();
         return stack.getItemDamage() == OreDictionary.WILDCARD_VALUE ? getSubItems(stack)
             : Collections.singletonList(stack);
     }
 
-    public static boolean isValidCreativeTab(Item item, @Nullable CreativeTabs creativeTab) {
+    public static boolean isValidCreativeTab(Item item, CreativeTabs creativeTab) {
         if (item == null) return false;
         for (CreativeTabs itemTab : item.getCreativeTabs()) {
             if (itemTab == creativeTab) {

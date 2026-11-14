@@ -5,6 +5,7 @@ import java.util.Iterator;
 import javax.annotation.concurrent.Immutable;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.audio.ISound;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -72,6 +73,10 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPo
 
     public BlockPos(BlockPos pos) {
         this(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public BlockPos(ISound sound) {
+        this(sound.getXPosF(), sound.getYPosF(), sound.getZPosF());
     }
 
     public BlockPos(String x, String y, String z) {

@@ -26,6 +26,7 @@ import ruiseki.commoncapabilities.ingredient.storage.IngredientComponentStorageW
 import ruiseki.commoncapabilities.ingredient.storage.IngredientComponentStorageWrapperHandlerItemStackSlotless;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
 /**
@@ -51,28 +52,28 @@ public class IngredientComponents {
                     new ResourceLocation("itemstack/item"),
                     Item.class,
                     true,
-                    ItemStack::getItem,
+                    ItemHelpers::getItem,
                     ItemMatch.ITEM,
                     false),
                 new IngredientComponentCategoryType<>(
                     new ResourceLocation("itemstack/metadata"),
                     Integer.class,
                     false,
-                    ItemStack::getItemDamage,
+                    ItemHelpers::getStackMeta,
                     ItemMatch.DAMAGE,
                     false),
                 new IngredientComponentCategoryType<>(
                     new ResourceLocation("itemstack/count"),
                     Integer.class,
                     false,
-                    stack -> stack.stackSize,
+                    ItemHelpers::getCount,
                     ItemMatch.STACKSIZE,
                     true),
                 new IngredientComponentCategoryType<>(
                     new ResourceLocation("itemstack/tag"),
                     NBTTagCompound.class,
                     false,
-                    ItemStack::getTagCompound,
+                    ItemHelpers::getTagCompound,
                     ItemMatch.NBT,
                     false))).setTranslationKey("recipecomponent.minecraft.itemstack");
 

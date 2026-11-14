@@ -245,4 +245,13 @@ public class PlayerHelpers {
     public static boolean hasPermissions(EntityPlayer player, int level) {
         return ((IPlayerPermission) player).hasPermissions(level);
     }
+
+    public static EntityPlayerMP getPlayerByUUID(MinecraftServer server, UUID playerId) {
+        for (EntityPlayerMP player : server.getConfigurationManager().playerEntityList) {
+            if (player.getUniqueID().equals(playerId)) {
+                return player;
+            }
+        }
+        return null;
+    }
 }

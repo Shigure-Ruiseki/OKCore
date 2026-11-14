@@ -4,7 +4,9 @@ package ruiseki.okcore.client.audio.sound;
 import net.minecraft.client.audio.MovingSound;
 import net.minecraft.util.ResourceLocation;
 
-import ruiseki.okcore.datastructure.BlockPos;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 
 public class SoundExtended extends MovingSound {
 
@@ -20,8 +22,16 @@ public class SoundExtended extends MovingSound {
         this.zPosF = z;
     }
 
-    public SoundExtended(ResourceLocation location, BlockPos pos) {
-        this(location, 4, 1, pos.getX(), pos.getY(), pos.getZ());
+    public SoundExtended(ResourceLocation location, Vector3i pos) {
+        this(location, 4, 1, pos.x, pos.y, pos.z);
+    }
+
+    public SoundExtended(ResourceLocation location, Vector3f pos) {
+        this(location, 4, 1, pos.x, pos.y, pos.z);
+    }
+
+    public SoundExtended(ResourceLocation location, Vector3d pos) {
+        this(location, 4, 1, (float) pos.x, (float) pos.y, (float) pos.z);
     }
 
     public ResourceLocation getLocation() {

@@ -114,10 +114,10 @@ public class RecordHelpers {
                 RecordData data = readOggData("record." + record.recordName, is);
                 if (data == null) return;
 
-                RecordDataRegistry.putData(data.getRecordName(), data);
+                RecordDataRegistry.putData(record.recordName, data);
 
                 OKCore._instance.getPacketHandler()
-                    .sendToServer(new PacketRecordSoundData(data.getRecordName(), data));
+                    .sendToServer(new PacketRecordSoundData(record.recordName, data));
             }
         } catch (Exception ignored) {}
     }

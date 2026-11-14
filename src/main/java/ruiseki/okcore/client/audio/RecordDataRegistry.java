@@ -13,12 +13,21 @@ public class RecordDataRegistry {
 
     public static RecordData getData(ItemStack record) {
         if (ItemHelpers.isEmpty(record) || !(ItemHelpers.getItem(record) instanceof ItemRecord itemRecord)) return null;
-        String recordName = itemRecord.recordName;
+        return getData(itemRecord);
+    }
+
+    public static int getDurationTicks(ItemStack record) {
+        if (ItemHelpers.isEmpty(record) || !(ItemHelpers.getItem(record) instanceof ItemRecord itemRecord)) return 0;
+        return getDurationTicks(itemRecord);
+    }
+
+    public static RecordData getData(ItemRecord record) {
+        String recordName = record.recordName;
         if (recordName == null) return DEFAULT_DATA;
         return CACHE.getOrDefault(recordName, DEFAULT_DATA);
     }
 
-    public static int getDurationTicks(ItemStack record) {
+    public static int getDurationTicks(ItemRecord record) {
         RecordData data = getData(record);
         return data != null ? data.getDurationTicks() + 100 : 0;
     }

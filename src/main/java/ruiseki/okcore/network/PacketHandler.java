@@ -10,6 +10,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
+import org.joml.Vector3d;
+
 import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -172,22 +174,16 @@ public class PacketHandler {
         sendToAllAround(packet, player, 64);
     }
 
-    /**
-     * Send a packet to all players around a BlockPos.
-     *
-     * @param packet The packet.
-     * @param world  The world.
-     * @param pos    The target position.
-     * @param range  The maximum distance.
-     */
     public void sendToAllAround(PacketBase packet, World world, BlockPos pos, double range) {
-        sendToAllAround(
-            packet,
-            new NetworkRegistry.TargetPoint(world.provider.dimensionId, pos.getX(), pos.getY(), pos.getZ(), range));
+        sendToAllAround(packet, world, pos.getX(), pos.getY(), pos.getZ(), range);
     }
 
-    public void sendToAllAround(PacketBase packet, World world, BlockPos pos) {
-        sendToAllAround(packet, world, pos, 64);
+    public void sendToAllAround(PacketBase packet, World world, Vector3d pos, double range) {
+        sendToAllAround(packet, world, pos.x(), pos.y(), pos.z(), range);
+    }
+
+    public void sendToAllAround(PacketBase packet, World world, double x, double y, double z, double range) {
+        sendToAllAround(packet, new NetworkRegistry.TargetPoint(world.provider.dimensionId, x, y, z, range));
     }
 
     /**

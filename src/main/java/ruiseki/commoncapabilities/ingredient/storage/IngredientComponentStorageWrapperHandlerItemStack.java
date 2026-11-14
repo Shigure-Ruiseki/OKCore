@@ -283,7 +283,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
             if (amount > maxStackSize && storage.getSlotLimit(slot) > maxStackSize) {
                 if (simulate) {
                     // In simulate-mode, extract up to max stack size.
-                    // If the returned stack less than max stack size, return it.
+                    // If the returned stack is less than max stack size, return it.
                     // Otherwise, return the full stack in the slot up to the requested amount.
                     ItemStack extractedUntilMaxStackSize = storage.extractItem(slot, maxStackSize, true);
                     if (ItemHelpers.getCount(extractedUntilMaxStackSize) < maxStackSize) {
@@ -291,6 +291,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
                     } else {
                         ItemStack stackInSlot = storage.getStackInSlot(slot)
                             .copy();
+
                         if (ItemHelpers.getCount(stackInSlot) > amount) {
                             ItemHelpers.setCount(stackInSlot, amount);
                         }
@@ -305,13 +306,13 @@ public class IngredientComponentStorageWrapperHandlerItemStack
                             Math.min(amount - ItemHelpers.getCount(bufferExtracted), maxStackSize),
                             false);
 
-                        // Stop loop if empty
+                        // Stop loop if empty.
                         if (ItemHelpers.isEmpty(extractedPartial)) {
                             break;
                         }
 
-                        // Add to buffer
-                        if (ItemHelpers.isEmpty(extractedPartial)) {
+                        // Add to buffer.
+                        if (ItemHelpers.isEmpty(bufferExtracted)) {
                             bufferExtracted = extractedPartial;
                         } else {
                             ItemHelpers.setCount(

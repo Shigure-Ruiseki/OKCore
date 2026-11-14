@@ -204,7 +204,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
             if (ItemHelpers.isEmpty(extracted)) continue;
 
             if (ItemHelpers.isEmpty(extractedStack)) {
-                extractedStack = extracted;
+                extractedStack = extracted.copy();
             } else {
                 ItemHelpers.grow(extractedStack, ItemHelpers.getCount(extracted));
             }

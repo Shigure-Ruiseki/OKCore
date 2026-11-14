@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.item;
 
 import java.util.function.Consumer;
@@ -127,7 +128,7 @@ public class ItemTransfer {
                     if (filter != null && !filter.test(simulatedExtracted)) break;
 
                     ItemStack remainder = ItemHelpers.copy(simulatedExtracted);
-                    int initialCount = ItemHelpers.getMaxStackSize(remainder);
+                    int initialCount = ItemHelpers.getCount(remainder);
 
                     for (int dstSlot : sinkIndices) {
                         if (dstSlot < 0 || dstSlot >= sinkHandler.getSlots()) continue;
@@ -142,13 +143,13 @@ public class ItemTransfer {
                         if (ItemHelpers.isEmpty(remainder)) break;
                     }
 
-                    int acceptedCount = initialCount - ItemHelpers.getMaxStackSize(remainder);
+                    int acceptedCount = initialCount - ItemHelpers.getCount(remainder);
                     if (acceptedCount <= 0) break;
 
                     ItemStack actualExtracted = sourceHandler.extractItem(srcSlot, acceptedCount, false);
                     if (ItemHelpers.isEmpty(actualExtracted)) break;
 
-                    availableCount -= actualExtracted.stackSize;
+                    availableCount -= ItemHelpers.getCount(actualExtracted);
                     ItemStack realRemainder = ItemHelpers.copy(actualExtracted);
 
                     for (int dstSlot : sinkIndices) {
@@ -163,7 +164,9 @@ public class ItemTransfer {
                         }
                     }
 
-                    int transferred = actualExtracted.stackSize - ItemHelpers.getMaxStackSize(realRemainder);
+                    int remainingCount = ItemHelpers.isEmpty(realRemainder) ? 0 : ItemHelpers.getCount(realRemainder);
+                    int transferred = ItemHelpers.getCount(actualExtracted) - remainingCount;
+
                     if (transferred <= 0) break;
 
                     itemsTransferred += transferred;
@@ -187,7 +190,9 @@ public class ItemTransfer {
 
         static int[] createSlotArray(int size) {
             int[] array = new int[size];
-            for (int i = 0; i < size; i++) array[i] = i;
+            for (int i = 0; i < size; i++) {
+                array[i] = i;
+            }
             return array;
         }
     }

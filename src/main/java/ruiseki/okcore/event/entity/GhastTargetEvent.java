@@ -1,15 +1,15 @@
 package ruiseki.okcore.event.entity;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityGhast;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.event.entity.living.LivingEvent;
 
 public class GhastTargetEvent extends LivingEvent {
 
     private final double maxDistance;
-    private Entity target;
+    private EntityPlayer target;
 
-    public GhastTargetEvent(EntityGhast ghast, double maxDistance, Entity target) {
+    public GhastTargetEvent(EntityGhast ghast, double maxDistance, EntityPlayer target) {
         super(ghast);
         this.maxDistance = maxDistance;
         this.target = target;
@@ -23,11 +23,11 @@ public class GhastTargetEvent extends LivingEvent {
         return maxDistance;
     }
 
-    public Entity getTarget() {
+    public EntityPlayer getTarget() {
         return target;
     }
 
-    public void setTarget(Entity target) {
+    public void setTarget(EntityPlayer target) {
         this.target = target;
     }
 }

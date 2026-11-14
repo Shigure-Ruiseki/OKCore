@@ -15,7 +15,6 @@ import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
-import ruiseki.okcore.item.handler.InventoryHandler;
 import ruiseki.okcore.tag.TagKey;
 
 public class InventorySorter {

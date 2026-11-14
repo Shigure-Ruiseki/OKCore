@@ -61,7 +61,7 @@ public class ItemStackSyncValue extends ValueSyncHandler<ItemStack, ItemStackSyn
 
     @Override
     public void setValue(ItemStack value, boolean setSource, boolean sync) {
-        this.cache = value;
+        this.cache = ItemHelpers.isEmpty(value) ? ItemHelpers.EMPTY : ItemHelpers.copy(value);
         if (setSource && this.setter != null) {
             this.setter.accept(value);
         }
@@ -71,8 +71,10 @@ public class ItemStackSyncValue extends ValueSyncHandler<ItemStack, ItemStackSyn
 
     @Override
     public boolean updateCacheFromSource(boolean isFirstSync) {
-        if (isFirstSync || !ItemHelpers.areItemsEqual(this.getter.get(), cache)) {
-            this.setValue(this.getter.get(), false, false);
+        ItemStack source = this.getter.get();
+        if (isFirstSync || !ItemHelpers.areItemsEqual(source, this.cache)
+            || ItemHelpers.getCount(source) != ItemHelpers.getCount(this.cache)) {
+            this.setValue(source, false, false);
             return true;
         }
         return false;
@@ -86,8 +88,10 @@ public class ItemStackSyncValue extends ValueSyncHandler<ItemStack, ItemStackSyn
     @Override
     public void write(PacketBuffer buffer) throws IOException {
         ItemStack value = this.getter.get();
-        buffer.writeBoolean(!ItemHelpers.isEmpty(value));
-        if (value != null) {
+        boolean hasValue = !ItemHelpers.isEmpty(value);
+
+        buffer.writeBoolean(hasValue);
+        if (hasValue) {
             NetworkUtils.writeItemStack(buffer, value);
         }
     }

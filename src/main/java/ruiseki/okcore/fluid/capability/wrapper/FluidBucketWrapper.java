@@ -118,7 +118,6 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
             && !(container.getItem() instanceof ItemBucketMilk)
             && FluidHelpers.isEmpty(getFluid())
             && !FluidHelpers.isEmpty(stack)
-            && stack.amount >= BUCKET_VOLUME
             && canFillFluidType(stack);
     }
 

@@ -213,7 +213,7 @@ public class SimpleInventory implements INBTInventory {
      */
     public void writeToNBT(NBTTagCompound data, String tag) {
         NBTTagList slots = new NBTTagList();
-        for (byte index = 0; index < getSizeInventory(); ++index) {
+        for (int index = 0; index < getSizeInventory(); ++index) {
             ItemStack stack = getStackInSlot(index);
             if (!ItemHelpers.isEmpty(stack)) {
                 NBTTagCompound slot = new NBTTagCompound();

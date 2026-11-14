@@ -1,14 +1,21 @@
+
 package ruiseki.okcore.client.audio.record;
 
 import net.minecraft.item.ItemRecord;
 import net.minecraft.item.ItemStack;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import ruiseki.okcore.helper.ItemHelpers;
 
+@SuppressWarnings("UnstableApiUsage")
 public class RecordDataRegistry {
 
-    private static final Object2ObjectOpenHashMap<String, RecordData> CACHE = new Object2ObjectOpenHashMap<>();
+    private static final Cache<String, RecordData> CACHE = CacheBuilder.newBuilder()
+        .maximumSize(256)
+        .build();
+
     private static final RecordData DEFAULT_DATA = new RecordData(null, 300 * 20, 44100, 300L * 44100L);
 
     public static RecordData getData(ItemStack record) {
@@ -24,7 +31,8 @@ public class RecordDataRegistry {
     public static RecordData getData(ItemRecord record) {
         String recordName = record.recordName;
         if (recordName == null) return DEFAULT_DATA;
-        return CACHE.getOrDefault(recordName, DEFAULT_DATA);
+        RecordData data = CACHE.getIfPresent(recordName);
+        return data != null ? data : DEFAULT_DATA;
     }
 
     public static int getDurationTicks(ItemRecord record) {

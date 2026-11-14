@@ -62,7 +62,7 @@ public class FluidStackSyncValue extends ValueSyncHandler<FluidStack, FluidStack
 
     @Override
     public void setValue(FluidStack value, boolean setSource, boolean sync) {
-        this.cache = value;
+        this.cache = FluidHelpers.isEmpty(value) ? FluidHelpers.EMPTY : FluidHelpers.copy(value);
         if (setSource && this.setter != null) {
             this.setter.accept(value);
         }
@@ -87,8 +87,10 @@ public class FluidStackSyncValue extends ValueSyncHandler<FluidStack, FluidStack
     @Override
     public void write(PacketBuffer buffer) throws IOException {
         FluidStack value = this.getter.get();
-        buffer.writeBoolean(!FluidHelpers.isEmpty(value));
-        if (value != null) {
+        boolean hasValue = !FluidHelpers.isEmpty(value);
+
+        buffer.writeBoolean(hasValue);
+        if (hasValue) {
             NetworkUtils.writeFluidStack(buffer, value);
         }
     }

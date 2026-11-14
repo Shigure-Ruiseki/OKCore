@@ -269,35 +269,35 @@ public class ItemHelpers {
 
     // 3. WORLD & PLAYER INTERACTIONS
 
-    public static void spawnItemStack(World world, BlockPos pos, ItemStack itemStack) {
-        spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemStack);
+    public static void spawnItemStack(World world, BlockPos pos, ItemStack stack) {
+        spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
     }
 
-    public static void spawnItemStack(World world, double x, double y, double z, ItemStack itemStack) {
-        if (world == null || isEmpty(itemStack)) return;
+    public static void spawnItemStack(World world, double x, double y, double z, ItemStack stack) {
+        if (world == null || isEmpty(stack)) return;
 
         float offsetX = RANDOM.nextFloat() * 0.8F + 0.1F;
         float offsetY = RANDOM.nextFloat() * 0.8F + 0.1F;
         float offsetZ = RANDOM.nextFloat() * 0.8F + 0.1F;
 
-        while (!isEmpty(itemStack)) {
+        while (!isEmpty(stack)) {
             int i = RANDOM.nextInt(21) + 10;
 
-            if (i > itemStack.stackSize) {
-                i = itemStack.stackSize;
+            if (i > stack.stackSize) {
+                i = stack.stackSize;
             }
 
-            itemStack.stackSize -= i;
+            stack.stackSize -= i;
             EntityItem entityitem = new EntityItem(
                 world,
                 x + (double) offsetX,
                 y + (double) offsetY,
                 z + (double) offsetZ,
-                new ItemStack(itemStack.getItem(), i, itemStack.getItemDamage()));
+                new ItemStack(stack.getItem(), i, stack.getItemDamage()));
 
-            if (hasTagCompound(itemStack)) {
+            if (!isEmpty(stack) && hasTagCompound(stack)) {
                 entityitem.getEntityItem()
-                    .setTagCompound((NBTTagCompound) getTagCompound(itemStack).copy());
+                    .setTagCompound((NBTTagCompound) getTagCompound(stack).copy());
             }
 
             float motion = 0.05F;
@@ -438,10 +438,11 @@ public class ItemHelpers {
 
     public static ItemStack readFromNBT(NBTTagCompound tag) {
         ItemStack stack = ItemStack.loadItemStackFromNBT(tag);
-        if (ItemHelpers.isEmpty(stack)) return EMPTY;
+        if (ItemHelpers.isEmpty(stack, false)) return EMPTY;
         if (tag.hasKey("Count")) {
             ItemHelpers.setCount(stack, tag.getInteger("Count"));
         }
+        if (ItemHelpers.isEmpty(stack)) return EMPTY;
         return stack;
     }
 

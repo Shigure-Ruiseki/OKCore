@@ -44,7 +44,7 @@ public class RecipeRemainingItemsHandler {
 
                 ItemStack slotStack = matrix.getStackInSlot(i);
 
-                if (ItemHelpers.hasContainerItem(slotStack)) {
+                if (!ItemHelpers.isEmpty(slotStack) && ItemHelpers.hasContainerItem(slotStack)) {
                     continue;
                 }
 

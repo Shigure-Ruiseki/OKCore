@@ -10,7 +10,7 @@ public class EntityBoundSound extends SoundExtended implements IEntitySound {
 
     private final Entity entity;
 
-    protected EntityBoundSound(ResourceLocation location, float volume, float pitch, Entity entity) {
+    public EntityBoundSound(ResourceLocation location, float volume, float pitch, Entity entity) {
         super(location, volume, pitch, (float) entity.posX, (float) entity.posY, (float) entity.posZ);
         this.entity = entity;
     }

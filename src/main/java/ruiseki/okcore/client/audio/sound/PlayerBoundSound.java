@@ -8,7 +8,7 @@ public class PlayerBoundSound extends EntityBoundSound {
 
     private final EntityPlayer player;
 
-    protected PlayerBoundSound(ResourceLocation location, float volume, float pitch, EntityPlayer player) {
+    public PlayerBoundSound(ResourceLocation location, float volume, float pitch, EntityPlayer player) {
         super(location, volume, pitch, player);
         this.player = player;
     }

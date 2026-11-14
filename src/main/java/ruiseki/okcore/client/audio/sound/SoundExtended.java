@@ -10,7 +10,7 @@ public class SoundExtended extends MovingSound {
 
     protected final ResourceLocation location;
 
-    protected SoundExtended(ResourceLocation location, float volume, float pitch, float x, float y, float z) {
+    public SoundExtended(ResourceLocation location, float volume, float pitch, float x, float y, float z) {
         super(location);
         this.location = location;
         this.volume = volume;
@@ -20,7 +20,7 @@ public class SoundExtended extends MovingSound {
         this.zPosF = z;
     }
 
-    protected SoundExtended(ResourceLocation location, BlockPos pos) {
+    public SoundExtended(ResourceLocation location, BlockPos pos) {
         this(location, 4, 1, pos.getX(), pos.getY(), pos.getZ());
     }
 

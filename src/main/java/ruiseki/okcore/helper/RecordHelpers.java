@@ -7,6 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundEventAccessorComposite;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.audio.SoundPoolEntry;
+import net.minecraft.item.ItemRecord;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import cpw.mods.fml.relauncher.Side;
@@ -65,6 +67,17 @@ public class RecordHelpers {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static RecordData getData(ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack) || !(ItemHelpers.getItem(stack) instanceof ItemRecord record))
+            return RecordDataRegistry.DEFAULT_DATA;
+        return getData(record);
+    }
+
+    public static RecordData getData(ItemRecord record) {
+        if (!RecordDataRegistry.hasData(record)) resolveAndSyncDuration("records." + record.recordName);
+        return RecordDataRegistry.getData(record);
     }
 
     /**

@@ -12,10 +12,10 @@ import ruiseki.okcore.network.PacketCodec;
 public class PacketRecordSoundData extends PacketCodec {
 
     @CodecField
-    private String recordName;
+    private String recordName = "";
 
     @CodecField
-    private RecordData recordData;
+    private RecordData recordData = null;
 
     public PacketRecordSoundData() {}
 

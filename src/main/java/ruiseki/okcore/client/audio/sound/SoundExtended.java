@@ -4,6 +4,8 @@ package ruiseki.okcore.client.audio.sound;
 import net.minecraft.client.audio.MovingSound;
 import net.minecraft.util.ResourceLocation;
 
+import ruiseki.okcore.datastructure.BlockPos;
+
 public class SoundExtended extends MovingSound {
 
     protected final ResourceLocation location;
@@ -16,6 +18,10 @@ public class SoundExtended extends MovingSound {
         this.xPosF = x;
         this.yPosF = y;
         this.zPosF = z;
+    }
+
+    protected SoundExtended(ResourceLocation location, BlockPos pos) {
+        this(location, 4, 1, pos.getX(), pos.getY(), pos.getZ());
     }
 
     public ResourceLocation getLocation() {

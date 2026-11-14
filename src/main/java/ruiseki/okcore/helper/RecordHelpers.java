@@ -86,7 +86,7 @@ public class RecordHelpers {
     @SideOnly(Side.CLIENT)
     public static RecordData getData(ItemRecord record) {
         if (record == null) return null;
-        if (!RecordDataRegistry.hasData(record)) resolveAndSyncDuration(record.recordName);
+        if (!RecordDataRegistry.hasData(record)) resolveAndSyncDuration(record);
         return RecordDataRegistry.getData(record);
     }
 
@@ -99,28 +99,25 @@ public class RecordHelpers {
     /**
      * Resolves the duration of a record on the client via MC's sound system,
      * then sends it to the server so it can track playback timing correctly.
-     *
-     * @param recordName the record name (e.g. "cat" not "record.cat")
      */
     @SideOnly(Side.CLIENT)
-    public static void resolveAndSyncDuration(String recordName) {
-        if (recordName == null || recordName.isEmpty()) return;
-
-        if (RecordDataRegistry.hasData(recordName)) return;
+    public static void resolveAndSyncDuration(ItemRecord record) {
+        if (record == null || record.recordName == null || record.recordName.isEmpty()) return;
+        if (RecordDataRegistry.hasData(record)) return;
 
         try {
-            ResourceLocation soundEvent = new ResourceLocation("records." + recordName);
+            ResourceLocation soundEvent = record.getRecordResource(record.recordName);
 
             try (InputStream is = openRecordOgg(soundEvent)) {
                 if (is == null) return;
 
-                RecordData data = readOggData("records." + recordName, is);
+                RecordData data = readOggData(record.recordName, is);
                 if (data == null) return;
 
-                RecordDataRegistry.putData(recordName, data);
+                RecordDataRegistry.putData(record.recordName, data);
 
                 OKCore._instance.getPacketHandler()
-                    .sendToServer(new PacketRecordSoundData(recordName, data));
+                    .sendToServer(new PacketRecordSoundData(record.recordName, data));
             }
         } catch (Exception ignored) {}
     }

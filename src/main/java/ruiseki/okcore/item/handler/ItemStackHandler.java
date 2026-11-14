@@ -16,7 +16,7 @@ import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSerializable {
+public class ItemStackHandler implements IItemHandlerSimpleModifiable, IItemHandlerStackLimit, INBTSerializable {
 
     protected NonNullList<ItemStack> stacks;
 
@@ -220,10 +220,9 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, INBTSeria
         return 64;
     }
 
+    @Override
     public int getStackLimit(int slot, @Nullable ItemStack stack) {
-        if (ItemHelpers.isEmpty(stack)) {
-            return 0;
-        }
+        if (ItemHelpers.isEmpty(stack)) return 0;
         return Math.min(this.getSlotLimit(slot), stack.getMaxStackSize());
     }
 

@@ -25,6 +25,7 @@ import ruiseki.okcore.network.packet.PacketRecordSoundData;
 @SideOnly(Side.CLIENT)
 public class RecordHelpers {
 
+    @SideOnly(Side.CLIENT)
     private static RecordData readOggData(String recordName, InputStream is) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[8192];
@@ -47,6 +48,7 @@ public class RecordHelpers {
         return new RecordData(recordName, durationTicks, sampleRate, totalSamples);
     }
 
+    @SideOnly(Side.CLIENT)
     public static InputStream openRecordOgg(ResourceLocation soundEvent) {
         try {
             SoundHandler handler = Minecraft.getMinecraft()
@@ -69,14 +71,16 @@ public class RecordHelpers {
         }
     }
 
+    @SideOnly(Side.CLIENT)
     public static RecordData getData(ItemStack stack) {
-        if (ItemHelpers.isEmpty(stack) || !(ItemHelpers.getItem(stack) instanceof ItemRecord record))
-            return RecordDataRegistry.DEFAULT_DATA;
+        if (ItemHelpers.isEmpty(stack) || !(ItemHelpers.getItem(stack) instanceof ItemRecord record)) return null;
         return getData(record);
     }
 
+    @SideOnly(Side.CLIENT)
     public static RecordData getData(ItemRecord record) {
-        if (!RecordDataRegistry.hasData(record)) resolveAndSyncDuration("records." + record.recordName);
+        if (record == null) return null;
+        if (!RecordDataRegistry.hasData(record)) resolveAndSyncDuration(record.recordName);
         return RecordDataRegistry.getData(record);
     }
 
@@ -84,31 +88,32 @@ public class RecordHelpers {
      * Resolves the duration of a record on the client via MC's sound system,
      * then sends it to the server so it can track playback timing correctly.
      *
-     * @param recordName the full sound event name (e.g. "records.cat")
+     * @param recordName the record name (e.g. "cat" not "record.cat")
      */
+    @SideOnly(Side.CLIENT)
     public static void resolveAndSyncDuration(String recordName) {
         if (recordName == null || recordName.isEmpty()) return;
 
+        if (RecordDataRegistry.hasData(recordName)) return;
+
         try {
-            var res = new ResourceLocation(recordName);
-            try (InputStream is = openRecordOgg(res)) {
+            ResourceLocation soundEvent = new ResourceLocation("records." + recordName);
+
+            try (InputStream is = openRecordOgg(soundEvent)) {
                 if (is == null) return;
 
-                // Strip "records." prefix for cache key consistency
-                String shortName = recordName.startsWith("records.") ? recordName.substring("records.".length())
-                    : recordName;
-
-                RecordData data = readOggData("records." + shortName, is);
+                RecordData data = readOggData("records." + recordName, is);
                 if (data == null) return;
 
-                RecordDataRegistry.putData(shortName, data);
+                RecordDataRegistry.putData(recordName, data);
 
                 OKCore._instance.getPacketHandler()
-                    .sendToServer(new PacketRecordSoundData(shortName, data));
+                    .sendToServer(new PacketRecordSoundData(recordName, data));
             }
         } catch (Exception ignored) {}
     }
 
+    @SideOnly(Side.CLIENT)
     private static int parseVorbisSampleRate(byte[] data) {
         int pageStart = findOggPageFrom(data, 0);
         if (pageStart < 0 || pageStart + 27 > data.length) return -1;
@@ -131,6 +136,7 @@ public class RecordHelpers {
             | ((data[dataStart + 15] & 0xFF) << 24);
     }
 
+    @SideOnly(Side.CLIENT)
     private static long findLastGranulePosition(byte[] data) {
         for (int i = data.length - 4; i >= 0; i--) {
             if (data[i] == 'O' && data[i + 1] == 'g' && data[i + 2] == 'g' && data[i + 3] == 'S') {
@@ -149,6 +155,7 @@ public class RecordHelpers {
         return -1;
     }
 
+    @SideOnly(Side.CLIENT)
     private static int findOggPageFrom(byte[] data, int from) {
         for (int i = from; i <= data.length - 4; i++) {
             if (data[i] == 'O' && data[i + 1] == 'g' && data[i + 2] == 'g' && data[i + 3] == 'S') {

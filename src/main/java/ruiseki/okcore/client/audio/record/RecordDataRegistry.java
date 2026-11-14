@@ -16,8 +16,6 @@ public class RecordDataRegistry {
         .maximumSize(256)
         .build();
 
-    public static final RecordData DEFAULT_DATA = new RecordData(null, 300 * 20, 44100, 300L * 44100L);
-
     public static RecordData getData(ItemStack record) {
         if (ItemHelpers.isEmpty(record) || !(ItemHelpers.getItem(record) instanceof ItemRecord itemRecord)) return null;
         return getData(itemRecord);
@@ -30,9 +28,9 @@ public class RecordDataRegistry {
 
     public static RecordData getData(ItemRecord record) {
         String recordName = record.recordName;
-        if (recordName == null) return DEFAULT_DATA;
+        if (recordName == null) return null;
         RecordData data = CACHE.getIfPresent(recordName);
-        return data != null ? data : DEFAULT_DATA;
+        return data != null ? data : null;
     }
 
     public static int getDurationTicks(ItemRecord record) {
@@ -53,5 +51,9 @@ public class RecordDataRegistry {
 
     public static boolean hasData(ItemRecord record) {
         return record != null && record.recordName != null && CACHE.getIfPresent(record.recordName) != null;
+    }
+
+    public static boolean hasData(String record) {
+        return CACHE.getIfPresent(record) != null;
     }
 }

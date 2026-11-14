@@ -106,7 +106,7 @@ public class RecordHelpers {
         if (RecordDataRegistry.hasData(record)) return;
 
         try {
-            ResourceLocation soundEvent = record.getRecordResource(record.recordName);
+            ResourceLocation soundEvent = record.getRecordResource("records." + record.recordName);
 
             try (InputStream is = openRecordOgg(soundEvent)) {
                 if (is == null) return;

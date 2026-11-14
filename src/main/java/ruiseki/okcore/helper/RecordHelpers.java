@@ -111,13 +111,13 @@ public class RecordHelpers {
             try (InputStream is = openRecordOgg(soundEvent)) {
                 if (is == null) return;
 
-                RecordData data = readOggData(record.recordName, is);
+                RecordData data = readOggData("record." + record.recordName, is);
                 if (data == null) return;
 
-                RecordDataRegistry.putData(record.recordName, data);
+                RecordDataRegistry.putData(data.getRecordName(), data);
 
                 OKCore._instance.getPacketHandler()
-                    .sendToServer(new PacketRecordSoundData(record.recordName, data));
+                    .sendToServer(new PacketRecordSoundData(data.getRecordName(), data));
             }
         } catch (Exception ignored) {}
     }

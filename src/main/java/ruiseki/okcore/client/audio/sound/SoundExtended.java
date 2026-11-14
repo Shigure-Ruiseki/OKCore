@@ -4,7 +4,7 @@ package ruiseki.okcore.client.audio.sound;
 import net.minecraft.client.audio.MovingSound;
 import net.minecraft.util.ResourceLocation;
 
-public abstract class SoundExtended extends MovingSound {
+public class SoundExtended extends MovingSound {
 
     protected final ResourceLocation location;
 
@@ -25,5 +25,10 @@ public abstract class SoundExtended extends MovingSound {
     public void stop() {
         this.donePlaying = true;
         this.repeat = false;
+    }
+
+    @Override
+    public void update() {
+
     }
 }

@@ -78,10 +78,22 @@ public class RecordHelpers {
     }
 
     @SideOnly(Side.CLIENT)
+    public static int getDurationTicks(ItemStack record) {
+        if (ItemHelpers.isEmpty(record) || !(ItemHelpers.getItem(record) instanceof ItemRecord itemRecord)) return 0;
+        return getDurationTicks(itemRecord);
+    }
+
+    @SideOnly(Side.CLIENT)
     public static RecordData getData(ItemRecord record) {
         if (record == null) return null;
         if (!RecordDataRegistry.hasData(record)) resolveAndSyncDuration(record.recordName);
         return RecordDataRegistry.getData(record);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static int getDurationTicks(ItemRecord record) {
+        RecordData data = getData(record);
+        return data != null ? data.getDurationTicks() + 100 : 0;
     }
 
     /**

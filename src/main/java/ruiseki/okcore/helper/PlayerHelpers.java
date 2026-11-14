@@ -248,7 +248,8 @@ public class PlayerHelpers {
 
     public static EntityPlayerMP getPlayerByUUID(MinecraftServer server, UUID playerId) {
         for (EntityPlayerMP player : server.getConfigurationManager().playerEntityList) {
-            if (player.getUniqueID().equals(playerId)) {
+            if (player.getUniqueID()
+                .equals(playerId)) {
                 return player;
             }
         }

@@ -25,8 +25,8 @@ public enum Mixins implements IMixins {
         .setPhase(Phase.EARLY)),
 
     // COOLDOWN
-    COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("cooldown.MixinEntityPlayer")
-        .addClientMixins("cooldown.MixinRenderItem")
+    COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("entity.cooldown.MixinEntityPlayer")
+        .addClientMixins("entity.cooldown.MixinRenderItem")
         .setPhase(Phase.EARLY)),
 
     // EVENT
@@ -75,8 +75,8 @@ public enum Mixins implements IMixins {
 
     // PERMISSION
     PERMISSION(new MixinBuilder("Synchronize player permission levels between server and client")
-        .addCommonMixins("permission.MixinEntityPlayerMP", "permission.MixinServerConfigurationManager")
-        .addClientMixins("permission.MixinEntityPlayerSP")
+        .addCommonMixins("entity.permission.MixinEntityPlayerMP", "entity.permission.MixinServerConfigurationManager")
+        .addClientMixins("entity.permission.MixinEntityPlayerSP")
         .setPhase(Phase.EARLY)),
 
     // Tag

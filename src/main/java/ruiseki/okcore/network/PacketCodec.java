@@ -27,7 +27,7 @@ import com.google.common.collect.Maps;
 
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.EncoderException;
-import ruiseki.okcore.client.audio.RecordData;
+import ruiseki.okcore.client.audio.record.RecordData;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
 import ruiseki.okcore.datastructure.DimPos;

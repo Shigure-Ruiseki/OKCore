@@ -1,4 +1,4 @@
-package ruiseki.okcore.client.audio;
+package ruiseki.okcore.client.audio.record;
 
 import net.minecraft.item.ItemRecord;
 import net.minecraft.util.ResourceLocation;

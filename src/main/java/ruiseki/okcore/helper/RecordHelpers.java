@@ -12,8 +12,8 @@ import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
-import ruiseki.okcore.client.audio.RecordData;
-import ruiseki.okcore.client.audio.RecordDataRegistry;
+import ruiseki.okcore.client.audio.record.RecordData;
+import ruiseki.okcore.client.audio.record.RecordDataRegistry;
 import ruiseki.okcore.network.packet.PacketRecordSoundData;
 
 /**

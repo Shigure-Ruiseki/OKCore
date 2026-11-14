@@ -1,4 +1,4 @@
-package ruiseki.okcore.mixins.early.permission;
+package ruiseki.okcore.mixins.early.entity.permission;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 

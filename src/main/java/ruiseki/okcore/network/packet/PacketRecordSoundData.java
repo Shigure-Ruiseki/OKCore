@@ -4,8 +4,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 
-import ruiseki.okcore.client.audio.RecordData;
-import ruiseki.okcore.client.audio.RecordDataRegistry;
+import ruiseki.okcore.client.audio.record.RecordData;
+import ruiseki.okcore.client.audio.record.RecordDataRegistry;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 

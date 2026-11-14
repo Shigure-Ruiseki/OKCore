@@ -1,4 +1,4 @@
-package ruiseki.okcore.mixins.early.cooldown;
+package ruiseki.okcore.mixins.early.entity.cooldown;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;

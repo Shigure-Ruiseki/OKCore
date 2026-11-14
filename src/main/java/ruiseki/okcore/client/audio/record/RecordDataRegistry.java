@@ -29,8 +29,7 @@ public class RecordDataRegistry {
     public static RecordData getData(ItemRecord record) {
         String recordName = record.recordName;
         if (recordName == null) return null;
-        RecordData data = CACHE.getIfPresent(recordName);
-        return data != null ? data : null;
+        return CACHE.getIfPresent(recordName);
     }
 
     public static int getDurationTicks(ItemRecord record) {

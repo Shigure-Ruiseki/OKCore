@@ -61,4 +61,22 @@ public class MixinServerConfigurationManager {
         OKCore._instance.getPacketHandler()
             .sendToPlayer(new PacketPermissionLevel(level), player);
     }
+
+    // OP
+    @Inject(method = "func_152605_a(Lcom/mojang/authlib/GameProfile;)V", at = @At("RETURN"))
+    private void okcore$onAddOp(GameProfile profile, CallbackInfo ci) {
+        this.okcore$updatePlayerPermissionLevel(profile);
+    }
+
+    // DEOP
+    @Inject(method = "func_152610_b(Lcom/mojang/authlib/GameProfile;)V", at = @At("RETURN"))
+    private void okcore$onRemoveOp(GameProfile profile, CallbackInfo ci) {
+        this.okcore$updatePlayerPermissionLevel(profile);
+    }
+
+    @Unique
+    private void okcore$updatePlayerPermissionLevel(GameProfile profile) {
+        EntityPlayerMP playerMP = PlayerHelpers.getPlayerByUUID(this.mcServer, profile.getId());
+        if (playerMP != null) this.okcore$sendPlayerPermissionLevel(playerMP);
+    }
 }

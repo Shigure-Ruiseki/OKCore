@@ -111,7 +111,7 @@ public class RecordHelpers {
             try (InputStream is = openRecordOgg(soundEvent)) {
                 if (is == null) return;
 
-                RecordData data = readOggData("record." + record.recordName, is);
+                RecordData data = readOggData("records." + record.recordName, is);
                 if (data == null) return;
 
                 RecordDataRegistry.putData(record.recordName, data);

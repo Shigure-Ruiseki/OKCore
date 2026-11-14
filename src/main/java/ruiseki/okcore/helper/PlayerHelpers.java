@@ -232,6 +232,13 @@ public class PlayerHelpers {
     @ApiStatus.Internal
     public static int getPermissionLevel(GameProfile profile) {
         MinecraftServer server = MinecraftServer.getServer();
+        if (server == null || profile == null) return 0;
+
+        String serverOwner = server.getServerOwner();
+        if (serverOwner != null && serverOwner.equalsIgnoreCase(profile.getName())) {
+            return server.getOpPermissionLevel();
+        }
+
         UserListOps ops = server.getConfigurationManager()
             .func_152603_m();
         UserListOpsEntry entry = (UserListOpsEntry) ops.func_152683_b(profile);

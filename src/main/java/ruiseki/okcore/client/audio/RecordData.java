@@ -1,12 +1,22 @@
 package ruiseki.okcore.client.audio;
 
 import net.minecraft.item.ItemRecord;
+import net.minecraft.util.ResourceLocation;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 public final class RecordData {
 
     private final String recordName;
+
+    @SideOnly(Side.CLIENT)
+    private ItemRecord itemRecord;
+
+    @SideOnly(Side.CLIENT)
+    private ResourceLocation recordResource;
+
     private final int durationTicks;
     private final int sampleRate;
     private final long totalSamples;
@@ -18,8 +28,21 @@ public final class RecordData {
         this.totalSamples = totalSamples;
     }
 
+    @SideOnly(Side.CLIENT)
     public ItemRecord getItemRecord() {
-        return ItemRecord.getRecord(this.recordName);
+        if (this.itemRecord == null) {
+            this.itemRecord = ItemRecord.getRecord(this.recordName);
+        }
+        return this.itemRecord;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public ResourceLocation getRecordResource() {
+        if (this.recordResource == null) {
+            this.recordResource = this.getItemRecord()
+                .getRecordResource(this.recordName);
+        }
+        return this.recordResource;
     }
 
     public String getRecordName() {

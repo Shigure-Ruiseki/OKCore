@@ -4,7 +4,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 
-import ruiseki.okcore.datastructure.BlockPos;
+import org.joml.Vector3d;
+
+import ruiseki.okcore.helper.VectorHelpers;
 
 public class EntityBoundSound extends SoundExtended implements IEntitySound {
 
@@ -36,7 +38,7 @@ public class EntityBoundSound extends SoundExtended implements IEntitySound {
     }
 
     @Override
-    public BlockPos getPosition() {
-        return new BlockPos(this.entity);
+    public Vector3d getPosition() {
+        return VectorHelpers.createVector3d(this.entity);
     }
 }

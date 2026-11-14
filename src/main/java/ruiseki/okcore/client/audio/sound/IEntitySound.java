@@ -1,8 +1,8 @@
 package ruiseki.okcore.client.audio.sound;
 
-import ruiseki.okcore.datastructure.BlockPos;
+import org.joml.Vector3d;
 
 public interface IEntitySound {
 
-    BlockPos getPosition();
+    Vector3d getPosition();
 }

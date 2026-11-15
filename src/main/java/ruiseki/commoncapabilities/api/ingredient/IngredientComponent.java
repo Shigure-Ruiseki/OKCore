@@ -146,7 +146,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Get the given capability.
-     * 
+     *
      * @param capability The capability to get.
      * @param <TC>       The capability type.
      * @return The lazy optional capability instance.
@@ -191,7 +191,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Wrap the given instance inside an equals, hashCode and compareTo-safe holder.
-     * 
+     *
      * @param instance An instance.
      * @return The wrapped instance.
      */
@@ -209,7 +209,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Set the storage wrapper handler for this component.
-     * 
+     *
      * @param capability            The capability for the storage wrapper.
      * @param storageWrapperHandler The storage wrapper handler.
      * @param <S>                   The capability type.
@@ -234,7 +234,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Get the storage wrapper handler for this component.
-     * 
+     *
      * @param capability The capability to get the storage wrapper for.
      * @param <S>        The external storage type.
      * @return The storage wrapper handler, can be null if none has been assigned.
@@ -254,7 +254,7 @@ public final class IngredientComponent<T, M>
 
     /**
      * Get the ingredient component that was attached to the given storage capability.
-     * 
+     *
      * @param capability A storage capability.
      * @return The attached ingredient component, or null.
      */

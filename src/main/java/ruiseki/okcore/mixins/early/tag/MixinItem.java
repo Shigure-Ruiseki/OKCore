@@ -12,12 +12,12 @@ import ruiseki.okcore.helper.TagHelpers;
 
 @Mixin(Item.class)
 @Implements({ @Interface(iface = IUniqueIndex.class, prefix = "okcoreid$") })
-public class MixinItem {
+public class MixinItem implements IUniqueIndex {
 
     @Unique
     private static int okcore$NEXT_UNIQUE_ID = -1;
     @Unique
-    private final int hogutils$taggingHash = okcore$getNextID();
+    private final int okcore$taggingHash = okcore$getNextID();
 
     @Unique
     private int okcore$getNextID() {
@@ -25,7 +25,8 @@ public class MixinItem {
         return okcore$NEXT_UNIQUE_ID;
     }
 
-    public int okcoreid$getUniqueID() {
-        return hogutils$taggingHash;
+    @Override
+    public int okcore$getUniqueID() {
+        return this.okcore$taggingHash;
     }
 }

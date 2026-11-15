@@ -1,10 +1,10 @@
-package ruiseki.okcore.mixins.early.itemSharedNBT;
+package ruiseki.okcore.mixins.early.sharedNBT;
 
 import java.io.IOException;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.client.C0EPacketClickWindow;
+import net.minecraft.network.play.client.C10PacketCreativeInventoryAction;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,8 +15,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import ruiseki.okcore.helper.PacketHelpers;
 import ruiseki.okcore.item.IItemSharedTag;
 
-@Mixin(C0EPacketClickWindow.class)
-public abstract class MixinC0EPacketClickWindow {
+@Mixin(C10PacketCreativeInventoryAction.class)
+public abstract class MixinC10PacketCreativeInventoryAction {
 
     @WrapOperation(
         method = "writePacketData",

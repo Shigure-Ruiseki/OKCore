@@ -28,7 +28,7 @@ public class PacketPermissionLevel extends PacketCodec {
 
     @Override
     public void actionClient(World world, EntityPlayer player) {
-        ((IPlayerPermission) player).setPermissionLevel(level);
+        ((IPlayerPermission) player).okcore$setPermissionLevel(level);
     }
 
     @Override

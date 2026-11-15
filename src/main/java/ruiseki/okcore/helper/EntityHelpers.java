@@ -17,10 +17,8 @@ public class EntityHelpers {
     public static ItemCooldowns getItemCooldowns(EntityPlayer player) {
         if (player == null) return null;
         try {
-            ICooldownHandler provider = (ICooldownHandler) (Object) player;
-
-            return provider.getItemCooldowns();
-
+            ICooldownHandler provider = (ICooldownHandler) player;
+            return provider.okcore$getItemCooldowns();
         } catch (ClassCastException ignored) {
             return null;
         }

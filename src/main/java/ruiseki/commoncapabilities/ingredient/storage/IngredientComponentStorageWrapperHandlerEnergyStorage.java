@@ -22,7 +22,7 @@ import ruiseki.okcore.ingredient.collection.FilteredIngredientCollectionIterator
 
 /**
  * Energy storage wrapper handler for {@link IEnergyStorage}.
- * 
+ *
  * @author rubensworks
  */
 public class IngredientComponentStorageWrapperHandlerEnergyStorage

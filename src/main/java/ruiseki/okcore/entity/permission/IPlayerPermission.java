@@ -2,9 +2,9 @@ package ruiseki.okcore.entity.permission;
 
 public interface IPlayerPermission {
 
-    int getPermissionLevel();
+    int okcore$getPermissionLevel();
 
-    void setPermissionLevel(int level);
+    void okcore$setPermissionLevel(int level);
 
-    boolean hasPermissions(int level);
+    boolean okcore$hasPermissions(int level);
 }

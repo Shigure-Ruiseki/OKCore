@@ -1,5 +1,5 @@
 
-package ruiseki.okcore.mixins.early.itemSharedNBT;
+package ruiseki.okcore.mixins.early.sharedNBT;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;

@@ -9,15 +9,14 @@ public enum Mixins implements IMixins {
 
     // EARLY
     // CAPABILITIES
-    ITEM_CAPABILITIES(new MixinBuilder("Add capabilities to Item").addCommonMixins("capabilities.MixinItemStackCap")
-        .setPhase(Phase.EARLY)),
-    ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Entity").addCommonMixins("capabilities.MixinEntityCap")
-        .setPhase(Phase.EARLY)),
-    TILE_ENTITY_CAPABILITIES(new MixinBuilder("Add capabilities to Tile Entity")
-        .addCommonMixins("capabilities.MixinTileEntity", "capabilities.MixinTileEntityChest")
-        .setPhase(Phase.EARLY)),
-    CHUNK_CAPABILITIES(new MixinBuilder("Add capabilities to Chunk")
-        .addCommonMixins("capabilities.MixinChunk", "capabilities.MixinAnvilChunkLoader")
+    CAPABILITIES(new MixinBuilder("Add capabilities")
+        .addCommonMixins(
+            "capabilities.MixinItemStackCap",
+            "capabilities.MixinEntityCap",
+            "capabilities.MixinTileEntity",
+            "capabilities.MixinTileEntityChest",
+            "capabilities.MixinChunk",
+            "capabilities.MixinAnvilChunkLoader")
         .setPhase(Phase.EARLY)),
 
     // GUI
@@ -56,10 +55,10 @@ public enum Mixins implements IMixins {
     // SHARED_NBT
     ITEM_SHARED_NBT(new MixinBuilder("Add shared nbt to Item")
         .addCommonMixins(
-            "itemSharedNBT.MixinC0EPacketClickWindow",
-            "itemSharedNBT.MixinC10PacketCreativeInventoryAction",
-            "itemSharedNBT.MixinNetHandlerPlayServer",
-            "itemSharedNBT.MixinPacketBuffer")
+            "sharedNBT.MixinC0EPacketClickWindow",
+            "sharedNBT.MixinC10PacketCreativeInventoryAction",
+            "sharedNBT.MixinNetHandlerPlayServer",
+            "sharedNBT.MixinPacketBuffer")
         .setPhase(Phase.EARLY)),
 
     // GTNHLIB

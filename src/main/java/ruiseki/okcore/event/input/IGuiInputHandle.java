@@ -2,11 +2,11 @@ package ruiseki.okcore.event.input;
 
 public interface IGuiInputHandle {
 
-    void setMouseHandled(boolean handled);
+    void okcore$setMouseHandled(boolean handled);
 
-    boolean isMouseHandled();
+    boolean okcore$isMouseHandled();
 
-    void setKeyHandled(boolean handled);
+    void okcore$setKeyHandled(boolean handled);
 
-    boolean isKeyHandled();
+    boolean okcore$isKeyHandled();
 }

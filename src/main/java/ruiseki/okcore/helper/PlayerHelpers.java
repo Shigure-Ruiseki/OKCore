@@ -247,12 +247,12 @@ public class PlayerHelpers {
 
     public static int getPermissionLevel(EntityPlayer player) {
         if (!(player instanceof IPlayerPermission permission)) return 0;
-        return permission.getPermissionLevel();
+        return permission.okcore$getPermissionLevel();
     }
 
     public static boolean hasPermissions(EntityPlayer player, int level) {
         if (!(player instanceof IPlayerPermission permission)) return false;
-        return permission.hasPermissions(level);
+        return permission.okcore$hasPermissions(level);
     }
 
     public static EntityPlayerMP getPlayerByUUID(MinecraftServer server, UUID playerId) {

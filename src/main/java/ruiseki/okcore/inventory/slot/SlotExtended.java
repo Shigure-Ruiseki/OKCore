@@ -60,12 +60,12 @@ public class SlotExtended extends Slot implements ISlotBackground, SlotRenderEve
     }
 
     @Override
-    public int getSlotX() {
+    public int okcore$getSlotX() {
         return this.xDisplayPosition;
     }
 
     @Override
-    public int getSlotY() {
+    public int okcore$getSlotY() {
         return this.yDisplayPosition;
     }
 }

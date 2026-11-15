@@ -22,5 +22,5 @@ public interface IUniqueIndex {
      *
      * @return the unique runtime identifier used for packed {@code long} keys
      */
-    int getUniqueID();
+    int okcore$getUniqueID();
 }

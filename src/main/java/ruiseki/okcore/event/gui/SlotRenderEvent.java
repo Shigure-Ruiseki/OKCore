@@ -160,13 +160,13 @@ public abstract class SlotRenderEvent extends Event {
          *
          * @return the X rendering coordinate
          */
-        int getSlotX();
+        int okcore$getSlotX();
 
         /**
          * Returns the vertical position used to render the slot content.
          *
          * @return the Y rendering coordinate
          */
-        int getSlotY();
+        int okcore$getSlotY();
     }
 }

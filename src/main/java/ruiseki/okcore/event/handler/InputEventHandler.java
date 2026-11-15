@@ -97,7 +97,7 @@ public class InputEventHandler {
                                 .sendToServer(new PacketItemToggle(sendSlotNumber, button));
 
                             if (gui instanceof IGuiInputHandle handle) {
-                                handle.setMouseHandled(true);
+                                handle.okcore$setMouseHandled(true);
                             }
 
                             event.setCanceled(true);
@@ -115,7 +115,7 @@ public class InputEventHandler {
             if (handler.handleMouseInput(event)) {
                 event.setCanceled(true);
                 if (event.gui instanceof IGuiInputHandle inputHandle) {
-                    inputHandle.setMouseHandled(true);
+                    inputHandle.okcore$setMouseHandled(true);
                 }
             }
         }
@@ -128,7 +128,7 @@ public class InputEventHandler {
             if (handler.handleKeyboardInput(event)) {
                 event.setCanceled(true);
                 if (event.gui instanceof IGuiInputHandle inputHandle) {
-                    inputHandle.setKeyHandled(true);
+                    inputHandle.okcore$setKeyHandled(true);
                 }
             }
         }

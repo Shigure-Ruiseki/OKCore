@@ -6,8 +6,11 @@ import net.minecraft.util.Vec3;
 
 import org.joml.Vector3d;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.helper.VectorHelpers;
 
+@SideOnly(Side.CLIENT)
 public class EntityBoundSound extends SoundExtended implements IEntitySound {
 
     private final Entity entity;

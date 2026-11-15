@@ -20,5 +20,4 @@ public class ClientProxy extends ClientProxyComponent {
     public ModBase getMod() {
         return CommonCapabilities._instance;
     }
-
 }

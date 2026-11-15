@@ -4,11 +4,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 
-import ruiseki.okcore.client.audio.record.RecordData;
-import ruiseki.okcore.client.audio.record.RecordDataRegistry;
+import ruiseki.okcore.audio.record.RecordData;
+import ruiseki.okcore.audio.record.ServerRecordDataHandler;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
+/**
+ * C -> S Client send data to Server
+ */
 public class PacketRecordSoundData extends PacketCodec {
 
     @CodecField
@@ -34,7 +37,8 @@ public class PacketRecordSoundData extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (recordName == null || recordName.isEmpty() || recordData == null) return;
-        RecordDataRegistry.putData(recordName, recordData);
+        if (player == null || recordName == null || recordName.isEmpty() || recordData == null) return;
+        if (!recordData.isValid()) return;
+        ServerRecordDataHandler.putData(player.getUniqueID(), recordName, recordData);
     }
 }

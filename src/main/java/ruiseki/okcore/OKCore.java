@@ -25,7 +25,9 @@ import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.data.DatapackLoader;
 import ruiseki.okcore.enums.Mods;
+import ruiseki.okcore.event.handler.ClientResourceReloadHandler;
 import ruiseki.okcore.helper.CraftingHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.RecipeManager;
@@ -94,6 +96,9 @@ public class OKCore extends ModBaseVersionable {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+        if (MinecraftHelpers.isClientSide()) {
+            ClientResourceReloadHandler.register();
+        }
     }
 
     @Override

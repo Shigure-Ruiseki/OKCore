@@ -4,6 +4,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.audio.record.ServerRecordDataHandler;
 import ruiseki.okcore.event.handler.CooldownEventHandler;
 import ruiseki.okcore.event.handler.InteractionEventHandler;
 import ruiseki.okcore.event.handler.RecipeRemainingItemsHandler;
@@ -16,6 +17,7 @@ import ruiseki.okcore.network.packet.PacketItemToggle;
 import ruiseki.okcore.network.packet.PacketOpenGuiWithData;
 import ruiseki.okcore.network.packet.PacketPermissionLevel;
 import ruiseki.okcore.network.packet.PacketRecordSoundData;
+import ruiseki.okcore.network.packet.PacketResetRecordData;
 import ruiseki.okcore.network.packet.PacketSound;
 import ruiseki.okcore.network.packet.PacketSyncConfig;
 import ruiseki.okcore.network.packet.PacketSyncCursorStack;
@@ -49,6 +51,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(PacketUseEntityAt.class);
         packetHandler.register(PacketPermissionLevel.class);
         packetHandler.register(PacketRecordSoundData.class);
+        packetHandler.register(PacketResetRecordData.class);
     }
 
     @Override
@@ -62,6 +65,10 @@ public class CommonProxy extends CommonProxyComponent {
         FMLCommonHandler.instance()
             .bus()
             .register(RecipeRemainingItemsHandler.INSTANCE);
+
+        FMLCommonHandler.instance()
+            .bus()
+            .register(ServerRecordDataHandler.INSTANCE);
     }
 
     @Override

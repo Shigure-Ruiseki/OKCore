@@ -133,14 +133,6 @@ public class GlStateManager {
         GL11.glColorMask(red, green, blue, alpha);
     }
 
-    public static void clearDepth(double depth) {
-        GL11.glClearDepth(depth);
-    }
-
-    public static void clear(int mask) {
-        GL11.glClear(mask);
-    }
-
     public static void matrixMode(int mode) {
         GL11.glMatrixMode(mode);
     }
@@ -195,6 +187,22 @@ public class GlStateManager {
 
     public static void color(float colorRed, float colorGreen, float colorBlue, float colorAlpha) {
         GL11.glColor4f(colorRed, colorGreen, colorBlue, colorAlpha);
+    }
+
+    public static void clearColor(float red, float green, float blue, float alpha) {
+        GL11.glClearColor(red, green, blue, alpha);
+    }
+
+    public static void clearDepth(double depth) {
+        GL11.glClearDepth(depth);
+    }
+
+    public static void clear(int mask) {
+        GL11.glClear(mask);
+    }
+
+    public static void ortho(double left, double right, double bottom, double top, double zNear, double zFar) {
+        GL11.glOrtho(left, right, bottom, top, zNear, zFar);
     }
 
     public enum DestFactor {

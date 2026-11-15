@@ -34,7 +34,6 @@ import ruiseki.okcore.registries.RegistryEvent;
 @Mod(
     modid = Reference.MOD_ID,
     name = Reference.MOD_NAME,
-    useMetadata = true,
     version = Reference.MOD_VERSION,
     dependencies = Reference.MOD_DEPENDENCIES,
     guiFactory = "ruiseki.commoncapabilities.GuiConfigOverview$ExtendedConfigGuiFactory")

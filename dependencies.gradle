@@ -41,6 +41,9 @@ configurations {
 def fplibVersion = "1.11.0"
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
+    testRuntimeOnly("org.joml:joml:1.10.8")
+
     deploader("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader") // LGPL 3.0
     shadowImplementation("com.falsepattern:falsepatternlib-mc1.7.10:${fplibVersion}:deploader_stub") // LGPL 3.0
 

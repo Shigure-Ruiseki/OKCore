@@ -36,7 +36,8 @@ public class RecordHelpers {
 
     public static int getDurationTicks(EntityPlayer player, ItemRecord record) {
         if (record == null || record.recordName == null) return 0;
-        return getData(player, record).getDurationTicks();
+        RecordData data = getData(record);
+        return data != null ? data.getDurationTicks() : 0;
     }
 
     public static int getDurationTicks(EntityPlayer player, ItemStack stack) {

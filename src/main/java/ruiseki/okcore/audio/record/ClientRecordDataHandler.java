@@ -1,52 +1,56 @@
 
 package ruiseki.okcore.audio.record;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import net.minecraft.item.ItemRecord;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.event.resource.ResourceEvent;
 
 public class ClientRecordDataHandler {
 
-    public static ClientRecordDataHandler INSTANCE = new ClientRecordDataHandler();
+    public static final ClientRecordDataHandler INSTANCE = new ClientRecordDataHandler();
 
-    private static final Map<String, RecordData> CACHE = new ConcurrentHashMap<>();
+    private static final int MAX_CACHE_SIZE = 256;
+    private static final Cache<String, RecordData> CACHE = CacheBuilder.newBuilder()
+        .maximumSize(MAX_CACHE_SIZE)
+        .build();
 
-    public ClientRecordDataHandler() {}
+    private ClientRecordDataHandler() {}
 
     public static RecordData getData(ItemRecord record) {
-        return getData(record.recordName);
+        return record != null ? getData(record.recordName) : null;
     }
 
     public static RecordData getData(String recordName) {
-        return recordName != null ? CACHE.get(recordName) : null;
+        return recordName != null ? CACHE.getIfPresent(recordName) : null;
     }
 
     public static void putData(String recordName, RecordData data) {
-        if (recordName == null || data == null || data.getDurationTicks() <= 0) return;
+        if (recordName == null || data == null) return;
+        if (data.getDurationTicks() <= 0) return;
+
         CACHE.put(recordName, data);
     }
 
     public static boolean hasData(String recordName) {
-        return recordName != null && CACHE.containsKey(recordName);
+        return recordName != null && CACHE.getIfPresent(recordName) != null;
     }
 
     public static void removeData(String recordName) {
-        if (recordName != null) CACHE.remove(recordName);
+        if (recordName != null) {
+            CACHE.invalidate(recordName);
+        }
     }
 
     public static void clear() {
-        CACHE.clear();
+        CACHE.invalidateAll();
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
     public void onReloadResource(ResourceEvent.Post event) {
-        ClientRecordDataHandler.clear();
+        clear();
     }
 }

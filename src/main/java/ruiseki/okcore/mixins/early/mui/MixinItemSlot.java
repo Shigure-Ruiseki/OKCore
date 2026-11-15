@@ -2,8 +2,6 @@ package ruiseki.okcore.mixins.early.mui;
 
 import net.minecraftforge.common.MinecraftForge;
 
-import org.spongepowered.asm.mixin.Implements;
-import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,8 +15,7 @@ import com.cleanroommc.modularui.widgets.slot.ItemSlot;
 import ruiseki.okcore.event.gui.SlotRenderEvent;
 
 @Mixin(ItemSlot.class)
-@Implements({ @Interface(iface = SlotRenderEvent.ISlotRenderPosition.class, prefix = "okcorecxy$") })
-public abstract class MixinItemSlot {
+public abstract class MixinItemSlot implements SlotRenderEvent.ISlotRenderPosition {
 
     @Inject(method = "draw", at = @At("HEAD"), remap = false, cancellable = true)
     private void okcore$renderPre(ModularGuiContext context, WidgetThemeEntry<?> widgetTheme, CallbackInfo ci) {
@@ -26,8 +23,8 @@ public abstract class MixinItemSlot {
             new SlotRenderEvent.Pre(
                 this.okcore$getThis()
                     .getSlot(),
-                this.okcorecxy$getSlotX(),
-                this.okcorecxy$getSlotY()))) {
+                this.okcore$getSlotX(),
+                this.okcore$getSlotY()))) {
             ci.cancel();
         }
     }
@@ -38,8 +35,8 @@ public abstract class MixinItemSlot {
             new SlotRenderEvent.Post(
                 this.okcore$getThis()
                     .getSlot(),
-                this.okcorecxy$getSlotX(),
-                this.okcorecxy$getSlotY()));
+                this.okcore$getSlotX(),
+                this.okcore$getSlotY()));
     }
 
     @Unique
@@ -47,11 +44,13 @@ public abstract class MixinItemSlot {
         return (ItemSlot) (Object) this;
     }
 
-    public int okcorecxy$getSlotX() {
+    @Override
+    public int okcore$getSlotX() {
         return 1;
     }
 
-    public int okcorecxy$getSlotY() {
+    @Override
+    public int okcore$getSlotY() {
         return 1;
     }
 }

@@ -28,8 +28,7 @@ public abstract class MixinInventoryEffectRenderer extends GuiContainer {
         at = @At(
             value = "FIELD",
             target = "Lnet/minecraft/client/renderer/InventoryEffectRenderer;guiLeft:I",
-            opcode = 181,
-            shift = At.Shift.BEFORE),
+            opcode = 181),
         cancellable = true)
     private void onPotionShift(CallbackInfo ci) {
         PotionShiftEvent event = new PotionShiftEvent(this);

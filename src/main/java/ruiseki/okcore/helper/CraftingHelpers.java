@@ -289,20 +289,8 @@ public class CraftingHelpers {
                 ItemStack stack = getInventoryCrafting().getStackInSlot(i);
                 hash = hash << 1;
                 if (stack != null) {
-                    hash |= getItemStackHashCode(stack);
+                    hash |= ItemHelpers.getHashCode(stack);
                 }
-            }
-            return hash;
-        }
-
-        private int getItemStackHashCode(ItemStack stack) {
-            if (stack == null) return 0;
-            int hash = stack.getItem()
-                .hashCode();
-            hash = 31 * hash + stack.getItemDamage();
-            if (stack.hasTagCompound()) {
-                hash = 31 * hash + stack.getTagCompound()
-                    .hashCode();
             }
             return hash;
         }

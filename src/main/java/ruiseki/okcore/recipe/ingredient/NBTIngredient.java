@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.RecipeRegistry;
 
@@ -39,8 +40,8 @@ public class NBTIngredient extends Ingredient {
             return false;
         }
 
-        NBTTagCompound tag1 = this.stack.getTagCompound();
-        NBTTagCompound tag2 = input.getTagCompound();
+        NBTTagCompound tag1 = ItemHelpers.getTagCompound(this.stack);
+        NBTTagCompound tag2 = ItemHelpers.getTagCompound(input);
 
         if (tag1 == tag2) return true;
         if (tag1 == null || tag2 == null) return false;
@@ -66,15 +67,15 @@ public class NBTIngredient extends Ingredient {
             RecipeRegistry.getID(Serializer.INSTANCE)
                 .toString());
 
-        String itemName = Item.itemRegistry.getNameForObject(stack.getItem());
+        String itemName = Item.itemRegistry.getNameForObject(ItemHelpers.getItem(stack));
         json.addProperty("item", itemName != null ? itemName : "");
 
-        json.addProperty("count", stack.stackSize);
+        json.addProperty("count", ItemHelpers.getCount(stack));
 
-        if (stack.hasTagCompound()) {
+        if (ItemHelpers.hasTagCompound(stack)) {
             json.addProperty(
                 "nbt",
-                stack.getTagCompound()
+                ItemHelpers.getTagCompound(stack)
                     .toString());
         }
 

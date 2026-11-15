@@ -15,7 +15,7 @@ import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
-import ruiseki.okcore.item.handler.InventoryHandler;
+import ruiseki.okcore.item.handler.IItemHandlerStackLimit;
 import ruiseki.okcore.tag.TagKey;
 
 public class InventorySorter {
@@ -172,7 +172,7 @@ public class InventorySorter {
         ItemStack stack = current.getStack()
             .copy();
 
-        int slotLimit = handler instanceof InventoryHandler inventoryHandler
+        int slotLimit = handler instanceof IItemHandlerStackLimit inventoryHandler
             ? inventoryHandler.getStackLimit(slot, stack)
             : handler.getSlotLimit(slot);
 
@@ -180,13 +180,19 @@ public class InventorySorter {
         if (placed <= 0) return 0;
 
         ItemHelpers.setCount(stack, placed);
+        if (ItemHelpers.isEmpty(stack)) return 0;
 
         ItemStack existing = handler.getStackInSlot(slot);
-        if (!ItemHelpers.areItemsEqual(existing, stack) || ItemHelpers.getCount(existing) != placed) {
+        if (ItemHelpers.isEmpty(existing) || !ItemHelpers.areItemsEqual(existing, stack)
+            || ItemHelpers.getCount(existing) != placed) {
             handler.setStackInSlot(slot, stack);
         }
 
         ItemStack result = handler.getStackInSlot(slot);
-        return ItemHelpers.areItemsEqual(result, stack) ? Math.min(placed, ItemHelpers.getCount(result)) : 0;
+        if (ItemHelpers.isEmpty(result) || !ItemHelpers.areItemsEqual(result, stack)) {
+            return 0;
+        }
+
+        return Math.min(placed, ItemHelpers.getCount(result));
     }
 }

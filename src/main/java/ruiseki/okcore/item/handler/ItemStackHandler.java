@@ -1,6 +1,5 @@
 package ruiseki.okcore.item.handler;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -9,7 +8,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -18,9 +16,9 @@ import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
-public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSerializable {
+public class ItemStackHandler implements IItemHandlerSimpleModifiable, IItemHandlerStackLimit, INBTSerializable {
 
-    protected List<ItemStack> stacks;
+    protected NonNullList<ItemStack> stacks;
 
     public ItemStackHandler() {
         this(1);
@@ -31,11 +29,13 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
     }
 
     public ItemStackHandler(List<ItemStack> stacks) {
-        this.stacks = stacks != null ? stacks : new ArrayList<>();
+        this.stacks = stacks == null ? NonNullList.withSize(0, ItemHelpers.EMPTY)
+            : NonNullList.from(ItemHelpers.EMPTY, stacks.toArray(new ItemStack[0]));
     }
 
     public ItemStackHandler(ItemStack[] stacks) {
-        this.stacks = stacks != null ? NonNullList.from(ItemHelpers.EMPTY, stacks) : new ArrayList<>();
+        this.stacks = stacks == null ? NonNullList.withSize(0, ItemHelpers.EMPTY)
+            : NonNullList.from(ItemHelpers.EMPTY, stacks);
     }
 
     public void setEmpty() {
@@ -84,13 +84,13 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
                     return stack;
                 }
 
-                limit -= existing.stackSize;
+                limit -= ItemHelpers.getCount(existing);
             }
 
             if (limit <= 0) {
                 return stack;
             } else {
-                boolean reachedLimit = stack.stackSize > limit;
+                boolean reachedLimit = ItemHelpers.getCount(stack) > limit;
                 if (!simulate) {
                     if (ItemHelpers.isEmpty(existing)) {
                         this.stacks.set(
@@ -98,13 +98,13 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
                             reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, limit)
                                 : ItemHelpers.copy(stack));
                     } else {
-                        ItemHelpers.grow(existing, reachedLimit ? limit : stack.stackSize);
+                        ItemHelpers.grow(existing, reachedLimit ? limit : ItemHelpers.getCount(stack));
                     }
 
                     this.onContentsChanged(slot);
                 }
 
-                return reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, stack.stackSize - limit)
+                return reachedLimit ? ItemHandlerHelpers.copyStackWithSize(stack, ItemHelpers.getCount(stack) - limit)
                     : ItemHelpers.EMPTY;
             }
         }
@@ -164,7 +164,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
                 return ItemHelpers.EMPTY;
             } else {
                 int toExtract = Math.min(amount, existing.getMaxStackSize());
-                if (existing.stackSize <= toExtract) {
+                if (ItemHelpers.getCount(existing) <= toExtract) {
                     if (!simulate) {
                         this.stacks.set(slot, ItemHelpers.EMPTY);
                         this.onContentsChanged(slot);
@@ -173,8 +173,9 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
                     return existing;
                 } else {
                     if (!simulate) {
-                        this.stacks
-                            .set(slot, ItemHandlerHelpers.copyStackWithSize(existing, existing.stackSize - toExtract));
+                        this.stacks.set(
+                            slot,
+                            ItemHandlerHelpers.copyStackWithSize(existing, ItemHelpers.getCount(existing) - toExtract));
                         this.onContentsChanged(slot);
                     }
 
@@ -185,14 +186,43 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
     }
 
     @Override
+    public ItemStack extractItem(ItemStack stack, boolean simulate) {
+        if (ItemHelpers.isEmpty(stack)) return ItemHelpers.EMPTY;
+
+        int remaining = ItemHelpers.getCount(stack);
+        ItemStack extractedStack = ItemHelpers.EMPTY;
+
+        for (int slot = 0; slot < getSlots() && remaining > 0; slot++) {
+            ItemStack existing = this.getStackInSlot(slot);
+
+            if (ItemHelpers.isEmpty(existing)) continue;
+
+            if (!ItemHandlerHelpers.canItemStacksStack(stack, existing)) continue;
+
+            ItemStack extracted = this.extractItem(slot, remaining, simulate);
+
+            if (ItemHelpers.isEmpty(extracted)) continue;
+
+            if (ItemHelpers.isEmpty(extractedStack)) {
+                extractedStack = extracted.copy();
+            } else {
+                ItemHelpers.grow(extractedStack, ItemHelpers.getCount(extracted));
+            }
+
+            remaining -= ItemHelpers.getCount(extracted);
+        }
+
+        return extractedStack;
+    }
+
+    @Override
     public int getSlotLimit(int slot) {
         return 64;
     }
 
+    @Override
     public int getStackLimit(int slot, @Nullable ItemStack stack) {
-        if (ItemHelpers.isEmpty(stack)) {
-            return 0;
-        }
+        if (ItemHelpers.isEmpty(stack)) return 0;
         return Math.min(this.getSlotLimit(slot), stack.getMaxStackSize());
     }
 
@@ -210,8 +240,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
             if (!ItemHelpers.isEmpty(stack)) {
                 NBTTagCompound itemTag = new NBTTagCompound();
                 itemTag.setInteger("Slot", i);
-                stack.writeToNBT(itemTag);
-                itemTag.setInteger("Count", stack.stackSize);
+                ItemHelpers.writeToNBT(stack, itemTag);
                 nbtTagList.appendTag(itemTag);
             }
         }
@@ -231,10 +260,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
             NBTTagCompound itemTags = tagList.getCompoundTagAt(i);
             int slot = itemTags.getInteger("Slot");
             if (slot >= 0 && slot < this.stacks.size()) {
-                ItemStack loadedStack = ItemStack.loadItemStackFromNBT(itemTags);
-                if (!ItemHelpers.isEmpty(loadedStack) && itemTags.hasKey("Count", Constants.NBT.TAG_INT)) {
-                    loadedStack.stackSize = itemTags.getInteger("Count");
-                }
+                ItemStack loadedStack = ItemHelpers.readFromNBT(itemTags);
                 this.stacks.set(slot, ItemHelpers.isEmpty(loadedStack) ? ItemHelpers.EMPTY : loadedStack);
             }
         }
@@ -270,7 +296,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
         ItemStack stack = getStackInSlot(slot);
         if (ItemHelpers.isEmpty(stack)) return amount;
 
-        int oldCount = stack.stackSize;
+        int oldCount = ItemHelpers.getCount(stack);
         int toVoid = Math.min(oldCount, amount);
 
         ItemHelpers.shrink(stack, toVoid);
@@ -289,7 +315,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
         ItemStack stack = getStackInSlot(slot);
         if (ItemHelpers.isEmpty(stack)) return amount;
 
-        int oldCount = stack.stackSize;
+        int oldCount = ItemHelpers.getCount(stack);
         int max = stack.getMaxStackSize();
 
         int toAdd = Math.min(amount, max - oldCount);
@@ -304,7 +330,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
             return false;
         }
 
-        int remaining = stack.stackSize;
+        int remaining = ItemHelpers.getCount(stack);
 
         for (int i = 0; i < getSlots(); i++) {
             ItemStack slotStack = getStackInSlot(i);
@@ -312,7 +338,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
             if (ItemHelpers.isEmpty(slotStack)) {
                 remaining -= Math.min(stack.getMaxStackSize(), remaining);
             } else if (ItemHelpers.areItemsEqual(slotStack, stack)) {
-                int space = slotStack.getMaxStackSize() - slotStack.stackSize;
+                int space = slotStack.getMaxStackSize() - ItemHelpers.getCount(slotStack);
                 if (space > 0) {
                     remaining -= Math.min(space, remaining);
                 }
@@ -341,7 +367,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
             return 0;
         }
 
-        int remaining = stack.stackSize;
+        int remaining = ItemHelpers.getCount(stack);
 
         for (int i = 0; i < getSlots() && remaining > 0; i++) {
             ItemStack slotStack = getStackInSlot(i);
@@ -350,7 +376,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
 
             if (ItemHelpers.canStack(slotStack, stack)) {
                 int max = slotStack.getMaxStackSize();
-                int canAdd = max - slotStack.stackSize;
+                int canAdd = max - ItemHelpers.getCount(slotStack);
 
                 if (canAdd > 0) {
                     int toAdd = Math.min(canAdd, remaining);
@@ -368,7 +394,7 @@ public class ItemStackHandler implements IItemHandlerSimpleInserter, INBTSeriali
 
             ItemStack newStack = ItemHelpers.copy(stack);
             int toAdd = Math.min(newStack.getMaxStackSize(), remaining);
-            newStack.stackSize = toAdd;
+            ItemHelpers.setCount(newStack, toAdd);
 
             setStackInSlot(i, newStack);
             remaining -= toAdd;

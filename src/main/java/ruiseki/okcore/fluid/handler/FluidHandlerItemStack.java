@@ -15,6 +15,7 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProvider {
 
@@ -39,11 +40,11 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
 
     @Nullable
     public FluidStack getFluid() {
-        if (container == null || !container.hasTagCompound()) {
+        if (!ItemHelpers.hasTagCompound(this.getContainer())) {
             return null;
         }
 
-        NBTTagCompound tagCompound = container.getTagCompound();
+        NBTTagCompound tagCompound = ItemHelpers.getTagCompound(this.getContainer());
         if (tagCompound == null || !tagCompound.hasKey(FLUID_NBT_KEY)) {
             return null;
         }
@@ -51,22 +52,20 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
     }
 
     protected void setFluid(@Nullable FluidStack fluid) {
-        if (container == null) {
-            return;
-        }
+        if (ItemHelpers.isEmpty(this.getContainer())) return;
 
         if (fluid == null || fluid.amount <= 0) {
             setContainerToEmpty();
             return;
         }
 
-        if (!container.hasTagCompound()) {
-            container.setTagCompound(new NBTTagCompound());
+        if (!ItemHelpers.hasTagCompound(this.getContainer())) {
+            ItemHelpers.setTagCompound(this.getContainer(), new NBTTagCompound());
         }
 
         NBTTagCompound fluidTag = new NBTTagCompound();
         fluid.writeToNBT(fluidTag);
-        container.getTagCompound()
+        ItemHelpers.getTagCompound(this.getContainer())
             .setTag(FLUID_NBT_KEY, fluidTag);
     }
 
@@ -98,7 +97,7 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
-        if (container == null || container.stackSize != 1
+        if (ItemHelpers.isEmpty(this.getContainer()) || ItemHelpers.getCount(this.getContainer()) != 1
             || resource == null
             || resource.amount <= 0
             || capacity <= 0
@@ -151,7 +150,7 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
-        if (container == null || maxDrain <= 0 || container.stackSize != 1) {
+        if (ItemHelpers.isEmpty(container) || maxDrain <= 0 || ItemHelpers.getCount(container) != 1) {
             return FluidHelpers.EMPTY;
         }
 
@@ -194,12 +193,9 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
      * Can be used to swap out or destroy the container.
      */
     protected void setContainerToEmpty() {
-        if (container == null || !container.hasTagCompound()) {
-            return;
-        }
+        if (!ItemHelpers.hasTagCompound(this.getContainer())) return;
 
-        NBTTagCompound tagCompound = container.getTagCompound();
-
+        NBTTagCompound tagCompound = ItemHelpers.getTagCompound(this.getContainer());
         if (tagCompound != null) {
             tagCompound.removeTag(FLUID_NBT_KEY);
         }
@@ -227,10 +223,10 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
         @Override
         protected void setContainerToEmpty() {
             super.setContainerToEmpty();
-            if (container != null) {
-                container.stackSize--;
-                if (container.stackSize <= 0) {
-                    container = null;
+            if (!ItemHelpers.isEmpty(this.getContainer())) {
+                ItemHelpers.shrink(this.getContainer(), 1);
+                if (ItemHelpers.isEmpty(this.getContainer())) {
+                    container = ItemHelpers.EMPTY;
                 }
             }
         }
@@ -251,7 +247,7 @@ public class FluidHandlerItemStack implements IFluidHandlerItem, ICapabilityProv
         @Override
         protected void setContainerToEmpty() {
             super.setContainerToEmpty();
-            container = emptyContainer.copy();
+            container = ItemHelpers.copy(emptyContainer);
         }
     }
 }

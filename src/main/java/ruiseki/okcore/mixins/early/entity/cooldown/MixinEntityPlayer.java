@@ -1,10 +1,8 @@
-package ruiseki.okcore.mixins.early.cooldown;
+package ruiseki.okcore.mixins.early.entity.cooldown;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
-import org.spongepowered.asm.mixin.Implements;
-import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,8 +14,7 @@ import ruiseki.okcore.entity.cooldown.ItemCooldowns;
 import ruiseki.okcore.entity.cooldown.ItemCooldownsServer;
 
 @Mixin(EntityPlayer.class)
-@Implements(@Interface(iface = ICooldownHandler.class, prefix = "okcorecool$"))
-public abstract class MixinEntityPlayer {
+public abstract class MixinEntityPlayer implements ICooldownHandler {
 
     @Unique
     private ItemCooldowns okcore$itemCooldowm = this.okcore$createItemCooldowns();
@@ -38,7 +35,8 @@ public abstract class MixinEntityPlayer {
         }
     }
 
-    public ItemCooldowns okcorecool$getItemCooldowns() {
+    @Override
+    public ItemCooldowns okcore$getItemCooldowns() {
         return this.okcore$itemCooldowm;
     }
 }

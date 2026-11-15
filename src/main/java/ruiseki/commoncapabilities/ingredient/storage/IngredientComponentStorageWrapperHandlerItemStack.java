@@ -39,7 +39,7 @@ import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
  * Item storage wrapper handler for {@link IItemHandler}.
- * 
+ *
  * @author rubensworks
  */
 public class IngredientComponentStorageWrapperHandlerItemStack
@@ -153,7 +153,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
         public ItemStack extract(@Nonnull ItemStack prototype, Integer matchFlags, boolean simulate) {
             int slots = storage.getSlots();
             boolean checkStackSize = (matchFlags & ItemMatch.STACKSIZE) > 0;
-            int requiredStackSize = prototype.stackSize;
+            int requiredStackSize = ItemHelpers.getCount(prototype);
 
             // Maintain a temporary mapping of prototype items to their total count over all slots,
             // plus the list of slots in which they are present.
@@ -177,7 +177,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
 
                     // Update the counter and slot-list for our prototype
                     int newCount = existingValue.getLeft()
-                        .get() + extractedSimulated.stackSize;
+                        .get() + ItemHelpers.getCount(extractedSimulated);
                     existingValue.getLeft()
                         .set(newCount);
                     existingValue.getRight()
@@ -226,7 +226,7 @@ public class IngredientComponentStorageWrapperHandlerItemStack
                 int toExtract = requiredQuantity;
                 for (Integer finalSlot : value.getRight()) {
                     ItemStack extractedActual = storageExtractItem(finalSlot, toExtract, false);
-                    toExtract -= extractedActual.stackSize;
+                    toExtract -= ItemHelpers.getCount(extractedActual);
                 }
                 // Quick heuristic check to see if 'storage' did not lie during its simulation
                 if (toExtract != requiredQuantity - extractedCount) {
@@ -283,36 +283,41 @@ public class IngredientComponentStorageWrapperHandlerItemStack
             if (amount > maxStackSize && storage.getSlotLimit(slot) > maxStackSize) {
                 if (simulate) {
                     // In simulate-mode, extract up to max stack size.
-                    // If the returned stack less than max stack size, return it.
+                    // If the returned stack is less than max stack size, return it.
                     // Otherwise, return the full stack in the slot up to the requested amount.
                     ItemStack extractedUntilMaxStackSize = storage.extractItem(slot, maxStackSize, true);
-                    if (extractedUntilMaxStackSize.stackSize < maxStackSize) {
+                    if (ItemHelpers.getCount(extractedUntilMaxStackSize) < maxStackSize) {
                         return extractedUntilMaxStackSize;
                     } else {
                         ItemStack stackInSlot = storage.getStackInSlot(slot)
                             .copy();
-                        if (stackInSlot.stackSize > amount) {
-                            stackInSlot.stackSize = amount;
+
+                        if (ItemHelpers.getCount(stackInSlot) > amount) {
+                            ItemHelpers.setCount(stackInSlot, amount);
                         }
                         return stackInSlot;
                     }
                 } else {
                     // Iterate extraction until requested amount is reached.
                     ItemStack bufferExtracted = ItemHelpers.EMPTY;
-                    while (bufferExtracted.stackSize < amount) {
-                        ItemStack extractedPartial = storage
-                            .extractItem(slot, Math.min(amount - bufferExtracted.stackSize, maxStackSize), false);
+                    while (ItemHelpers.getCount(bufferExtracted) < amount) {
+                        ItemStack extractedPartial = storage.extractItem(
+                            slot,
+                            Math.min(amount - ItemHelpers.getCount(bufferExtracted), maxStackSize),
+                            false);
 
-                        // Stop loop if empty
+                        // Stop loop if empty.
                         if (ItemHelpers.isEmpty(extractedPartial)) {
                             break;
                         }
 
-                        // Add to buffer
-                        if (ItemHelpers.isEmpty(extractedPartial)) {
+                        // Add to buffer.
+                        if (ItemHelpers.isEmpty(bufferExtracted)) {
                             bufferExtracted = extractedPartial;
                         } else {
-                            bufferExtracted.stackSize = bufferExtracted.stackSize + extractedPartial.stackSize;
+                            ItemHelpers.setCount(
+                                bufferExtracted,
+                                ItemHelpers.getCount(bufferExtracted) + ItemHelpers.getCount(extractedPartial));
                         }
                     }
                     return bufferExtracted;

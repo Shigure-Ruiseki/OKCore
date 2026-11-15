@@ -28,12 +28,9 @@ public abstract class MixinMinecraft {
      */
     @Inject(method = "func_147116_af", at = @At("HEAD"))
     private void okcore$leftClickEmpty(CallbackInfo ci) {
-        if (thePlayer == null) {
-            return;
-        }
-
-        if (objectMouseOver == null || objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.MISS) {
-
+        if (thePlayer == null) return;
+        if (this.objectMouseOver == null
+            || this.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.MISS) {
             MinecraftForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickEmpty(thePlayer));
         }
     }

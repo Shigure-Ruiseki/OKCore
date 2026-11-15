@@ -5,6 +5,7 @@ import net.minecraft.block.BlockTorch;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.item.IInformationProvider;
 
 /**
  * Torch blockState that can hold ExtendedConfigs
@@ -13,7 +14,7 @@ import ruiseki.okcore.block.property.IBlockPropertyProvider;
  *
  */
 public class BlockTorchBase extends BlockTorch
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IInformationProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);

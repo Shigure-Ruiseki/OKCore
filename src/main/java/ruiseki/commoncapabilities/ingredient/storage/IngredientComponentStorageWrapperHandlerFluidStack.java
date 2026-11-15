@@ -221,7 +221,13 @@ public class IngredientComponentStorageWrapperHandlerFluidStack
         }
 
         private List<FluidStack> getContents() {
-            return Lists.newArrayList(storage);
+            List<FluidStack> contents = Lists.newArrayList();
+            for (FluidStack fluid : storage) {
+                if (!FluidHelpers.isEmpty(fluid)) {
+                    contents.add(fluid);
+                }
+            }
+            return contents;
         }
 
         @Override
@@ -235,17 +241,18 @@ public class IngredientComponentStorageWrapperHandlerFluidStack
             if (tank < 0 || tank >= contents.size()) {
                 return FluidHelpers.EMPTY;
             }
-            FluidStack fluid = contents.get(tank);
-            return FluidHelpers.isEmpty(fluid) ? FluidHelpers.EMPTY : fluid;
+            return contents.get(tank)
+                .copy();
         }
 
         @Override
         public int getTankCapacity(int tank) {
-            return tank >= 0 && tank < getTanks() ? Integer.MAX_VALUE : 0;
+            List<FluidStack> contents = getContents();
+            return tank >= 0 && tank < contents.size() ? Integer.MAX_VALUE : 0;
         }
 
         @Override
-        public boolean isFluidValid(int tank, @Nonnull FluidStack fluid) {
+        public boolean isFluidValid(int tank, @NotNull FluidStack fluid) {
             return tank >= 0 && tank < getTanks() && !FluidHelpers.isEmpty(fluid);
         }
 
@@ -254,8 +261,12 @@ public class IngredientComponentStorageWrapperHandlerFluidStack
             if (FluidHelpers.isEmpty(resource)) {
                 return 0;
             }
-            FluidStack inserted = storage.insert(resource, action);
-            return FluidHelpers.isEmpty(inserted) ? resource.amount : resource.amount - inserted.amount;
+            FluidStack remainder = storage.insert(resource.copy(), action);
+            // insert() returns the amount that could not be inserted.
+            if (FluidHelpers.isEmpty(remainder)) {
+                return resource.amount;
+            }
+            return Math.max(0, resource.amount - remainder.amount);
         }
 
         @Override
@@ -267,11 +278,8 @@ public class IngredientComponentStorageWrapperHandlerFluidStack
             if (FluidHelpers.isEmpty(simulated)) {
                 return FluidHelpers.EMPTY;
             }
-            FluidStack prototype = resource;
-            if (prototype.amount > simulated.amount) {
-                prototype = prototype.copy();
-                prototype.amount = simulated.amount;
-            }
+            FluidStack prototype = resource.copy();
+            prototype.amount = Math.min(resource.amount, simulated.amount);
             return storage.extract(prototype, FluidMatch.EXACT, action);
         }
 

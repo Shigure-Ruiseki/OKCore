@@ -44,9 +44,7 @@ public class LangHelpers {
      */
     public static void addStatusInfo(List<String> infoLines, boolean isEnabled, String statusPrefixKey) {
         String autoSupply = localize(KEY_DISABLED);
-        if (isEnabled) {
-            autoSupply = localize(KEY_ENABLED);
-        }
+        if (isEnabled) autoSupply = localize(KEY_ENABLED);
         infoLines.add(localize(statusPrefixKey, autoSupply));
     }
 

@@ -9,6 +9,7 @@ import net.minecraft.item.crafting.CraftingManager;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.recipe.type.crafting.ICraftingRecipe;
 
 public class RecipeRemainingItemsHandler {
@@ -39,15 +40,11 @@ public class RecipeRemainingItemsHandler {
             for (int i = 0; i < remainingItems.size(); i++) {
                 ItemStack remaining = remainingItems.get(i);
 
-                if (remaining == null || remaining.stackSize <= 0) {
-                    continue;
-                }
+                if (ItemHelpers.isEmpty(remaining)) continue;
 
                 ItemStack slotStack = matrix.getStackInSlot(i);
 
-                if (slotStack != null && slotStack.getItem() != null
-                    && slotStack.getItem()
-                        .hasContainerItem(slotStack)) {
+                if (!ItemHelpers.isEmpty(slotStack) && ItemHelpers.hasContainerItem(slotStack)) {
                     continue;
                 }
 

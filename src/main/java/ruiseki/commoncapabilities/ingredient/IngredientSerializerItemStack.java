@@ -7,6 +7,7 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraftforge.common.util.Constants;
 
 import ruiseki.commoncapabilities.api.ingredient.IIngredientSerializer;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * Serializer for ItemStacks.
@@ -21,8 +22,8 @@ public class IngredientSerializerItemStack implements IIngredientSerializer<Item
             return new NBTTagCompound();
         }
         NBTTagCompound tag = instance.writeToNBT(new NBTTagCompound());
-        if (instance.stackSize > 127) {
-            tag.setInteger("ExtendedCount", instance.stackSize);
+        if (ItemHelpers.getCount(instance) > 127) {
+            tag.setInteger("ExtendedCount", ItemHelpers.getCount(instance));
             tag.setByte("Count", (byte) 1);
         }
         return tag;
@@ -30,16 +31,13 @@ public class IngredientSerializerItemStack implements IIngredientSerializer<Item
 
     @Override
     public ItemStack deserializeInstance(NBTBase tag) throws IllegalArgumentException {
-        if (!(tag instanceof NBTTagCompound)) {
+        if (!(tag instanceof NBTTagCompound stackTag)) {
             throw new IllegalArgumentException("This deserializer only accepts NBTTagCompound");
         }
-        NBTTagCompound stackTag = (NBTTagCompound) tag;
-        if (stackTag.hasNoTags()) {
-            return null;
-        }
+        if (stackTag.hasNoTags()) return null;
         ItemStack itemStack = ItemStack.loadItemStackFromNBT(stackTag);
         if (stackTag.hasKey("ExtendedCount", Constants.NBT.TAG_INT)) {
-            itemStack.stackSize = stackTag.getInteger("ExtendedCount");
+            ItemHelpers.setCount(itemStack, stackTag.getInteger("ExtendedCount"));
         }
         return itemStack;
     }

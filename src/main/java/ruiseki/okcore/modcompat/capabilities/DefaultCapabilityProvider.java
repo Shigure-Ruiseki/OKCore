@@ -12,7 +12,7 @@ import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * A default implementation of the capability provider.
- * 
+ *
  * @author rubensworks
  */
 public class DefaultCapabilityProvider<T> implements ICapabilityProvider {

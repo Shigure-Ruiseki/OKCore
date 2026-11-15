@@ -32,7 +32,8 @@ public abstract class MixinGuiContainer {
     @Inject(method = "func_146977_a", at = @At("HEAD"), cancellable = true)
     private void okcore$renderPre(Slot slot, CallbackInfo ci) {
         SlotRenderEvent.ISlotRenderPosition renderPos = (SlotRenderEvent.ISlotRenderPosition) slot;
-        if (MinecraftForge.EVENT_BUS.post(new SlotRenderEvent.Pre(slot, renderPos.getSlotX(), renderPos.getSlotY()))) {
+        if (MinecraftForge.EVENT_BUS
+            .post(new SlotRenderEvent.Pre(slot, renderPos.okcore$getSlotX(), renderPos.okcore$getSlotY()))) {
             ci.cancel();
         }
     }
@@ -40,6 +41,7 @@ public abstract class MixinGuiContainer {
     @Inject(method = "func_146977_a", at = @At("TAIL"))
     private void okcore$renderPost(Slot slot, CallbackInfo ci) {
         SlotRenderEvent.ISlotRenderPosition renderPos = (SlotRenderEvent.ISlotRenderPosition) slot;
-        MinecraftForge.EVENT_BUS.post(new SlotRenderEvent.Post(slot, renderPos.getSlotX(), renderPos.getSlotY()));
+        MinecraftForge.EVENT_BUS
+            .post(new SlotRenderEvent.Post(slot, renderPos.okcore$getSlotX(), renderPos.okcore$getSlotY()));
     }
 }

@@ -6,9 +6,10 @@ import net.minecraft.block.material.Material;
 import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
+import ruiseki.okcore.item.IInformationProvider;
 
 public class BlockGlassBase extends BlockGlass
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IInformationProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);

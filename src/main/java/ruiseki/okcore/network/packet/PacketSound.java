@@ -4,7 +4,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 
-import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
@@ -102,8 +101,6 @@ public class PacketSound extends PacketCodec {
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
         OKCore._instance.getPacketHandler()
-            .sendToAllAround(
-                new PacketSound(x, y, z, sound, volume, frequency, mod),
-                new NetworkRegistry.TargetPoint(world.provider.dimensionId, x, y, z, RANGE));
+            .sendToAllAround(new PacketSound(x, y, z, sound, volume, frequency, mod), world, x, y, z, RANGE);
     }
 }

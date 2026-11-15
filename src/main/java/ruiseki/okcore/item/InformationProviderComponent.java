@@ -11,7 +11,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 /**
  * A component that can be used for {@link IInformationProvider} implementations.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -22,7 +22,7 @@ public class InformationProviderComponent {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param block The blockState for which the component is used.
      */
     public InformationProviderComponent(Block block) {
@@ -31,7 +31,7 @@ public class InformationProviderComponent {
 
     /**
      * Add information to the given list for the given item.
-     * 
+     *
      * @param itemStack The {@link ItemStack} to add info for.
      * @param player    The player that will see the info.
      * @param list      The info list where the info will be added.
@@ -49,7 +49,7 @@ public class InformationProviderComponent {
 
     /**
      * If the blockState that uses this component implements {@link IInformationProvider}.
-     * 
+     *
      * @return If the blockState provides info.
      */
     public boolean isHasInfo() {
@@ -58,7 +58,7 @@ public class InformationProviderComponent {
 
     /**
      * Get the blockState that uses this component.
-     * 
+     *
      * @return The blockState.
      */
     public Block getBlock() {
@@ -67,7 +67,7 @@ public class InformationProviderComponent {
 
     /**
      * Set the blockState that uses this component.
-     * 
+     *
      * @param block The blockState.
      */
     public void setBlock(Block block) {

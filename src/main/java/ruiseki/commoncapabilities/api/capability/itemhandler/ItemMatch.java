@@ -4,7 +4,10 @@ import java.util.Comparator;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
-import net.minecraftforge.oredict.OreDictionary;
+
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * Item matching flags to be used in {@link ISlotlessItemHandler}.
@@ -43,57 +46,46 @@ public final class ItemMatch {
      */
     public static Comparator<NBTBase> NBT_COMPARATOR;
 
-    public static boolean areItemStacksEqual(ItemStack a, ItemStack b, int matchFlags) {
-        if (matchFlags == ANY) {
-            return true;
-        }
+    private ItemMatch() {}
 
-        boolean aNull = a == null || a.getItem() == null;
-        boolean bNull = b == null || b.getItem() == null;
+    public static boolean areItemStacksEqual(@Nullable ItemStack a, @Nullable ItemStack b, int matchFlags) {
+        if (matchFlags == ANY) return true;
 
-        if (aNull && bNull) return true;
-        if (aNull || bNull) return false;
+        boolean aEmpty = ItemHelpers.isEmpty(a);
+        boolean bEmpty = ItemHelpers.isEmpty(b);
 
-        boolean item = (matchFlags & ITEM) > 0;
-        boolean damage = (matchFlags & DAMAGE) > 0;
-        boolean nbt = (matchFlags & NBT) > 0;
-        boolean stackSize = (matchFlags & STACKSIZE) > 0;
+        if (aEmpty) return bEmpty;
+        if (bEmpty) return false;
 
-        if (item && a.getItem() != b.getItem()) {
+        if ((matchFlags & ITEM) != 0 && !ItemHelpers.isSameItem(a, b)) {
             return false;
         }
 
-        if (damage) {
-            int damageA = a.getItemDamage();
-            int damageB = b.getItemDamage();
-            boolean hasWildcard = damageA == OreDictionary.WILDCARD_VALUE || damageB == OreDictionary.WILDCARD_VALUE;
-            if (!hasWildcard && damageA != damageB) {
-                return false;
-            }
-        }
-
-        if (stackSize && a.stackSize != b.stackSize) {
+        if ((matchFlags & DAMAGE) != 0
+            && !ItemHelpers.doMetasMatch(ItemHelpers.getStackMeta(a), ItemHelpers.getStackMeta(b))) {
             return false;
         }
 
-        if (nbt && !areItemStackTagsEqual(a, b)) {
+        if ((matchFlags & STACKSIZE) != 0 && ItemHelpers.getCount(a) != ItemHelpers.getCount(b)) {
+            return false;
+        }
+
+        if ((matchFlags & NBT) != 0 && !areItemStackTagsEqual(a, b)) {
             return false;
         }
 
         return true;
     }
 
-    public static boolean areItemStackTagsEqual(ItemStack a, ItemStack b) {
-        if (a == null || b == null) {
-            return a == b;
-        }
-
-        if ((a.getTagCompound() == null && b.getTagCompound() != null)
-            || (a.getTagCompound() != null && b.getTagCompound() == null)) {
-            return false;
-        } else {
-            return (a.getTagCompound() == null || NBT_COMPARATOR.compare(a.getTagCompound(), b.getTagCompound()) == 0);
-        }
+    public static boolean areItemStackTagsEqual(@Nullable ItemStack a, @Nullable ItemStack b) {
+        if (ItemHelpers.isEmpty(a)) return ItemHelpers.isEmpty(b);
+        if (ItemHelpers.isEmpty(b)) return false;
+        return areTagsEqual(ItemHelpers.getTagCompound(a), ItemHelpers.getTagCompound(b));
     }
 
+    private static boolean areTagsEqual(@Nullable NBTBase tagA, @Nullable NBTBase tagB) {
+        if (tagA == tagB) return true;
+        if (tagA == null || tagB == null) return false;
+        return NBT_COMPARATOR.compare(tagA, tagB) == 0;
+    }
 }

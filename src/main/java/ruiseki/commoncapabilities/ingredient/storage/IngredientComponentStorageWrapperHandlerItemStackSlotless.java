@@ -20,7 +20,7 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Item storage wrapper handler for {@link ISlotlessItemHandler}.
- * 
+ *
  * @author rubensworks
  */
 public class IngredientComponentStorageWrapperHandlerItemStackSlotless

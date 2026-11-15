@@ -53,17 +53,14 @@ public final class ItemStackKey {
      * The cache is cleared at the end of each server tick.
      */
     public static @Nullable ItemStackKey of(@Nullable ItemStack stack) {
-        if (stack == null || stack.stackSize <= 0 || stack.getItem() == null) {
-            return null;
-        }
-
+        if (ItemHelpers.isEmpty(stack)) return null;
         return CACHE.computeIfAbsent(stack, ItemStackKey::create);
     }
 
     private static ItemStackKey create(ItemStack stack) {
         int itemId = Item.getIdFromItem(stack.getItem());
         int meta = stack.isItemStackDamageable() ? 0 : ItemHelpers.getStackMeta(stack);
-        NBTTagCompound tag = stack.getTagCompound();
+        NBTTagCompound tag = ItemHelpers.getTagCompound(stack);
         return new ItemStackKey(itemId, meta, tag == null ? null : (NBTTagCompound) tag.copy());
     }
 
@@ -202,28 +199,12 @@ public final class ItemStackKey {
             return false;
         }
 
-        return ItemHelpers.areItemsEqual(a, b) && Objects.equals(a.getTagCompound(), b.getTagCompound());
+        return ItemHelpers.areItemsEqual(a, b)
+            && Objects.equals(ItemHelpers.getTagCompound(a), ItemHelpers.getTagCompound(b));
     }
 
     public boolean hashCodeNotEquals(@Nullable ItemStack otherStack) {
-        return hashCode() != getHashCode(otherStack);
-    }
-
-    public static int getHashCode(@Nullable ItemStack stack) {
-        if (ItemHelpers.isEmpty(stack)) {
-            return 0;
-        }
-
-        int hash = stack.getItem()
-            .hashCode();
-        hash = 31 * hash + ItemHelpers.getStackMeta(stack);
-
-        NBTTagCompound tag = stack.getTagCompound();
-        if (tag != null) {
-            hash = 31 * hash + tag.hashCode();
-        }
-
-        return hash;
+        return hashCode() != ItemHelpers.getHashCode(otherStack);
     }
 
     @Override

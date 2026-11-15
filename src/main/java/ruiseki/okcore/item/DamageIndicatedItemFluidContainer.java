@@ -64,9 +64,7 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
 
     @Override
     public String getInfo(ItemStack itemStack) {
-        if (ItemHelpers.isEmpty(itemStack)) {
-            return "";
-        }
+        if (ItemHelpers.isEmpty(itemStack)) return null;
         return component.getInfo(itemStack);
     }
 
@@ -78,12 +76,10 @@ public abstract class DamageIndicatedItemFluidContainer extends ItemFluidContain
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer world, List<String> list, boolean flag) {
-        if (ItemHelpers.isEmpty(itemStack) || list == null) {
-            return;
-        }
-        component.addInformation(itemStack, world, list, flag);
-        super.addInformation(itemStack, world, list, flag);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        if (ItemHelpers.isEmpty(stack) || list == null) return;
+        component.addInformation(stack, player, list, advanced);
+        super.addInformation(stack, player, list, advanced);
     }
 
     @Override

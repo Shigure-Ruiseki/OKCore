@@ -166,7 +166,7 @@ public class TagHelpers {
     }
 
     private static long pack(IUniqueIndex obj, int meta) {
-        return pack(obj.getUniqueID(), meta);
+        return pack(obj.okcore$getUniqueID(), meta);
     }
 
     public static long pack(int obj, int meta) {
@@ -202,7 +202,7 @@ public class TagHelpers {
     }
 
     private static boolean matchesSoft(IUniqueIndex obj, int meta, long compareTo) {
-        return matchesSoft(pack(obj.getUniqueID(), meta), compareTo);
+        return matchesSoft(pack(obj.okcore$getUniqueID(), meta), compareTo);
     }
 
     public static boolean matchesSoft(long compare1, long compare2) {
@@ -219,7 +219,7 @@ public class TagHelpers {
     }
 
     private static boolean matchesObj(IUniqueIndex obj, long compareTo) {
-        return obj.getUniqueID() == (int) compareTo;
+        return obj.okcore$getUniqueID() == (int) compareTo;
     }
 
     public static boolean matchesMeta(int meta, long compareTo) {

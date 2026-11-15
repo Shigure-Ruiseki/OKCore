@@ -28,7 +28,7 @@ public class NEIHelpers {
         ItemStack stack;
         while (itr.hasNext()) {
             stack = itr.next();
-            if (!base.isItemEqual(stack) || !stack.hasTagCompound()) {
+            if (!base.isItemEqual(stack) || !ItemHelpers.hasTagCompound(stack)) {
                 itr.remove();
             }
         }

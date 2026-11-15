@@ -25,6 +25,7 @@ import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.item.IInformationProvider;
 
 /**
  * Block that extends from BlockLeaves that can hold ExtendedConfigs
@@ -32,7 +33,7 @@ import ruiseki.okcore.helper.BlockHelpers;
  * @author rubensworks
  */
 public abstract class BlockLeavesBase extends BlockLeaves
-    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IBlockTooltipProvider {
+    implements IBlockPropertyProvider, IBlockGui, IBlockStateNative, IInformationProvider {
 
     @Delegate
     protected IBlockPropertyProvider propertyProvider = new BlockPropertyProviderComponent(this);

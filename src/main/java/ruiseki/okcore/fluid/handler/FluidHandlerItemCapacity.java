@@ -14,7 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.FluidHandlerItemCapacityConfig;
-import ruiseki.okcore.helper.ItemNBTHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
+import ruiseki.okcore.helper.NBTHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 /**
@@ -57,17 +58,17 @@ public class FluidHandlerItemCapacity extends FluidHandlerItemStack
         // super.setFluid(fluid); // We override the implementation completely to avoid NBT saving for empty fluids
 
         if (fluid != null) {
-            if (!this.container.hasTagCompound()) {
-                this.container.setTagCompound(new NBTTagCompound());
+            if (!ItemHelpers.hasTagCompound(this.getContainer())) {
+                ItemHelpers.setTagCompound(this.getContainer(), new NBTTagCompound());
             }
 
             NBTTagCompound fluidTag = new NBTTagCompound();
             fluid.writeToNBT(fluidTag);
-            this.container.getTagCompound()
+            ItemHelpers.getTagCompound(this.getContainer())
                 .setTag("Fluid", fluidTag);
         } else {
-            if (this.container.hasTagCompound()) {
-                this.container.getTagCompound()
+            if (ItemHelpers.hasTagCompound(this.getContainer())) {
+                ItemHelpers.getTagCompound(this.getContainer())
                     .removeTag("Fluid");
             }
         }
@@ -75,7 +76,7 @@ public class FluidHandlerItemCapacity extends FluidHandlerItemStack
 
     @Override
     public void setCapacity(int capacity) {
-        NBTTagCompound tag = ItemNBTHelpers.getNBT(getContainer());
+        NBTTagCompound tag = NBTHelpers.getOrCreateTag(this.getContainer());
         this.capacity = capacity;
         if (this.getCapacity() != this.capacityDefault) {
             tag.setInteger("capacity", capacity);
@@ -86,13 +87,14 @@ public class FluidHandlerItemCapacity extends FluidHandlerItemStack
 
     @Override
     public int getCapacity() {
-        return ItemNBTHelpers.getInt(container, "capacity", this.capacity);
+        return NBTHelpers.getInteger(container, "capacity")
+            .orElse(this.capacity);
     }
 
     @Nullable
     @Override
     public FluidStack getFluid() {
-        this.capacity = getCapacity(); // Force overriding protected capacity field as soon as possible.
+        this.capacity = this.getCapacity(); // Force overriding protected capacity field as soon as possible.
         return super.getFluid();
     }
 

@@ -14,6 +14,7 @@ import com.google.gson.JsonObject;
 
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.helper.GsonHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.tag.Registries;
@@ -119,12 +120,12 @@ public class ItemMaterial extends IngredientMaterial {
             return;
         }
 
-        this.item = stack.getItem();
+        this.item = ItemHelpers.getItem(stack);
         this.name = GameData.getItemRegistry()
             .getNameForObject(this.item);
-        this.amount = stack.stackSize;
+        this.amount = ItemHelpers.getCount(stack);
         this.meta = stack.getItemDamage();
-        this.nbt = stack.hasTagCompound() ? (NBTTagCompound) stack.getTagCompound()
+        this.nbt = ItemHelpers.hasTagCompound(stack) ? (NBTTagCompound) ItemHelpers.getTagCompound(stack)
             .copy() : null;
         this.tag = null;
         this.cachedTagKey = null;
@@ -170,7 +171,7 @@ public class ItemMaterial extends IngredientMaterial {
             for (ItemStack candidate : candidates) {
                 if (candidate == null || candidate.getItem() == null) continue;
                 ItemStack result = candidate.copy();
-                result.stackSize = count;
+                ItemHelpers.setCount(result, count);
                 if (nbt != null) result.setTagCompound((NBTTagCompound) nbt.copy());
                 return result;
             }
@@ -202,7 +203,7 @@ public class ItemMaterial extends IngredientMaterial {
             if (base == null) return null;
 
             ItemStack result = base.copy();
-            result.stackSize = count;
+            ItemHelpers.setCount(result, count);
             if (nbt != null) {
                 result.setTagCompound((NBTTagCompound) nbt.copy());
             }
@@ -222,10 +223,10 @@ public class ItemMaterial extends IngredientMaterial {
         material.item = stack.getItem();
         material.name = GameData.getItemRegistry()
             .getNameForObject(stack.getItem());
-        material.amount = stack.stackSize;
+        material.amount = ItemHelpers.getCount(stack);
         material.meta = stack.getItemDamage();
-        if (stack.hasTagCompound()) {
-            material.nbt = (NBTTagCompound) stack.getTagCompound()
+        if (ItemHelpers.hasTagCompound(stack)) {
+            material.nbt = (NBTTagCompound) ItemHelpers.getTagCompound(stack)
                 .copy();
         } else {
             material.nbt = null;
@@ -305,7 +306,7 @@ public class ItemMaterial extends IngredientMaterial {
             return false;
         }
 
-        return this.nbt == null || this.nbt.equals(stack.getTagCompound());
+        return this.nbt == null || this.nbt.equals(ItemHelpers.getTagCompound(stack));
     }
 
     @Override

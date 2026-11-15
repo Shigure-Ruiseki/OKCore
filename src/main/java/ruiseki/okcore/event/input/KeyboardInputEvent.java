@@ -39,7 +39,7 @@ public class KeyboardInputEvent extends GuiScreenEvent {
     /**
      * This event fires after {@link GuiScreen#handleKeyboardInput()} provided that the active
      * screen has not been changed as a result of {@link GuiScreen#handleKeyboardInput()} and
-     * the key handled flag has not been set via {@link IGuiInputHandle#setKeyHandled(boolean)}.
+     * the key handled flag has not been set via {@link IGuiInputHandle#okcore$setKeyHandled(boolean)}.
      * Cancel this event when you successfully use the keyboard input to prevent other handlers from using the same
      * input.
      */

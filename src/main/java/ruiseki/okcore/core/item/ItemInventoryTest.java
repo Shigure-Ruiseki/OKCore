@@ -88,8 +88,8 @@ public class ItemInventoryTest extends ItemBase implements IItemCooldown, IItemT
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean flag) {
-        super.addInformation(stack, player, list, flag);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        super.addInformation(stack, player, list, advanced);
         TagKey<Item> rodsTagKey = TagKey.create(Registries.ITEM, new ResourceLocation("forge", "rods"));
 
         Set<String> entries = TagManager.getManager()

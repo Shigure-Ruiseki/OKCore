@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -31,6 +32,7 @@ import ruiseki.okcore.inventory.InventorySorter;
 import ruiseki.okcore.inventory.ItemStackKey;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.item.handler.IItemHandlerModifiable;
+import ruiseki.okcore.item.handler.IItemHandlerSimpleExtractor;
 import ruiseki.okcore.item.handler.IItemHandlerSimpleInserter;
 
 /**
@@ -84,18 +86,14 @@ public class InventoryHelpers {
      * Validate the NBT storage of the given inventory in the given item.
      * Should be called in constructors of inventories.
      *
-     * @param handler   The inventory.
-     * @param itemStack The item stack to read/write.
-     * @param tagName   The tag name to read from.
+     * @param handler The inventory.
+     * @param stack   The item stack to read/write.
+     * @param tagName The tag name to read from.
      */
-    public static void validateNBTStorage(IItemHandler handler, ItemStack itemStack, String tagName) {
-        if (ItemHelpers.isEmpty(itemStack)) return;
+    public static void validateNBTStorage(IItemHandler handler, ItemStack stack, String tagName) {
+        if (ItemHelpers.isEmpty(stack)) return;
 
-        NBTTagCompound tag = itemStack.getTagCompound();
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            itemStack.setTagCompound(tag);
-        }
+        NBTTagCompound tag = NBTHelpers.getOrCreateTag(stack);
         if (!tag.hasKey(tagName)) {
             tag.setTag(tagName, new NBTTagList());
         }
@@ -121,7 +119,8 @@ public class InventoryHelpers {
 
             if (index >= 0 && index < handler.getSlots()) {
                 if (handler instanceof IItemHandlerModifiable modifiable) {
-                    modifiable.setStackInSlot(index, ItemStack.loadItemStackFromNBT(slot));
+                    ItemStack stack = ItemHelpers.readFromNBT(slot);
+                    modifiable.setStackInSlot(index, ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack);
                 }
             }
         }
@@ -143,8 +142,8 @@ public class InventoryHelpers {
             if (!ItemHelpers.isEmpty(itemStack)) {
                 NBTTagCompound slot = new NBTTagCompound();
                 slot.setInteger("index", index);
+                ItemHelpers.writeToNBT(itemStack, slot);
                 slots.appendTag(slot);
-                itemStack.writeToNBT(slot);
             }
         }
         data.setTag(tagName, slots);
@@ -463,6 +462,45 @@ public class InventoryHelpers {
         return missingCount.getValue();
     }
 
+    public static void transfer(IItemHandler handlerA, IItemHandler handlerB,
+        Consumer<Supplier<ItemStack>> onInserted) {
+        int slotsA = handlerA.getSlots();
+        for (int slot = 0; slot < slotsA; slot++) {
+            ItemStack slotStack = handlerA.getStackInSlot(slot);
+            if (ItemHelpers.isEmpty(slotStack)) {
+                continue;
+            }
+
+            int countToTransfer = ItemHelpers.getCount(slotStack);
+            while (countToTransfer > 0) {
+                ItemStack toInsert = slotStack.copy();
+                ItemHelpers.setCount(toInsert, Math.min(slotStack.getMaxStackSize(), countToTransfer));
+                ItemStack remainingAfterInsert = insertIntoInventory(toInsert, handlerB, true);
+                if (ItemHelpers.getCount(remainingAfterInsert) == ItemHelpers.getCount(toInsert)) {
+                    break;
+                }
+                int toExtract = ItemHelpers.getCount(toInsert) - ItemHelpers.getCount(remainingAfterInsert);
+
+                ItemStack extractedStack = handlerA.extractItem(slot, toExtract, true);
+                if (ItemHelpers.isEmpty(extractedStack)) {
+                    break;
+                }
+
+                insertIntoInventory(
+                    handlerA.extractItem(slot, ItemHelpers.getCount(extractedStack), false),
+                    handlerB,
+                    false);
+
+                onInserted.accept(() -> {
+                    ItemStack copiedStack = slotStack.copy();
+                    ItemHelpers.setCount(copiedStack, ItemHelpers.getCount(extractedStack));
+                    return copiedStack;
+                });
+                countToTransfer -= ItemHelpers.getCount(extractedStack);
+            }
+        }
+    }
+
     public static boolean isEmpty(IItemHandler itemHandler) {
         int slots = itemHandler.getSlots();
         for (int slot = 0; slot < slots; slot++) {
@@ -570,6 +608,10 @@ public class InventoryHelpers {
     }
 
     public static ItemStack extractFromInventory(ItemStack stack, IItemHandler inventory, boolean simulate) {
+        if (inventory instanceof IItemHandlerSimpleExtractor itemHandlerSimpleExtractor) {
+            return itemHandlerSimpleExtractor.extractItem(stack, simulate);
+        }
+
         int extractedCount = 0;
         int slots = inventory.getSlots();
         for (int slot = 0; slot < slots && extractedCount < ItemHelpers.getCount(stack); slot++) {

@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.KeyBoardHelpers;
 
 public interface IItemToggle {
@@ -14,15 +15,14 @@ public interface IItemToggle {
     void toggle(EntityPlayerMP player, ItemStack slotStack, int button);
 
     default boolean isOn(ItemStack held) {
-        if (held == null || !held.hasTagCompound()) return false;
-        return held.getTagCompound()
+        if (!ItemHelpers.hasTagCompound(held)) return false;
+        return ItemHelpers.getTagCompound(held)
             .getBoolean(TOGGLE_TAG);
     }
 
     default void setOn(ItemStack held, boolean on) {
-        if (held == null) return;
-        if (!held.hasTagCompound()) held.setTagCompound(new NBTTagCompound());
-        held.getTagCompound()
+        if (!ItemHelpers.hasTagCompound(held)) ItemHelpers.setTagCompound(held, new NBTTagCompound());
+        ItemHelpers.getTagCompound(held)
             .setBoolean(TOGGLE_TAG, on);
     }
 

@@ -29,11 +29,15 @@ public class InventoryHelpersTest {
         assertEquals(64, destination.getStackInSlot(0).stackSize);
         assertEquals(10, destination.getStackInSlot(1).stackSize);
         assertEquals(2, notifications.size());
-        ItemStack reported = notifications.get(0).get();
+        ItemStack reported = notifications.get(0)
+            .get();
         assertEquals(64, reported.stackSize);
         assertSame(item, reported.getItem());
         reported.stackSize = 1;
-        assertEquals(64, notifications.get(0).get().stackSize);
+        assertEquals(
+            64,
+            notifications.get(0)
+                .get().stackSize);
         assertEquals(64, destination.getStackInSlot(0).stackSize);
     }
 
@@ -71,6 +75,7 @@ public class InventoryHelpersTest {
     @Test
     public void refusedExtractionStopsTransferWithoutInsertingOrNotifying() {
         ItemStackHandler source = new ItemStackHandler(1) {
+
             @Override
             public ItemStack extractItem(int slot, int amount, boolean simulate) {
                 return null;

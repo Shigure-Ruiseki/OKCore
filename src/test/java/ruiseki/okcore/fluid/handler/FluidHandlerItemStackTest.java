@@ -62,13 +62,19 @@ public class FluidHandlerItemStackTest {
     public void completeDrainRemovesOnlyFluidTagAndKeepsContainer() {
         ItemStack container = new ItemStack(new Item());
         container.setTagCompound(new NBTTagCompound());
-        container.getTagCompound().setString("owner", "test");
+        container.getTagCompound()
+            .setString("owner", "test");
         FluidHandlerItemStack handler = new FluidHandlerItemStack(container, 1000);
         handler.fill(water(250), true);
         assertEquals(250, handler.drain(Integer.MAX_VALUE, true).amount);
         assertNull(handler.getFluid());
-        assertFalse(container.getTagCompound().hasKey("Fluid"));
-        assertEquals("test", container.getTagCompound().getString("owner"));
+        assertFalse(
+            container.getTagCompound()
+                .hasKey("Fluid"));
+        assertEquals(
+            "test",
+            container.getTagCompound()
+                .getString("owner"));
         assertSame(container, handler.getContainer());
     }
 
@@ -95,7 +101,7 @@ public class FluidHandlerItemStackTest {
         handler = new FluidHandlerItemStack(new ItemStack(new Item()), 1000);
         assertEquals(1, handler.getTanks());
         assertEquals(1000, handler.getTankCapacity(0));
-        for (int index : new int[] {-1, 1, Integer.MAX_VALUE}) {
+        for (int index : new int[] { -1, 1, Integer.MAX_VALUE }) {
             assertEquals(0, handler.getTankCapacity(index));
             assertNull(handler.getFluidInTank(index));
             assertFalse(handler.isFluidValid(index, water(1)));
@@ -118,7 +124,10 @@ public class FluidHandlerItemStackTest {
         swap.fill(water(100), true);
         swap.drain(100, true);
         assertNotSame(empty, swap.getContainer());
-        assertSame(empty.getItem(), swap.getContainer().getItem());
+        assertSame(
+            empty.getItem(),
+            swap.getContainer()
+                .getItem());
         assertEquals(1, empty.stackSize);
     }
 }

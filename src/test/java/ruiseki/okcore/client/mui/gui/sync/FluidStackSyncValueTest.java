@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
+
 import org.junit.Test;
 
 public class FluidStackSyncValueTest {

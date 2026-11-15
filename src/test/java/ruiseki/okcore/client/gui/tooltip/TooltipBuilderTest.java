@@ -46,8 +46,7 @@ public class TooltipBuilderTest {
 
     @Test
     public void replacementOnlyWrapsProvidersAlreadyPresent() {
-        TooltipBuilder builder = new TooltipBuilder()
-            .addLine((s, p, lines, a) -> lines.add("old"))
+        TooltipBuilder builder = new TooltipBuilder().addLine((s, p, lines, a) -> lines.add("old"))
             .replace("old", (s, p, lines, a) -> lines.add("new"))
             .addLine((s, p, lines, a) -> lines.add("old"));
         assertEquals(Arrays.asList("new", "old"), build(builder));
@@ -60,7 +59,8 @@ public class TooltipBuilderTest {
             assertNull(s);
             assertNull(p);
             lines.add(Boolean.toString(advanced));
-        }).replace("true", (s, p, lines, advanced) -> lines.add("advanced=" + advanced));
+        })
+            .replace("true", (s, p, lines, advanced) -> lines.add("advanced=" + advanced));
         List<String> result = new ArrayList<>();
         builder.build(null, null, result, true);
         assertEquals(Arrays.asList("advanced=true"), result);
@@ -69,7 +69,8 @@ public class TooltipBuilderTest {
 
     @Test
     public void clearRemovesWrappedProvidersAndAllowsReuse() {
-        TooltipBuilder builder = new TooltipBuilder().addNewLine().replace(".*", (s, p, l, a) -> l.add("old"));
+        TooltipBuilder builder = new TooltipBuilder().addNewLine()
+            .replace(".*", (s, p, l, a) -> l.add("old"));
         assertSame(builder, builder.clear());
         assertTrue(build(builder).isEmpty());
         assertSame(builder, builder.addLines((String[]) null));

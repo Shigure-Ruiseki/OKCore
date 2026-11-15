@@ -74,12 +74,16 @@ public class ItemMatchTest {
         ItemStack b = new ItemStack(item);
         assertTrue(ItemMatch.areItemStackTagsEqual(a, b));
         a.setTagCompound(new NBTTagCompound());
-        a.getTagCompound().setString("key", "value");
+        a.getTagCompound()
+            .setString("key", "value");
         assertFalse(ItemMatch.areItemStackTagsEqual(a, b));
         assertFalse(ItemMatch.areItemStackTagsEqual(b, a));
-        b.setTagCompound((NBTTagCompound) a.getTagCompound().copy());
+        b.setTagCompound(
+            (NBTTagCompound) a.getTagCompound()
+                .copy());
         assertTrue(ItemMatch.areItemStacksEqual(a, b, ItemMatch.EXACT));
-        b.getTagCompound().setString("key", "other");
+        b.getTagCompound()
+            .setString("key", "other");
         assertFalse(ItemMatch.areItemStacksEqual(a, b, ItemMatch.NBT));
         assertTrue(ItemMatch.areItemStacksEqual(a, b, ItemMatch.ITEM));
     }

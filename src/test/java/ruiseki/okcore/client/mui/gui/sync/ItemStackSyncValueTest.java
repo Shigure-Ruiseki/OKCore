@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+
 import org.junit.Test;
 
 public class ItemStackSyncValueTest {

@@ -14,6 +14,7 @@ public class IngredientComponentStorageWrapperHandlerItemStackTest {
 
     private ItemStackHandler largeSlot(int count) {
         ItemStackHandler handler = new ItemStackHandler(1) {
+
             @Override
             public int getSlotLimit(int slot) {
                 return 1024;

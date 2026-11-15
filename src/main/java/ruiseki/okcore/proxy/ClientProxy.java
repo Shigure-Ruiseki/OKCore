@@ -5,6 +5,7 @@ import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.OKCore;
+import ruiseki.okcore.audio.record.ClientRecordDataHandler;
 import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.event.handler.InputEventHandler;
 import ruiseki.okcore.event.handler.TooltipEventHandler;
@@ -27,7 +28,7 @@ public class ClientProxy extends ClientProxyComponent {
     public void registerEventHooks() {
         super.registerEventHooks();
         MinecraftForge.EVENT_BUS.register(new Versions());
-
+        MinecraftForge.EVENT_BUS.register(ClientRecordDataHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(InputEventHandler.INSTANCE);
         if (Mods.MUI2.isModLoaded()) {
             MinecraftForge.EVENT_BUS.register(new TooltipEventHandler());

@@ -8,9 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemRecord;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import ruiseki.okcore.OKCore;
@@ -19,50 +16,36 @@ import ruiseki.okcore.network.packet.PacketResetRecordData;
 public class ServerRecordDataHandler {
 
     public static final ServerRecordDataHandler INSTANCE = new ServerRecordDataHandler();
-
-    private static final int MAX_RECORDS_PER_PLAYER = 256;
-    private static final Map<UUID, Cache<String, RecordData>> PLAYER_CACHE = new ConcurrentHashMap<>();
+    private static final Map<UUID, Map<String, RecordData>> PLAYER_CACHE = new ConcurrentHashMap<>();
 
     private ServerRecordDataHandler() {}
 
-    private static Cache<String, RecordData> createPlayerCache() {
-        return CacheBuilder.newBuilder()
-            .maximumSize(MAX_RECORDS_PER_PLAYER)
-            .build();
-    }
-
-    private static Cache<String, RecordData> getPlayerCache(UUID playerId) {
+    private static Map<String, RecordData> getPlayerCache(UUID playerId) {
         if (playerId == null) return null;
-        return PLAYER_CACHE.computeIfAbsent(playerId, id -> createPlayerCache());
+        return PLAYER_CACHE.computeIfAbsent(playerId, id -> new ConcurrentHashMap<>());
     }
 
     public static RecordData getData(UUID playerId, ItemRecord record) {
-        if (record == null) return null;
+        if (playerId == null || record == null) return null;
         return getData(playerId, record.recordName);
     }
 
     public static RecordData getData(UUID playerId, String recordName) {
         if (playerId == null || recordName == null) return null;
-        Cache<String, RecordData> cache = PLAYER_CACHE.get(playerId);
-        return cache != null ? cache.getIfPresent(recordName) : null;
+        Map<String, RecordData> cache = PLAYER_CACHE.get(playerId);
+        return cache != null ? cache.get(recordName) : null;
     }
 
     public static void putData(UUID playerId, String recordName, RecordData data) {
         if (playerId == null || recordName == null || data == null) return;
-        if (data.getDurationTicks() <= 0) return;
-        Cache<String, RecordData> cache = getPlayerCache(playerId);
-        cache.put(recordName, data);
-    }
-
-    public static boolean hasData(UUID playerId, ItemRecord record) {
-        if (record == null) return false;
-        return hasData(playerId, record.recordName);
+        if (!data.isValid()) return;
+        getPlayerCache(playerId).put(recordName, data);
     }
 
     public static boolean hasData(UUID playerId, String recordName) {
         if (playerId == null || recordName == null) return false;
-        Cache<String, RecordData> cache = PLAYER_CACHE.get(playerId);
-        return cache != null && cache.getIfPresent(recordName) != null;
+        Map<String, RecordData> cache = PLAYER_CACHE.get(playerId);
+        return cache != null && cache.containsKey(recordName);
     }
 
     public static void removePlayer(UUID playerId) {
@@ -83,8 +66,8 @@ public class ServerRecordDataHandler {
     @SubscribeEvent
     public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.player instanceof EntityPlayerMP player)) return;
+        ServerRecordDataHandler.removePlayer(event.player.getUniqueID());
         OKCore._instance.getPacketHandler()
             .sendToPlayer(new PacketResetRecordData(), player);
-        ServerRecordDataHandler.removePlayer(event.player.getUniqueID());
     }
 }

@@ -37,7 +37,8 @@ public class PacketRecordSoundData extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (recordName == null || recordName.isEmpty() || recordData == null) return;
+        if (player == null || recordName == null || recordName.isEmpty() || recordData == null) return;
+        if (!recordData.isValid()) return;
         ServerRecordDataHandler.putData(player.getUniqueID(), recordName, recordData);
     }
 }

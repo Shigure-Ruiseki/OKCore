@@ -30,8 +30,7 @@ public class ClientRecordDataHandler {
 
     public static void putData(String recordName, RecordData data) {
         if (recordName == null || data == null) return;
-        if (data.getDurationTicks() <= 0) return;
-
+        if (!data.isValid()) return;
         CACHE.put(recordName, data);
     }
 

@@ -2,7 +2,7 @@ package ruiseki.okcore.audio.record;
 
 import ruiseki.okcore.network.ExtendedBuffer;
 
-public class RecordData {
+public final class RecordData {
 
     private final String recordName;
     private final int durationTicks;
@@ -33,6 +33,10 @@ public class RecordData {
 
     public long getTotalSamples() {
         return totalSamples;
+    }
+
+    public boolean isValid() {
+        return recordName != null && !recordName.isEmpty() && durationTicks > 0 && sampleRate > 0 && totalSamples > 0;
     }
 
     public void toNetwork(ExtendedBuffer buffer) {

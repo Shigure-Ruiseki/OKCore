@@ -39,9 +39,26 @@ public class RecordDataLoader {
         long totalSamples = findLastGranulePosition(data);
         if (totalSamples <= 0) return null;
 
-        int durationTicks = (int) ((totalSamples * 20L) / sampleRate);
+        int durationTicks = calculateDurationTicks(totalSamples, sampleRate);
+        if (durationTicks <= 0) return null;
 
         return new RecordData(recordName, durationTicks, sampleRate, totalSamples);
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static int calculateDurationTicks(long totalSamples, int sampleRate) {
+        if (totalSamples <= 0 || sampleRate <= 0) return 0;
+
+        long seconds = totalSamples / sampleRate;
+        long remainingSamples = totalSamples % sampleRate;
+
+        if (seconds > Integer.MAX_VALUE / 20L) return 0;
+
+        long ticks = seconds * 20L + (remainingSamples * 20L) / sampleRate;
+
+        if (ticks <= 0 || ticks > Integer.MAX_VALUE) return 0;
+
+        return (int) ticks;
     }
 
     @SideOnly(Side.CLIENT)
@@ -138,7 +155,7 @@ public class RecordDataLoader {
                 if (is == null) return;
 
                 RecordData data = readOggData("records." + recordName, is);
-                if (data == null) return;
+                if (data == null || !data.isValid()) return;
 
                 // Save locally on this client.
                 ClientRecordDataHandler.putData(recordName, data);

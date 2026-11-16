@@ -56,11 +56,11 @@ public class EFRCookingHelpers {
 
     private static void importBlastFurnaceRecipes(RecipesRegisterEvent event, BlastFurnaceRecipes recipes) {
         Collection<ItemStack> explicitInputs = recipes.smeltingList.keySet();
-
         Set<ResourceLocation> imported = new HashSet<>();
 
         // Explicit EFR recipes
         for (ItemStack input : explicitInputs) {
+            if (ItemHelpers.isEmpty(input)) continue;
             importBlastFurnaceRecipe(event, recipes, input, createIngredient(input), imported);
         }
 
@@ -68,6 +68,7 @@ public class EFRCookingHelpers {
         for (ItemStack input : FurnaceRecipes.smelting()
             .getSmeltingList()
             .keySet()) {
+            if (ItemHelpers.isEmpty(input)) continue;
             importBlastFurnaceRecipe(event, recipes, input, createFallbackIngredient(input, explicitInputs), imported);
         }
     }

@@ -349,8 +349,8 @@ public class RecipeRegistry {
         if (ItemHelpers.isEmpty(input) || ItemHelpers.isEmpty(output)) return false;
         return FURNACE_BRIDGE_MAP.values()
             .stream()
-            .anyMatch(recipe ->
-                recipe.getIngredient().test(input)
-                    && ItemStack.areItemStacksEqual(recipe.getResultItem(), output));
+            .anyMatch(
+                recipe -> recipe.getIngredient()
+                    .test(input) && ItemStack.areItemStacksEqual(recipe.getResultItem(), output));
     }
 }

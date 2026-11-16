@@ -71,6 +71,7 @@ public class EFRCookingHelpers {
     private static void importBlastFurnaceRecipe(RecipesRegisterEvent event, BlastFurnaceRecipes recipes,
         ItemStack input, Set<ResourceLocation> imported) {
         if (ItemHelpers.isEmpty(input)) return;
+        if (input.getItemDamage() == OreDictionary.WILDCARD_VALUE) return;
         if (isBlacklisted(recipes, input)) return;
 
         ItemStack output = recipes.getSmeltingResult(input);
@@ -114,6 +115,7 @@ public class EFRCookingHelpers {
     private static void importSmokerRecipe(RecipesRegisterEvent event, SmokerRecipes recipes, ItemStack input,
         Set<ResourceLocation> imported) {
         if (ItemHelpers.isEmpty(input)) return;
+        if (input.getItemDamage() == OreDictionary.WILDCARD_VALUE) return;
         if (isBlacklisted(recipes, input)) return;
 
         ItemStack output = recipes.getSmeltingResult(input);
@@ -144,28 +146,11 @@ public class EFRCookingHelpers {
             return candidates;
         }
 
-        // Expand registered concrete variants.
-        List<ItemStack> variants = new ArrayList<>();
-        ItemHelpers.getItem(input)
-            .getSubItems(
-                ItemHelpers.getItem(input),
-                ItemHelpers.getItem(input)
-                    .getCreativeTab(),
-                variants);
-
-        for (ItemStack variant : variants) {
-            if (!ItemHelpers.isEmpty(variant)) {
-                addCandidate(candidates, variant);
-            }
-        }
-
-        // Include explicit EFR variants not exposed through creative tabs.
         for (ItemStack explicit : explicitInputs) {
             if (ItemHelpers.isEmpty(explicit)) continue;
-
-            if (explicit.getItem() == input.getItem() && explicit.getItemDamage() != OreDictionary.WILDCARD_VALUE) {
-                addCandidate(candidates, explicit);
-            }
+            if (explicit.getItem() != input.getItem()) continue;
+            if (explicit.getItemDamage() == OreDictionary.WILDCARD_VALUE) continue;
+            addCandidate(candidates, explicit);
         }
 
         return candidates;
@@ -181,16 +166,12 @@ public class EFRCookingHelpers {
         candidates.add(candidate.copy());
     }
 
-    private static <T> boolean isBlacklisted(T recipes, ItemStack input) {
-        if (recipes instanceof BlastFurnaceRecipes) {
-            return ((BlastFurnaceRecipes) recipes).smeltingBlacklist.contains(input);
-        }
+    private static boolean isBlacklisted(BlastFurnaceRecipes recipes, ItemStack input) {
+        return recipes.smeltingBlacklist.contains(input);
+    }
 
-        if (recipes instanceof SmokerRecipes) {
-            return ((SmokerRecipes) recipes).smeltingBlacklist.contains(input);
-        }
-
-        return false;
+    private static boolean isBlacklisted(SmokerRecipes recipes, ItemStack input) {
+        return recipes.smeltingBlacklist.contains(input);
     }
 
     private static Ingredient createIngredient(ItemStack input) {

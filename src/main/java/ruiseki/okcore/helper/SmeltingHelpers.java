@@ -37,7 +37,7 @@ public class SmeltingHelpers {
             ItemStack output = entry.getValue();
 
             if (ItemHelpers.isEmpty(input) || ItemHelpers.isEmpty(output)) continue;
-            if (RecipeRegistry.isFurnaceBridgeOutput(output)) continue;
+            if (RecipeRegistry.isFurnaceBridgeRecipe(input, output)) continue;
 
             ResourceLocation id = createRecipeId(input, output);
             if (id == null) continue;

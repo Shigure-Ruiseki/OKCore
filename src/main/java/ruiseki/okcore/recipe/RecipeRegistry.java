@@ -345,10 +345,12 @@ public class RecipeRegistry {
         }
     }
 
-    public static boolean isFurnaceBridgeOutput(ItemStack output) {
-        if (ItemHelpers.isEmpty(output)) return false;
+    public static boolean isFurnaceBridgeRecipe(ItemStack input, ItemStack output) {
+        if (ItemHelpers.isEmpty(input) || ItemHelpers.isEmpty(output)) return false;
         return FURNACE_BRIDGE_MAP.values()
             .stream()
-            .anyMatch(bridgeOutput -> ItemStack.areItemStacksEqual(bridgeOutput.getRecipeOutput(), output));
+            .anyMatch(recipe ->
+                recipe.getIngredient().test(input)
+                    && ItemStack.areItemStacksEqual(recipe.getResultItem(), output));
     }
 }

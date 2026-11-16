@@ -28,6 +28,7 @@ import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.event.handler.ClientResourceReloadHandler;
 import ruiseki.okcore.helper.CraftingHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.helper.SmeltingHelpers;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.RecipeManager;
@@ -79,6 +80,7 @@ public class OKCore extends ModBaseVersionable {
 
         // Load others
         CraftingHelpers.load();
+        SmeltingHelpers.load();
 
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();

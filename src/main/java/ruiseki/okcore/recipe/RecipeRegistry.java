@@ -28,13 +28,13 @@ import com.google.gson.JsonSyntaxException;
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.GsonHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.ingredient.CompoundIngredient;
 import ruiseki.okcore.recipe.ingredient.IIngredientSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.ingredient.NBTIngredient;
 import ruiseki.okcore.recipe.ingredient.VanillaIngredientSerializer;
-import ruiseki.okcore.recipe.type.cooking.AbstractCookingRecipe;
 import ruiseki.okcore.recipe.type.cooking.furnace.CookingRecipeSerializer;
 import ruiseki.okcore.recipe.type.cooking.furnace.FurnaceRecipe;
 import ruiseki.okcore.recipe.type.crafting.ICraftingRecipe;
@@ -47,7 +47,7 @@ public class RecipeRegistry {
 
     private static final Map<ResourceLocation, IRecipeSerializer<?>> SERIALIZER_MAPPING = new HashMap<>();
     private static final Map<ResourceLocation, IRecipeType<?>> TYPE_MAPPING = new HashMap<>();
-    private static final Map<ResourceLocation, AbstractCookingRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
+    private static final Map<ResourceLocation, FurnaceRecipe> FURNACE_BRIDGE_MAP = new HashMap<>();
     private static final BiMap<ResourceLocation, IIngredientSerializer<?>> ingredients = HashBiMap.create();
 
     public static IRecipeSerializer<ShapedRecipe> SHAPED_RECIPE;
@@ -287,7 +287,9 @@ public class RecipeRegistry {
         Map mcExperienceList = furnaceInstance.experienceList;
 
         if (mcSmeltingList == null) return;
-        for (AbstractCookingRecipe oldRecipe : FURNACE_BRIDGE_MAP.values()) {
+
+        // Remove Old Recipes
+        for (FurnaceRecipe oldRecipe : FURNACE_BRIDGE_MAP.values()) {
             ItemStack oldOutput = oldRecipe.getResultItem();
             if (oldOutput == null) continue;
 
@@ -317,8 +319,11 @@ public class RecipeRegistry {
 
         if (targetRecipes == null || targetRecipes.isEmpty()) return;
 
+        // Add New Recipes
         for (IRecipeOK<?> recipe : targetRecipes) {
-            if (recipe instanceof AbstractCookingRecipe customRecipe) {
+            if (recipe instanceof FurnaceRecipe customRecipe) {
+                if (customRecipe.isVanilla()) continue;
+
                 ResourceLocation recipeId = customRecipe.getId();
                 ItemStack customOutput = customRecipe.getResultItem();
                 float customExp = customRecipe.getExperience();
@@ -338,5 +343,14 @@ public class RecipeRegistry {
                 FURNACE_BRIDGE_MAP.put(recipeId, customRecipe);
             }
         }
+    }
+
+    public static boolean isFurnaceBridgeRecipe(ItemStack input, ItemStack output) {
+        if (ItemHelpers.isEmpty(input) || ItemHelpers.isEmpty(output)) return false;
+        return FURNACE_BRIDGE_MAP.values()
+            .stream()
+            .anyMatch(
+                recipe -> recipe.getIngredient()
+                    .test(input) && ItemStack.areItemStacksEqual(recipe.getResultItem(), output));
     }
 }

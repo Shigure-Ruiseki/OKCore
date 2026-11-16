@@ -23,7 +23,6 @@ import net.minecraftforge.fluids.Fluid;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -83,66 +82,51 @@ public class Helpers {
         return new ResourceLocation(location.substring(0, idx), location.substring(idx + 1));
     }
 
-    @Nullable
-    public static ResourceLocation getLocation(Item item) {
-        if (item == null) return null;
-        String name = (String) Item.itemRegistry.getNameForObject(item);
+    public static ResourceLocation getLocation(@NotNull Item item) {
+        String name = Item.itemRegistry.getNameForObject(item);
         return name != null ? parseLocation(name) : null;
     }
 
-    @Nullable
-    public static ResourceLocation getLocation(ItemStack stack) {
-        if (stack == null || stack.getItem() == null) return null;
-        return getLocation(stack.getItem());
+    public static ResourceLocation getLocation(@NotNull ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack, false)) return null;
+        return getLocation(ItemHelpers.getItem(stack));
     }
 
-    @NotNull
     public static ResourceLocation getLocationOrDefault(Item item, @NotNull ResourceLocation fallback) {
         ResourceLocation loc = getLocation(item);
         return loc != null ? loc : fallback;
     }
 
-    @NotNull
     public static ResourceLocation getLocationOrDefault(ItemStack stack, @NotNull ResourceLocation fallback) {
-        if (stack == null) return fallback;
+        if (ItemHelpers.isEmpty(stack, false)) return fallback;
         return getLocationOrDefault(stack.getItem(), fallback);
     }
 
-    @Nullable
-    public static ResourceLocation getLocation(Block block) {
-        if (block == null) return null;
-        String name = (String) Block.blockRegistry.getNameForObject(block);
+    public static ResourceLocation getLocation(@NotNull Block block) {
+        String name = Block.blockRegistry.getNameForObject(block);
         return name != null ? parseLocation(name) : null;
     }
 
-    @Nullable
-    public static ResourceLocation getLocation(BlockStack stack) {
-        if (stack == null || stack.getBlock() == null) return null;
+    public static ResourceLocation getLocation(@NotNull BlockStack stack) {
         return getLocation(stack.getBlock());
     }
 
-    @NotNull
     public static ResourceLocation getLocationOrDefault(Block block, @NotNull ResourceLocation fallback) {
         ResourceLocation loc = getLocation(block);
         return loc != null ? loc : fallback;
     }
 
-    @NotNull
     public static ResourceLocation getLocationOrDefault(BlockStack stack, @NotNull ResourceLocation fallback) {
-        if (stack == null) return fallback;
+        if (stack == null || stack.getBlock() == null) return fallback;
         return getLocationOrDefault(stack.getBlock(), fallback);
     }
 
-    @Nullable
-    public static ResourceLocation getLocation(Entity entity) {
-        if (entity == null) return null;
+    public static ResourceLocation getLocation(@NotNull Entity entity) {
         String entityName = EntityList.getEntityString(entity);
         return entityName != null ? parseLocation(entityName) : null;
     }
 
-    @Nullable
-    public static ResourceLocation getLocation(Fluid fluid) {
-        if (fluid == null) return null;
+    public static ResourceLocation getLocation(@NotNull Fluid fluid) {
         return parseLocation(fluid.getName());
     }
 

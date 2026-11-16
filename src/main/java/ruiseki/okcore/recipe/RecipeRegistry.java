@@ -31,6 +31,7 @@ import ruiseki.okcore.helper.GsonHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.ingredient.CompoundIngredient;
+import ruiseki.okcore.recipe.ingredient.ExcludedIngredient;
 import ruiseki.okcore.recipe.ingredient.IIngredientSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.ingredient.NBTIngredient;
@@ -74,6 +75,7 @@ public class RecipeRegistry {
         RecipeRegistry.register(new ResourceLocation("forge", "compound"), CompoundIngredient.Serializer.INSTANCE);
         RecipeRegistry.register(new ResourceLocation("forge", "nbt"), NBTIngredient.Serializer.INSTANCE);
         RecipeRegistry.register(new ResourceLocation("minecraft", "item"), VanillaIngredientSerializer.INSTANCE);
+        RecipeRegistry.register(new ResourceLocation("okcore", "excluded"), ExcludedIngredient.Serializer.INSTANCE);
     }
 
     public static <T extends IRecipeOK<?>> IRecipeType<T> registerType(ResourceLocation key) {

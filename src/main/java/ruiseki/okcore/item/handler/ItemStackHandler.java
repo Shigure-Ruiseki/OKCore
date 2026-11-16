@@ -30,20 +30,20 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, IItemHand
 
     public ItemStackHandler(List<ItemStack> stacks) {
         this.stacks = stacks == null ? NonNullList.withSize(0, ItemHelpers.EMPTY)
-            : NonNullList.from(ItemHelpers.EMPTY, stacks.toArray(new ItemStack[0]));
+            : NonNullList.of(ItemHelpers.EMPTY, stacks.toArray(new ItemStack[0]));
     }
 
     public ItemStackHandler(ItemStack[] stacks) {
         this.stacks = stacks == null ? NonNullList.withSize(0, ItemHelpers.EMPTY)
-            : NonNullList.from(ItemHelpers.EMPTY, stacks);
+            : NonNullList.of(ItemHelpers.EMPTY, stacks);
     }
 
     public void setEmpty() {
-        this.stacks.replaceAll(ignored -> ItemHelpers.EMPTY);
+        this.stacks.clear();
     }
 
     public void setSize(int size) {
-        stacks = NonNullList.withSize(size, ItemHelpers.EMPTY);
+        this.stacks = NonNullList.withSize(size, ItemHelpers.EMPTY);
     }
 
     public int[] getSlotArray() {

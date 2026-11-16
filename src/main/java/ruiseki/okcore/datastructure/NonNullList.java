@@ -25,8 +25,14 @@ public class NonNullList<E> extends AbstractList<E> {
     }
 
     @SafeVarargs
-    public static <E> NonNullList<E> from(E defaultElementIn, E... elements) {
+    public static <E> NonNullList<E> of(E defaultElementIn, E... elements) {
         return new NonNullList<E>(Arrays.asList(elements), defaultElementIn);
+    }
+
+    @SafeVarargs
+    @Deprecated
+    public static <E> NonNullList<E> from(E defaultElementIn, E... elements) {
+        return of(defaultElementIn, elements);
     }
 
     protected NonNullList() {
@@ -69,9 +75,7 @@ public class NonNullList<E> extends AbstractList<E> {
         if (this.defaultElement == null) {
             super.clear();
         } else {
-            for (int i = 0; i < this.size(); ++i) {
-                this.set(i, this.defaultElement);
-            }
+            this.replaceAll(ignored -> this.defaultElement);
         }
     }
 }

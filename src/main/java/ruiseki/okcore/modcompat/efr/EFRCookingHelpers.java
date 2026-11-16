@@ -34,7 +34,19 @@ public class EFRCookingHelpers {
         BlastFurnaceRecipes blast = BlastFurnaceRecipes.smelting();
         SmokerRecipes smoker = SmokerRecipes.smelting();
 
-        importBlastFurnaceRecipes(event, blast);
+        blast.setReloadingCT(true);
+        try {
+            importBlastFurnaceRecipes(event, blast);
+        } finally {
+            blast.setReloadingCT(false);
+        }
+
+        smoker.setReloadingCT(true);
+        try {
+            importSmokerRecipes(event, smoker);
+        } finally {
+            smoker.setReloadingCT(false);
+        }
         importSmokerRecipes(event, smoker);
     }
 

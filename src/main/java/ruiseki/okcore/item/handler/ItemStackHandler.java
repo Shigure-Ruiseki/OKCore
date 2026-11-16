@@ -39,7 +39,7 @@ public class ItemStackHandler implements IItemHandlerSimpleModifiable, IItemHand
     }
 
     public void setEmpty() {
-        this.stacks.clear();
+        this.stacks.replaceAll(ignored -> ItemHelpers.EMPTY);
     }
 
     public void setSize(int size) {

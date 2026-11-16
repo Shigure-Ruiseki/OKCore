@@ -12,6 +12,6 @@ public class RecipeTypeSmokerConfig extends RecipeTypeConfig<SmokerRecipe> {
     public static RecipeTypeSmokerConfig _instance;
 
     public RecipeTypeSmokerConfig() {
-        super(OKCore._instance, true, "blast_furnace", null, config -> new IRecipeType<SmokerRecipe>() {});
+        super(OKCore._instance, true, "smoker", null, config -> new IRecipeType<SmokerRecipe>() {});
     }
 }

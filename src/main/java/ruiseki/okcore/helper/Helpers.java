@@ -88,6 +88,7 @@ public class Helpers {
     }
 
     public static ResourceLocation getLocation(@NotNull ItemStack stack) {
+        if (ItemHelpers.isEmpty(stack)) return null;
         return getLocation(ItemHelpers.getItem(stack));
     }
 

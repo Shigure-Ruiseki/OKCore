@@ -9,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.okcore.event.recipes.RecipesRegisterEvent;
+import ruiseki.okcore.recipe.RecipeRegistry;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.cooking.furnace.FurnaceRecipe;
 
@@ -34,7 +35,9 @@ public class SmeltingHelpers {
             .entrySet()) {
             ItemStack input = entry.getKey();
             ItemStack output = entry.getValue();
+
             if (ItemHelpers.isEmpty(input) || ItemHelpers.isEmpty(output)) continue;
+            if (RecipeRegistry.isFurnaceBridgeOutput(output)) continue;
 
             ResourceLocation id = createRecipeId(input, output);
             if (id == null) continue;
@@ -50,14 +53,29 @@ public class SmeltingHelpers {
     }
 
     private float getExperience(FurnaceRecipes furnace, ItemStack output) {
-        Float experience = (Float) furnace.experienceList.get(output);
-        return experience != null ? experience : 0.0F;
+        return furnace.func_151398_b(output);
     }
 
     private ResourceLocation createRecipeId(ItemStack input, ItemStack output) {
         if (ItemHelpers.isEmpty(input) || ItemHelpers.isEmpty(output)) return null;
+
+        ResourceLocation inputId = Helpers.getLocation(input);
+        ResourceLocation outputId = Helpers.getLocation(output);
+
+        if (inputId == null || outputId == null) return null;
+
         return new ResourceLocation(
             "okcore",
-            "generated/vanilla/smelting/" + ItemHelpers.getHashCode(input) + "_to_" + ItemHelpers.getHashCode(output));
+            "generated/vanilla/smelting/" + inputId.getResourceDomain()
+                + "/"
+                + inputId.getResourcePath()
+                + "_"
+                + ItemHelpers.getHashCode(input)
+                + "_to_"
+                + outputId.getResourceDomain()
+                + "/"
+                + outputId.getResourcePath()
+                + "_"
+                + ItemHelpers.getHashCode(output));
     }
 }

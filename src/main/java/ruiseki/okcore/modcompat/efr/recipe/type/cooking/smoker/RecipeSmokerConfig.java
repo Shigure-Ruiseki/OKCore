@@ -12,11 +12,6 @@ public class RecipeSmokerConfig extends RecipeConfig<SmokerRecipe> {
     public static RecipeSmokerConfig _instance;
 
     public RecipeSmokerConfig() {
-        super(
-            OKCore._instance,
-            true,
-            "blast_furnace",
-            null,
-            config -> new CookingRecipeSerializer<>(SmokerRecipe::new, 100));
+        super(OKCore._instance, true, "smoker", null, config -> new CookingRecipeSerializer<>(SmokerRecipe::new, 100));
     }
 }

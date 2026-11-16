@@ -28,12 +28,14 @@ import com.google.gson.JsonSyntaxException;
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.helper.GsonHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.recipe.ingredient.CompoundIngredient;
 import ruiseki.okcore.recipe.ingredient.IIngredientSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.ingredient.NBTIngredient;
 import ruiseki.okcore.recipe.ingredient.VanillaIngredientSerializer;
+import ruiseki.okcore.recipe.type.cooking.AbstractCookingRecipe;
 import ruiseki.okcore.recipe.type.cooking.furnace.CookingRecipeSerializer;
 import ruiseki.okcore.recipe.type.cooking.furnace.FurnaceRecipe;
 import ruiseki.okcore.recipe.type.crafting.ICraftingRecipe;
@@ -342,5 +344,16 @@ public class RecipeRegistry {
                 FURNACE_BRIDGE_MAP.put(recipeId, customRecipe);
             }
         }
+    }
+
+    public static boolean isFurnaceBridgeOutput(ItemStack output) {
+        if (ItemHelpers.isEmpty(output)) return false;
+        for (AbstractCookingRecipe recipe : FURNACE_BRIDGE_MAP.values()) {
+            ItemStack bridgeOutput = recipe.getResultItem();
+            if (ItemHelpers.areItemsEqual(output, bridgeOutput)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -189,23 +189,16 @@ public class ItemHelpers {
     }
 
     public static boolean areTagsEqualIgnoreDurability(NBTTagCompound tagA, NBTTagCompound tagB) {
-        if (tagA == tagB) {
-            return true;
-        }
-        if (tagB == null || tagA.func_150296_c()
+        if (tagA == tagB) return true;
+        if (tagA == null || tagB == null) return false;
+        if (tagA.func_150296_c()
             .size()
             != tagB.func_150296_c()
-                .size()) {
+                .size())
             return false;
-        }
-
         for (String key : tagA.func_150296_c()) {
-            if (!tagB.hasKey(key)) {
-                return false;
-            }
-            if (!Objects.equals(tagA.getTag(key), tagB.getTag(key))) {
-                return false;
-            }
+            if (!tagB.hasKey(key)) return false;
+            if (!Objects.equals(tagA.getTag(key), tagB.getTag(key))) return false;
         }
         return true;
     }

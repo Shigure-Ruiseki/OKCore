@@ -18,6 +18,7 @@ public abstract class AbstractCookingRecipe implements IRecipeOK<IInventory> {
     protected final ItemStack result;
     protected final float experience;
     protected final int cookingTime;
+    private boolean vanilla = false;
 
     public AbstractCookingRecipe(IRecipeType<?> type, ResourceLocation id, Ingredient ingredient, ItemStack result,
         float experience, int cookingTime) {
@@ -81,5 +82,15 @@ public abstract class AbstractCookingRecipe implements IRecipeOK<IInventory> {
     @Override
     public int getRecipeSize() {
         return 1;
+    }
+
+    public boolean isVanilla() {
+        return vanilla;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T setVanilla(boolean vanilla) {
+        this.vanilla = vanilla;
+        return (T) this;
     }
 }

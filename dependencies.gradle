@@ -65,6 +65,7 @@ dependencies {
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:ServerUtilities:2.4.10:dev")
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:ForgeMultipart:1.7.15:dev")
 
+    compileOnly("com.github.GTNewHorizons:Et-Futurum-Requiem:2.6.40-GTNH:dev") { transitive = false }
     compileOnly(rfg.deobf("com.github.Thorfusion:Mekanism-Community-Edition:9.10.46:DEV"))
 
     compileOnlyApi('com.github.GTNewHorizons:Angelica:2.2.15:dev')

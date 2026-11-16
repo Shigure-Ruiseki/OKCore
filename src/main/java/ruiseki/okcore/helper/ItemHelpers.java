@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.inventory.ItemStackKey;
 import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 import ruiseki.okcore.item.IItemSharedTag;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
@@ -260,11 +261,8 @@ public class ItemHelpers {
 
     public static int getHashCode(ItemStack stack) {
         if (isEmpty(stack)) return 0;
-        int result = 1;
-        result = 37 * result + getCount(stack);
-        result = 37 * result + getItem(stack).hashCode();
-        result = 37 * result + getStackMeta(stack);
-        return result;
+        ItemStackKey key = ItemStackKey.of(stack);
+        return key != null ? key.hashCode() : 0;
     }
 
     // 3. WORLD & PLAYER INTERACTIONS

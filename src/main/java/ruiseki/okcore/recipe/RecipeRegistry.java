@@ -35,7 +35,6 @@ import ruiseki.okcore.recipe.ingredient.IIngredientSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.ingredient.NBTIngredient;
 import ruiseki.okcore.recipe.ingredient.VanillaIngredientSerializer;
-import ruiseki.okcore.recipe.type.cooking.AbstractCookingRecipe;
 import ruiseki.okcore.recipe.type.cooking.furnace.CookingRecipeSerializer;
 import ruiseki.okcore.recipe.type.cooking.furnace.FurnaceRecipe;
 import ruiseki.okcore.recipe.type.crafting.ICraftingRecipe;
@@ -348,12 +347,8 @@ public class RecipeRegistry {
 
     public static boolean isFurnaceBridgeOutput(ItemStack output) {
         if (ItemHelpers.isEmpty(output)) return false;
-        for (AbstractCookingRecipe recipe : FURNACE_BRIDGE_MAP.values()) {
-            ItemStack bridgeOutput = recipe.getResultItem();
-            if (ItemHelpers.areItemsEqual(output, bridgeOutput)) {
-                return true;
-            }
-        }
-        return false;
+        return FURNACE_BRIDGE_MAP.values()
+            .stream()
+            .anyMatch(bridgeOutput -> ItemStack.areItemStacksEqual(bridgeOutput.getRecipeOutput(), output));
     }
 }

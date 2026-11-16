@@ -88,7 +88,7 @@ public class Helpers {
     }
 
     public static ResourceLocation getLocation(@NotNull ItemStack stack) {
-        if (ItemHelpers.isEmpty(stack)) return null;
+        if (ItemHelpers.isEmpty(stack, false)) return null;
         return getLocation(ItemHelpers.getItem(stack));
     }
 
@@ -98,7 +98,7 @@ public class Helpers {
     }
 
     public static ResourceLocation getLocationOrDefault(ItemStack stack, @NotNull ResourceLocation fallback) {
-        if (stack == null) return fallback;
+        if (ItemHelpers.isEmpty(stack, false)) return fallback;
         return getLocationOrDefault(stack.getItem(), fallback);
     }
 
@@ -117,7 +117,7 @@ public class Helpers {
     }
 
     public static ResourceLocation getLocationOrDefault(BlockStack stack, @NotNull ResourceLocation fallback) {
-        if (stack == null) return fallback;
+        if (stack == null || stack.getBlock() == null) return fallback;
         return getLocationOrDefault(stack.getBlock(), fallback);
     }
 

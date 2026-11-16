@@ -24,12 +24,7 @@ import ruiseki.okcore.recipe.type.crafting.shapless.ShapelessRecipe;
 @Mixin(value = ShapelessRecipeHandler.class, remap = false)
 public abstract class MixinShapelessRecipeHandler extends TemplateRecipeHandler {
 
-    @Inject(
-        method = "loadCraftingRecipes(Ljava/lang/String;[Ljava/lang/Object;)V",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/item/crafting/CraftingManager;getRecipeList()Ljava/util/List;",
-            shift = At.Shift.AFTER))
+    @Inject(method = "loadCraftingRecipes(Ljava/lang/String;[Ljava/lang/Object;)V", at = @At("HEAD"))
     private void injectLoadCraftingRecipes(String outputId, Object[] results, CallbackInfo ci) {
         if (okcore$getThis().getClass() != ShapelessRecipeHandler.class) return;
         boolean crafting = "crafting".equals(outputId);

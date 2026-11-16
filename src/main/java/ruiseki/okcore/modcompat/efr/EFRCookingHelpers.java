@@ -1,16 +1,13 @@
 
 package ruiseki.okcore.modcompat.efr;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.oredict.OreDictionary;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ganymedes01.etfuturum.recipes.BlastFurnaceRecipes;
@@ -37,43 +34,39 @@ public class EFRCookingHelpers {
         BlastFurnaceRecipes blast = BlastFurnaceRecipes.smelting();
         SmokerRecipes smoker = SmokerRecipes.smelting();
 
-        blast.setReloadingCT(true);
-        smoker.setReloadingCT(true);
-        try {
-            importBlastFurnaceRecipes(event);
-            importSmokerRecipes(event);
-        } finally {
-            blast.setReloadingCT(false);
-            smoker.setReloadingCT(false);
-        }
+        importBlastFurnaceRecipes(event, blast);
+        importSmokerRecipes(event, smoker);
     }
 
-    private static void importBlastFurnaceRecipes(RecipesRegisterEvent event) {
-        BlastFurnaceRecipes recipes = BlastFurnaceRecipes.smelting();
+    private static void importBlastFurnaceRecipes(RecipesRegisterEvent event, BlastFurnaceRecipes recipes) {
         Set<ResourceLocation> imported = new HashSet<>();
-        Set<ItemStack> explicitInputs = recipes.smeltingList.keySet();
+        for (ItemStack input : recipes.smeltingList.keySet()) {
+            importBlastFurnaceRecipe(event, recipes, input, imported);
+        }
 
         for (ItemStack input : FurnaceRecipes.smelting()
             .getSmeltingList()
             .keySet()) {
-            for (ItemStack candidate : resolveCandidates(input, explicitInputs)) {
-                importBlastFurnaceRecipe(event, recipes, candidate, imported);
-            }
+            importBlastFurnaceRecipe(event, recipes, input, imported);
+        }
+    }
+
+    private static void importSmokerRecipes(RecipesRegisterEvent event, SmokerRecipes recipes) {
+        Set<ResourceLocation> imported = new HashSet<>();
+        for (ItemStack input : recipes.smeltingList.keySet()) {
+            importSmokerRecipe(event, recipes, input, imported);
         }
 
-        for (ItemStack input : explicitInputs) {
-            for (ItemStack candidate : resolveCandidates(input, explicitInputs)) {
-                importBlastFurnaceRecipe(event, recipes, candidate, imported);
-            }
+        for (ItemStack input : FurnaceRecipes.smelting()
+            .getSmeltingList()
+            .keySet()) {
+            importSmokerRecipe(event, recipes, input, imported);
         }
     }
 
     private static void importBlastFurnaceRecipe(RecipesRegisterEvent event, BlastFurnaceRecipes recipes,
         ItemStack input, Set<ResourceLocation> imported) {
         if (ItemHelpers.isEmpty(input)) return;
-        if (input.getItemDamage() == OreDictionary.WILDCARD_VALUE) return;
-        if (isBlacklisted(recipes, input)) return;
-
         ItemStack output = recipes.getSmeltingResult(input);
         if (ItemHelpers.isEmpty(output)) return;
 
@@ -87,37 +80,15 @@ public class EFRCookingHelpers {
             createIngredient(input),
             output.copy(),
             experience,
-            DEFAULT_COOKING_TIME).setVanilla(true);
+            DEFAULT_COOKING_TIME);
+        recipe.setVanilla(true);
 
         event.addRecipe(recipe);
-    }
-
-    private static void importSmokerRecipes(RecipesRegisterEvent event) {
-        SmokerRecipes recipes = SmokerRecipes.smelting();
-        Set<ResourceLocation> imported = new HashSet<>();
-        Set<ItemStack> explicitInputs = recipes.smeltingList.keySet();
-
-        for (ItemStack input : FurnaceRecipes.smelting()
-            .getSmeltingList()
-            .keySet()) {
-            for (ItemStack candidate : resolveCandidates(input, explicitInputs)) {
-                importSmokerRecipe(event, recipes, candidate, imported);
-            }
-        }
-
-        for (ItemStack input : explicitInputs) {
-            for (ItemStack candidate : resolveCandidates(input, explicitInputs)) {
-                importSmokerRecipe(event, recipes, candidate, imported);
-            }
-        }
     }
 
     private static void importSmokerRecipe(RecipesRegisterEvent event, SmokerRecipes recipes, ItemStack input,
         Set<ResourceLocation> imported) {
         if (ItemHelpers.isEmpty(input)) return;
-        if (input.getItemDamage() == OreDictionary.WILDCARD_VALUE) return;
-        if (isBlacklisted(recipes, input)) return;
-
         ItemStack output = recipes.getSmeltingResult(input);
         if (ItemHelpers.isEmpty(output)) return;
 
@@ -131,47 +102,10 @@ public class EFRCookingHelpers {
             createIngredient(input),
             output.copy(),
             experience,
-            DEFAULT_COOKING_TIME).setVanilla(true);
+            DEFAULT_COOKING_TIME);
+        recipe.setVanilla(true);
 
         event.addRecipe(recipe);
-    }
-
-    private static List<ItemStack> resolveCandidates(ItemStack input, Set<ItemStack> explicitInputs) {
-        List<ItemStack> candidates = new ArrayList<>();
-
-        if (ItemHelpers.isEmpty(input)) return candidates;
-
-        if (input.getItemDamage() != OreDictionary.WILDCARD_VALUE) {
-            candidates.add(input.copy());
-            return candidates;
-        }
-
-        for (ItemStack explicit : explicitInputs) {
-            if (ItemHelpers.isEmpty(explicit)) continue;
-            if (explicit.getItem() != input.getItem()) continue;
-            if (explicit.getItemDamage() == OreDictionary.WILDCARD_VALUE) continue;
-            addCandidate(candidates, explicit);
-        }
-
-        return candidates;
-    }
-
-    private static void addCandidate(List<ItemStack> candidates, ItemStack candidate) {
-        for (ItemStack existing : candidates) {
-            if (ItemStack.areItemStacksEqual(existing, candidate)) {
-                return;
-            }
-        }
-
-        candidates.add(candidate.copy());
-    }
-
-    private static boolean isBlacklisted(BlastFurnaceRecipes recipes, ItemStack input) {
-        return recipes.smeltingBlacklist.contains(input);
-    }
-
-    private static boolean isBlacklisted(SmokerRecipes recipes, ItemStack input) {
-        return recipes.smeltingBlacklist.contains(input);
     }
 
     private static Ingredient createIngredient(ItemStack input) {
@@ -180,26 +114,22 @@ public class EFRCookingHelpers {
 
     private static ResourceLocation createRecipeId(String type, ItemStack input, ItemStack output) {
         if (ItemHelpers.isEmpty(input) || ItemHelpers.isEmpty(output)) return null;
-
         ResourceLocation inputId = Helpers.getLocation(input);
         ResourceLocation outputId = Helpers.getLocation(output);
-
         if (inputId == null || outputId == null) return null;
-
-        return new ResourceLocation(
-            "okcore",
-            "generated/etfuturum/" + type
-                + "/"
-                + inputId.getResourceDomain()
-                + "/"
-                + inputId.getResourcePath()
-                + "_"
-                + ItemHelpers.getStackMeta(input)
-                + "_to/"
-                + outputId.getResourceDomain()
-                + "/"
-                + outputId.getResourcePath()
-                + "_"
-                + ItemHelpers.getStackMeta(output));
+        String path = "generated/etfuturum/" + type
+            + "/"
+            + inputId.getResourceDomain()
+            + "/"
+            + inputId.getResourcePath()
+            + "_"
+            + ItemHelpers.getStackMeta(input)
+            + "_to/"
+            + outputId.getResourceDomain()
+            + "/"
+            + outputId.getResourcePath()
+            + "_"
+            + ItemHelpers.getStackMeta(output);
+        return new ResourceLocation("okcore", path);
     }
 }

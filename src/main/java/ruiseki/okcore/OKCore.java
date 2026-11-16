@@ -30,6 +30,8 @@ import ruiseki.okcore.helper.CraftingHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.SmeltingHelpers;
 import ruiseki.okcore.init.ModBaseVersionable;
+import ruiseki.okcore.modcompat.ModCompatLoader;
+import ruiseki.okcore.modcompat.efr.EFRModCompat;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.RecipeManager;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
@@ -58,6 +60,12 @@ public class OKCore extends ModBaseVersionable {
     @Mod.EventHandler
     public void mappingChanged(FMLModIdMappingEvent event) {
         Ingredient.invalidateAll();
+    }
+
+    @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        super.loadModCompats(modCompatLoader);
+        modCompatLoader.addModCompat(new EFRModCompat());
     }
 
     @Override

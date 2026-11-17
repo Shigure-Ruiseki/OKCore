@@ -37,6 +37,7 @@ public enum Mods implements IMod {
     TConstruct("TConstruct"),
     ThermalFoundation("ThermalFoundation"),
     JFMUY("jfmuy"),
+    OpenBlocks("OpenBlocks"),
     MUI2("modularui2"),
     Waila("Waila"),;
 

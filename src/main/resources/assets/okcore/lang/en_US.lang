@@ -95,3 +95,8 @@ config.okcore.general.versionChecker=Version check
 config.okcore.Waila=Waila
 
 gui.okcore.tooltip.energy.tooltip_line=%s RF out of %s RF
+
+#Common Compat
+fluid.fluids.okcore.block_xpjuice=Liquid XP
+tile.blocks.okcore.block_xpjuice.name=Liquid XP
+item.items.okcore.bucket_xpjuice.name=Liquid XP Bucket

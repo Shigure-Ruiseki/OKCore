@@ -7,6 +7,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -36,6 +37,12 @@ public abstract class FluidConfig extends ExtendedConfig<FluidConfig, Fluid> {
         Function<FluidConfig, Fluid> elementFactory) {
         super(mod, enabled, namedId, comment, elementFactory);
         if (MinecraftHelpers.isClientSide()) MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    @Override
+    public Fluid getInstance() {
+        Fluid existing = FluidRegistry.getFluid(this.getNamedId());
+        return existing != null ? existing : super.getInstance();
     }
 
     @Override
@@ -79,12 +86,16 @@ public abstract class FluidConfig extends ExtendedConfig<FluidConfig, Fluid> {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void onTextureStitch(TextureStitchEvent.Pre event) {
-        if (event.map.getTextureType() == 0) {
-            IIcon still = event.map.registerIcon(getIconLocationStill().toString());
-            IIcon flowing = event.map.registerIcon(getIconLocationFlow().toString());
-            if (getInstance() != null) {
-                getInstance().setIcons(still, flowing);
-            }
-        }
+        if (event.map.getTextureType() != 0) return;
+
+        Fluid fluid = super.getInstance();
+
+        // Do not override textures of a fluid provided by another mod.
+        if (fluid == null || FluidRegistry.getFluid(getNamedId()) != null) return;
+
+        IIcon still = event.map.registerIcon(getIconLocationStill().toString());
+        IIcon flowing = event.map.registerIcon(getIconLocationFlow().toString());
+
+        fluid.setIcons(still, flowing);
     }
 }

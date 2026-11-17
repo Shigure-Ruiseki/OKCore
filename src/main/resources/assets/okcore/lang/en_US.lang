@@ -97,6 +97,6 @@ config.okcore.Waila=Waila
 gui.okcore.tooltip.energy.tooltip_line=%s RF out of %s RF
 
 #Common Compat
-fluid.fluids.okcore.block_xpjuice=Liquid XP
+fluid.fluids.okcore.xpjuice=Liquid XP
 tile.blocks.okcore.block_xpjuice.name=Liquid XP
 item.items.okcore.bucket_xpjuice.name=Liquid XP Bucket

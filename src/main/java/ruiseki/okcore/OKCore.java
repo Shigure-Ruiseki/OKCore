@@ -31,6 +31,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.SmeltingHelpers;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.modcompat.ModCompatLoader;
+import ruiseki.okcore.modcompat.common.CommonModCompat;
 import ruiseki.okcore.modcompat.efr.EFRModCompat;
 import ruiseki.okcore.proxy.ICommonProxy;
 import ruiseki.okcore.recipe.RecipeManager;
@@ -65,6 +66,7 @@ public class OKCore extends ModBaseVersionable {
     @Override
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         super.loadModCompats(modCompatLoader);
+        modCompatLoader.addModCompat(new CommonModCompat());
         modCompatLoader.addModCompat(new EFRModCompat());
     }
 

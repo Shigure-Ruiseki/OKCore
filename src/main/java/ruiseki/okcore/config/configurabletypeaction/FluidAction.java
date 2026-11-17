@@ -37,9 +37,6 @@ public class FluidAction extends ConfigurableTypeAction<FluidConfig, Fluid> {
         // Save the config inside the correct element
         eConfig.save();
 
-        // Another mod already provides this fluid.
-        if (FluidRegistry.getFluid(eConfig.getNamedId()) != null) return;
-
         Fluid fluid = eConfig.getInstance();
         if (fluid != null) {
             fluid.setUnlocalizedName(eConfig.getUnlocalizedName());

@@ -43,7 +43,7 @@ public abstract class MixinEntityPlayer implements IPlayerXp {
 
         this.addScore(amount);
         this.experience += (float) amount / (float) this.okcore$getXpNeededForNextLevel();
-        this.experienceTotal = Math.clamp(this.experienceTotal + amount, 0, Integer.MAX_VALUE);
+        this.experienceTotal = (int) Math.clamp((long) this.experienceTotal + amount, 0L, Integer.MAX_VALUE);
 
         while (this.experience < 0.0F) {
             float remainingXp = this.experience * (float) this.okcore$getXpNeededForNextLevel();

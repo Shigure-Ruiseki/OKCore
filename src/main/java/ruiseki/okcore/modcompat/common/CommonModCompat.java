@@ -30,11 +30,9 @@ public class CommonModCompat implements IModCompat {
     public void onInit(Step initStep) {
         if (initStep == Step.PREINIT) {
             ConfigHandler configHandler = OKCore._instance.getConfigHandler();
-            if (!Mods.EnderIO.isModLoaded() || !Mods.OpenBlocks.isModLoaded()) {
-                configHandler.add(new FluidXpJuiceConfig());
-                configHandler.add(new BlockFluidXpJuiceConfig());
-                configHandler.add(new ItemBucketXpJuiceConfig());
-            }
+            configHandler.add(new FluidXpJuiceConfig());
+            configHandler.add(new BlockFluidXpJuiceConfig());
+            configHandler.add(new ItemBucketXpJuiceConfig());
         }
     }
 }

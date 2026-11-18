@@ -23,11 +23,6 @@ public enum Mixins implements IMixins {
     SLOT_BACKGROUND(new MixinBuilder("Add Slot BackGround").addClientMixins("client.gui.MixinGuiContainer")
         .setPhase(Phase.EARLY)),
 
-    // COOLDOWN
-    COOLDOWN(new MixinBuilder("Add cooldown to EntityPlayer").addCommonMixins("entity.cooldown.MixinEntityPlayer")
-        .addClientMixins("entity.cooldown.MixinRenderItem")
-        .setPhase(Phase.EARLY)),
-
     // EVENT
     DATA_EVENT(new MixinBuilder("Hook Data Event").addCommonMixins("event.data.MixinServerConfigurationManager")
         .setPhase(Phase.EARLY)),
@@ -72,11 +67,21 @@ public enum Mixins implements IMixins {
         .addExcludedMod(TargetMods.MUI2)
         .setPhase(Phase.EARLY)),
 
+    // COOLDOWN
+    COOLDOWN(new MixinBuilder("Add cooldown api for EntityPlayer").addCommonMixins("entity.cooldown.MixinEntityPlayer")
+        .addClientMixins("entity.cooldown.MixinRenderItem")
+        .setPhase(Phase.EARLY)),
+
     // PERMISSION
     PERMISSION(new MixinBuilder("Synchronize player permission levels between server and client")
         .addCommonMixins("entity.permission.MixinEntityPlayerMP", "entity.permission.MixinServerConfigurationManager")
         .addClientMixins("entity.permission.MixinEntityPlayerSP")
         .setPhase(Phase.EARLY)),
+
+    // EXPERIENCE
+    EXPERIENCE(
+        new MixinBuilder("Add experiences api for EntityPlayer").addCommonMixins("entity.experience.MixinEntityPlayer")
+            .setPhase(Phase.EARLY)),
 
     // Tag
     TAG(new MixinBuilder("Add tweaks for Tag system").addCommonMixins("tag.MixinItem", "tag.MixinBlock")

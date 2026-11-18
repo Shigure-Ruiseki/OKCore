@@ -42,50 +42,25 @@ public abstract class MixinEntityPlayer implements IPlayerXp {
         amount = event.getAmount();
 
         this.addScore(amount);
+        this.experience += (float) amount / (float) this.okcore$getXpNeededForNextLevel();
+        this.experienceTotal = Math.clamp(this.experienceTotal + amount, 0, Integer.MAX_VALUE);
 
-        long total = (long) this.experienceTotal + amount;
-        this.experienceTotal = (int) Math.clamp(total, 0L, Integer.MAX_VALUE);
-
-        double progress = (double) this.experience + (double) amount / this.okcore$getXpNeededForNextLevel();
-        while (progress < 0.0D) {
-            double remainingXp = progress * this.okcore$getXpNeededForNextLevel();
-
-            if (this.experienceLevel <= 0) {
+        while (this.experience < 0.0F) {
+            float remainingXp = this.experience * (float) this.okcore$getXpNeededForNextLevel();
+            if (this.experienceLevel > 0) {
+                this.okcore$giveExperienceLevels(-1);
+                this.experience = 1.0F + remainingXp / this.okcore$getXpNeededForNextLevel();
+            } else {
                 this.okcore$giveExperienceLevels(-1);
                 this.experience = 0.0F;
-                return;
             }
-
-            int oldLevel = this.experienceLevel;
-            this.okcore$giveExperienceLevels(-1);
-
-            if (this.experienceLevel >= oldLevel) {
-                this.experience = 0.0F;
-                return;
-            }
-
-            progress = 1.0D + remainingXp / this.okcore$getXpNeededForNextLevel();
         }
 
-        while (progress >= 1.0D) {
-            int cap = this.okcore$getXpNeededForNextLevel();
-
-            // Consume one XP bar using double precision.
-            progress = (progress - 1.0D) * cap;
-
-            int oldLevel = this.experienceLevel;
+        while (this.experience >= 1.0F) {
+            this.experience = (this.experience - 1.0F) * this.okcore$getXpNeededForNextLevel();
             this.okcore$giveExperienceLevels(1);
-
-            // Event was cancelled or did not produce an effective level change.
-            if (this.experienceLevel <= oldLevel) {
-                this.experience = (float) (progress / cap);
-                return;
-            }
-
-            progress /= this.okcore$getXpNeededForNextLevel();
+            this.experience /= this.okcore$getXpNeededForNextLevel();
         }
-
-        this.experience = (float) progress;
     }
 
     @Override

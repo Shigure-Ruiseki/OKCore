@@ -35,6 +35,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.entity.experience.IPlayerXp;
 import ruiseki.okcore.entity.permission.IPlayerPermission;
 import ruiseki.okcore.event.OKHooks;
 import ruiseki.okcore.event.interaction.IEntityInteractAt;
@@ -263,5 +264,30 @@ public class PlayerHelpers {
             }
         }
         return null;
+    }
+
+    public static int getTotalExperience(EntityPlayer player) {
+        if (!(player instanceof IPlayerXp xp)) return 0;
+        return xp.okcore$getTotalExperience();
+    }
+
+    public static int getXpNeededForNextLevel(EntityPlayer player) {
+        if (!(player instanceof IPlayerXp xp)) return 0;
+        return xp.okcore$getXpNeededForNextLevel();
+    }
+
+    public static float getExperienceProgress(EntityPlayer player) {
+        if (!(player instanceof IPlayerXp xp)) return 0;
+        return xp.okcore$getExperienceProgress();
+    }
+
+    public static void giveExperiencePoints(EntityPlayer player, int amount) {
+        if (!(player instanceof IPlayerXp xp)) return;
+        xp.okcore$giveExperiencePoints(amount);
+    }
+
+    public static void giveExperienceLevels(EntityPlayer player, int amount) {
+        if (!(player instanceof IPlayerXp xp)) return;
+        xp.okcore$giveExperienceLevels(amount);
     }
 }

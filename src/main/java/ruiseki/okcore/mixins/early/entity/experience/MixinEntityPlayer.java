@@ -8,6 +8,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+
 import ruiseki.okcore.entity.experience.IPlayerXp;
 import ruiseki.okcore.event.entity.PlayerXpEvent;
 
@@ -40,7 +43,7 @@ public abstract class MixinEntityPlayer implements IPlayerXp {
 
         this.addScore(amount);
         this.experience += (float) amount / (float) this.okcore$getXpNeededForNextLevel();
-        this.experienceTotal = (int) Math.clamp(experienceTotal + amount, 0L, Integer.MAX_VALUE);
+        this.experienceTotal = Math.clamp(this.experienceTotal + amount, 0, Integer.MAX_VALUE);
 
         while (this.experience < 0.0F) {
             float remainingXp = this.experience * (float) this.okcore$getXpNeededForNextLevel();
@@ -62,9 +65,21 @@ public abstract class MixinEntityPlayer implements IPlayerXp {
 
     @Override
     public void okcore$giveExperienceLevels(int amount) {
-        PlayerXpEvent.LevelChange event = new PlayerXpEvent.LevelChange(this.okcore$getThis(), amount);
+        this.addExperienceLevel(amount);
+    }
+
+    @WrapMethod(method = "addExperienceLevel(I)V")
+    private void okcore$wrapAddExperienceLevel(int p_82242_1_, Operation<Void> original) {
+        PlayerXpEvent.LevelChange event = new PlayerXpEvent.LevelChange(this.okcore$getThis(), p_82242_1_);
         if (MinecraftForge.EVENT_BUS.post(event)) return;
-        this.addExperienceLevel(event.getLevels());
+        original.call(event.getLevels());
+    }
+
+    @WrapMethod(method = "addExperience(I)V")
+    private void okcore$wrapAddExperience(int p_71023_1_, Operation<Void> original) {
+        PlayerXpEvent.XpChange event = new PlayerXpEvent.XpChange(this.okcore$getThis(), p_71023_1_);
+        if (MinecraftForge.EVENT_BUS.post(event)) return;
+        original.call(event.getAmount());
     }
 
     @Override

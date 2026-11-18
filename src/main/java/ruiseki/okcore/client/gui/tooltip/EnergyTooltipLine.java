@@ -93,7 +93,7 @@ public class EnergyTooltipLine implements ITooltipLine {
 
     private String getEnergyText() {
         return LangHelpers
-            .localize("gui.okcore.tooltip.energy.tooltip_line", this.getEnergyStored(), this.getMaxEnergyStored());
+            .localize("gui.okcore.tooltip.tooltip_line.energy", this.getEnergyStored(), this.getMaxEnergyStored());
     }
 
     private int getEnergyRatioWidth(int width) {

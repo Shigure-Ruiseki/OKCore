@@ -15,7 +15,9 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.BlockDoorBase;
 import ruiseki.okcore.block.IBlockRarityProvider;
+import ruiseki.okcore.client.gui.tooltip.HeaderTooltipLine;
 import ruiseki.okcore.client.gui.tooltip.TooltipBuilder;
+import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -61,6 +63,7 @@ public class ItemDoorMetadata extends ItemDoor implements IItemTooltip {
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
         super.addInformation(stack, player, list, advanced);
+        list.set(0, TooltipLineHandler.register(new HeaderTooltipLine(stack, list.getFirst())));
         LangHelpers.addOptionalInfo(list, getUnlocalizedName());
         informationProvider.addInformation(stack, player, list, advanced);
         this.getTooltipBuilder()

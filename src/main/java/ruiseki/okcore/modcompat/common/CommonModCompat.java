@@ -3,7 +3,6 @@ package ruiseki.okcore.modcompat.common;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.config.ConfigHandler;
-import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.modcompat.IModCompat;
 import ruiseki.okcore.modcompat.common.block.BlockFluidXpJuiceConfig;
 import ruiseki.okcore.modcompat.common.fluid.FluidXpJuiceConfig;

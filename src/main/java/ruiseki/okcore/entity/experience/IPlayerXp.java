@@ -21,19 +21,4 @@ public interface IPlayerXp {
      * @param amount positive to add levels, negative to remove levels
      */
     void okcore$giveExperienceLevels(int amount);
-
-    /**
-     * Gets the player's total experience points.
-     */
-    int okcore$getTotalExperience();
-
-    /**
-     * Gets the player's current experience progress.
-     */
-    float okcore$getExperienceProgress();
-
-    /**
-     * Sets the player's current experience progress.
-     */
-    void okcore$setExperienceProgress(float progress);
 }

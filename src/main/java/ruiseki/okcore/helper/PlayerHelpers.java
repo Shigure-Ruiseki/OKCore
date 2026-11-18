@@ -266,19 +266,9 @@ public class PlayerHelpers {
         return null;
     }
 
-    public static int getTotalExperience(EntityPlayer player) {
-        if (!(player instanceof IPlayerXp xp)) return 0;
-        return xp.okcore$getTotalExperience();
-    }
-
     public static int getXpNeededForNextLevel(EntityPlayer player) {
         if (!(player instanceof IPlayerXp xp)) return 0;
         return xp.okcore$getXpNeededForNextLevel();
-    }
-
-    public static float getExperienceProgress(EntityPlayer player) {
-        if (!(player instanceof IPlayerXp xp)) return 0;
-        return xp.okcore$getExperienceProgress();
     }
 
     public static void giveExperiencePoints(EntityPlayer player, int amount) {

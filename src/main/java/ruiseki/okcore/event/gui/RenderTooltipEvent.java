@@ -1,13 +1,11 @@
 package ruiseki.okcore.event.gui;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
 import cpw.mods.fml.common.eventhandler.Cancelable;
 import cpw.mods.fml.common.eventhandler.Event;
@@ -17,13 +15,14 @@ import cpw.mods.fml.common.eventhandler.Event;
  *
  * <p>
  * Events are dispatched at different stages of tooltip rendering,
- * allowing subscribers to modify rendering parameters, customize
- * tooltip colors, or draw additional content.
+ * allowing subscribers to modify tooltip content, rendering parameters,
+ * background colors, or draw additional content.
  * </p>
  *
  * <p>
- * Tooltip text is exposed as an unmodifiable list.
- * To modify the text itself, use {@link ItemTooltipEvent}.
+ * The tooltip lines are exposed as a mutable list. However, modifications
+ * to tooltip content should only be made during {@link Pre}, before tooltip
+ * dimensions and layout are calculated.
  * </p>
  *
  * <p>
@@ -33,7 +32,7 @@ import cpw.mods.fml.common.eventhandler.Event;
  * <ul>
  * <li>{@link Pre} - Before tooltip layout and rendering.</li>
  * <li>{@link Color} - When tooltip background colors are determined.</li>
- * <li>{@link PostBackground} - After the background is rendered.</li>
+ * <li>{@link PostBackground} - After the background is rendered, before text.</li>
  * <li>{@link PostText} - After tooltip text is rendered.</li>
  * </ul>
  *
@@ -41,7 +40,6 @@ import cpw.mods.fml.common.eventhandler.Event;
  * These events are intended for client-side rendering only.
  * </p>
  *
- * @see ItemTooltipEvent
  * @see Pre
  * @see Color
  * @see PostBackground
@@ -51,16 +49,21 @@ public abstract class RenderTooltipEvent extends Event {
 
     @Nonnull
     protected final ItemStack stack;
+
+    @Nonnull
     protected final List<String> lines;
+
     protected int x;
     protected int y;
+
+    @Nonnull
     protected FontRenderer fr;
 
     /**
      * Constructs a tooltip rendering event.
      *
      * @param stack the item stack associated with the tooltip
-     * @param lines the tooltip text lines
+     * @param lines the mutable tooltip text lines
      * @param x     the tooltip X position
      * @param y     the tooltip Y position
      * @param fr    the font renderer used for tooltip text
@@ -68,15 +71,20 @@ public abstract class RenderTooltipEvent extends Event {
     public RenderTooltipEvent(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y,
         @Nonnull FontRenderer fr) {
         this.stack = stack;
-        this.lines = Collections.unmodifiableList(lines); // Leave editing to ItemTooltipEvent
+        this.lines = lines;
         this.x = x;
         this.y = y;
         this.fr = fr;
     }
 
     /**
-     * @return The stack which the tooltip is being rendered for. As tooltips can be drawn without itemstacks, this
-     *         stack may be empty.
+     * Gets the item stack associated with this tooltip.
+     *
+     * <p>
+     * The stack may be empty when rendering tooltips without an associated item.
+     * </p>
+     *
+     * @return the associated item stack
      */
     @Nonnull
     public ItemStack getStack() {
@@ -84,9 +92,15 @@ public abstract class RenderTooltipEvent extends Event {
     }
 
     /**
-     * The lines to be drawn. May change between {@link RenderTooltipEvent.Pre} and {@link RenderTooltipEvent.Post}.
+     * Gets the tooltip text lines.
      *
-     * @return An <i>unmodifiable</i> list of strings. Use {@link ItemTooltipEvent} to modify tooltip text.
+     * <p>
+     * The returned list is mutable. Subscribers may add, remove, or modify
+     * entries. Changes should only be made during {@link Pre}, before tooltip
+     * dimensions and layout are calculated.
+     * </p>
+     *
+     * @return the mutable tooltip text lines
      */
     @Nonnull
     public List<String> getLines() {
@@ -94,21 +108,27 @@ public abstract class RenderTooltipEvent extends Event {
     }
 
     /**
-     * @return The X position of the tooltip box. By default, the mouse X position.
+     * Gets the tooltip X position.
+     *
+     * @return the X position, initially based on the mouse position
      */
     public int getX() {
         return x;
     }
 
     /**
-     * @return The Y position of the tooltip box. By default, the mouse Y position.
+     * Gets the tooltip Y position.
+     *
+     * @return the Y position, initially based on the mouse position
      */
     public int getY() {
         return y;
     }
 
     /**
-     * @return The {@link FontRenderer} instance the current render is using.
+     * Gets the font renderer used for tooltip text.
+     *
+     * @return the current font renderer
      */
     @Nonnull
     public FontRenderer getFontRenderer() {
@@ -116,10 +136,17 @@ public abstract class RenderTooltipEvent extends Event {
     }
 
     /**
-     * This event is fired before any tooltip calculations are done. It provides setters for all aspects of the tooltip,
-     * so the final render can be modified.
+     * Fired before tooltip dimensions and placement are calculated.
+     *
      * <p>
-     * This event is {@link Cancelable}.
+     * Subscribers may modify tooltip content, position, maximum width,
+     * screen dimensions, and font renderer before rendering begins.
+     * </p>
+     *
+     * <p>
+     * Canceling this event prevents the tooltip rendering operation
+     * from continuing.
+     * </p>
      */
     @Cancelable
     public static class Pre extends RenderTooltipEvent {
@@ -129,17 +156,16 @@ public abstract class RenderTooltipEvent extends Event {
         private int maxWidth;
 
         /**
-         * Fired before tooltip dimensions and placement are calculated.
+         * Constructs a pre-render tooltip event.
          *
-         * <p>
-         * Subscribers may change the tooltip position, maximum width,
-         * screen dimensions, and font renderer before rendering begins.
-         * </p>
-         *
-         * <p>
-         * Canceling this event prevents the tooltip rendering operation
-         * from continuing.
-         * </p>
+         * @param stack        the item stack associated with the tooltip
+         * @param lines        the mutable tooltip text lines
+         * @param x            the initial tooltip X position
+         * @param y            the initial tooltip Y position
+         * @param screenWidth  the screen width
+         * @param screenHeight the screen height
+         * @param maxWidth     the maximum tooltip width, or {@code -1} for unlimited
+         * @param fr           the font renderer used for tooltip text
          */
         public Pre(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y, int screenWidth,
             int screenHeight, int maxWidth, @Nonnull FontRenderer fr) {
@@ -149,52 +175,82 @@ public abstract class RenderTooltipEvent extends Event {
             this.maxWidth = maxWidth;
         }
 
+        /**
+         * Gets the screen width.
+         *
+         * @return the screen width in pixels
+         */
         public int getScreenWidth() {
             return screenWidth;
         }
 
+        /**
+         * Sets the screen width.
+         *
+         * @param screenWidth the new screen width in pixels
+         */
         public void setScreenWidth(int screenWidth) {
             this.screenWidth = screenWidth;
         }
 
+        /**
+         * Gets the screen height.
+         *
+         * @return the screen height in pixels
+         */
         public int getScreenHeight() {
             return screenHeight;
         }
 
+        /**
+         * Sets the screen height.
+         *
+         * @param screenHeight the new screen height in pixels
+         */
         public void setScreenHeight(int screenHeight) {
             this.screenHeight = screenHeight;
         }
 
         /**
-         * @return The max width the tooltip can be. Defaults to -1 (unlimited).
+         * Gets the maximum tooltip width.
+         *
+         * @return the maximum width in pixels, or {@code -1} for unlimited
          */
         public int getMaxWidth() {
             return maxWidth;
         }
 
         /**
-         * Sets the max width of the tooltip. Use -1 for unlimited.
+         * Sets the maximum tooltip width.
+         *
+         * @param maxWidth the maximum width in pixels, or {@code -1} for unlimited
          */
         public void setMaxWidth(int maxWidth) {
             this.maxWidth = maxWidth;
         }
 
         /**
-         * Sets the {@link FontRenderer} to be used to render text.
+         * Sets the font renderer used for tooltip text.
+         *
+         * @param fr the font renderer to use
          */
         public void setFontRenderer(@Nonnull FontRenderer fr) {
             this.fr = fr;
         }
 
         /**
-         * Set the X origin of the tooltip.
+         * Sets the tooltip X position.
+         *
+         * @param x the new X position
          */
         public void setX(int x) {
             this.x = x;
         }
 
         /**
-         * Set the Y origin of the tooltip.
+         * Sets the tooltip Y position.
+         *
+         * @param y the new Y position
          */
         public void setY(int y) {
             this.y = y;
@@ -202,35 +258,53 @@ public abstract class RenderTooltipEvent extends Event {
     }
 
     /**
-     * Events inheriting from this class are fired at different stages during the tooltip rendering.
+     * Base class for events fired after the tooltip background or text
+     * has been rendered.
+     *
      * <p>
-     * Do not use this event directly, use one of its subclasses:
-     * <ul>
-     * <li>{@link RenderTooltipEvent.PostBackground}</li>
-     * <li>{@link RenderTooltipEvent.PostText}</li>
-     * </ul>
+     * This class is not intended to be used directly. Use one of its
+     * subclasses instead.
+     * </p>
+     *
+     * @see PostBackground
+     * @see PostText
      */
     protected static abstract class Post extends RenderTooltipEvent {
 
         private final int width;
         private final int height;
 
-        public Post(@Nonnull ItemStack stack, @Nonnull List<String> textLines, int x, int y, @Nonnull FontRenderer fr,
+        /**
+         * Constructs a post-render tooltip event.
+         *
+         * @param stack  the item stack associated with the tooltip
+         * @param lines  the tooltip text lines
+         * @param x      the tooltip X position
+         * @param y      the tooltip Y position
+         * @param fr     the font renderer used for tooltip text
+         * @param width  the inner tooltip width, excluding the border
+         * @param height the inner tooltip height, excluding the border
+         */
+        public Post(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y, @Nonnull FontRenderer fr,
             int width, int height) {
-            super(stack, textLines, x, y, fr);
+            super(stack, lines, x, y, fr);
             this.width = width;
             this.height = height;
         }
 
         /**
-         * @return The width of the tooltip box. This is the width of the <i>inner</i> box, not including the border.
+         * Gets the inner tooltip width, excluding the border.
+         *
+         * @return the tooltip width in pixels
          */
         public int getWidth() {
             return width;
         }
 
         /**
-         * @return The height of the tooltip box. This is the height of the <i>inner</i> box, not including the border.
+         * Gets the inner tooltip height, excluding the border.
+         *
+         * @return the tooltip height in pixels
          */
         public int getHeight() {
             return height;
@@ -238,117 +312,190 @@ public abstract class RenderTooltipEvent extends Event {
     }
 
     /**
-     * This event is fired directly after the tooltip background is drawn, but before any text is drawn.
+     * Fired immediately after the tooltip background is rendered,
+     * before tooltip text is drawn.
+     *
+     * <p>
+     * This event is useful for drawing custom backgrounds, decorations,
+     * or other elements that should appear behind tooltip text.
+     * </p>
      */
     public static class PostBackground extends Post {
 
         /**
-         * Fired immediately after the tooltip background is rendered,
-         * before tooltip text is drawn.
+         * Constructs a post-background tooltip event.
          *
-         * <p>
-         * This event is useful for drawing custom backgrounds, decorations,
-         * or other elements that should appear behind tooltip text.
-         * </p>
+         * @param stack  the item stack associated with the tooltip
+         * @param lines  the tooltip text lines
+         * @param x      the tooltip X position
+         * @param y      the tooltip Y position
+         * @param fr     the font renderer used for tooltip text
+         * @param width  the inner tooltip width, excluding the border
+         * @param height the inner tooltip height, excluding the border
          */
-        public PostBackground(@Nonnull ItemStack stack, @Nonnull List<String> textLines, int x, int y,
+        public PostBackground(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y,
             @Nonnull FontRenderer fr, int width, int height) {
-            super(stack, textLines, x, y, fr, width, height);
+            super(stack, lines, x, y, fr, width, height);
         }
     }
 
     /**
-     * This event is fired directly after the tooltip text is drawn, but before the GL state is reset.
+     * Fired immediately after tooltip text is rendered,
+     * before the tooltip renderer restores its OpenGL state.
+     *
+     * <p>
+     * This event is useful for drawing additional text, icons,
+     * or effects above the existing tooltip content.
+     * </p>
      */
     public static class PostText extends Post {
 
         /**
-         * Fired immediately after tooltip text is rendered,
-         * before the tooltip renderer restores its OpenGL state.
+         * Constructs a post-text tooltip event.
          *
-         * <p>
-         * This event is useful for drawing additional text, icons,
-         * or effects above the existing tooltip content.
-         * </p>
+         * @param stack  the item stack associated with the tooltip
+         * @param lines  the tooltip text lines
+         * @param x      the tooltip X position
+         * @param y      the tooltip Y position
+         * @param fr     the font renderer used for tooltip text
+         * @param width  the inner tooltip width, excluding the border
+         * @param height the inner tooltip height, excluding the border
          */
-        public PostText(@Nonnull ItemStack stack, @Nonnull List<String> textLines, int x, int y,
-            @Nonnull FontRenderer fr, int width, int height) {
-            super(stack, textLines, x, y, fr, width, height);
+        public PostText(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y, @Nonnull FontRenderer fr,
+            int width, int height) {
+            super(stack, lines, x, y, fr, width, height);
         }
     }
 
     /**
-     * This event is fired when the colours for the tooltip background are determined.
+     * Fired when the tooltip background and border colors are determined.
+     *
+     * <p>
+     * Subscribers may replace the background color, upper border gradient,
+     * and lower border gradient colors.
+     * </p>
+     *
+     * <p>
+     * Original color values remain available through their corresponding
+     * getters, even after the mutable values are changed.
+     * </p>
+     *
+     * <p>
+     * Colors are represented as packed ARGB integers.
+     * </p>
      */
     public static class Color extends RenderTooltipEvent {
 
         private final int originalBackground;
         private final int originalBorderStart;
         private final int originalBorderEnd;
+
         private int background;
         private int borderStart;
         private int borderEnd;
 
         /**
-         * Fired when the tooltip background and border colors are determined.
+         * Constructs a tooltip color event.
          *
-         * <p>
-         * Subscribers may replace the background, upper border gradient,
-         * and lower border gradient colors.
-         * </p>
-         *
-         * <p>
-         * The original color values remain available through their
-         * corresponding getters, even after the mutable values are changed.
-         * </p>
-         *
-         * <p>
-         * Colors are represented as packed ARGB integers.
-         * </p>
+         * @param stack       the item stack associated with the tooltip
+         * @param lines       the tooltip text lines
+         * @param x           the tooltip X position
+         * @param y           the tooltip Y position
+         * @param fr          the font renderer used for tooltip text
+         * @param background  the initial background color
+         * @param borderStart the initial upper border gradient color
+         * @param borderEnd   the initial lower border gradient color
          */
-        public Color(@Nonnull ItemStack stack, @Nonnull List<String> textLines, int x, int y, @Nonnull FontRenderer fr,
+        public Color(@Nonnull ItemStack stack, @Nonnull List<String> lines, int x, int y, @Nonnull FontRenderer fr,
             int background, int borderStart, int borderEnd) {
-            super(stack, textLines, x, y, fr);
+            super(stack, lines, x, y, fr);
+
             this.originalBackground = background;
             this.originalBorderStart = borderStart;
             this.originalBorderEnd = borderEnd;
+
             this.background = background;
             this.borderStart = borderStart;
             this.borderEnd = borderEnd;
         }
 
+        /**
+         * Gets the current tooltip background color.
+         *
+         * @return the background color as a packed ARGB integer
+         */
         public int getBackground() {
             return background;
         }
 
+        /**
+         * Sets the tooltip background color.
+         *
+         * @param background the new background color as a packed ARGB integer
+         */
         public void setBackground(int background) {
             this.background = background;
         }
 
+        /**
+         * Gets the current upper border gradient color.
+         *
+         * @return the upper border color as a packed ARGB integer
+         */
         public int getBorderStart() {
             return borderStart;
         }
 
+        /**
+         * Sets the upper border gradient color.
+         *
+         * @param borderStart the new upper border color as a packed ARGB integer
+         */
         public void setBorderStart(int borderStart) {
             this.borderStart = borderStart;
         }
 
+        /**
+         * Gets the current lower border gradient color.
+         *
+         * @return the lower border color as a packed ARGB integer
+         */
         public int getBorderEnd() {
             return borderEnd;
         }
 
+        /**
+         * Sets the lower border gradient color.
+         *
+         * @param borderEnd the new lower border color as a packed ARGB integer
+         */
         public void setBorderEnd(int borderEnd) {
             this.borderEnd = borderEnd;
         }
 
+        /**
+         * Gets the original tooltip background color.
+         *
+         * @return the original background color as a packed ARGB integer
+         */
         public int getOriginalBackground() {
             return originalBackground;
         }
 
+        /**
+         * Gets the original upper border gradient color.
+         *
+         * @return the original upper border color as a packed ARGB integer
+         */
         public int getOriginalBorderStart() {
             return originalBorderStart;
         }
 
+        /**
+         * Gets the original lower border gradient color.
+         *
+         * @return the original lower border color as a packed ARGB integer
+         */
         public int getOriginalBorderEnd() {
             return originalBorderEnd;
         }

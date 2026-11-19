@@ -17,11 +17,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.IBlockRarityProvider;
 import ruiseki.okcore.block.IBlockStateNative;
 import ruiseki.okcore.capabilities.IItemCapability;
-import ruiseki.okcore.client.gui.tooltip.HeaderTooltipLine;
 import ruiseki.okcore.client.gui.tooltip.TooltipBuilder;
-import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * An extended {@link net.minecraft.item.ItemBlock} that will automatically add information to the blockState
@@ -59,8 +56,6 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
         super.addInformation(stack, player, list, advanced);
-        list.set(0, TooltipLineHandler.register(new HeaderTooltipLine(stack, list.getFirst())));
-        LangHelpers.addOptionalInfo(list, getUnlocalizedName());
         informationProvider.addInformation(stack, player, list, advanced);
         this.getTooltipBuilder()
             .build(stack, player, list, advanced);

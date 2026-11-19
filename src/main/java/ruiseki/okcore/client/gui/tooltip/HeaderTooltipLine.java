@@ -1,7 +1,6 @@
 package ruiseki.okcore.client.gui.tooltip;
 
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.okcore.helper.GuiHelpers;

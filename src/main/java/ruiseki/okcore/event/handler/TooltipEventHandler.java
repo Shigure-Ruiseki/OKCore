@@ -1,200 +1,52 @@
 package ruiseki.okcore.event.handler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-
-import com.cleanroommc.modularui.api.drawable.IKey;
-import com.cleanroommc.modularui.api.drawable.IRichTextBuilder;
-import com.cleanroommc.modularui.drawable.text.RichText;
-import com.cleanroommc.modularui.screen.RichTooltipEvent;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
-import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
-import ruiseki.okcore.client.mui.gui.component.TooltipLineText;
 import ruiseki.okcore.event.gui.RenderTooltipEvent;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
+import ruiseki.okcore.item.IItemTooltip;
 
-public final class TooltipEventHandler {
+public class TooltipEventHandler {
 
+    public static final TooltipEventHandler INSTANCE = new TooltipEventHandler();
+
+    /**
+     * Replaces the GTNHLib tooltip renderer with the OkCore tooltip renderer
+     * for items implementing {@link IItemTooltip}.
+     */
     @SideOnly(Side.CLIENT)
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public void onRenderPre(RichTooltipEvent.Pre event) {
-        ItemStack stack = event.getItemStack();
-        if (ItemHelpers.isEmpty(stack)) {
-            return;
-        }
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onRenderTooltip(com.gtnewhorizon.gtnhlib.client.event.RenderTooltipEvent event) {
+        ItemStack stack = event.itemStack;
+        if (ItemHelpers.isEmpty(stack)) return;
+        if (!(stack.getItem() instanceof IItemTooltip tooltip)) return;
 
-        FontRenderer font = getFont();
-
-        RenderTooltipEvent.Pre forwarded = new RenderTooltipEvent.Pre(
+        event.alternativeRenderer = lines -> GuiHelpers.drawHoveringText(
             stack,
-            getLines(event),
-            event.getX(),
-            event.getY(),
-            event.getScreenWidth(),
-            event.getScreenHeight(),
-            event.getMaxWidth(),
-            font);
-
-        if (MinecraftForge.EVENT_BUS.post(forwarded)) {
-            event.setCanceled(true);
-            TooltipLineHandler.clear();
-            return;
-        }
-
-        event.setX(forwarded.getX());
-        event.setY(forwarded.getY());
-        event.setScreenWidth(forwarded.getScreenWidth());
-        event.setScreenHeight(forwarded.getScreenHeight());
-        event.setMaxWidth(forwarded.getMaxWidth());
-        event.setFontRenderer(forwarded.getFontRenderer());
-
-        IRichTextBuilder<?> builder = event.getTooltip();
-        if (builder == null) {
-            return;
-        }
-
-        FontRenderer renderFont = forwarded.getFontRenderer();
-        List<String> originalLines = new ArrayList<>(getLines(event));
-
-        for (String text : originalLines) {
-            if (text == null) {
-                continue;
-            }
-
-            ITooltipLine handler = TooltipLineHandler.getTipLine(text);
-
-            if (handler != null) {
-                Pattern marker = Pattern.compile(Pattern.quote(text));
-
-                builder.moveCursorToStart();
-                builder.replace(marker, key -> null);
-
-                // Insert an independent text line at the marker position.
-                builder.addLine(new TooltipLineText(handler, renderFont, forwarded.getMaxWidth()));
-
-                continue;
-            }
-
-            if (text.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
-                boolean standalone = text.equals(TooltipLineHandler.TOOLTIP_LINESPACE);
-
-                Pattern marker = Pattern.compile(Pattern.quote(text));
-
-                builder.moveCursorToStart();
-
-                if (standalone) {
-                    builder.replace(marker, key -> null);
-                } else {
-                    String cleanText = text.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
-
-                    builder.replace(marker, key -> IKey.str(cleanText));
-                }
-
-                builder.spaceLine(2);
-            }
-        }
-
-        builder.moveCursorToEnd();
+            lines,
+            event.x,
+            event.y,
+            event.gui.width,
+            event.gui.height,
+            tooltip.getMaxTooltipWidth(stack, lines),
+            event.font);
     }
 
+    /**
+     * Allows items implementing {@link IItemTooltip} to customize their
+     * tooltip lines before tooltip layout and rendering.
+     */
     @SideOnly(Side.CLIENT)
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public void onRenderColor(RichTooltipEvent.Color event) {
-        ItemStack stack = event.getItemStack();
-        if (ItemHelpers.isEmpty(stack)) {
-            return;
-        }
-
-        RenderTooltipEvent.Color forwarded = new RenderTooltipEvent.Color(
-            stack,
-            getLines(event),
-            event.getX(),
-            event.getY(),
-            getFont(),
-            event.getBackground(),
-            event.getBorderStart(),
-            event.getBorderEnd());
-
-        MinecraftForge.EVENT_BUS.post(forwarded);
-
-        event.setBackground(forwarded.getBackground());
-        event.setBorderStart(forwarded.getBorderStart());
-        event.setBorderEnd(forwarded.getBorderEnd());
-    }
-
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public void onRenderPostBackground(RichTooltipEvent.PostBackground event) {
-        ItemStack stack = event.getItemStack();
-        if (ItemHelpers.isEmpty(stack)) {
-            return;
-        }
-
-        RenderTooltipEvent.PostBackground forwarded = new RenderTooltipEvent.PostBackground(
-            stack,
-            getLines(event),
-            event.getX(),
-            event.getY(),
-            getFont(),
-            event.getWidth(),
-            event.getHeight());
-
-        MinecraftForge.EVENT_BUS.post(forwarded);
-    }
-
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public void onRenderPostText(RichTooltipEvent.PostText event) {
-        try {
-            ItemStack stack = event.getItemStack();
-            if (ItemHelpers.isEmpty(stack)) {
-                return;
-            }
-
-            RenderTooltipEvent.PostText forwarded = new RenderTooltipEvent.PostText(
-                stack,
-                getLines(event),
-                event.getX(),
-                event.getY(),
-                getFont(),
-                event.getWidth(),
-                event.getHeight());
-
-            MinecraftForge.EVENT_BUS.post(forwarded);
-        } finally {
-            TooltipLineHandler.clear();
-        }
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static List<String> getLines(RichTooltipEvent event) {
-        IRichTextBuilder<?> builder = event.getTooltip();
-
-        if (builder == null) {
-            return Collections.emptyList();
-        }
-
-        if (builder.getRichText() instanceof RichText richText) {
-            return richText.getAsStrings();
-        }
-
-        return Collections.emptyList();
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static FontRenderer getFont() {
-        return Minecraft.getMinecraft().fontRenderer;
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onPreRenderTooltip(RenderTooltipEvent.Pre event) {
+        ItemStack stack = event.getStack();
+        if (ItemHelpers.isEmpty(stack)) return;
+        if (!(stack.getItem() instanceof IItemTooltip tooltip)) return;
+        tooltip.onPreRenderTooltip(event.getStack(), event.getLines());
     }
 }

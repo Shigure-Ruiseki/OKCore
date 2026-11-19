@@ -4,13 +4,9 @@ package ruiseki.okcore.item;
 import java.util.List;
 import java.util.function.Consumer;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import ruiseki.okcore.client.gui.tooltip.HeaderTooltipLine;
 import ruiseki.okcore.client.gui.tooltip.TooltipBuilder;
-import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
-import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Provides customization hooks for an item's tooltip.
@@ -40,31 +36,8 @@ public interface IItemTooltip {
      * @param list  the current tooltip lines
      * @return the maximum tooltip width, or {@code -1} for the default
      */
-    default int getMaxTooltipWidth(ItemStack stack, List<String> list) {
-        return -1;
-    }
-
-    /**
-     * Modifies the tooltip lines before they are measured and rendered.
-     *
-     * <p>
-     * By default, the first line is replaced with a registered
-     * {@link HeaderTooltipLine}, which displays the item icon alongside
-     * its original title. Optional localized information is then appended.
-     * </p>
-     *
-     * <p>
-     * Override this method to customize the tooltip header or add,
-     * remove, and modify tooltip lines before rendering.
-     * </p>
-     *
-     * @param stack the item stack being displayed
-     * @param list  the mutable tooltip lines
-     */
-    default void onPreRenderTooltip(ItemStack stack, List<String> list) {
-        if (list.isEmpty()) return;
-        list.set(0, TooltipLineHandler.register(new HeaderTooltipLine(stack, list.getFirst())));
-        LangHelpers.addOptionalInfo(list, ((Item) this).getUnlocalizedName(stack));
+    default int getMaxTooltipWidth(ItemStack stack, List<String> list, int width) {
+        return width;
     }
 
     /**

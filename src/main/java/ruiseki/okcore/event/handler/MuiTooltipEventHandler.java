@@ -31,15 +31,15 @@ public class MuiTooltipEventHandler {
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderPre(RichTooltipEvent.Pre event) {
         ItemStack stack = event.getItemStack();
-        if (ItemHelpers.isEmpty(stack)) {
-            return;
-        }
+        if (ItemHelpers.isEmpty(stack)) return;
+
+        IRichTextBuilder<?> builder = event.getTooltip();
+        if (builder == null) return;
 
         FontRenderer font = getFont();
-
         RenderTooltipEvent.Pre forwarded = new RenderTooltipEvent.Pre(
             stack,
-            getLines(event),
+            getLines(builder),
             event.getX(),
             event.getY(),
             event.getScreenWidth(),
@@ -60,48 +60,29 @@ public class MuiTooltipEventHandler {
         event.setMaxWidth(forwarded.getMaxWidth());
         event.setFontRenderer(forwarded.getFontRenderer());
 
-        IRichTextBuilder<?> builder = event.getTooltip();
-        if (builder == null) {
-            return;
-        }
-
         FontRenderer renderFont = forwarded.getFontRenderer();
-        List<String> originalLines = new ArrayList<>(getLines(event));
 
-        for (String text : originalLines) {
-            if (text == null) {
-                continue;
-            }
+        builder.moveCursorToStart();
+        for (String text : new ArrayList<>(getLines(event.getTooltip()))) {
+            if (text == null) continue;
+
+            Pattern marker = Pattern.compile(Pattern.quote(text));
 
             ITooltipLine handler = TooltipLineHandler.getTipLine(text);
-
             if (handler != null) {
-                Pattern marker = Pattern.compile(Pattern.quote(text));
-
-                builder.moveCursorToStart();
                 builder.replace(marker, key -> null);
-
-                // Insert an independent text line at the marker position.
+                builder.moveCursorForward(1);
                 builder.addLine(new TooltipLineText(handler, renderFont, forwarded.getMaxWidth()));
-
                 continue;
             }
 
             if (text.contains(TooltipLineHandler.TOOLTIP_LINESPACE)) {
                 boolean standalone = text.equals(TooltipLineHandler.TOOLTIP_LINESPACE);
-
-                Pattern marker = Pattern.compile(Pattern.quote(text));
-
-                builder.moveCursorToStart();
-
                 if (standalone) {
                     builder.replace(marker, key -> null);
                 } else {
-                    String cleanText = text.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "");
-
-                    builder.replace(marker, key -> IKey.str(cleanText));
+                    builder.replace(marker, key -> IKey.str(text.replace(TooltipLineHandler.TOOLTIP_LINESPACE, "")));
                 }
-
                 builder.spaceLine(2);
             }
         }
@@ -113,13 +94,11 @@ public class MuiTooltipEventHandler {
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderColor(RichTooltipEvent.Color event) {
         ItemStack stack = event.getItemStack();
-        if (ItemHelpers.isEmpty(stack)) {
-            return;
-        }
+        if (ItemHelpers.isEmpty(stack)) return;
 
         RenderTooltipEvent.Color forwarded = new RenderTooltipEvent.Color(
             stack,
-            getLines(event),
+            getLines(event.getTooltip()),
             event.getX(),
             event.getY(),
             getFont(),
@@ -138,13 +117,11 @@ public class MuiTooltipEventHandler {
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderPostBackground(RichTooltipEvent.PostBackground event) {
         ItemStack stack = event.getItemStack();
-        if (ItemHelpers.isEmpty(stack)) {
-            return;
-        }
+        if (ItemHelpers.isEmpty(stack)) return;
 
         RenderTooltipEvent.PostBackground forwarded = new RenderTooltipEvent.PostBackground(
             stack,
-            getLines(event),
+            getLines(event.getTooltip()),
             event.getX(),
             event.getY(),
             getFont(),
@@ -159,13 +136,11 @@ public class MuiTooltipEventHandler {
     public void onRenderPostText(RichTooltipEvent.PostText event) {
         try {
             ItemStack stack = event.getItemStack();
-            if (ItemHelpers.isEmpty(stack)) {
-                return;
-            }
+            if (ItemHelpers.isEmpty(stack)) return;
 
             RenderTooltipEvent.PostText forwarded = new RenderTooltipEvent.PostText(
                 stack,
-                getLines(event),
+                getLines(event.getTooltip()),
                 event.getX(),
                 event.getY(),
                 getFont(),
@@ -179,17 +154,11 @@ public class MuiTooltipEventHandler {
     }
 
     @SideOnly(Side.CLIENT)
-    private static List<String> getLines(RichTooltipEvent event) {
-        IRichTextBuilder<?> builder = event.getTooltip();
-
-        if (builder == null) {
-            return Collections.emptyList();
-        }
-
+    private static List<String> getLines(IRichTextBuilder<?> builder) {
+        if (builder == null) return Collections.emptyList();
         if (builder.getRichText() instanceof RichText richText) {
             return richText.getAsStrings();
         }
-
         return Collections.emptyList();
     }
 

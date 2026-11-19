@@ -24,17 +24,10 @@ public class TooltipEventHandler {
     public void onRenderTooltip(com.gtnewhorizon.gtnhlib.client.event.RenderTooltipEvent event) {
         ItemStack stack = event.itemStack;
         if (ItemHelpers.isEmpty(stack)) return;
-        if (!(stack.getItem() instanceof IItemTooltip tooltip)) return;
+        if (!(stack.getItem() instanceof IItemTooltip)) return;
 
-        event.alternativeRenderer = lines -> GuiHelpers.drawHoveringText(
-            stack,
-            lines,
-            event.x,
-            event.y,
-            event.gui.width,
-            event.gui.height,
-            tooltip.getMaxTooltipWidth(stack, lines),
-            event.font);
+        event.alternativeRenderer = lines -> GuiHelpers
+            .drawHoveringText(stack, lines, event.x, event.y, event.gui.width, event.gui.height, -1, event.font);
     }
 
     /**
@@ -47,6 +40,6 @@ public class TooltipEventHandler {
         ItemStack stack = event.getStack();
         if (ItemHelpers.isEmpty(stack)) return;
         if (!(stack.getItem() instanceof IItemTooltip tooltip)) return;
-        tooltip.onPreRenderTooltip(event.getStack(), event.getLines());
+        event.setMaxWidth(tooltip.getMaxTooltipWidth(stack, event.getLines(), event.getMaxWidth()));
     }
 }

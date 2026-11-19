@@ -90,7 +90,7 @@ public class GuiHelpers {
     }
 
     @SideOnly(Side.CLIENT)
-    private static void drawScaledItemStack(ItemStack stack, int x, int y, float scale) {
+    public static void drawScaledItemStack(ItemStack stack, int x, int y, float scale) {
         if (ItemHelpers.isEmpty(stack) || scale <= 0.0F) return;
         Minecraft mc = Minecraft.getMinecraft();
 

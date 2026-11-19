@@ -4,6 +4,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.okcore.helper.GuiHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 public class HeaderTooltipLine implements ITooltipLine {
 
@@ -11,29 +12,52 @@ public class HeaderTooltipLine implements ITooltipLine {
     private static final int ICON_TEXT_GAP = 4;
     private static final int VERTICAL_PADDING = 2;
 
-    private final ItemStack stack;
-    private final String title;
+    private ItemStack stack;
+    private String title;
+    private float scale = 1f;
 
     public HeaderTooltipLine(ItemStack stack, String title) {
-        this.stack = stack;
-        this.title = title;
+        this.stack = ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack;
+        this.title = title == null ? "" : title;
+    }
+
+    public HeaderTooltipLine scale(float scale) {
+        if (!Float.isFinite(scale)) {
+            throw new IllegalArgumentException("Scale must be finite");
+        }
+        this.scale = Math.max(0.1f, scale);
+        return this;
+    }
+
+    public HeaderTooltipLine title(String title) {
+        this.title = title == null ? "" : title;
+        return this;
+    }
+
+    public HeaderTooltipLine stack(ItemStack stack) {
+        this.stack = ItemHelpers.isEmpty(stack) ? ItemHelpers.EMPTY : stack;
+        return this;
+    }
+
+    private int getScaledIconSize() {
+        return Math.round(ICON_SIZE * this.scale);
     }
 
     @Override
     public int getHeight(FontRenderer font, int width) {
-        return ICON_SIZE + VERTICAL_PADDING * 2;
+        return Math.max(font.FONT_HEIGHT, getScaledIconSize()) + VERTICAL_PADDING * 2;
     }
 
     @Override
     public int getWidth(FontRenderer font) {
-        return ICON_SIZE + ICON_TEXT_GAP + font.getStringWidth(title);
+        return getScaledIconSize() + ICON_TEXT_GAP + font.getStringWidth(this.title);
     }
 
     @Override
     public void draw(FontRenderer font, int x, int y, int mouseX, int mouseY, int width, int height) {
-        GuiHelpers.drawItemStack(stack, x, y + VERTICAL_PADDING);
-        int textX = x + ICON_SIZE + ICON_TEXT_GAP;
+        GuiHelpers.drawScaledItemStack(this.stack, x, y + (height - getScaledIconSize()) / 2, this.scale);
+        int textX = x + getScaledIconSize() + ICON_TEXT_GAP;
         int textY = y + (height - font.FONT_HEIGHT) / 2;
-        font.drawStringWithShadow(title, textX, textY, -1);
+        font.drawStringWithShadow(this.title, textX, textY, 0xFFFFFF);
     }
 }

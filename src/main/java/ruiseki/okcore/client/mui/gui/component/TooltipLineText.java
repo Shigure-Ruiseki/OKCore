@@ -10,8 +10,6 @@ import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 
 public class TooltipLineText implements ITextLine {
 
-    private static final int DEFAULT_WIDTH = 100;
-
     private final ITooltipLine line;
     private final FontRenderer font;
     private final int width;
@@ -20,7 +18,8 @@ public class TooltipLineText implements ITextLine {
     public TooltipLineText(ITooltipLine line, FontRenderer font, int maxWidth) {
         this.line = line;
         this.font = font;
-        this.width = maxWidth > 0 ? maxWidth : DEFAULT_WIDTH;
+        int preferredWidth = line.getWidth(font);
+        this.width = preferredWidth < 0 ? maxWidth : Math.min(preferredWidth, maxWidth);
         this.height = Math.max(0, line.getHeight(font, this.width));
     }
 

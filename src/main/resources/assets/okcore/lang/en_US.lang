@@ -94,7 +94,9 @@ config.okcore.general.versionChecker=Version check
 ## Mod compatibility settings
 config.okcore.Waila=Waila
 
-gui.okcore.tooltip.energy.tooltip_line=%s RF out of %s RF
+gui.okcore.tooltip.empty=Empty
+gui.okcore.tooltip.tooltip_line.energy=%s RF out of %s RF
+gui.okcore.tooltip.tooltip_line.fluid=%s: %s / %s mB
 
 #Common Compat
 fluid.fluids.okcore.xpjuice=Liquid XP

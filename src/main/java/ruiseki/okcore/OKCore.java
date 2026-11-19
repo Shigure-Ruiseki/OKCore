@@ -30,6 +30,8 @@ import ruiseki.okcore.helper.CraftingHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.SmeltingHelpers;
 import ruiseki.okcore.init.ModBaseVersionable;
+import ruiseki.okcore.item.BucketRegistry;
+import ruiseki.okcore.item.IBucketRegistry;
 import ruiseki.okcore.modcompat.ModCompatLoader;
 import ruiseki.okcore.modcompat.common.CommonModCompat;
 import ruiseki.okcore.modcompat.efr.EFRModCompat;
@@ -86,6 +88,9 @@ public class OKCore extends ModBaseVersionable {
             .addRegistry(TagManager.class, TagManager.getManager());
         this.getRegistryManager()
             .addRegistry(RecipeManager.class, RecipeManager.getManager());
+
+        getRegistryManager().addRegistry(IBucketRegistry.class, new BucketRegistry());
+
         super.preInit(event);
 
         // Load others

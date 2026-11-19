@@ -12,7 +12,6 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glPopMatrix;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.opengl.GL11.glScaled;
-import static org.lwjgl.opengl.GL11.glScalef;
 import static org.lwjgl.opengl.GL11.glTranslated;
 import static org.lwjgl.opengl.GL12.GL_RESCALE_NORMAL;
 
@@ -44,13 +43,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.client.gui.tooltip.ITooltipLine;
 import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
 import ruiseki.okcore.client.renderer.GlStateManager;
@@ -84,68 +84,43 @@ public class GuiHelpers {
         return (mouseX >= x && mouseX <= xSize && mouseY >= y && mouseY <= ySize);
     }
 
-    /**
-     * @param stack - The itemstack to be drawn
-     * @param x     - The position on the x-axis to draw the itemstack
-     * @param y     - The position on the y-axis to draw the itemstack
-     */
+    @SideOnly(Side.CLIENT)
     public static void drawItemStack(ItemStack stack, int x, int y) {
-        glPushMatrix();
-        glEnable(GL_BLEND);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        RenderHelper.enableGUIStandardItemLighting();
-        glEnable(GL_RESCALE_NORMAL);
-        glEnable(GL_DEPTH_TEST);
-        render.renderItemAndEffectIntoGUI(
-            Minecraft.getMinecraft().fontRenderer,
-            Minecraft.getMinecraft()
-                .getTextureManager(),
-            stack,
-            x,
-            y);
-        render.renderItemOverlayIntoGUI(
-            Minecraft.getMinecraft().fontRenderer,
-            Minecraft.getMinecraft()
-                .getTextureManager(),
-            stack,
-            x,
-            y);
-        RenderHelper.disableStandardItemLighting();
-        glPopMatrix();
-        glDisable(GL_LIGHTING);
+        drawScaledItemStack(stack, x, y, 1.0F);
     }
 
-    /**
-     * @param stack - The itemstack to be drawn
-     * @param x     - The position on the x-axis to draw the itemstack
-     * @param y     - The position on the y-axis to draw the itemstack
-     * @param scale - The scale with which to draw the itemstack
-     */
+    @SideOnly(Side.CLIENT)
     public static void drawScaledItemStack(ItemStack stack, int x, int y, float scale) {
-        glPushMatrix();
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glScalef(scale, scale, 1.0F);
-        RenderHelper.enableGUIStandardItemLighting();
-        glEnable(GL_RESCALE_NORMAL);
-        glEnable(GL_DEPTH_TEST);
-        render.renderItemAndEffectIntoGUI(
-            Minecraft.getMinecraft().fontRenderer,
-            Minecraft.getMinecraft()
-                .getTextureManager(),
-            stack,
-            (int) (x / scale),
-            (int) (y / scale));
-        render.renderItemOverlayIntoGUI(
-            Minecraft.getMinecraft().fontRenderer,
-            Minecraft.getMinecraft()
-                .getTextureManager(),
-            stack,
-            x,
-            y);
-        RenderHelper.disableStandardItemLighting();
-        glPopMatrix();
+        if (ItemHelpers.isEmpty(stack) || scale <= 0.0F) return;
+        Minecraft mc = Minecraft.getMinecraft();
+
+        GlStateManager.pushMatrix();
+        GlStateManager.pushAttrib(
+            GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_LIGHTING_BIT);
+
+        float oldZLevel = render.zLevel;
+        try {
+            render.zLevel = 300.0F;
+
+            GlStateManager.enableBlend();
+            GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+            GlStateManager.scale(scale, scale, 1.0F);
+            GlStateManager.enableRescaleNormal();
+            GlStateManager.enableDepth();
+
+            RenderHelper.enableGUIStandardItemLighting();
+
+            int renderX = Math.round(x / scale);
+            int renderY = Math.round(y / scale);
+
+            render.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), stack, renderX, renderY);
+            render.renderItemOverlayIntoGUI(mc.fontRenderer, mc.getTextureManager(), stack, renderX, renderY);
+        } finally {
+            render.zLevel = oldZLevel;
+            GlStateManager.popAttrib();
+            GlStateManager.popMatrix();
+        }
     }
 
     /**
@@ -269,21 +244,22 @@ public class GuiHelpers {
     @SuppressWarnings("unchecked")
     public static List<String> getTooltip(ItemStack stack) {
         Minecraft mc = Minecraft.getMinecraft();
-        List<String> list = stack.getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips);
+        List<String> tooltip = stack.getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips);
+        for (int i = 0; i < tooltip.size(); i++) {
+            String line = tooltip.get(i);
 
-        for (int k = 0; k < list.size(); ++k) {
-            if (k == 0) {
-                list.set(k, stack.getRarity().rarityColor + (String) list.get(k));
+            // Preserve custom tooltip handler lines.
+            if (TooltipLineHandler.getTipLine(line) != null) continue;
+            if (i == 0) {
+                tooltip.set(i, stack.getRarity().rarityColor + line);
             } else {
-                list.set(k, EnumChatFormatting.GRAY + (String) list.get(k));
+                tooltip.set(i, EnumChatFormatting.GRAY + line);
             }
         }
-
-        return list;
+        return tooltip;
     }
 
-    @Nonnull
-    private static ItemStack cachedTooltipStack = null;
+    private static ItemStack cachedTooltipStack = ItemHelpers.EMPTY;
 
     /**
      * Must be called from {@code GuiScreen.renderToolTip} before {@code GuiScreen.drawHoveringText} is called.
@@ -298,7 +274,7 @@ public class GuiHelpers {
      * Must be called from {@code GuiScreen.renderToolTip} after {@code GuiScreen.drawHoveringText} is called.
      */
     public static void postItemToolTip() {
-        cachedTooltipStack = null;
+        cachedTooltipStack = ItemHelpers.EMPTY;
     }
 
     /**
@@ -324,7 +300,6 @@ public class GuiHelpers {
     /**
      * Draws a tooltip with text and optional custom tooltip lines.
      */
-
     public static void drawHoveringText(ItemStack stack, List<String> textLines, int mouseX, int mouseY,
         int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font) {
         if (textLines != null && !textLines.isEmpty()) {
@@ -730,50 +705,25 @@ public class GuiHelpers {
      */
     public static void renderFluidTank(Gui gui, FluidStack fluidStack, int capacity, int x, int y, int width,
         int height) {
-        if (fluidStack != null && fluidStack.getFluid() != null && capacity > 0) {
-            GL11.glPushMatrix();
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            RenderHelper.enableGUIStandardItemLighting();
-
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-
-            int level = (int) (height * (((double) fluidStack.amount) / capacity));
-            IIcon icon = RenderHelpers.getFluidIcon(fluidStack, ForgeDirection.UP);
-            int verticalOffset = 0;
-
-            // Bind Texture Terrain (Blocks & Liquids)
-            Minecraft.getMinecraft()
-                .getTextureManager()
-                .bindTexture(TextureMap.locationBlocksTexture);
-
-            // Fluids can have a custom overlay color
-            Triple<Float, Float, Float> colorParts = Helpers.intToRGB(
-                fluidStack.getFluid()
-                    .getColor(fluidStack));
-            GL11.glColor4f(colorParts.getLeft(), colorParts.getMiddle(), colorParts.getRight(), 1.0F);
-
-            while (level > 0) {
-                int textureHeight;
-                if (level > 16) {
-                    textureHeight = 16;
-                    level -= 16;
-                } else {
-                    textureHeight = level;
-                    level = 0;
-                }
-
-                drawIcon(x, y - textureHeight - verticalOffset + height, icon, width, textureHeight);
-                verticalOffset += 16;
-            }
-
-            // Reset color & GL States when done
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderHelper.disableStandardItemLighting();
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glDisable(GL11.GL_BLEND);
-            GL11.glPopMatrix();
+        if (FluidHelpers.isEmpty(fluidStack) || capacity <= 0 || width <= 0 || height <= 0) {
+            return;
         }
+
+        int fluidHeight = (int) (height * ((double) fluidStack.amount / capacity));
+
+        GL11.glPushMatrix();
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+        RenderHelper.enableGUIStandardItemLighting();
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+        drawFluidTexture(fluidStack, x, y + height - fluidHeight, width, fluidHeight);
+
+        RenderHelper.disableStandardItemLighting();
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glPopMatrix();
     }
 
     /**
@@ -813,6 +763,42 @@ public class GuiHelpers {
             RenderHelpers.bindTexture(textureOverlay);
             gui.drawTexturedModalRect(x, y, overlayTextureX, overlayTextureY, width, height);
         }
+    }
+
+    public static void drawFluidTexture(FluidStack fluid, int x, int y, int width, int height) {
+        if (FluidHelpers.isEmpty(fluid) || width <= 0 || height <= 0) {
+            return;
+        }
+
+        IIcon icon = RenderHelpers.getFluidIcon(fluid, ForgeDirection.UP);
+        if (icon == null) {
+            return;
+        }
+
+        Minecraft.getMinecraft()
+            .getTextureManager()
+            .bindTexture(TextureMap.locationBlocksTexture);
+
+        int color = fluid.getFluid()
+            .getColor(fluid);
+
+        float red = ((color >> 16) & 0xFF) / 255.0F;
+        float green = ((color >> 8) & 0xFF) / 255.0F;
+        float blue = (color & 0xFF) / 255.0F;
+
+        GlStateManager.color(red, green, blue, 1.0F);
+
+        int remainingHeight = height;
+        int offset = 0;
+
+        while (remainingHeight > 0) {
+            int textureHeight = Math.min(remainingHeight, 16);
+            drawIcon(x, y + height - offset - textureHeight, icon, width, textureHeight);
+            remainingHeight -= textureHeight;
+            offset += textureHeight;
+        }
+
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     /**

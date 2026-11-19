@@ -8,6 +8,7 @@ import ruiseki.okcore.OKCore;
 import ruiseki.okcore.audio.record.ClientRecordDataHandler;
 import ruiseki.okcore.enums.Mods;
 import ruiseki.okcore.event.handler.InputEventHandler;
+import ruiseki.okcore.event.handler.MuiTooltipEventHandler;
 import ruiseki.okcore.event.handler.TooltipEventHandler;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.tracking.Versions;
@@ -30,8 +31,9 @@ public class ClientProxy extends ClientProxyComponent {
         MinecraftForge.EVENT_BUS.register(new Versions());
         MinecraftForge.EVENT_BUS.register(ClientRecordDataHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(InputEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(TooltipEventHandler.INSTANCE);
         if (Mods.MUI2.isModLoaded()) {
-            MinecraftForge.EVENT_BUS.register(new TooltipEventHandler());
+            MinecraftForge.EVENT_BUS.register(new MuiTooltipEventHandler());
         }
     }
 }

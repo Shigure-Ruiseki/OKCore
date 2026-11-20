@@ -13,6 +13,7 @@ public enum Mixins implements IMixins {
         .addCommonMixins(
             "capabilities.MixinItemStackCap",
             "capabilities.MixinEntityCap",
+            "capabilities.MixinEntityLivingBase",
             "capabilities.MixinTileEntity",
             "capabilities.MixinTileEntityChest",
             "capabilities.MixinChunk",

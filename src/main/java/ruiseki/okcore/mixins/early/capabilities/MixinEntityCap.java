@@ -59,7 +59,7 @@ public abstract class MixinEntityCap {
         }
     }
 
-    @Inject(method = "setDead", at = @At("RETURN"))
+    @Inject(method = "setDead", at = @At("HEAD"))
     private void okcore$invalidate(CallbackInfo ci) {
         if (this.okcore$capabilities != null) {
             this.okcore$capabilities.invalidate();

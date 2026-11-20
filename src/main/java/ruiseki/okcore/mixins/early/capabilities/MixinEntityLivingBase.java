@@ -29,44 +29,40 @@ import ruiseki.okcore.item.handler.IItemHandlerModifiable;
 public class MixinEntityLivingBase extends MixinEntityCap {
 
     @Unique
-    private final IItemHandlerModifiable okcore$handHandler = new EntityHandsInvWrapper(this.okcore$getThis());
+    private IItemHandlerModifiable okcore$handHandler;
 
     @Unique
-    private final IItemHandlerModifiable okcore$armorHandler = new EntityArmorInvWrapper(this.okcore$getThis());
+    private IItemHandlerModifiable okcore$armorHandler;
 
     @Unique
-    private final IItemHandler okcore$joinedHandler = new CombinedInvWrapper(okcore$handHandler, okcore$armorHandler);
+    private IItemHandler okcore$joinedHandler;
 
-    @Unique
-    private final LazyOptional<IItemHandler> okcore$handHandlerOptional = LazyOptional.of(() -> okcore$handHandler);
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void okcore$initHandlers(CallbackInfo ci) {
+        EntityLivingBase entity = (EntityLivingBase) (Object) this;
 
-    @Unique
-    private final LazyOptional<IItemHandler> okcore$armorHandlerOptional = LazyOptional.of(() -> okcore$armorHandler);
-
-    @Unique
-    private final LazyOptional<IItemHandler> okcore$joinedHandlerOptional = LazyOptional.of(() -> okcore$joinedHandler);
+        okcore$handHandler = new EntityHandsInvWrapper(entity);
+        okcore$armorHandler = new EntityArmorInvWrapper(entity);
+        okcore$joinedHandler = new CombinedInvWrapper(okcore$handHandler, okcore$armorHandler);
+    }
 
     @Override
     public <T> @NotNull LazyOptional<T> okcorecap$getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection side) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER) {
             if (side == null) {
-                return okcore$joinedHandlerOptional.cast();
+                return LazyOptional.of(() -> okcore$joinedHandler)
+                    .cast();
             }
             if (side == ForgeDirection.UP || side == ForgeDirection.DOWN) {
-                return okcore$handHandlerOptional.cast();
+                return LazyOptional.of(() -> okcore$handHandler)
+                    .cast();
             }
-            return okcore$armorHandlerOptional.cast();
+            return LazyOptional.of(() -> okcore$joinedHandler)
+                .cast();
         }
 
         return super.okcorecap$getCapability(capability, side);
-    }
-
-    @Inject(method = "onDeath", at = @At("HEAD"))
-    private void okcore$invalidateCapabilities(CallbackInfo ci) {
-        okcore$handHandlerOptional.invalidate();
-        okcore$armorHandlerOptional.invalidate();
-        okcore$joinedHandlerOptional.invalidate();
     }
 
     public NBTTagCompound okcorecap$serializeNBT() {
@@ -75,10 +71,5 @@ public class MixinEntityLivingBase extends MixinEntityCap {
 
     public void okcorecap$deserializeNBT(NBTTagCompound tag) {
         super.okcorecap$deserializeNBT(tag);
-    }
-
-    @Unique
-    private EntityLivingBase okcore$getThis() {
-        return (EntityLivingBase) (Object) this;
     }
 }

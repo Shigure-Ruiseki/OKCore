@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 
 import com.google.common.collect.ImmutableList;
@@ -138,7 +139,9 @@ public abstract class EntityEquipmentInvWrapper implements IItemHandlerModifiabl
 
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
-        return IItemHandlerModifiable.super.isItemValid(slot, stack);
+        if (ItemHelpers.isEmpty(stack)) return false;
+        EntityEquipmentSlot equipmentSlot = validateSlotIndex(slot);
+        return ItemHelpers.getItem(stack) instanceof ItemArmor armor && armor.armorType == equipmentSlot.getIndex();
     }
 
     protected EntityEquipmentSlot validateSlotIndex(final int slot) {

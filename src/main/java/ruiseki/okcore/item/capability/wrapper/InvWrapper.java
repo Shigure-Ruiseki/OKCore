@@ -1,3 +1,4 @@
+
 package ruiseki.okcore.item.capability.wrapper;
 
 import java.util.Objects;
@@ -46,7 +47,7 @@ public class InvWrapper implements IItemHandlerModifiable {
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
         if (ItemHelpers.isEmpty(stack)) return ItemHelpers.EMPTY;
-
+        if (!isItemValid(slot, stack)) return stack;
         ItemStack stackInSlot = getInv().getStackInSlot(slot);
 
         int m;
@@ -64,7 +65,6 @@ public class InvWrapper implements IItemHandlerModifiable {
                     ItemStack copy = ItemHelpers.copy(stack);
                     ItemHelpers.grow(copy, stackInSlot.stackSize);
                     getInv().setInventorySlotContents(slot, copy);
-                    getInv().markDirty();
                 }
 
                 return ItemHelpers.EMPTY;
@@ -74,7 +74,6 @@ public class InvWrapper implements IItemHandlerModifiable {
                     ItemStack copy = ItemHelpers.split(stack, m);
                     ItemHelpers.grow(copy, stackInSlot.stackSize);
                     getInv().setInventorySlotContents(slot, copy);
-                    getInv().markDirty();
                 } else {
                     ItemHelpers.shrink(stack, m);
                 }

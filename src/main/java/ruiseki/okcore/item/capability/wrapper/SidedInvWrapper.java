@@ -47,7 +47,7 @@ public class SidedInvWrapper implements IItemHandlerModifiable {
         int realSlot = getSlot(inv, slot, side);
         if (realSlot == -1) return stack;
 
-        if (!inv.canInsertItem(realSlot, stack, side.ordinal()) || !inv.isItemValidForSlot(realSlot, stack)) {
+        if (!inv.canInsertItem(realSlot, stack, side.ordinal()) || !this.isItemValid(realSlot, stack)) {
             return stack;
         }
 

@@ -40,10 +40,10 @@ public class RangedWrapper implements IItemHandlerModifiable {
 
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+        if (!isItemValid(slot, stack)) return stack;
         if (checkSlot(slot)) {
             return compose.insertItem(slot + minSlot, stack, simulate);
         }
-
         return stack;
     }
 
@@ -68,7 +68,6 @@ public class RangedWrapper implements IItemHandlerModifiable {
         if (checkSlot(slot)) {
             return compose.getSlotLimit(slot + minSlot);
         }
-
         return 0;
     }
 
@@ -77,7 +76,6 @@ public class RangedWrapper implements IItemHandlerModifiable {
         if (checkSlot(slot)) {
             return compose.isItemValid(slot + minSlot, stack);
         }
-
         return false;
     }
 

@@ -65,11 +65,7 @@ public class InventoryHandlerWrapper implements IItemHandlerModifiable {
         int realSlot = getSlotIndex(slot);
         if (realSlot == -1) return stack;
 
-        if (!inventory.isItemValidForSlot(realSlot, stack)) return stack;
-        if (inventory instanceof ISidedInventory sidedInv && side != null
-            && !sidedInv.canInsertItem(realSlot, stack, side.ordinal())) {
-            return stack;
-        }
+        if (!isItemValid(slot, stack)) return stack;
 
         ItemStack existing = inventory.getStackInSlot(realSlot);
         int limit = Math.min(inventory.getInventoryStackLimit(), ItemHelpers.getMaxStackSize(stack));
@@ -132,7 +128,7 @@ public class InventoryHandlerWrapper implements IItemHandlerModifiable {
 
     @Override
     public int getSlotLimit(int slot) {
-        return inventory != null ? inventory.getInventoryStackLimit() : 0;
+        return getSlotIndex(slot) != -1 ? inventory.getInventoryStackLimit() : 0;
     }
 
     @Override

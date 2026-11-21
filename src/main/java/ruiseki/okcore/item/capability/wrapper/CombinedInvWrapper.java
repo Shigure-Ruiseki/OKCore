@@ -90,6 +90,7 @@ public class CombinedInvWrapper implements IItemHandlerModifiable, Iterable<IIte
         int index = getIndexForSlot(slot);
         IItemHandlerModifiable handler = getHandlerFromIndex(index);
         int localSlot = getSlotFromIndex(slot, index);
+        if (!handler.isItemValid(localSlot, stack)) return stack;
         ItemStack result = handler.insertItem(localSlot, stack, simulate);
         return ItemHelpers.isEmpty(result) ? ItemHelpers.EMPTY : result;
     }

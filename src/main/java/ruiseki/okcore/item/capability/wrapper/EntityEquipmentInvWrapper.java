@@ -60,6 +60,7 @@ public abstract class EntityEquipmentInvWrapper implements IItemHandlerModifiabl
     @Override
     public ItemStack insertItem(final int slot, final ItemStack stack, final boolean simulate) {
         if (ItemHelpers.isEmpty(stack)) return ItemHelpers.EMPTY;
+        if (this.isItemValid(slot, stack)) return stack;
 
         final EntityEquipmentSlot equipmentSlot = validateSlotIndex(slot);
 

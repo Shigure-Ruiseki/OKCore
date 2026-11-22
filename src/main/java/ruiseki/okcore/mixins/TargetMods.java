@@ -10,6 +10,15 @@ import ruiseki.okcore.enums.Mods;
 public enum TargetMods implements ITargetMod {
 
     JFMUY(Mods.JFMUY),
+    Baubles(Mods.Baubles),
+    BaublesExpanded(Mods.BaublesExpanded),
+    BogoSorter(Mods.BogoSorter),
+    StructureLib(Mods.StructureLib),
+    EtFuturum(Mods.EtFuturum),
+    TConstruct(Mods.TConstruct),
+    LogisticsPipes(Mods.LogisticsPipes),
+    Thaumcraft(Mods.Thaumcraft),
+    FindIt(Mods.FindIt),
     MUI2("com.cleanroommc.modularui.core.ModularUICore", Mods.MUI2),
     NotEnoughItems(Mods.NotEnoughItems);
 

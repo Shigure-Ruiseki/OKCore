@@ -36,6 +36,7 @@ public enum Mods implements IMod {
     Thaumcraft("Thaumcraft"),
     ThaumcraftNEIPlugin("thaumcraftneiplugin"),
     ThaumicEnergistics("thaumicenergistics"),
+    FindIt("findit"),
     TConstruct("TConstruct"),
     ThermalFoundation("ThermalFoundation"),
     JFMUY("jfmuy"),

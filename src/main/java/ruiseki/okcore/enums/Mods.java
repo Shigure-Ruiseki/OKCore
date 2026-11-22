@@ -27,6 +27,8 @@ public enum Mods implements IMod {
     EtFuturum("etfuturum"),
     EnderIO("EnderIO"),
     IC2("IC2"),
+    LogisticsPipes("LogisticsPipes"),
+    StructureLib("structurelib"),
     JAOPCA("jaopca"),
     Mekanism("Mekanism"),
     MinefactoryReloaded("MinefactoryReloaded"),

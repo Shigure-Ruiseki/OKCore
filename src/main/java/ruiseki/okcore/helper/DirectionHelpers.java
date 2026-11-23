@@ -51,4 +51,17 @@ public class DirectionHelpers {
         if (dir.ordinal() < 2) return 0;
         return dir.ordinal() - 2;
     }
+
+    public static int directionToRotationX(ForgeDirection dir) {
+        return dir == ForgeDirection.DOWN ? 180 : dir.ordinal();
+    }
+
+    public static int directionToRotationY(ForgeDirection dir) {
+        return switch (dir) {
+            case SOUTH -> 180;
+            case WEST -> 90;
+            case EAST -> 270;
+            default -> 0;
+        };
+    }
 }

@@ -514,6 +514,17 @@ public final class TooltipBuilder {
         }
     }
 
+    public TooltipBuilder copy() {
+        TooltipBuilder copy = new TooltipBuilder();
+        copy.template.addAll(this.template);
+        copy.providers.addAll(this.providers);
+        copy.cursor = this.cursor;
+        copy.cursorLocked = this.cursorLocked;
+        copy.headerEnabled = this.headerEnabled;
+        copy.headerConsumer = this.headerConsumer;
+        return copy;
+    }
+
     // Header
     private boolean headerEnabled = true;
     private BiConsumer<HeaderTooltipLine, TooltipBuilder> headerConsumer = (header, builder) -> {};

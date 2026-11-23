@@ -6,7 +6,6 @@ import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumRarity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
@@ -62,10 +61,12 @@ public class ItemDoorMetadata extends ItemDoor implements IItemTooltip {
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
         super.addInformation(stack, player, list, advanced);
-        LangHelpers.addOptionalInfo(list, ((Item) this).getUnlocalizedName(stack));
+        LangHelpers.addOptionalInfo(list, this.getUnlocalizedName(stack));
         informationProvider.addInformation(stack, player, list, advanced);
-        this.getTooltipBuilder()
-            .build(stack, player, list, advanced);
+        TooltipBuilder builder = this.getTooltipBuilder()
+            .copy();
+        this.addTooltip(builder);
+        builder.build(stack, player, list, advanced);
     }
 
     @Override

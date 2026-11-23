@@ -6,6 +6,9 @@ import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.client.gui.tooltip.HeaderTooltipLine;
+import ruiseki.okcore.client.gui.tooltip.TooltipBuilder;
+import ruiseki.okcore.client.gui.tooltip.TooltipLineHandler;
 import ruiseki.okcore.event.gui.RenderTooltipEvent;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
@@ -41,5 +44,15 @@ public class TooltipEventHandler {
         if (ItemHelpers.isEmpty(stack)) return;
         if (!(stack.getItem() instanceof IItemTooltip tooltip)) return;
         event.setMaxWidth(tooltip.getMaxTooltipWidth(stack, event.getLines(), event.getMaxWidth()));
+        TooltipBuilder builder = tooltip.getTooltipBuilder();
+        if (builder.isHeaderEnabled() && !event.getLines()
+            .isEmpty()) {
+            String title = event.getLines()
+                .getFirst();
+            HeaderTooltipLine header = new HeaderTooltipLine(stack, title);
+            builder.applyHeader(header);
+            event.getLines()
+                .set(0, TooltipLineHandler.register(header));
+        }
     }
 }

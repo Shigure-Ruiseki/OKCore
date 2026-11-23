@@ -502,10 +502,6 @@ public final class TooltipBuilder {
         this.cursorLocked = false;
 
         try {
-            if (this.headerEnabled) {
-                this.replace(0, this.addHeader());
-            }
-
             for (TooltipProvider provider : this.providers) {
                 provider.accept(this);
             }
@@ -538,24 +534,16 @@ public final class TooltipBuilder {
         return this;
     }
 
+    public boolean isHeaderEnabled() {
+        return headerEnabled;
+    }
+
     public TooltipBuilder headerEnabled(boolean enabled) {
         this.headerEnabled = enabled;
         return this;
     }
 
-    private String addHeader() {
-        String title = "";
-
-        if (!this.elements.isEmpty()) {
-            TooltipElement first = this.elements.getFirst();
-            if (first.getType() == ElementType.TEXT) {
-                title = first.getText();
-            }
-        }
-
-        HeaderTooltipLine header = new HeaderTooltipLine(this.stack, title);
+    public void applyHeader(HeaderTooltipLine header) {
         this.headerConsumer.accept(header, this);
-
-        return TooltipLineHandler.register(header);
     }
 }

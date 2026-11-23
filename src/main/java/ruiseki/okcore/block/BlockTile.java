@@ -186,13 +186,16 @@ public class BlockTile extends BlockContainer
         if (entity != null) {
             TileEntityOK tile = TileHelpers.getSafeTile(world, x, y, z, TileEntityOK.class);
             if (tile != null && ItemHelpers.hasTagCompound(stack)) {
-                ItemHelpers.getTagCompound(stack)
+                ItemStack stackCopy = ItemHelpers.copy(stack);
+
+                stackCopy.getTagCompound()
                     .setInteger("x", x);
-                ItemHelpers.getTagCompound(stack)
+                stackCopy.getTagCompound()
                     .setInteger("y", y);
-                ItemHelpers.getTagCompound(stack)
+                stackCopy.getTagCompound()
                     .setInteger("z", z);
-                tile.readFromNBT(ItemHelpers.getTagCompound(stack));
+
+                tile.readFromNBT(stackCopy.getTagCompound());
             }
 
             if (tile instanceof TileEntityOK.ITickingTile ticking) {

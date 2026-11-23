@@ -6,7 +6,6 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -25,7 +24,6 @@ import lombok.experimental.Delegate;
 import ruiseki.okcore.block.property.BlockPropertyProviderComponent;
 import ruiseki.okcore.block.property.IBlockPropertyProvider;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.inventory.IGuiConstructor;
@@ -179,30 +177,6 @@ public class BlockTile extends BlockContainer
         onPreBlockDestroyed(world, x, y, z, null);
         super.onBlockExploded(world, x, y, z, explosion);
         onPostBlockDestroyed(world, x, y, z);
-    }
-
-    @Override
-    public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
-        if (entity != null) {
-            TileEntityOK tile = TileHelpers.getSafeTile(world, x, y, z, TileEntityOK.class);
-            if (tile != null && ItemHelpers.hasTagCompound(stack)) {
-                ItemStack stackCopy = ItemHelpers.copy(stack);
-
-                stackCopy.getTagCompound()
-                    .setInteger("x", x);
-                stackCopy.getTagCompound()
-                    .setInteger("y", y);
-                stackCopy.getTagCompound()
-                    .setInteger("z", z);
-
-                tile.readFromNBT(stackCopy.getTagCompound());
-            }
-
-            if (tile instanceof TileEntityOK.ITickingTile ticking) {
-                ticking.update();
-            }
-        }
-        super.onBlockPlacedBy(world, x, y, z, entity, stack);
     }
 
     /**

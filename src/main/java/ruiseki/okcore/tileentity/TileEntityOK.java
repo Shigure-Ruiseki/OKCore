@@ -82,10 +82,10 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      * not cause multiple packets to be sent, more info in the class javadoc.
      */
     public final void sendUpdate() {
-        if (!isTicking()) {
+        if (!this.isTicking()) {
             throw new RuntimeException("If you want to update, you must implement ITickingTile. This is a mod error.");
         }
-        shouldSendUpdate = true;
+        this.shouldSendUpdate = true;
     }
 
     /**
@@ -94,8 +94,8 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      * ignore the update backoff.
      */
     public final void sendImmediateUpdate() {
-        sendUpdate();
-        sendUpdateBackoff = 0;
+        this.sendUpdate();
+        this.sendUpdateBackoff = 0;
     }
 
     /**
@@ -114,7 +114,7 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
 
     @Override
     public final void updateEntity() {
-        if (isTicking()) {
+        if (this.isTicking()) {
             ((ITickingTile) this).update();
         }
     }
@@ -124,8 +124,8 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      * Use updateTileEntity() instead.
      */
     private void updateTicking() {
-        updateTileEntity();
-        trySendActualUpdate();
+        this.updateTileEntity();
+        this.trySendActualUpdate();
     }
 
     /**
@@ -137,16 +137,16 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
     }
 
     private void trySendActualUpdate() {
-        sendUpdateBackoff--;
-        if (sendUpdateBackoff <= 0) {
-            sendUpdateBackoff = getUpdateBackoffTicks();
+        this.sendUpdateBackoff--;
+        if (this.sendUpdateBackoff <= 0) {
+            this.sendUpdateBackoff = getUpdateBackoffTicks();
 
-            if (shouldSendUpdate) {
-                shouldSendUpdate = false;
+            if (this.shouldSendUpdate) {
+                this.shouldSendUpdate = false;
 
-                beforeSendUpdate();
-                onSendUpdate();
-                afterSendUpdate();
+                this.beforeSendUpdate();
+                this.onSendUpdate();
+                this.afterSendUpdate();
             }
         }
     }
@@ -183,7 +183,7 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
         if (pkt != null && pkt.func_148857_g() != null) {
             this.readFromNBT(pkt.func_148857_g());
-            onUpdateReceived();
+            this.onUpdateReceived();
         }
     }
 
@@ -208,7 +208,7 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      * Called when the blockState of this tile entity is destroyed.
      */
     public void destroy() {
-        invalidate();
+        this.invalidate();
     }
 
     /**
@@ -218,20 +218,20 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      * @return If the given player can interact.
      */
     public boolean canInteractWith(EntityPlayer player) {
-        return !isInvalid() && player.getDistanceSq(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D) <= 64D;
+        return !this.isInvalid() && player.getDistanceSq(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D) <= 64D;
     }
 
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        writeGeneratedFieldsToNBT(tag);
+        this.writeGeneratedFieldsToNBT(tag);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
-        readGeneratedFieldsFromNBT(tag);
-        onLoad();
+        this.readGeneratedFieldsFromNBT(tag);
+        this.onLoad();
     }
 
     /**
@@ -289,6 +289,8 @@ public abstract class TileEntityOK extends TileEntity implements INBTProvider, I
      */
     public void setRotation(ForgeDirection rotation) {
         this.rotation = rotation;
+        this.markDirty();
+        this.onSendUpdate();
     }
 
     /**

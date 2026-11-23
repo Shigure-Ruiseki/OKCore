@@ -33,8 +33,10 @@ public class ItemBase extends Item implements IItemCapability, IItemSharedTag, I
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
         super.addInformation(stack, player, list, advanced);
         LangHelpers.addOptionalInfo(list, getUnlocalizedName(stack));
-        this.getTooltipBuilder()
-            .build(stack, player, list, advanced);
+        TooltipBuilder builder = this.getTooltipBuilder()
+            .copy();
+        this.addTooltip(builder);
+        builder.build(stack, player, list, advanced);
     }
 
     @Override

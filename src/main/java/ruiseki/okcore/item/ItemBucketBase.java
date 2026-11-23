@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -46,9 +45,11 @@ public class ItemBucketBase extends ItemBucket implements IItemCapability, IItem
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
         super.addInformation(stack, player, list, advanced);
-        LangHelpers.addOptionalInfo(list, ((Item) this).getUnlocalizedName(stack));
-        this.getTooltipBuilder()
-            .build(stack, player, list, advanced);
+        LangHelpers.addOptionalInfo(list, this.getUnlocalizedName(stack));
+        TooltipBuilder builder = this.getTooltipBuilder()
+            .copy();
+        this.addTooltip(builder);
+        builder.build(stack, player, list, advanced);
     }
 
     @Override

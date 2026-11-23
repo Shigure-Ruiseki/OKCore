@@ -60,6 +60,16 @@ public interface IItemTooltip {
     }
 
     /**
+     * Adds custom tooltip content for this item.
+     *
+     * <p>
+     * Override this method to add, remove, or modify tooltip lines
+     * before tooltip layout and rendering.
+     * </p>
+     */
+    default void addTooltip(TooltipBuilder builder) {}
+
+    /**
      * Returns the tooltip builder used to configure this item's additional
      * tooltip content.
      *

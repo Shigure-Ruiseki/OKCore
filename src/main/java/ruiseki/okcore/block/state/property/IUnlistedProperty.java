@@ -1,4 +1,4 @@
-package ruiseki.okcore.block.state;
+package ruiseki.okcore.block.state.property;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;

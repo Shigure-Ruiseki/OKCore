@@ -1,6 +1,7 @@
 package ruiseki.okcore;
 
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.core.block.BlockBlockStateTestConfig;
 import ruiseki.okcore.core.item.ItemEnergyTestConfig;
 import ruiseki.okcore.core.item.ItemFluidTestConfig;
 import ruiseki.okcore.core.item.ItemInventoryTestConfig;
@@ -23,6 +24,6 @@ public class Configs {
         configHandler.add(new ItemEnergyTestConfig());
         configHandler.add(new ItemFluidTestConfig());
         configHandler.add(new ItemInventoryTestConfig());
-
+        configHandler.add(new BlockBlockStateTestConfig());
     }
 }

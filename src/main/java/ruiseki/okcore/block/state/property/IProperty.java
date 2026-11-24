@@ -1,4 +1,4 @@
-package ruiseki.okcore.block.state;
+package ruiseki.okcore.block.state.property;
 
 public interface IProperty<T extends Comparable<T>> {
 

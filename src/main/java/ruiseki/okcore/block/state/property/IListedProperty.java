@@ -1,4 +1,4 @@
-package ruiseki.okcore.block.state;
+package ruiseki.okcore.block.state.property;
 
 import java.util.Collection;
 import java.util.Optional;

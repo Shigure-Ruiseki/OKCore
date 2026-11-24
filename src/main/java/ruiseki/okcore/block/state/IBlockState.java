@@ -9,6 +9,9 @@ import net.minecraft.world.World;
 
 import com.google.common.collect.ImmutableMap;
 
+import ruiseki.okcore.block.state.property.IListedProperty;
+import ruiseki.okcore.block.state.property.IProperty;
+import ruiseki.okcore.block.state.property.IUnlistedProperty;
 import ruiseki.okcore.datastructure.BlockPos;
 
 public interface IBlockState {

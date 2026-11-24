@@ -23,6 +23,7 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import ruiseki.okcore.addon.waila.BlockProvider;
 import ruiseki.okcore.block.state.BSSDataManager;
 import ruiseki.okcore.capabilities.CapabilityManager;
+import ruiseki.okcore.command.CommandBlockState;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.data.DatapackLoader;
@@ -76,9 +77,8 @@ public class OKCore extends ModBaseVersionable {
 
     @Override
     protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
-        LiteralArgumentBuilder<ICommandSender> root = super.constructBaseCommand(server);
-        root.then(new CommandDatapack(this, server).make());
-        return root;
+        return super.constructBaseCommand(server).then(new CommandDatapack(this, server).make())
+            .then(new CommandBlockState(this).make());
     }
 
     @Override

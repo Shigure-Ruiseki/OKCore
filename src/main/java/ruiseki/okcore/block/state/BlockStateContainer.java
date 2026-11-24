@@ -21,6 +21,9 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 
+import ruiseki.okcore.block.state.property.IListedProperty;
+import ruiseki.okcore.block.state.property.IProperty;
+import ruiseki.okcore.block.state.property.IUnlistedProperty;
 import ruiseki.okcore.event.blockstate.BlockStateContainerEvent;
 import ruiseki.okcore.helper.MathHelpers;
 
@@ -293,7 +296,7 @@ public class BlockStateContainer {
             return this;
         }
 
-        public Builder addAll(IProperty<?>... properties) {
+        public Builder add(IProperty<?>... properties) {
             if (properties == null) {
                 throw new IllegalArgumentException("Properties cannot be null");
             }
@@ -305,7 +308,7 @@ public class BlockStateContainer {
             return this;
         }
 
-        public Builder addAll(Collection<? extends IProperty<?>> properties) {
+        public Builder add(Collection<? extends IProperty<?>> properties) {
             if (properties == null) {
                 throw new IllegalArgumentException("Properties cannot be null");
             }
@@ -315,14 +318,6 @@ public class BlockStateContainer {
             }
 
             return this;
-        }
-
-        public Builder addListed(IListedProperty<?> property) {
-            return add(property);
-        }
-
-        public Builder addUnlisted(IUnlistedProperty<?> property) {
-            return add(property);
         }
 
         public BlockStateContainer build() {
@@ -333,7 +328,7 @@ public class BlockStateContainer {
 
     private static List<IProperty<?>> collectProperties(Block block, IProperty<?>... properties) {
         Builder builder = new Builder(block);
-        builder.addAll(properties);
+        builder.add(properties);
         MinecraftForge.EVENT_BUS.post(new BlockStateContainerEvent.Build(block, builder));
         return new ArrayList<>(builder.properties);
     }

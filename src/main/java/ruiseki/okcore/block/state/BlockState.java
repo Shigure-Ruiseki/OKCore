@@ -16,6 +16,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 
+import ruiseki.okcore.block.state.property.IListedProperty;
+import ruiseki.okcore.block.state.property.IProperty;
+import ruiseki.okcore.block.state.property.IUnlistedProperty;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.EBSHelpers;
 import ruiseki.okcore.helper.Helpers;

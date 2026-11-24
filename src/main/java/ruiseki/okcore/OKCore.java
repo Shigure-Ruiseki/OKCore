@@ -95,8 +95,6 @@ public class OKCore extends ModBaseVersionable {
 
         super.preInit(event);
 
-        DataRegistry.registerDataManager(new BSSDataManager(), 0);
-
         // Load others
         CraftingHelpers.load();
         SmeltingHelpers.load();
@@ -111,6 +109,8 @@ public class OKCore extends ModBaseVersionable {
     public void init(FMLInitializationEvent event) {
         ForgeRegistryManager.fireRegistryEvents();
         super.init(event);
+
+        DataRegistry.registerDataManager(new BSSDataManager(), 0);
     }
 
     @Override

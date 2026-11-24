@@ -19,6 +19,10 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockStatePool;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
 import cpw.mods.fml.common.registry.GameData;
+import ruiseki.okcore.block.state.BlockStateStorage;
+import ruiseki.okcore.block.state.IBlockState;
+import ruiseki.okcore.block.state.IBlockStateIBA;
+import ruiseki.okcore.block.state.IBlockStateNative;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
 
@@ -251,4 +255,22 @@ public class BlockStateHelpers {
         if (state == null) return JsonNull.INSTANCE;
         return new JsonPrimitive(state.toString());
     }
+
+    @Nullable
+    public static IBlockState getBlockState(IBlockAccess access, BlockPos pos) {
+        Block block = pos.getBlock(access);
+        if (!(block instanceof IBlockStateNative nativeBlock)) return null;
+
+        int meta = pos.getBlockMetadata(access);
+        IBlockState state = nativeBlock.getInitialState(block, meta);
+
+        BlockStateStorage storage = IBlockStateIBA.get(access, pos);
+        if (storage != null) {
+            IBlockState storedState = storage.getBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
+            if (storedState != null) state = storedState;
+        }
+
+        return state.resolveUnlistedProperties(access, pos);
+    }
+
 }

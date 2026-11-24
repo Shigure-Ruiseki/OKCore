@@ -39,6 +39,13 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPo
     private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
 
+    private static final int LOCAL_BITS = 4;
+    private static final int LOCAL_MASK = 0xF;
+
+    private static final int LOCAL_Y_SHIFT = 8;
+    private static final int LOCAL_Z_SHIFT = 4;
+    private static final int LOCAL_X_SHIFT = 0;
+
     public BlockPos() {
         super(0, 0, 0);
     }
@@ -471,5 +478,39 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPo
     @Override
     public int compareTo(@NotNull BlockPos o) {
         return compareBlockPos(this, o);
+    }
+
+    /**
+     * Packs local coordinates (0-15) into a short.
+     */
+    public short toLocalShort() {
+        return packLocal(x, y, z);
+    }
+
+    /**
+     * Packs local coordinates (0-15) into a short.
+     */
+    public static short packLocal(int x, int y, int z) {
+        return (short) (((y & LOCAL_MASK) << LOCAL_Y_SHIFT) | ((z & LOCAL_MASK) << LOCAL_Z_SHIFT)
+            | ((x & LOCAL_MASK) << LOCAL_X_SHIFT));
+    }
+
+    /**
+     * Unpacks a short into a local BlockPos.
+     */
+    public static BlockPos fromLocalShort(short packed) {
+        return new BlockPos(unpackLocalX(packed), unpackLocalY(packed), unpackLocalZ(packed));
+    }
+
+    public static int unpackLocalX(short packed) {
+        return packed & LOCAL_MASK;
+    }
+
+    public static int unpackLocalY(short packed) {
+        return (packed >>> LOCAL_Y_SHIFT) & LOCAL_MASK;
+    }
+
+    public static int unpackLocalZ(short packed) {
+        return (packed >>> LOCAL_Z_SHIFT) & LOCAL_MASK;
     }
 }

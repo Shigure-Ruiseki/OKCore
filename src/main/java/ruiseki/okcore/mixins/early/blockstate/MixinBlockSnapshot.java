@@ -89,7 +89,7 @@ public abstract class MixinBlockSnapshot implements IBlockSnapshot {
      * with the state originally captured by this snapshot.
      * </p>
      */
-    @Inject(method = "restore(ZZ)Z", at = @At("TAIL"))
+    @Inject(method = "restore(ZZ)Z", at = @At("TAIL"), remap = false)
     private void okcore$restoreBlockState(boolean force, boolean applyPhysics, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValueZ() || this.okcore$capturedState == null) return;
 
@@ -114,7 +114,7 @@ public abstract class MixinBlockSnapshot implements IBlockSnapshot {
      * </p>
      *
      */
-    @Inject(method = "restoreToLocation(Lnet/minecraft/world/World;IIIZZ)Z", at = @At("TAIL"))
+    @Inject(method = "restoreToLocation(Lnet/minecraft/world/World;IIIZZ)Z", at = @At("TAIL"), remap = false)
     private void okcore$restoreBlockStateToLocation(World world, int x, int y, int z, boolean force,
         boolean applyPhysics, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValueZ() || this.okcore$capturedState == null) return;

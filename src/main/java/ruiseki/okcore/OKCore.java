@@ -6,6 +6,7 @@ import net.minecraft.server.MinecraftServer;
 
 import org.apache.logging.log4j.Level;
 
+import com.falsepattern.chunk.api.DataRegistry;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.Mod;
@@ -20,6 +21,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import ruiseki.okcore.addon.waila.BlockProvider;
+import ruiseki.okcore.block.state.BSSDataManager;
 import ruiseki.okcore.capabilities.CapabilityManager;
 import ruiseki.okcore.command.CommandDatapack;
 import ruiseki.okcore.config.ConfigHandler;
@@ -92,6 +94,8 @@ public class OKCore extends ModBaseVersionable {
         getRegistryManager().addRegistry(IBucketRegistry.class, new BucketRegistry());
 
         super.preInit(event);
+
+        DataRegistry.registerDataManager(new BSSDataManager(), 0);
 
         // Load others
         CraftingHelpers.load();

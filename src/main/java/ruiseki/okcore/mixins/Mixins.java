@@ -88,6 +88,16 @@ public enum Mixins implements IMixins {
     TAG(new MixinBuilder("Add tweaks for Tag system").addCommonMixins("tag.MixinItem", "tag.MixinBlock")
         .setPhase(Phase.EARLY)),
 
+    NATIVE_BLOCK_STATE(new MixinBuilder("Add BlockState storage")
+        .addCommonMixins(
+            "blockstate.MixinBlockSnapshot",
+            "blockstate.MixinChunk",
+            "blockstate.MixinChunkCache",
+            "blockstate.MixinExtendedBlockStorage",
+            "blockstate.MixinS23Packet",
+            "blockstate.MixinWorld")
+        .setPhase(Phase.EARLY)),
+
     // LATE
     // RECIPE
     NEI_JSON_RECIPE(new MixinBuilder("Hook Json Recipe to NEI")

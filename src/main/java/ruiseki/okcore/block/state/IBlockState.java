@@ -1,6 +1,7 @@
 package ruiseki.okcore.block.state;
 
 import java.util.Collection;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
@@ -38,7 +39,11 @@ public interface IBlockState {
 
     boolean setBlockState(World world, BlockPos pos);
 
+    boolean setBlockState(World world, BlockPos pos, int flags);
+
     NBTTagCompound serializeNBT();
 
     IBlockState deserializeNBT(NBTTagCompound nbt);
+
+    Map<String, String> toMap();
 }

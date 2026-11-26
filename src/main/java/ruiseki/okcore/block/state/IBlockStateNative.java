@@ -6,15 +6,15 @@ public interface IBlockStateNative {
 
     BlockStateContainer getStateContainer();
 
-    default void createBlockStateDefinition(BlockStateContainer.Builder builder) {}
+    default void createBlockStateDefinition(BlockStateContainer.Builder builder) {
+
+    }
 
     void registerDefaultState(IBlockState state);
 
     IBlockState getDefaultState();
 
     Block getBlockFromState(IBlockState state);
-
-    int getMetaFromState(IBlockState state);
 
     default boolean isSameBlock(Block newBlock) {
         return newBlock == this;

@@ -110,7 +110,8 @@ public class OKCore extends ModBaseVersionable {
         ForgeRegistryManager.fireRegistryEvents();
         super.init(event);
 
-        DataRegistry.registerDataManager(new BSSDataManager(), 0);
+        // Run After ChunkAPI
+        DataRegistry.registerDataManager(new BSSDataManager(), 1);
     }
 
     @Override

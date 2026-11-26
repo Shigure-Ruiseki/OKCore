@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 
-public class BlockStateStorage implements Cloneable {
+public class BlockStateStorage {
 
     /**
      * Stores states by local position within an ExtendedBlockStorage section.
@@ -84,6 +84,7 @@ public class BlockStateStorage implements Cloneable {
         if (createIfMissing && storage == null) {
             storage = new BlockStateStorage();
             stateEBS.okcore$setBlockStateStorage(storage);
+            return storage;
         }
 
         return storage;
@@ -101,8 +102,7 @@ public class BlockStateStorage implements Cloneable {
         return true;
     }
 
-    @Override
-    public BlockStateStorage clone() {
+    public BlockStateStorage copy() {
         BlockStateStorage copy = new BlockStateStorage();
         copy.blockStates.putAll(this.blockStates);
         return copy;

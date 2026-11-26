@@ -13,12 +13,10 @@ import java.util.regex.Pattern;
 import net.minecraft.block.Block;
 import net.minecraftforge.common.MinecraftForge;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 
 import ruiseki.okcore.block.state.property.IListedProperty;
@@ -191,13 +189,7 @@ public class BlockStateContainer {
 
     private void initializeTransitions() {
         for (IBlockState state : this.validStates) {
-            Table<IProperty<?>, Comparable<?>, IBlockState> transitions = HashBasedTable.create();
-
-            for (IListedProperty<?> property : this.listedProperties) {
-                addTransitions(state, property, transitions);
-            }
-
-            ((BlockState) state).propertyValueTable = ImmutableTable.copyOf(transitions);
+            ((BlockState) state).buildPropertyValueTable(this.stateMap);
         }
     }
 

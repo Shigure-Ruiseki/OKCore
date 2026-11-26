@@ -11,13 +11,14 @@ import ruiseki.okcore.block.state.IBlockState;
 import ruiseki.okcore.block.state.IBlockStateNative;
 import ruiseki.okcore.block.state.property.listed.BooleanProperty;
 import ruiseki.okcore.block.state.property.listed.IntegerProperty;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.block.state.property.unlisted.MetaProperty;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
 public class BlockBlockStateTest extends Block implements IBlockStateNative {
 
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
-    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 15);
+    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 2);
+    public static final MetaProperty META = MetaProperty.INSTANCE;
 
     private final BlockStateContainer stateContainer;
     private IBlockState defaultBlockState;
@@ -33,7 +34,7 @@ public class BlockBlockStateTest extends Block implements IBlockStateNative {
 
     @Override
     public void createBlockStateDefinition(BlockStateContainer.Builder builder) {
-        builder.add(ACTIVE, LEVEL);
+        builder.add(ACTIVE, LEVEL, META);
     }
 
     @Override
@@ -57,14 +58,9 @@ public class BlockBlockStateTest extends Block implements IBlockStateNative {
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
-        return 0;
-    }
-
-    @Override
     public boolean onBlockActivated(World worldIn, int x, int y, int z, EntityPlayer player, int side, float subX,
         float subY, float subZ) {
-        IBlockState state = BlockStateHelpers.getBlockState(worldIn, new BlockPos(x, y, z));
+        IBlockState state = BlockStateHelpers.getBlockState(worldIn, x, y, z);
         if (state != null) {
             player.addChatComponentMessage(new ChatComponentText(state.toString()));
         }

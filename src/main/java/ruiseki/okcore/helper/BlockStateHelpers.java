@@ -257,6 +257,11 @@ public class BlockStateHelpers {
     }
 
     @Nullable
+    public static IBlockState getBlockState(IBlockAccess state, int x, int y, int z) {
+        return getBlockState(state, new BlockPos(x, y, z));
+    }
+
+    @Nullable
     public static IBlockState getBlockState(IBlockAccess access, BlockPos pos) {
         Block block = pos.getBlock(access);
         if (!(block instanceof IBlockStateNative nativeBlock)) return null;

@@ -5,7 +5,7 @@
 Just a core mod extracted to use in other mod
 
 ## Required Dependencies:
-*   [GTNHLib (>= 0.11.54)](https://github.com/GTNewHorizons/GTNHLib)
+*   [GTNHLib (>= 0.12.10)](https://github.com/GTNewHorizons/GTNHLib)
 
 ## Note:
 *  [Controlling](https://github.com/GTNewHorizons/Controlling) compatibility support  (recommended `>= 2.1.0`).

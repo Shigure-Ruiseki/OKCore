@@ -16,6 +16,7 @@ import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
@@ -347,23 +348,31 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPo
     }
 
     public BiomeGenBase getBiomeGen(World world) {
-        return world.getBiomeGenForCoords(getX(), getZ());
+        return world.getBiomeGenForCoords(this.getX(), this.getZ());
     }
 
     public void markBlockForUpdate(World world) {
-        world.markBlockForUpdate(getX(), getY(), getZ());
+        world.markBlockForUpdate(this.getX(), this.getY(), this.getZ());
     }
 
     public TileEntity getTileEntity(IBlockAccess world) {
-        return world.getTileEntity(getX(), getY(), getZ());
+        return world.getTileEntity(this.getX(), this.getY(), this.getZ());
     }
 
     public Block getBlock(IBlockAccess world) {
-        return world.getBlock(getX(), getY(), getZ());
+        return world.getBlock(this.getX(), this.getY(), this.getZ());
     }
 
     public int getBlockMetadata(IBlockAccess world) {
-        return world.getBlockMetadata(getX(), getY(), getZ());
+        return world.getBlockMetadata(this.getX(), this.getY(), this.getZ());
+    }
+
+    public void setBlockMetadata(World world, int metadata, int flag) {
+        world.setBlockMetadataWithNotify(this.getX(), this.getY(), this.getZ(), metadata, flag);
+    }
+
+    public Chunk getChunk(World world) {
+        return world.getChunkFromBlockCoords(this.getX(), this.getZ());
     }
 
     public boolean equals(int x, int y, int z) {

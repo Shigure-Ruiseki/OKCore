@@ -116,7 +116,7 @@ public class MathHelpers extends MathHelper {
                         }
                     }
 
-                    return true;
+                    return this.index >= 0;
                 } else {
                     if (this.index >= this.iterators.length) {
                         for (this.index = this.iterators.length - 1; this.index >= 0; --this.index) {

@@ -77,14 +77,12 @@ public class MixinChunk {
             storage.setBlockState(x & 0xF, y & 0xF, z & 0xF, newState);
 
             newBlockRef.set(bsa.getBlockFromState(newState));
-            newMetaRef.set(bsa.getMetaFromState(newState));
         } else if (newBlock instanceof IBlockStateNative bsa) {
             // New block is unrelated to the old block.
             // Fetch its initial state, cache it, and intercept the requested block/meta for the correct values.
             okcore$tempState = bsa.getInitialState(newBlock, newMeta);
 
             newBlockRef.set(bsa.getBlockFromState(okcore$tempState));
-            newMetaRef.set(bsa.getMetaFromState(okcore$tempState));
         }
     }
 

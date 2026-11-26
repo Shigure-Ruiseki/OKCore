@@ -10,17 +10,19 @@ import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Table;
 
 import ruiseki.okcore.block.state.property.IListedProperty;
 import ruiseki.okcore.block.state.property.IProperty;
 import ruiseki.okcore.block.state.property.IUnlistedProperty;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.EBSHelpers;
 import ruiseki.okcore.helper.Helpers;
 
 public class BlockState implements IBlockState {
@@ -46,7 +48,7 @@ public class BlockState implements IBlockState {
 
     protected BlockState(Block block, ImmutableMap<IProperty<?>, Comparable<?>> properties,
         ImmutableSet<IUnlistedProperty<?>> unlistedProperties) {
-        this(block, properties, unlistedProperties, ImmutableTable.of());
+        this(block, properties, unlistedProperties, null);
     }
 
     protected BlockState(Block block, ImmutableMap<IProperty<?>, Comparable<?>> properties,
@@ -55,7 +57,7 @@ public class BlockState implements IBlockState {
         this.block = Objects.requireNonNull(block, "block");
         this.properties = Objects.requireNonNull(properties, "properties");
         this.unlistedProperties = Objects.requireNonNull(unlistedProperties, "unlistedProperties");
-        this.propertyValueTable = Objects.requireNonNull(propertyValueTable, "propertyValueTable");
+        this.propertyValueTable = propertyValueTable;
     }
 
     @Override
@@ -100,13 +102,18 @@ public class BlockState implements IBlockState {
             return this;
         }
 
+        if (this.propertyValueTable == null) {
+            throw new IllegalStateException("Property value table has not been initialized for " + this.properties);
+        }
+
+        // Look up the canonical target state.
         IBlockState target = this.propertyValueTable.get(property, value);
 
         if (target == null) {
             throw invalidValue(property, value);
         }
 
-        // No unlisted values: return the canonical state directly.
+        // No runtime Unlisted Values to preserve.
         boolean hasUnlistedValues = false;
         for (IProperty<?> key : this.properties.keySet()) {
             if (key instanceof IUnlistedProperty<?>) {
@@ -119,17 +126,25 @@ public class BlockState implements IBlockState {
             return target;
         }
 
-        // Copy canonical listed values and preserve current unlisted values.
-        ImmutableMap.Builder<IProperty<?>, Comparable<?>> builder = ImmutableMap.builder();
-        builder.putAll(target.getProperties());
+        if (!(target instanceof BlockState targetState)) {
+            throw new IllegalStateException(
+                "Unexpected state implementation: " + target.getClass()
+                    .getName());
+        }
 
+        // Start with the target's canonical Listed Values.
+        ImmutableMap.Builder<IProperty<?>, Comparable<?>> builder = ImmutableMap.builder();
+        builder.putAll(targetState.properties);
+
+        // Preserve the source's runtime Unlisted Values.
         for (Map.Entry<IProperty<?>, Comparable<?>> entry : this.properties.entrySet()) {
             if (entry.getKey() instanceof IUnlistedProperty<?>) {
                 builder.put(entry);
             }
         }
 
-        return new BlockState(this.block, builder.build(), this.unlistedProperties, this.propertyValueTable);
+        // The derived state must use the target's transition table.
+        return new BlockState(this.block, builder.build(), this.unlistedProperties, targetState.propertyValueTable);
     }
 
     @Override
@@ -208,9 +223,17 @@ public class BlockState implements IBlockState {
 
     @Override
     public boolean setBlockState(World world, BlockPos pos) {
+        return this.setBlockState(world, pos, 3);
+    }
+
+    @Override
+    public boolean setBlockState(World world, BlockPos pos, int flags) {
         if (pos.getBlock(world) != this.block) return false;
 
-        ExtendedBlockStorage ebs = EBSHelpers.getEBS(world, pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+        world.setBlock(pos.getX(), pos.getY(), pos.getZ(), this.block, pos.getBlockMetadata(world), flags);
+
+        Chunk chunk = pos.getChunk(world);
+        ExtendedBlockStorage ebs = chunk.getBlockStorageArray()[pos.getY() >> 4];
         if (ebs == null) return false;
 
         BlockStateStorage storage = BlockStateStorage.getStorage(ebs, true);
@@ -249,6 +272,8 @@ public class BlockState implements IBlockState {
 
             applyUnlistedProperty(world, pos, property, entry.getValue());
         }
+
+        chunk.setChunkModified();
 
         return true;
     }
@@ -309,7 +334,7 @@ public class BlockState implements IBlockState {
 
     @Override
     public IBlockState deserializeNBT(NBTTagCompound tag) {
-        if (tag == null) return null;
+        if (tag == null) return this;
         NBTTagCompound propertiesTag = tag.getCompoundTag("Properties");
         IBlockState state = this;
 
@@ -335,5 +360,73 @@ public class BlockState implements IBlockState {
         }
 
         return state.withProperty(property, value.get());
+    }
+
+    protected void buildPropertyValueTable(Map<ImmutableMap<IProperty<?>, Comparable<?>>, IBlockState> stateMap) {
+        if (this.propertyValueTable != null) {
+            throw new IllegalStateException("Property value table already initialized");
+        }
+
+        Table<IProperty<?>, Comparable<?>, IBlockState> table = HashBasedTable.create();
+
+        for (Map.Entry<IProperty<?>, Comparable<?>> entry : this.properties.entrySet()) {
+            IProperty<?> property = entry.getKey();
+
+            if (!(property instanceof IListedProperty<?>listedProperty)) {
+                continue;
+            }
+
+            for (Comparable<?> value : listedProperty.getAllowedValues()) {
+                if (Objects.equals(value, entry.getValue())) {
+                    continue;
+                }
+
+                ImmutableMap<IProperty<?>, Comparable<?>> properties = getPropertiesWithValue(property, value);
+
+                IBlockState target = stateMap.get(properties);
+
+                if (target == null) {
+                    throw new IllegalStateException("Missing state transition: " + property.getName() + "=" + value);
+                }
+
+                table.put(property, value, target);
+            }
+        }
+
+        this.propertyValueTable = ImmutableTable.copyOf(table);
+    }
+
+    private ImmutableMap<IProperty<?>, Comparable<?>> getPropertiesWithValue(IProperty<?> property,
+        Comparable<?> value) {
+        ImmutableMap.Builder<IProperty<?>, Comparable<?>> builder = ImmutableMap.builder();
+
+        for (Map.Entry<IProperty<?>, Comparable<?>> entry : this.properties.entrySet()) {
+            builder.put(
+                entry.getKey(),
+                entry.getKey()
+                    .equals(property) ? value : entry.getValue());
+        }
+
+        return builder.build();
+    }
+
+    @Override
+    public Map<String, String> toMap() {
+        ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+
+        for (Map.Entry<IProperty<?>, Comparable<?>> entry : this.properties.entrySet()) {
+            builder.put(
+                entry.getKey()
+                    .getName(),
+                getPropertyValueString(entry.getKey(), entry.getValue()));
+        }
+
+        return builder.build();
+    }
+
+    private static <T extends Comparable<T>> String getPropertyValueString(IProperty<T> property, Comparable<?> value) {
+        return property.valueToString(
+            property.getType()
+                .cast(value));
     }
 }

@@ -49,7 +49,7 @@ public class BSSDataManager
         if (storage == null) return;
 
         IBlockState state = storage.getBlockState(x & 0xF, y & 0xF, z & 0xF);
-        stateS23.okcore$setBlockState(state.serializeNBT());
+        stateS23.okcore$setBlockState(state != null ? state.serializeNBT() : null);
     }
 
     @Override
@@ -100,13 +100,9 @@ public class BSSDataManager
         blockState = blockState.deserializeNBT(stateS23.okcore$getBlockState());
 
         storage.setBlockState(x & 0xF, y & 0xF, z & 0xF, blockState);
+        int meta = chunk.getBlockMetadata(x & 0xF, y, z & 0xF);
 
-        chunk.func_150807_a(
-            x & 0xF,
-            y,
-            z & 0xF,
-            sNative.getBlockFromState(blockState),
-            sNative.getMetaFromState(blockState));
+        chunk.func_150807_a(x & 0xF, y, z & 0xF, sNative.getBlockFromState(blockState), meta);
 
         chunk.worldObj.markBlockForUpdate((chunk.xPosition << 4) + x, y, (chunk.zPosition << 4) + z);
     }
@@ -364,7 +360,7 @@ public class BSSDataManager
 
         BlockStateStorage storage = BlockStateStorage.getStorage(from, false);
 
-        toExt.okcore$setBlockStateStorage(storage == null ? null : storage.clone());
+        toExt.okcore$setBlockStateStorage(storage == null ? null : storage.copy());
     }
 
     @Override

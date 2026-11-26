@@ -54,7 +54,7 @@ public class BlockStateStorage {
         return blockStates.get(pack(rx, ry, rz));
     }
 
-    public void setBlockStates(BlockPos pos, @Nullable BlockState state) {
+    public void setBlockState(BlockPos pos, @Nullable IBlockState state) {
         this.setBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, state);
     }
 

@@ -251,7 +251,7 @@ public class BlockState implements IBlockState {
         if (storage == null) return false;
 
         // Store the actual state, including its current Listed Values.
-        storage.setBlockStates(pos, this);
+        storage.setBlockState(pos, this);
 
         // Apply Unlisted properties to the world.
         for (Map.Entry<IUnlistedProperty<?>, Optional<?>> entry : this.unlistedProperties.entrySet()) {

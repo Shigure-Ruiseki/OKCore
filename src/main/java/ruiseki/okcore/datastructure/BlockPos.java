@@ -94,6 +94,10 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPo
             Strings.isNullOrEmpty(z) ? 0 : Integer.parseInt(z));
     }
 
+    public BlockPos(Chunk chunk, int x, int y, int z) {
+        super((chunk.xPosition << 4) + (x & 15), y, (chunk.zPosition << 4) + (z & 15));
+    }
+
     public int getX() {
         return x;
     }

@@ -1,6 +1,7 @@
 package ruiseki.okcore.mixins.early.blockstate;
 
 import net.minecraft.block.Block;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
@@ -18,6 +19,8 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import ruiseki.okcore.block.state.BlockStateStorage;
 import ruiseki.okcore.block.state.IBlockState;
 import ruiseki.okcore.block.state.IBlockStateNative;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.EBSHelpers;
 
 @Mixin(Chunk.class)
@@ -48,6 +51,8 @@ public class MixinChunk {
         // wrong.
 
         Chunk self = (Chunk) (Object) this;
+        World world = self.worldObj;
+        BlockPos pos = new BlockPos(self, x, y, z);
 
         boolean oldAware = oldBlock instanceof IBlockStateNative;
         boolean newAware = newBlock instanceof IBlockStateNative;
@@ -62,27 +67,27 @@ public class MixinChunk {
             BlockStateStorage storage = BlockStateStorage.getStorage(ebs, true);
             if (storage == null) return;
 
-            IBlockState state = storage.getBlockState(x & 0xF, y & 0xF, z & 0xF);
-
+            IBlockState state = BlockStateHelpers.getBlockState(world, pos);
             if (state == null) {
                 state = bsa.getDefaultState();
             }
 
             IBlockState newState = bsa.onBlockChanged(state, oldBlock, newBlock, oldMeta, newMeta);
-
             if (newState == null) {
                 newState = state;
             }
 
-            storage.setBlockState(x & 0xF, y & 0xF, z & 0xF, newState);
+            storage.setBlockState(pos, newState);
 
             newBlockRef.set(bsa.getBlockFromState(newState));
+            newMetaRef.set(bsa.getMetaFromState(newState));
         } else if (newBlock instanceof IBlockStateNative bsa) {
             // New block is unrelated to the old block.
             // Fetch its initial state, cache it, and intercept the requested block/meta for the correct values.
             okcore$tempState = bsa.getInitialState(newBlock, newMeta);
 
             newBlockRef.set(bsa.getBlockFromState(okcore$tempState));
+            newMetaRef.set(bsa.getMetaFromState(okcore$tempState));
         }
     }
 
@@ -101,10 +106,11 @@ public class MixinChunk {
             shift = Shift.BEFORE))
     private void okcore$onBlockChanged(int x, int y, int z, Block newBlock, int newMetadata,
         CallbackInfoReturnable<Boolean> cir, @Local(name = "block1") Block oldBlock) {
-        // This method detects newly placed [NativeBlockStateAware] Blocks and creates or removes the
+        // This method detects newly placed [IBlockStateNative] Blocks and creates or removes the
         // [BlockStateStorage] as needed.
 
         Chunk self = (Chunk) (Object) this;
+        BlockPos pos = new BlockPos(self, x, y, z);
 
         boolean oldAware = oldBlock instanceof IBlockStateNative;
         boolean newAware = newBlock instanceof IBlockStateNative;
@@ -122,7 +128,7 @@ public class MixinChunk {
         // Clear the outgoing block's state since the two blocks are logically different.
         // We don't want to pass the previous block's state to the new block
         if (oldAware && storage != null) {
-            storage.setBlockState(x & 0xF, y & 0xF, z & 0xF, null);
+            storage.setBlockState(pos, null);
 
             // Incoming block is not Aware — remove storage if now empty
             if (!newAware && storage.isEmpty()) {
@@ -142,7 +148,7 @@ public class MixinChunk {
                 okcore$tempState = bsa.getDefaultState();
             }
 
-            storage.setBlockState(x & 0xF, y & 0xF, z & 0xF, okcore$tempState);
+            storage.setBlockState(pos, okcore$tempState);
 
             okcore$tempState = null;
         }

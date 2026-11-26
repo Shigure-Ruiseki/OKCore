@@ -5,6 +5,7 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
+import ruiseki.okcore.datastructure.BlockPos;
 
 public class BlockStateStorage {
 
@@ -45,8 +46,16 @@ public class BlockStateStorage {
         return blockStates.containsKey(pack(rx, ry, rz));
     }
 
+    public @Nullable IBlockState getBlockState(BlockPos pos) {
+        return this.getBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
+    }
+
     public @Nullable IBlockState getBlockState(int rx, int ry, int rz) {
         return blockStates.get(pack(rx, ry, rz));
+    }
+
+    public void setBlockStates(BlockPos pos, @Nullable BlockState state) {
+        this.setBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, state);
     }
 
     public void setBlockState(int rx, int ry, int rz, @Nullable IBlockState state) {

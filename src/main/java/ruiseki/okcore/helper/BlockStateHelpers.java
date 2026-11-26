@@ -271,7 +271,7 @@ public class BlockStateHelpers {
 
         BlockStateStorage storage = IBlockStateIBA.get(access, pos);
         if (storage != null) {
-            IBlockState storedState = storage.getBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
+            IBlockState storedState = storage.getBlockState(pos);
             if (storedState != null) state = storedState;
         }
 

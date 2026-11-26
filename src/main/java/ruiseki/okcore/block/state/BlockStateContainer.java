@@ -3,21 +3,25 @@ package ruiseki.okcore.block.state;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraftforge.common.MinecraftForge;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Table;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.UnmodifiableIterator;
 
 import ruiseki.okcore.block.state.property.IListedProperty;
 import ruiseki.okcore.block.state.property.IProperty;
@@ -31,229 +35,113 @@ public class BlockStateContainer {
 
     private final Block block;
 
-    /**
-     * All properties indexed by name.
-     * Includes both listed and unlisted properties.
-     */
-    private final ImmutableSortedMap<String, IProperty<?>> properties;
-
-    private final ImmutableList<IListedProperty<?>> listedProperties;
+    private final ImmutableSortedMap<String, IListedProperty<?>> properties;
+    private final ImmutableList<IBlockState> validStates;
 
     private final ImmutableSet<IUnlistedProperty<?>> unlistedProperties;
 
-    private final ImmutableList<IBlockState> validStates;
-
-    /**
-     * Maps listed property combinations to their canonical states.
-     * Unlisted properties are intentionally excluded.
-     */
-    private final ImmutableMap<ImmutableMap<IProperty<?>, Comparable<?>>, IBlockState> stateMap;
-
-    public BlockStateContainer(Block block, IProperty<?>... properties) {
-        this(block, collectProperties(block, properties));
+    @Nonnull
+    protected BlockState createState(@Nonnull Block block,
+        @Nonnull ImmutableMap<IListedProperty<?>, Comparable<?>> properties,
+        @Nullable ImmutableMap<IUnlistedProperty<?>, Optional<?>> unlistedProperties) {
+        return new BlockState(block, properties, unlistedProperties, null, null);
     }
 
-    private BlockStateContainer(Block block, List<IProperty<?>> properties) {
-        if (block == null) {
-            throw new IllegalArgumentException("Block cannot be null");
+    public BlockStateContainer(@Nonnull Block block, IListedProperty<?>[] properties,
+        IUnlistedProperty<?>[] unlistedProperties) {
+        this(block, properties, buildUnlistedMap(unlistedProperties));
+    }
+
+    private static ImmutableMap<IUnlistedProperty<?>, Optional<?>> buildUnlistedMap(
+        IUnlistedProperty<?>[] unlistedProperties) {
+        ImmutableMap.Builder<IUnlistedProperty<?>, Optional<?>> builder = ImmutableMap.builder();
+        for (IUnlistedProperty<?> p : unlistedProperties) {
+            builder.put(p, Optional.empty());
+        }
+        return builder.build();
+    }
+
+    protected BlockStateContainer(Block blockIn, IListedProperty<?>[] properties,
+        ImmutableMap<IUnlistedProperty<?>, Optional<?>> unlistedProperties) {
+
+        this.block = blockIn;
+        Map<String, IListedProperty<?>> map = Maps.newHashMap();
+
+        for (IListedProperty<?> iproperty : properties) {
+            validateProperty(blockIn, iproperty);
+            map.put(iproperty.getName(), iproperty);
+        }
+        this.properties = ImmutableSortedMap.copyOf(map);
+        Map<Map<IListedProperty<?>, Comparable<?>>, BlockState> map2 = Maps.newLinkedHashMap();
+        List<BlockState> list1 = Lists.newArrayList();
+        for (List<Comparable<?>> list : MathHelpers.cartesianProduct(this.getAllowedValues())) {
+            Map<IListedProperty<?>, Comparable<?>> map1 = MathHelpers.createMap(this.properties.values(), list);
+            BlockState state = createState(blockIn, ImmutableMap.copyOf(map1), unlistedProperties);
+            map2.put(map1, state);
+            list1.add(state);
         }
 
-        if (properties == null) {
-            throw new IllegalArgumentException("Properties cannot be null");
+        for (BlockState state : list1) {
+            state.buildPropertyValueTable(map2);
         }
+        this.validStates = ImmutableList.copyOf(list1);
 
-        this.block = block;
-
-        ImmutableSortedMap.Builder<String, IProperty<?>> propertiesBuilder = ImmutableSortedMap.naturalOrder();
-
-        ImmutableList.Builder<IListedProperty<?>> listedBuilder = ImmutableList.builder();
-
-        ImmutableSet.Builder<IUnlistedProperty<?>> unlistedBuilder = ImmutableSet.builder();
-
-        Set<IProperty<?>> propertySet = new HashSet<>();
-        Set<String> propertyNames = new HashSet<>();
-
-        for (IProperty<?> property : properties) {
-            if (property == null) {
-                throw new IllegalArgumentException("Property cannot be null");
-            }
-
-            String name = property.getName();
-
-            if (name == null || !NAME_PATTERN.matcher(name)
-                .matches()) {
-                throw new IllegalArgumentException("Invalid property name: " + name);
-            }
-
-            if (!propertySet.add(property)) {
-                throw new IllegalArgumentException("Duplicate property: " + name);
-            }
-
-            if (!propertyNames.add(name)) {
-                throw new IllegalArgumentException("Duplicate property name: " + name);
-            }
-
-            propertiesBuilder.put(name, property);
-
-            if (property instanceof IListedProperty<?>listed) {
-                validateListedProperty(listed);
-                listedBuilder.add(listed);
-            } else if (property instanceof IUnlistedProperty<?>unlisted) {
-                unlistedBuilder.add(unlisted);
-            } else {
-                throw new IllegalArgumentException("Unsupported property type: " + property.getClass());
-            }
+        ImmutableSet.Builder<IUnlistedProperty<?>> builder = ImmutableSet.builder();
+        for (IUnlistedProperty<?> property : unlistedProperties.keySet()) {
+            builder.add(property);
         }
-
-        this.properties = propertiesBuilder.build();
-        this.listedProperties = listedBuilder.build();
-        this.unlistedProperties = unlistedBuilder.build();
-
-        Map<ImmutableMap<IProperty<?>, Comparable<?>>, IBlockState> states = new LinkedHashMap<>();
-
-        generateStates(states);
-
-        this.stateMap = ImmutableMap.copyOf(states);
-        this.validStates = ImmutableList.copyOf(states.values());
-
-        initializeTransitions();
+        this.unlistedProperties = builder.build();
     }
 
-    private static <T extends Comparable<T>> void validateListedProperty(IListedProperty<T> property) {
-        Collection<T> values = property.getAllowedValues();
+    public static <T extends Comparable<T>> String validateProperty(Block block, IListedProperty<T> property) {
+        String s = property.getName();
+        if (!NAME_PATTERN.matcher(s)
+            .matches()) {
+            throw new IllegalArgumentException("Block: " + block.getClass() + " has invalidly named property: " + s);
+        } else {
+            for (T t : property.getAllowedValues()) {
+                String s1 = property.getName(t);
 
-        if (values == null || values.isEmpty()) {
-            throw new IllegalArgumentException("Listed property must have allowed values: " + property.getName());
+                if (!NAME_PATTERN.matcher(s1)
+                    .matches()) {
+                    throw new IllegalArgumentException(
+                        "Block: " + block.getClass() + " has property: " + s + " with invalidly named value: " + s1);
+                }
+            }
+
+            return s;
         }
-
-        Set<T> uniqueValues = new HashSet<>();
-        Set<String> uniqueNames = new HashSet<>();
-
-        for (T value : values) {
-            if (value == null || !property.isValid(value)) {
-                throw new IllegalArgumentException("Invalid allowed value for property: " + property.getName());
-            }
-
-            if (!uniqueValues.add(value)) {
-                throw new IllegalArgumentException("Duplicate allowed value for property: " + property.getName());
-            }
-
-            String valueName = property.getName(value);
-
-            if (valueName == null || !NAME_PATTERN.matcher(valueName)
-                .matches()) {
-                throw new IllegalArgumentException(
-                    "Invalid value name '" + valueName + "' for property: " + property.getName());
-            }
-
-            if (!uniqueNames.add(valueName)) {
-                throw new IllegalArgumentException(
-                    "Duplicate value name '" + valueName + "' for property: " + property.getName());
-            }
-        }
-    }
-
-    private void generateStates(Map<ImmutableMap<IProperty<?>, Comparable<?>>, IBlockState> states) {
-        for (List<Comparable<?>> values : MathHelpers.cartesianProduct(getAllowedValues())) {
-            ImmutableMap.Builder<IProperty<?>, Comparable<?>> builder = ImmutableMap.builder();
-
-            for (int i = 0; i < this.listedProperties.size(); i++) {
-                builder.put(this.listedProperties.get(i), values.get(i));
-            }
-
-            ImmutableMap<IProperty<?>, Comparable<?>> stateProperties = builder.build();
-
-            IBlockState state = createState(stateProperties);
-
-            states.put(stateProperties, state);
-        }
-    }
-
-    /**
-     * Factory method for creating canonical states.
-     * Can be overridden by specialized containers.
-     */
-    protected BlockState createState(ImmutableMap<IProperty<?>, Comparable<?>> properties) {
-        return new BlockState(this.block, properties, this.unlistedProperties);
-    }
-
-    private List<Iterable<? extends Comparable<?>>> getAllowedValues() {
-        List<Iterable<? extends Comparable<?>>> values = new ArrayList<>();
-
-        for (IListedProperty<?> property : this.listedProperties) {
-            values.add(property.getAllowedValues());
-        }
-
-        return values;
-    }
-
-    private void initializeTransitions() {
-        for (IBlockState state : this.validStates) {
-            ((BlockState) state).buildPropertyValueTable(this.stateMap);
-        }
-    }
-
-    private <T extends Comparable<T>> void addTransitions(IBlockState state, IListedProperty<T> property,
-        Table<IProperty<?>, Comparable<?>, IBlockState> transitions) {
-        T currentValue = state.getValue(property);
-
-        for (T value : property.getAllowedValues()) {
-            if (currentValue.equals(value)) {
-                continue;
-            }
-
-            Map<IProperty<?>, Comparable<?>> values = new LinkedHashMap<>(state.getProperties());
-
-            values.put(property, value);
-
-            IBlockState target = this.stateMap.get(ImmutableMap.copyOf(values));
-
-            if (target == null) {
-                throw new IllegalStateException(
-                    "Missing state transition for property " + property.getName() + " with value " + value);
-            }
-
-            transitions.put(property, value, target);
-        }
-    }
-
-    public Block getBlock() {
-        return this.block;
-    }
-
-    /**
-     * Returns all properties indexed by their names.
-     */
-    public ImmutableSortedMap<String, IProperty<?>> getProperties() {
-        return this.properties;
-    }
-
-    public IProperty<?> getProperty(String name) {
-        return this.properties.get(name);
-    }
-
-    public ImmutableList<IListedProperty<?>> getListedProperties() {
-        return this.listedProperties;
-    }
-
-    public ImmutableSet<IUnlistedProperty<?>> getUnlistedProperties() {
-        return this.unlistedProperties;
     }
 
     public ImmutableList<IBlockState> getValidStates() {
         return this.validStates;
     }
 
+    private List<Iterable<Comparable<?>>> getAllowedValues() {
+        List<Iterable<Comparable<?>>> list = Lists.newArrayList();
+        ImmutableCollection<IListedProperty<?>> immutablecollection = this.properties.values();
+        UnmodifiableIterator unmodifiableiterator = immutablecollection.iterator();
+        while (unmodifiableiterator.hasNext()) {
+            IListedProperty<?> iproperty = (IListedProperty) unmodifiableiterator.next();
+            list.add(((IListedProperty) iproperty).getAllowedValues());
+        }
+        return list;
+    }
+
     public IBlockState getBaseState() {
-        return this.validStates.get(0);
+        return this.validStates.getFirst();
     }
 
-    public boolean isListedProperty(IProperty<?> property) {
-        return this.listedProperties.contains(property);
+    public Block getBlock() {
+        return this.block;
     }
 
-    public boolean isUnlistedProperty(IProperty<?> property) {
-        return this.unlistedProperties.contains(property);
+    public Collection<IListedProperty<?>> getProperties() {
+        return this.properties.values();
+    }
+
+    public Collection<IUnlistedProperty<?>> getUnlistedProperties() {
+        return unlistedProperties;
     }
 
     @Override
@@ -270,7 +158,8 @@ public class BlockStateContainer {
     public static class Builder {
 
         private final Block block;
-        private final List<IProperty<?>> properties = new ArrayList<>();
+        private final List<IListedProperty<?>> properties = new ArrayList<>();
+        private final List<IUnlistedProperty<?>> unlistedProperties = new ArrayList<>();
 
         public Builder(Block block) {
             if (block == null) {
@@ -279,7 +168,7 @@ public class BlockStateContainer {
             this.block = block;
         }
 
-        public Builder add(IProperty<?> property) {
+        public Builder add(IListedProperty<?> property) {
             if (property == null) {
                 throw new IllegalArgumentException("Property cannot be null");
             }
@@ -288,40 +177,60 @@ public class BlockStateContainer {
             return this;
         }
 
-        public Builder add(IProperty<?>... properties) {
+        public Builder add(IListedProperty<?>[] properties) {
             if (properties == null) {
                 throw new IllegalArgumentException("Properties cannot be null");
             }
 
-            for (IProperty<?> property : properties) {
+            for (IListedProperty<?> property : properties) {
                 add(property);
             }
 
             return this;
         }
 
-        public Builder add(Collection<? extends IProperty<?>> properties) {
+        public Builder add(IUnlistedProperty<?> property) {
+            if (property == null) {
+                throw new IllegalArgumentException("Property cannot be null");
+            }
+
+            this.unlistedProperties.add(property);
+            return this;
+        }
+
+        public Builder add(IUnlistedProperty<?>[] properties) {
             if (properties == null) {
                 throw new IllegalArgumentException("Properties cannot be null");
             }
 
-            for (IProperty<?> property : properties) {
+            for (IUnlistedProperty<?> property : properties) {
                 add(property);
             }
 
+            return this;
+        }
+
+        public Builder add(IProperty<?>... properties) {
+            if (properties == null) {
+                throw new IllegalArgumentException("Properties cannot be null");
+            }
+            for (IProperty<?> property : properties) {
+                if (property instanceof IUnlistedProperty<?>unlisted) {
+                    add(unlisted);
+                }
+                if (property instanceof IListedProperty<?>listed) {
+                    add(listed);
+                }
+            }
             return this;
         }
 
         public BlockStateContainer build() {
             MinecraftForge.EVENT_BUS.post(new BlockStateContainerEvent.Build(block, this));
-            return new BlockStateContainer(this.block, this.properties);
+            return new BlockStateContainer(
+                this.block,
+                this.properties.toArray(new IListedProperty<?>[0]),
+                this.unlistedProperties.toArray(new IUnlistedProperty<?>[0]));
         }
-    }
-
-    private static List<IProperty<?>> collectProperties(Block block, IProperty<?>... properties) {
-        Builder builder = new Builder(block);
-        builder.add(properties);
-        MinecraftForge.EVENT_BUS.post(new BlockStateContainerEvent.Build(block, builder));
-        return new ArrayList<>(builder.properties);
     }
 }

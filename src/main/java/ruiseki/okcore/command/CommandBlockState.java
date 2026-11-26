@@ -110,7 +110,7 @@ public class CommandBlockState extends CommandMod {
         }
 
         if (targetProperty == null) {
-            for (IUnlistedProperty<?> property : state.getUnlistedProperties()) {
+            for (IUnlistedProperty<?> property : state.getUnlistedNames()) {
                 if (property.getName()
                     .equals(propertyName)) {
                     targetProperty = property;

@@ -516,11 +516,7 @@ public abstract class PacketCodec extends PacketBase {
 
             @Override
             public Object decode(ExtendedBuffer input) {
-                try {
-                    return input.readFluidStack();
-                } catch (IOException ioexception) {
-                    throw new EncoderException(ioexception);
-                }
+                return input.readFluidStack();
             }
         });
 

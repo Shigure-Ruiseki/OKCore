@@ -1,7 +1,5 @@
 package ruiseki.okcore.block.state.property;
 
-import java.util.Optional;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
@@ -10,8 +8,6 @@ import net.minecraft.world.World;
 import ruiseki.okcore.datastructure.BlockPos;
 
 public interface IUnlistedProperty<T extends Comparable<T>> extends IProperty<T> {
-
-    Optional<T> parseValue(String value);
 
     // Block context
     T getValue(IBlockAccess world, BlockPos pos);

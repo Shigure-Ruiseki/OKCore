@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import ruiseki.okcore.OKCore;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.helper.EBSHelpers;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 @SuppressWarnings({ "resource", "UnstableApiUsage" })
 public class BSSDataManager
@@ -33,8 +34,8 @@ public class BSSDataManager
 
     public static final int MAX_BYTES_PER_STATE = 1024;
 
-    private static final ThreadLocal<PacketBuffer> STATE_BUFFERS = ThreadLocal
-        .withInitial(() -> new PacketBuffer(Unpooled.buffer(MAX_BYTES_PER_STATE)));
+    private static final ThreadLocal<ExtendedBuffer> STATE_BUFFERS = ThreadLocal
+        .withInitial(() -> new ExtendedBuffer(Unpooled.buffer(MAX_BYTES_PER_STATE)));
 
     @Override
     public void writeBlockToPacket(Chunk chunk, int x, int y, int z, S23PacketBlockChange packet) {
@@ -116,7 +117,7 @@ public class BSSDataManager
     public void writeToBuffer(Chunk chunk, ExtendedBlockStorage ebs, ByteBuffer buffer) {
         BlockStateStorage storage = BlockStateStorage.getStorage(ebs, false);
 
-        PacketBuffer packet = new PacketBuffer(Unpooled.wrappedBuffer(buffer));
+        ExtendedBuffer packet = new ExtendedBuffer(Unpooled.wrappedBuffer(buffer));
         packet.clear();
 
         if (storage == null) {
@@ -128,7 +129,7 @@ public class BSSDataManager
         Short2ObjectOpenHashMap<IBlockState> states = storage.getBlockStates();
         packet.writeVarIntToBuffer(states.size());
 
-        PacketBuffer stateBuffer = STATE_BUFFERS.get();
+        ExtendedBuffer stateBuffer = STATE_BUFFERS.get();
         states.forEach((loc, state) -> {
             stateBuffer.clear();
 
@@ -170,7 +171,7 @@ public class BSSDataManager
 
     @Override
     public void readFromBuffer(Chunk chunk, ExtendedBlockStorage ebs, ByteBuffer buffer) {
-        PacketBuffer packet = new PacketBuffer(Unpooled.wrappedBuffer(buffer));
+        ExtendedBuffer packet = new ExtendedBuffer(Unpooled.wrappedBuffer(buffer));
         packet.writerIndex(buffer.remaining())
             .readerIndex(0);
 
@@ -191,7 +192,7 @@ public class BSSDataManager
             return;
         }
 
-        PacketBuffer stateBuffer = STATE_BUFFERS.get();
+        ExtendedBuffer stateBuffer = STATE_BUFFERS.get();
         for (int i = 0; i < stateCount; i++) {
             stateBuffer.clear();
 
@@ -277,7 +278,7 @@ public class BSSDataManager
         var states = storage.getBlockStates();
         if (states.isEmpty()) return;
 
-        PacketBuffer stateBuffer = STATE_BUFFERS.get();
+        ExtendedBuffer stateBuffer = STATE_BUFFERS.get();
         NBTTagList list = new NBTTagList();
 
         states.forEach((loc, state) -> {
@@ -310,7 +311,7 @@ public class BSSDataManager
         BlockStateStorage storage = BlockStateStorage.getStorage(ebs, true);
         if (storage == null) return;
 
-        PacketBuffer stateBuffer = STATE_BUFFERS.get();
+        ExtendedBuffer stateBuffer = STATE_BUFFERS.get();
 
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound entry = list.getCompoundTagAt(i);

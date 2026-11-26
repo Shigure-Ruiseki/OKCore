@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import net.minecraft.block.Block;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
@@ -52,16 +53,56 @@ public class ExtendedBuffer extends PacketBuffer {
     /**
      * Reads an FluidStack from this buffer
      */
-    public FluidStack readFluidStack() throws IOException {
-        NBTTagCompound tagCompound = this.readNBTTagCompoundFromBuffer();
-        return FluidStack.loadFluidStackFromNBT(tagCompound);
+    public FluidStack readFluidStack() {
+        try {
+            NBTTagCompound tagCompound = this.readNBTTagCompoundFromBuffer();
+            return FluidStack.loadFluidStackFromNBT(tagCompound);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read FluidStack from buffer", e);
+        }
     }
 
     /**
      * Writes the FluidStack's
      */
-    public void writeFluidStack(FluidStack stack) throws IOException {
-        this.writeNBTTagCompoundToBuffer(stack.writeToNBT(new NBTTagCompound()));
+    public void writeFluidStack(FluidStack stack) {
+        try {
+            this.writeNBTTagCompoundToBuffer(stack.writeToNBT(new NBTTagCompound()));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write FluidStack to buffer", e);
+        }
+    }
+
+    /**
+     * Reads an ItemStack from this buffer
+     */
+    public ItemStack readItemStack() {
+        try {
+            return super.readItemStackFromBuffer();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read FluidStack from buffer", e);
+        }
+    }
+
+    @Override
+    public ItemStack readItemStackFromBuffer() throws IOException {
+        return this.readItemStack();
+    }
+
+    /**
+     * Writes the ItemStack's
+     */
+    public void writeItemStack(ItemStack stack) {
+        try {
+            super.writeItemStackToBuffer(stack);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write FluidStack to buffer", e);
+        }
+    }
+
+    @Override
+    public void writeItemStackToBuffer(ItemStack stack) throws IOException {
+        this.writeItemStack(stack);
     }
 
     /**

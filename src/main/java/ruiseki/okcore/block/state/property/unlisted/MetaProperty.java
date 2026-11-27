@@ -12,7 +12,7 @@ public class MetaProperty extends IntegerUnlistedProperty {
     public static final MetaProperty INSTANCE = new MetaProperty();
 
     private MetaProperty() {
-        super("meta");
+        super("meta", 0);
     }
 
     @Override

@@ -8,6 +8,8 @@ import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 
@@ -48,6 +50,7 @@ public interface IBlockState {
 
     // Block Information
 
+    @NotNull
     Block getBlock();
 
     // World Operations

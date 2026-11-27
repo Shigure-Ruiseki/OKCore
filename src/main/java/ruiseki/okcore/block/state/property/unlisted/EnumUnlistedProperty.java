@@ -8,8 +8,20 @@ public abstract class EnumUnlistedProperty<E extends Enum<E>> extends AbstractUn
     private final Class<E> enumClass;
 
     protected EnumUnlistedProperty(String name, Class<E> enumClass) {
-        super(name, enumClass);
+        this(name, enumClass, getFirstConstant(enumClass));
+    }
+
+    protected EnumUnlistedProperty(String name, Class<E> enumClass, E defaultValue) {
+        super(name, enumClass, defaultValue);
         this.enumClass = enumClass;
+    }
+
+    private static <E extends Enum<E>> E getFirstConstant(Class<E> enumClass) {
+        E[] constants = enumClass.getEnumConstants();
+        if (constants == null || constants.length == 0) {
+            throw new IllegalArgumentException("Enum must have at least one constant: " + enumClass.getName());
+        }
+        return constants[0];
     }
 
     @Override

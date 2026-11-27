@@ -5,7 +5,11 @@ import java.util.Optional;
 public abstract class BooleanUnlistedProperty extends AbstractUnlistedProperty<Boolean> {
 
     protected BooleanUnlistedProperty(String name) {
-        super(name, Boolean.class);
+        this(name, false);
+    }
+
+    protected BooleanUnlistedProperty(String name, boolean defaultValue) {
+        super(name, Boolean.class, defaultValue);
     }
 
     @Override

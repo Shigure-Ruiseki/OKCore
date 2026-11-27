@@ -9,6 +9,8 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 public interface IUnlistedProperty<T extends Comparable<T>> extends IProperty<T> {
 
+    T getDefaultValue();
+
     // Block context
     T getValue(IBlockAccess world, BlockPos pos);
 

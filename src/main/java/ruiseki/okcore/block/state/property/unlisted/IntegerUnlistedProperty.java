@@ -8,11 +8,19 @@ public abstract class IntegerUnlistedProperty extends AbstractUnlistedProperty<I
     private final int max;
 
     protected IntegerUnlistedProperty(String name) {
-        this(name, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        this(name, 0);
+    }
+
+    protected IntegerUnlistedProperty(String name, int defaultValue) {
+        this(name, Integer.MIN_VALUE, Integer.MAX_VALUE, defaultValue);
     }
 
     protected IntegerUnlistedProperty(String name, int min, int max) {
-        super(name, Integer.class, value -> value >= min && value <= max);
+        this(name, min, max, 0);
+    }
+
+    protected IntegerUnlistedProperty(String name, int min, int max, int defaultValue) {
+        super(name, Integer.class, value -> value >= min && value <= max, defaultValue);
 
         if (min > max) {
             throw new IllegalArgumentException("min cannot be greater than max");

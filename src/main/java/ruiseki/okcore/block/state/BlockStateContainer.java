@@ -56,7 +56,7 @@ public class BlockStateContainer {
         IUnlistedProperty<?>[] unlistedProperties) {
         ImmutableMap.Builder<IUnlistedProperty<?>, Optional<?>> builder = ImmutableMap.builder();
         for (IUnlistedProperty<?> p : unlistedProperties) {
-            builder.put(p, Optional.empty());
+            builder.put(p, Optional.ofNullable(p.getDefaultValue()));
         }
         return builder.build();
     }

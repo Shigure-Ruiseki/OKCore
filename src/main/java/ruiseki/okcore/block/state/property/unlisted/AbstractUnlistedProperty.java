@@ -10,15 +10,27 @@ public abstract class AbstractUnlistedProperty<T extends Comparable<T>> implemen
     private final String name;
     private final Class<T> type;
     private final Predicate<T> validator;
+    private final T defaultValue;
 
-    protected AbstractUnlistedProperty(String name, Class<T> type) {
-        this(name, type, value -> true);
+    protected AbstractUnlistedProperty(String name, Class<T> type, T defaultValue) {
+        this(name, type, value -> true, defaultValue);
     }
 
-    protected AbstractUnlistedProperty(String name, Class<T> type, Predicate<T> validator) {
+    protected AbstractUnlistedProperty(String name, Class<T> type, Predicate<T> validator, T defaultValue) {
         this.name = Objects.requireNonNull(name);
         this.type = Objects.requireNonNull(type);
         this.validator = Objects.requireNonNull(validator);
+
+        if (defaultValue != null && !isValid(defaultValue)) {
+            throw new IllegalArgumentException("Invalid default value: " + defaultValue);
+        }
+
+        this.defaultValue = defaultValue;
+    }
+
+    @Override
+    public T getDefaultValue() {
+        return this.defaultValue;
     }
 
     @Override

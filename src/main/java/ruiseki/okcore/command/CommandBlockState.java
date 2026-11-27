@@ -78,6 +78,17 @@ public class CommandBlockState extends CommandMod {
                     + String.valueOf(entry.getValue()));
         }
 
+        for (Map.Entry<?, ?> entry : state.getUnlistedProperties()
+            .entrySet()) {
+            printLineToChat(
+                sender,
+                EnumChatFormatting.YELLOW + String.valueOf(entry.getKey())
+                    + EnumChatFormatting.RESET
+                    + ": "
+                    + EnumChatFormatting.GREEN
+                    + String.valueOf(entry.getValue()));
+        }
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -147,7 +158,7 @@ public class CommandBlockState extends CommandMod {
 
         IBlockState newState = state.withProperty(property, parsedValue.get());
 
-        if (!newState.setBlockState(world, pos)) {
+        if (!BlockStateHelpers.setBlockState(world, pos, newState)) {
             printErrorToChat(sender, "Failed to set BlockState.");
             return 0;
         }
@@ -177,7 +188,7 @@ public class CommandBlockState extends CommandMod {
 
         IBlockState newState = state.withProperty(property, parsedValue.get());
 
-        if (!newState.setBlockState(world, pos)) {
+        if (!BlockStateHelpers.setBlockState(world, pos, newState)) {
             printErrorToChat(sender, "Failed to set BlockState.");
             return 0;
         }

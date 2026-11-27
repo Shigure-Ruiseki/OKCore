@@ -1,10 +1,17 @@
 package ruiseki.okcore.helper;
 
+import java.util.Map;
+import java.util.Optional;
+
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +30,8 @@ import ruiseki.okcore.block.state.BlockStateStorage;
 import ruiseki.okcore.block.state.IBlockState;
 import ruiseki.okcore.block.state.IBlockStateIBA;
 import ruiseki.okcore.block.state.IBlockStateNative;
+import ruiseki.okcore.block.state.property.IUnlistedProperty;
+import ruiseki.okcore.block.state.property.unlisted.MetaProperty;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
 
@@ -265,17 +274,56 @@ public class BlockStateHelpers {
     public static IBlockState getBlockState(IBlockAccess access, BlockPos pos) {
         Block block = pos.getBlock(access);
         if (!(block instanceof IBlockStateNative nativeBlock)) return null;
-
-        int meta = pos.getBlockMetadata(access);
-        IBlockState state = nativeBlock.getInitialState(block, meta);
-
+        IBlockState state = nativeBlock.getDefaultState();
         BlockStateStorage storage = IBlockStateIBA.get(access, pos);
         if (storage != null) {
             IBlockState storedState = storage.getBlockState(pos);
             if (storedState != null) state = storedState;
         }
-
         return state.resolveUnlistedProperties(access, pos);
     }
 
+    public static boolean setBlockState(World access, BlockPos pos, IBlockState state) {
+        return setBlockState(access, pos, state, 3);
+    }
+
+    public static boolean setBlockState(World world, BlockPos pos, IBlockState newState, int flags) {
+        pos.setBlock(world, newState.getBlock(), newState.getValue(MetaProperty.INSTANCE), flags);
+        Chunk chunk = pos.getChunk(world);
+
+        ExtendedBlockStorage ebs = EBSHelpers.getEBS(world, pos);
+        if (ebs == null) return false;
+
+        BlockStateStorage storage = BlockStateStorage.getStorage(ebs, true);
+        if (storage == null) return false;
+
+        // Store the actual state, including its current Listed Values.
+        storage.setBlockState(pos, newState);
+
+        // Apply Unlisted properties to the world.
+        for (Map.Entry<IUnlistedProperty<?>, Optional<?>> entry : newState.getUnlistedProperties()
+            .entrySet()) {
+            Optional<?> optional = entry.getValue();
+            if (optional.isEmpty()) continue;
+            ((IUnlistedProperty) entry.getKey()).setValue(world, pos, (Comparable<?>) optional.get());
+        }
+
+        chunk.setChunkModified();
+        return true;
+    }
+
+    @Nullable
+    public static IBlockState getBlockState(ItemStack stack) {
+        return getBlockState(stack, null, null);
+    }
+
+    @Nullable
+    public static IBlockState getBlockState(ItemStack stack, @Nullable World world,
+        @Nullable EntityLivingBase livingBase) {
+        if (ItemHelpers.isEmpty(stack)) return null;
+        if (!(ItemHelpers.getItem(stack) instanceof ItemBlock itemBlock)) return null;
+        if (!(itemBlock.field_150939_a instanceof IBlockStateNative nativeBlock)) return null;
+        return nativeBlock.getDefaultState()
+            .resolveUnlistedProperties(stack, world, livingBase);
+    }
 }

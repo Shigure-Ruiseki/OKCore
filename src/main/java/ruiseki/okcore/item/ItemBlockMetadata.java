@@ -100,7 +100,7 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
         if (this.field_150939_a instanceof IBlockStateNative stateNative) {
             IBlockState newState = stateNative
                 .getStateForPlacement(world, pos, dir, hitX, hitY, hitZ, metadata, player);
-            if (!newState.setBlockState(world, pos)) return false;
+            if (!BlockStateHelpers.setBlockState(world, pos, newState)) return false;
 
             IBlockState state = BlockStateHelpers.getBlockState(world, pos);
             if (state != null && state.getBlock() == field_150939_a) {

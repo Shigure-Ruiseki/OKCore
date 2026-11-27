@@ -5,10 +5,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
@@ -40,6 +43,9 @@ public interface IBlockState {
 
     IBlockState resolveUnlistedProperties(IBlockAccess world, BlockPos pos);
 
+    IBlockState resolveUnlistedProperties(ItemStack stack, @Nullable World world,
+        @Nullable EntityLivingBase livingBase);
+
     // Property Definitions
 
     ImmutableMap<IListedProperty<?>, Comparable<?>> getProperties();
@@ -52,11 +58,6 @@ public interface IBlockState {
 
     @NotNull
     Block getBlock();
-
-    // World Operations
-    boolean setBlockState(World world, BlockPos pos);
-
-    boolean setBlockState(World world, BlockPos pos, int flags);
 
     Map<String, String> toMap();
 }

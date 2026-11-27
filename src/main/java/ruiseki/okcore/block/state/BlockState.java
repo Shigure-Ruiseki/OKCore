@@ -8,12 +8,13 @@ import java.util.Objects;
 import java.util.Optional;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
@@ -24,9 +25,7 @@ import com.google.common.collect.Table;
 import ruiseki.okcore.block.state.property.IListedProperty;
 import ruiseki.okcore.block.state.property.IProperty;
 import ruiseki.okcore.block.state.property.IUnlistedProperty;
-import ruiseki.okcore.block.state.property.unlisted.MetaProperty;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.EBSHelpers;
 import ruiseki.okcore.helper.Helpers;
 
 public class BlockState implements IBlockState {
@@ -213,15 +212,19 @@ public class BlockState implements IBlockState {
     public IBlockState resolveUnlistedProperties(IBlockAccess world, BlockPos pos) {
         IBlockState state = this;
         for (IUnlistedProperty<?> property : this.unlistedProperties.keySet()) {
-            state = resolveUnlistedProperty(state, world, pos, property);
+            state = state.withProperty(property, (Comparable) property.getValue(world, pos));
         }
         return state;
     }
 
-    private static <T extends Comparable<T>> IBlockState resolveUnlistedProperty(IBlockState state, IBlockAccess access,
-        BlockPos pos, IUnlistedProperty<T> property) {
-        T value = property.getValue(access, pos);
-        return state.withProperty(property, value);
+    @Override
+    public IBlockState resolveUnlistedProperties(ItemStack stack, @Nullable World world,
+        @Nullable EntityLivingBase livingBase) {
+        IBlockState state = this;
+        for (IUnlistedProperty<?> property : this.unlistedProperties.keySet()) {
+            state = state.withProperty(property, (Comparable) property.getValue(stack, world, livingBase));
+        }
+        return state;
     }
 
     @Override
@@ -232,37 +235,6 @@ public class BlockState implements IBlockState {
     @Override
     public IBlockState getClean() {
         return cleanState;
-    }
-
-    @Override
-    public boolean setBlockState(World world, BlockPos pos) {
-        return this.setBlockState(world, pos, 3);
-    }
-
-    @Override
-    public boolean setBlockState(World world, BlockPos pos, int flags) {
-        pos.setBlock(world, this.block, this.getValue(MetaProperty.INSTANCE), flags);
-        Chunk chunk = pos.getChunk(world);
-
-        ExtendedBlockStorage ebs = EBSHelpers.getEBS(world, pos);
-        if (ebs == null) return false;
-
-        BlockStateStorage storage = BlockStateStorage.getStorage(ebs, true);
-        if (storage == null) return false;
-
-        // Store the actual state, including its current Listed Values.
-        storage.setBlockState(pos, this);
-
-        // Apply Unlisted properties to the world.
-        for (Map.Entry<IUnlistedProperty<?>, Optional<?>> entry : this.unlistedProperties.entrySet()) {
-            Optional<?> optional = entry.getValue();
-            if (optional.isEmpty()) continue;
-
-            applyUnlistedProperty(world, pos, entry.getKey(), optional.get());
-        }
-
-        chunk.setChunkModified();
-        return true;
     }
 
     @Override
@@ -287,7 +259,7 @@ public class BlockState implements IBlockState {
                     entry.getKey()
                         .getName())
                     .append('=')
-                    .append(getPropertyValueName(entry.getKey(), entry.getValue()));
+                    .append(((IListedProperty) entry.getKey()).getName(entry.getValue()));
             }
 
             builder.append(']');
@@ -316,19 +288,4 @@ public class BlockState implements IBlockState {
 
         return builder.toString();
     }
-
-    private static <T extends Comparable<T>> String getPropertyValueName(IListedProperty<T> property,
-        Comparable<?> value) {
-        return property.getName(
-            property.getType()
-                .cast(value));
-    }
-
-    private static <T extends Comparable<T>> void applyUnlistedProperty(World world, BlockPos pos,
-        IUnlistedProperty<T> property, Object value) {
-        T valueType = property.getType()
-            .cast(value);
-        property.setValue(world, pos, valueType);
-    }
-
 }

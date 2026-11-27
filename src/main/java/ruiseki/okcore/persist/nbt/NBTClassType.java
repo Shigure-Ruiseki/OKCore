@@ -784,12 +784,14 @@ public abstract class NBTClassType<T> {
     private static NBTClassType getTypeSilent(Class<?> type) {
         NBTClassType action = NBTClassType.NBTYPES.get(type);
         if (action == null) {
+            // Search interfaces recursively.
             for (Class<?> iface : type.getInterfaces()) {
-                action = NBTClassType.NBTYPES.get(iface);
+                action = getTypeSilent(iface);
                 if (action != null) {
                     return action;
                 }
             }
+            // Search superclass recursively.
             Class<?> superClass = type.getSuperclass();
             if (superClass != null) {
                 return getTypeSilent(superClass);

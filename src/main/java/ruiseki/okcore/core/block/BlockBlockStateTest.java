@@ -11,14 +11,12 @@ import ruiseki.okcore.block.state.IBlockState;
 import ruiseki.okcore.block.state.IBlockStateNative;
 import ruiseki.okcore.block.state.property.listed.BooleanProperty;
 import ruiseki.okcore.block.state.property.listed.IntegerProperty;
-import ruiseki.okcore.block.state.property.unlisted.MetaProperty;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
 public class BlockBlockStateTest extends Block implements IBlockStateNative {
 
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
-    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 2);
-    public static final MetaProperty META = MetaProperty.INSTANCE;
+    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 15);
 
     private final BlockStateContainer stateContainer;
     private IBlockState defaultBlockState;
@@ -34,7 +32,8 @@ public class BlockBlockStateTest extends Block implements IBlockStateNative {
 
     @Override
     public void createBlockStateDefinition(BlockStateContainer.Builder builder) {
-        builder.add(ACTIVE, LEVEL, META);
+        IBlockStateNative.super.createBlockStateDefinition(builder);
+        builder.add(ACTIVE, LEVEL);
     }
 
     @Override

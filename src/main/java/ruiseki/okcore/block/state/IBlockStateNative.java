@@ -9,7 +9,7 @@ public interface IBlockStateNative {
     BlockStateContainer getStateContainer();
 
     default void createBlockStateDefinition(BlockStateContainer.Builder builder) {
-
+        builder.add(MetaProperty.INSTANCE);
     }
 
     void registerDefaultState(IBlockState state);
@@ -22,12 +22,22 @@ public interface IBlockStateNative {
         return state.getValue(MetaProperty.INSTANCE);
     }
 
+    default int getStateId(IBlockState state) {
+        return this.getStateContainer()
+            .getStateId(state);
+    }
+
+    default IBlockState getStateById(int id) {
+        return this.getStateContainer()
+            .getStateById(id);
+    }
+
     default boolean isSameBlock(Block newBlock) {
         return newBlock == this;
     }
 
     default IBlockState getInitialState(Block placedBlock, int placedMeta) {
-        return getDefaultState();
+        return this.getDefaultState();
     }
 
     default IBlockState onBlockChanged(IBlockState state, Block oldBlock, Block newBlock, int oldMeta, int newMeta) {

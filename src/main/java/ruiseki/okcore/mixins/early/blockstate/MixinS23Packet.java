@@ -1,6 +1,5 @@
 package ruiseki.okcore.mixins.early.blockstate;
 
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.S23PacketBlockChange;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,15 +11,15 @@ import ruiseki.okcore.block.state.IBlockStateS23;
 public class MixinS23Packet implements IBlockStateS23 {
 
     @Unique
-    private NBTTagCompound okcore$blockState;
+    private int okcore$stateId = -1;
 
     @Override
-    public NBTTagCompound okcore$getBlockState() {
-        return this.okcore$blockState;
+    public void okcore$setStateId(int stateId) {
+        this.okcore$stateId = stateId;
     }
 
     @Override
-    public void okcore$setBlockState(NBTTagCompound state) {
-        this.okcore$blockState = state;
+    public int okcore$getStateId() {
+        return this.okcore$stateId;
     }
 }

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -55,12 +54,6 @@ public interface IBlockState {
     boolean setBlockState(World world, BlockPos pos);
 
     boolean setBlockState(World world, BlockPos pos, int flags);
-
-    // Serialization
-
-    NBTTagCompound serializeNBT();
-
-    IBlockState deserializeNBT(NBTTagCompound nbt);
 
     Map<String, String> toMap();
 }

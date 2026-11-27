@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -273,15 +272,55 @@ public class BlockState implements IBlockState {
     }
 
     @Override
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound propertiesTag = new NBTTagCompound();
-        for (Map.Entry<IListedProperty<?>, Comparable<?>> entry : this.properties.entrySet()) {
-            IListedProperty<?> property = entry.getKey();
-            propertiesTag.setString(property.getName(), getPropertyValueName(property, entry.getValue()));
+    public Map<String, String> toMap() {
+        return Map.of();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(Helpers.getLocation(this.block));
+
+        if (!properties.isEmpty()) {
+            builder.append('[');
+            boolean first = true;
+
+            for (Map.Entry<IListedProperty<?>, Comparable<?>> entry : properties.entrySet()) {
+                if (!first) builder.append(',');
+                first = false;
+
+                builder.append(
+                    entry.getKey()
+                        .getName())
+                    .append('=')
+                    .append(getPropertyValueName(entry.getKey(), entry.getValue()));
+            }
+
+            builder.append(']');
         }
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setTag("Properties", propertiesTag);
-        return tag;
+
+        if (!unlistedProperties.isEmpty()) {
+            builder.append('{');
+            boolean first = true;
+
+            for (Map.Entry<IUnlistedProperty<?>, Optional<?>> entry : unlistedProperties.entrySet()) {
+                if (!first) builder.append(',');
+                first = false;
+
+                builder.append(
+                    entry.getKey()
+                        .getName())
+                    .append('=')
+                    .append(
+                        entry.getValue()
+                            .map(Object::toString)
+                            .orElse("null"));
+            }
+
+            builder.append('}');
+        }
+
+        return builder.toString();
     }
 
     private static <T extends Comparable<T>> String getPropertyValueName(IListedProperty<T> property,
@@ -289,34 +328,6 @@ public class BlockState implements IBlockState {
         return property.getName(
             property.getType()
                 .cast(value));
-    }
-
-    @Override
-    public IBlockState deserializeNBT(NBTTagCompound nbt) {
-        if (nbt == null) return null;
-        NBTTagCompound propertiesTag = nbt.getCompoundTag("Properties");
-        IBlockState state = this;
-        for (IListedProperty<?> property : this.properties.keySet()) {
-            String valueName = propertiesTag.getString(property.getName());
-            if (valueName.isEmpty()) continue;
-            state = parseListedProperty(state, property, valueName);
-        }
-        return state;
-    }
-
-    private static <T extends Comparable<T>> IBlockState parseListedProperty(IBlockState state,
-        IListedProperty<T> property, String valueName) {
-        Optional<T> value = property.parseValue(valueName);
-        if (value.isEmpty()) {
-            throw new IllegalArgumentException(
-                "Invalid value '" + valueName + "' for property '" + property.getName() + "'");
-        }
-        return state.withProperty(property, value.get());
-    }
-
-    @Override
-    public Map<String, String> toMap() {
-        return Map.of();
     }
 
 }

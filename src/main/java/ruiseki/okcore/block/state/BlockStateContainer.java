@@ -144,6 +144,27 @@ public class BlockStateContainer {
         return unlistedProperties;
     }
 
+    public int getStateId(IBlockState state) {
+        if (state == null || state.getBlock() != this.block) {
+            throw new IllegalArgumentException("Invalid BlockState for " + this.block);
+        }
+
+        IBlockState cleanState = state.getClean();
+        int id = this.validStates.indexOf(cleanState);
+        if (id < 0) {
+            throw new IllegalArgumentException("Unknown BlockState: " + state);
+        }
+
+        return id;
+    }
+
+    public IBlockState getStateById(int id) {
+        if (id < 0 || id >= this.validStates.size()) {
+            throw new IllegalArgumentException("Invalid BlockState ID: " + id);
+        }
+        return this.validStates.get(id);
+    }
+
     @Override
     public String toString() {
         return "BlockStateContainer{" + "block="

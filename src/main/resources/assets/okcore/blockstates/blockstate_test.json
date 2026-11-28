@@ -1,0 +1,20 @@
+{
+  "multipart": [
+    {
+      "when": { "facing": "north" },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 270 }
+    },
+    {
+      "when": { "facing": "south" },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 90 }
+    },
+    {
+      "when": { "facing": "west" },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 0 }
+    },
+    {
+      "when": { "facing": "east" },
+      "apply": { "model": "gtnhlib:blocks/model_test_tint_mul", "y": 180 }
+    }
+  ]
+}

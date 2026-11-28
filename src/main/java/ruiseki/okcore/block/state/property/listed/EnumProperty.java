@@ -3,9 +3,9 @@ package ruiseki.okcore.block.state.property.listed;
 import java.util.Arrays;
 import java.util.Locale;
 
-public final class EnumProperty<E extends Enum<E>> extends AbstractListedProperty<E> {
+public class EnumProperty<E extends Enum<E>> extends AbstractListedProperty<E> {
 
-    private EnumProperty(String name, Class<E> enumClass) {
+    protected EnumProperty(String name, Class<E> enumClass) {
         super(
             name,
             enumClass,

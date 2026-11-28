@@ -3,6 +3,7 @@ package ruiseki.okcore.block.state;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -124,8 +125,11 @@ public class BlockState implements IBlockState {
     }
 
     @Override
-    public boolean equals(Object p_equals_1_) {
-        return this == p_equals_1_;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof BlockState other)) return false;
+        return Objects.equals(this.block, other.block) && Objects.equals(this.properties, other.properties)
+            && Objects.equals(this.unlistedProperties, other.unlistedProperties);
     }
 
     @Override
@@ -212,7 +216,7 @@ public class BlockState implements IBlockState {
     public IBlockState resolveUnlistedProperties(IBlockAccess world, BlockPos pos) {
         IBlockState state = this;
         for (IUnlistedProperty<?> property : this.unlistedProperties.keySet()) {
-            state = state.withProperty(property, (Comparable) property.getValue(world, pos));
+            state = resolvePropertyCaptured(state, property, world, pos);
         }
         return state;
     }
@@ -222,7 +226,7 @@ public class BlockState implements IBlockState {
         @Nullable EntityLivingBase livingBase) {
         IBlockState state = this;
         for (IUnlistedProperty<?> property : this.unlistedProperties.keySet()) {
-            state = state.withProperty(property, (Comparable) property.getValue(stack, world, livingBase));
+            state = resolvePropertyCaptured(state, property, stack, world, livingBase);
         }
         return state;
     }
@@ -239,7 +243,25 @@ public class BlockState implements IBlockState {
 
     @Override
     public Map<String, String> toMap() {
-        return Map.of();
+        Map<String, String> map = new LinkedHashMap<>();
+
+        // Listed properties
+        for (Map.Entry<IListedProperty<?>, Comparable<?>> entry : properties.entrySet()) {
+            IListedProperty property = entry.getKey();
+            map.put(property.getName(), property.getName(entry.getValue()));
+        }
+
+        // Unlisted properties
+        for (Map.Entry<IUnlistedProperty<?>, Optional<?>> entry : unlistedProperties.entrySet()) {
+            IUnlistedProperty property = entry.getKey();
+            String value = entry.getValue()
+                .map(Object::toString)
+                .orElse("null");
+
+            map.put(property.getName(), value);
+        }
+
+        return Collections.unmodifiableMap(map);
     }
 
     @Override
@@ -288,4 +310,17 @@ public class BlockState implements IBlockState {
 
         return builder.toString();
     }
+
+    private static <T extends Comparable<T>> IBlockState resolvePropertyCaptured(IBlockState state,
+        IUnlistedProperty<T> property, IBlockAccess world, BlockPos pos) {
+        T value = property.getValue(world, pos);
+        return state.withProperty(property, value);
+    }
+
+    private static <T extends Comparable<T>> IBlockState resolvePropertyCaptured(IBlockState state,
+        IUnlistedProperty<T> property, ItemStack stack, World world, EntityLivingBase livingBase) {
+        T value = property.getValue(stack, world, livingBase);
+        return state.withProperty(property, value);
+    }
+
 }

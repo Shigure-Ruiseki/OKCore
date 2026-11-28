@@ -24,6 +24,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockProperty;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockStatePool;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
+import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
 
 import cpw.mods.fml.common.registry.GameData;
 import ruiseki.okcore.block.state.BlockStateStorage;
@@ -289,6 +290,7 @@ public class BlockStateHelpers {
 
     public static boolean setBlockState(World world, BlockPos pos, IBlockState newState, int flags) {
         pos.setBlock(world, newState.getBlock(), newState.getValue(MetaProperty.INSTANCE), flags);
+
         Chunk chunk = pos.getChunk(world);
 
         ExtendedBlockStorage ebs = EBSHelpers.getEBS(world, pos);
@@ -308,7 +310,12 @@ public class BlockStateHelpers {
             ((IUnlistedProperty) entry.getKey()).setValue(world, pos, (Comparable<?>) optional.get());
         }
 
+        // Notify save state to chunk
         chunk.setChunkModified();
+
+        // Notify renderer after custom state has been updated.
+        pos.markBlockForUpdate(world);
+
         return true;
     }
 
@@ -325,5 +332,15 @@ public class BlockStateHelpers {
         if (!(itemBlock.field_150939_a instanceof IBlockStateNative nativeBlock)) return null;
         return nativeBlock.getDefaultState()
             .resolveUnlistedProperties(stack, world, livingBase);
+    }
+
+    public static @Nullable IBlockState getBlockState(BakedModelQuadContext context) {
+        if (context instanceof BakedModelQuadContext.World world) {
+            return getBlockState(world.getWorld(), world.getX(), world.getY(), world.getZ());
+        }
+        if (context instanceof BakedModelQuadContext.Item item) {
+            return getBlockState(item.getItemStack());
+        }
+        return null;
     }
 }

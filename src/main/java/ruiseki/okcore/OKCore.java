@@ -7,6 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Level;
 
 import com.falsepattern.chunk.api.DataRegistry;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import cpw.mods.fml.common.Mod;
@@ -98,6 +99,10 @@ public class OKCore extends ModBaseVersionable {
         // Load others
         CraftingHelpers.load();
         SmeltingHelpers.load();
+
+        if (MinecraftHelpers.isClientSide()) {
+            ModelRegistry.registerModid(Reference.MOD_ID);
+        }
 
         if (Mods.Waila.isModLoaded()) {
             BlockProvider.init();

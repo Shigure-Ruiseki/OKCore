@@ -371,6 +371,10 @@ public class BlockPos extends Vector3i implements Comparable<BlockPos>, IBlockPo
         return world.setBlock(this.getX(), this.getY(), this.getZ(), block, meta, flags);
     }
 
+    public boolean setBlock(World world, Block block) {
+        return world.setBlock(this.getX(), this.getY(), this.getZ(), block);
+    }
+
     public int getBlockMetadata(IBlockAccess world) {
         return world.getBlockMetadata(this.getX(), this.getY(), this.getZ());
     }

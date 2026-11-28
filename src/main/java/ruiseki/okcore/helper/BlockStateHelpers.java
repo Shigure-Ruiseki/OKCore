@@ -313,8 +313,9 @@ public class BlockStateHelpers {
         // Notify save state to chunk
         chunk.setChunkModified();
 
-        // Notify renderer after custom state has been updated.
-        pos.markBlockForUpdate(world);
+        if ((flags & 2) != 0) {
+            pos.markBlockForUpdate(world);
+        }
 
         return true;
     }

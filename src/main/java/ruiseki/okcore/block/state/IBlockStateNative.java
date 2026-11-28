@@ -28,16 +28,6 @@ public interface IBlockStateNative {
         return state.getValue(MetaProperty.INSTANCE);
     }
 
-    default int getStateId(IBlockState state) {
-        return this.getStateContainer()
-            .getStateId(state);
-    }
-
-    default IBlockState getStateById(int id) {
-        return this.getStateContainer()
-            .getStateById(id);
-    }
-
     default boolean isSameBlock(Block newBlock) {
         return newBlock == this;
     }

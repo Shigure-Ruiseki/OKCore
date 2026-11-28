@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.google.common.collect.ImmutableCollection;
@@ -144,27 +145,6 @@ public class BlockStateContainer {
         return unlistedProperties;
     }
 
-    public int getStateId(IBlockState state) {
-        if (state == null || state.getBlock() != this.block) {
-            throw new IllegalArgumentException("Invalid BlockState for " + this.block);
-        }
-
-        IBlockState cleanState = state.getClean();
-        int id = this.validStates.indexOf(cleanState);
-        if (id < 0) {
-            throw new IllegalArgumentException("Unknown BlockState: " + state);
-        }
-
-        return id;
-    }
-
-    public IBlockState getStateById(int id) {
-        if (id < 0 || id >= this.validStates.size()) {
-            throw new IllegalArgumentException("Invalid BlockState ID: " + id);
-        }
-        return this.validStates.get(id);
-    }
-
     @Override
     public String toString() {
         return "BlockStateContainer{" + "block="
@@ -174,6 +154,55 @@ public class BlockStateContainer {
             + ", validStates="
             + this.validStates.size()
             + '}';
+    }
+
+    public NBTTagCompound serialize(IBlockState state) {
+        if (state == null || state.getBlock() != this.block) {
+            throw new IllegalArgumentException("Invalid BlockState for " + this.block);
+        }
+
+        NBTTagCompound nbt = new NBTTagCompound();
+        for (IListedProperty<?> property : this.properties.values()) {
+            Comparable<?> value = getPropertyValue(state, property);
+            if (value != null) {
+                nbt.setString(property.getName(), valueToString(property, value));
+            }
+        }
+
+        return nbt;
+    }
+
+    public IBlockState deserialize(NBTTagCompound nbt) {
+        if (nbt == null) return this.getBaseState();
+
+        IBlockState state = this.getBaseState();
+        for (IListedProperty<?> property : this.properties.values()) {
+            String name = property.getName();
+            if (!nbt.hasKey(name, 8)) continue;
+
+            Optional<?> parsedValue = property.parseValue(nbt.getString(name));
+            if (parsedValue.isEmpty()) continue;
+
+            state = withProperty(state, property, (Comparable<?>) parsedValue.get());
+        }
+
+        return state;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> T getPropertyValue(IBlockState state, IListedProperty<?> property) {
+        return state.getValue((IListedProperty<T>) property);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> String valueToString(IListedProperty<?> property, Comparable<?> value) {
+        return ((IListedProperty<T>) property).valueToString((T) value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> IBlockState withProperty(IBlockState state, IListedProperty<?> property,
+        Comparable<?> value) {
+        return state.withProperty((IListedProperty<T>) property, (T) value);
     }
 
     public static class Builder {

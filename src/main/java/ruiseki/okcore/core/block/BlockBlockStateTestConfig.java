@@ -21,6 +21,5 @@ public class BlockBlockStateTestConfig extends BlockConfig {
     public void onRegistered() {
         super.onRegistered();
 
-
     }
 }

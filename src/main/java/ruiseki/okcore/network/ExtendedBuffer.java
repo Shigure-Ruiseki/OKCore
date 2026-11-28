@@ -16,6 +16,8 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -265,6 +267,22 @@ public class ExtendedBuffer extends PacketBuffer {
         } else {
             this.writeBoolean(true);
             this.writeString(state.toString());
+        }
+    }
+
+    public NBTTagCompound readNBTTagCompound() {
+        try {
+            return this.readNBTTagCompoundFromBuffer();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read NBTTagCompound from buffer", e);
+        }
+    }
+
+    public void writeNBTTagCompound(@Nullable NBTTagCompound nbt) {
+        try {
+            this.writeNBTTagCompoundToBuffer(nbt);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write NBTTagCompound to buffer", e);
         }
     }
 

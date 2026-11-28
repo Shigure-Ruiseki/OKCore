@@ -50,7 +50,9 @@ public class BSSDataManager
         if (storage == null) return;
 
         IBlockState state = storage.getBlockState(x & 0xF, y & 0xF, z & 0xF);
-        stateS23.okcore$setStateId(state != null ? nativeBlock.getStateId(state) : -1);
+        stateS23.okcore$setState(
+            state != null ? nativeBlock.getStateContainer()
+                .serialize(state) : null);
     }
 
     @Override
@@ -60,17 +62,17 @@ public class BSSDataManager
         if (!(packet.field_148883_d instanceof IBlockStateNative)) return;
         if (!(packet instanceof IBlockStateS23 stateS23)) return;
 
-        buffer.writeVarIntToBuffer(stateS23.okcore$getStateId());
+        buffer.writeNBTTagCompoundToBuffer(stateS23.okcore$getState());
     }
 
     @Override
     public void readBlockPacketFromBuffer(S23PacketBlockChange packet, PacketBuffer buffer) throws IOException {
         // Buffer -> S23
 
-        if (!(packet.field_148883_d instanceof IBlockStateNative nativeBlock)) return;
+        if (!(packet.field_148883_d instanceof IBlockStateNative)) return;
         if (!(packet instanceof IBlockStateS23 stateS23)) return;
 
-        stateS23.okcore$setStateId(buffer.readVarIntFromBuffer());
+        stateS23.okcore$setState(buffer.readNBTTagCompoundFromBuffer());
     }
 
     @Override
@@ -97,7 +99,8 @@ public class BSSDataManager
 
         Objects.requireNonNull(storage, "Storage should not be null");
 
-        IBlockState blockState = nativeBlock.getStateById(stateS23.okcore$getStateId());
+        IBlockState blockState = nativeBlock.getStateContainer()
+            .deserialize(stateS23.okcore$getState());
 
         storage.setBlockState(x & 0xF, y & 0xF, z & 0xF, blockState);
 
@@ -134,11 +137,13 @@ public class BSSDataManager
 
         ExtendedBuffer stateBuffer = STATE_BUFFERS.get();
         states.forEach((loc, state) -> {
+            if (state == null || !(state.getBlock() instanceof IBlockStateNative nativeBlock)) return;
+
             stateBuffer.clear();
-
             stateBuffer.writeShort(loc);
-
-            stateBuffer.writeVarIntToBuffer(((IBlockStateNative) state.getBlock()).getStateId(state));
+            NBTTagCompound stateNBT = nativeBlock.getStateContainer()
+                .serialize(state);
+            stateBuffer.writeNBTTagCompound(stateNBT);
 
             int stateLen = stateBuffer.writerIndex();
 
@@ -151,12 +156,7 @@ public class BSSDataManager
 
                 stateBuffer.clear();
                 stateBuffer.writeShort(loc);
-
-                try {
-                    stateBuffer.writeNBTTagCompoundToBuffer(null);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                stateBuffer.writeNBTTagCompound(null);
 
                 stateLen = stateBuffer.writerIndex();
             }
@@ -201,7 +201,7 @@ public class BSSDataManager
                 .writerIndex(stateLen);
 
             short loc = stateBuffer.readShort();
-            int stateId = stateBuffer.readVarIntFromBuffer();
+            NBTTagCompound stateNBT = stateBuffer.readNBTTagCompound();
 
             int rx = BlockStateStorage.unpackX(loc);
             int ry = BlockStateStorage.unpackY(loc);
@@ -212,8 +212,8 @@ public class BSSDataManager
             }
 
             try {
-                IBlockState state = stateNative.getStateById(stateId);
-
+                IBlockState state = stateNative.getStateContainer()
+                    .deserialize(stateNBT);
                 storage.setBlockState(rx, ry, rz, state);
             } catch (Throwable t) {
                 OKCore.okLog(
@@ -273,16 +273,33 @@ public class BSSDataManager
         NBTTagList list = new NBTTagList();
 
         states.forEach((loc, state) -> {
-            stateBuffer.clear();
-            stateBuffer.writeVarIntToBuffer(((IBlockStateNative) state.getBlock()).getStateId(state));
-            int len = stateBuffer.writerIndex();
-            byte[] data = new byte[len];
-            stateBuffer.getBytes(0, data);
+            if (state == null || !(state.getBlock() instanceof IBlockStateNative nativeBlock)) return;
+            try {
+                stateBuffer.clear();
+                NBTTagCompound stateNBT = nativeBlock.getStateContainer()
+                    .serialize(state);
+                stateBuffer.writeNBTTagCompound(stateNBT);
 
-            NBTTagCompound entry = new NBTTagCompound();
-            entry.setShort("loc", loc);
-            entry.setByteArray("data", data);
-            list.appendTag(entry);
+                int len = stateBuffer.writerIndex();
+                byte[] data = new byte[len];
+                stateBuffer.getBytes(0, data);
+
+                NBTTagCompound entry = new NBTTagCompound();
+                entry.setShort("loc", loc);
+                entry.setByteArray("data", data);
+
+                list.appendTag(entry);
+            } catch (RuntimeException e) {
+                OKCore.okLog(
+                    Level.ERROR,
+                    "Failed to save BlockState (World={}, X={}, Y={}, Z={}, State={})",
+                    chunk.worldObj,
+                    (chunk.xPosition << 4) + BlockStateStorage.unpackX(loc),
+                    ebs.getYLocation() + BlockStateStorage.unpackY(loc),
+                    (chunk.zPosition << 4) + BlockStateStorage.unpackZ(loc),
+                    state,
+                    e);
+            }
         });
 
         nbt.setTag("states", list);
@@ -309,7 +326,7 @@ public class BSSDataManager
             stateBuffer.writeBytes(data);
             stateBuffer.readerIndex(0);
 
-            int stateId = stateBuffer.readVarIntFromBuffer();
+            NBTTagCompound stateNBT = stateBuffer.readNBTTagCompound();
 
             int rx = BlockStateStorage.unpackX(loc);
             int ry = BlockStateStorage.unpackY(loc);
@@ -318,8 +335,8 @@ public class BSSDataManager
             if (!(ebs.getBlockByExtId(rx, ry, rz) instanceof IBlockStateNative stateNative)) continue;
 
             try {
-                IBlockState state = stateNative.getStateById(stateId);
-
+                IBlockState state = stateNative.getStateContainer()
+                    .deserialize(stateNBT);
                 storage.setBlockState(rx, ry, rz, state);
             } catch (Throwable t) {
                 OKCore.okLog(

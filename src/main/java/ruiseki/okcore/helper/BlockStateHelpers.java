@@ -10,7 +10,6 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import org.jetbrains.annotations.NotNullByDefault;
@@ -289,10 +288,6 @@ public class BlockStateHelpers {
     }
 
     public static boolean setBlockState(World world, BlockPos pos, IBlockState newState, int flags) {
-        pos.setBlock(world, newState.getBlock(), newState.getValue(MetaProperty.INSTANCE), flags & ~2);
-
-        Chunk chunk = pos.getChunk(world);
-
         ExtendedBlockStorage ebs = EBSHelpers.getEBS(world, pos);
         if (ebs == null) return false;
 
@@ -310,8 +305,14 @@ public class BlockStateHelpers {
             ((IUnlistedProperty) entry.getKey()).setValue(world, pos, (Comparable<?>) optional.get());
         }
 
+        // Update the vanilla block and metadata.
+        // This may trigger MixinChunk to handle logical block transitions
+        // and adjust the stored state through onBlockChanged().
+        pos.setBlock(world, newState.getBlock(), newState.getValue(MetaProperty.INSTANCE), flags & ~2);
+
         // Notify save state to chunk
-        chunk.setChunkModified();
+        pos.getChunk(world)
+            .setChunkModified();
 
         if ((flags & 2) != 0) {
             pos.markBlockForUpdate(world);

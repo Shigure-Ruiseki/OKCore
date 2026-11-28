@@ -59,7 +59,8 @@ public class MixinChunk {
 
         if (!oldAware && !newAware) return;
 
-        if (oldBlock instanceof IBlockStateNative bsa && newAware && bsa.isSameBlock(newBlock)) {
+        if (oldAware && newBlock instanceof IBlockStateNative bsa
+            && ((IBlockStateNative) oldBlock).isSameBlock(newBlock)) {
             // Old and new blocks are logically equivalent.
             // Call onBlockChanged and optionally update the state.
 
@@ -104,7 +105,7 @@ public class MixinChunk {
             value = "INVOKE",
             target = "Lnet/minecraft/block/Block;onBlockAdded(Lnet/minecraft/world/World;III)V",
             shift = Shift.BEFORE))
-    private void okcore$onBlockChanged(int x, int y, int z, Block newBlock, int newMetadata,
+    private void okcore$onBlockChanged(int x, int y, int z, Block newBlock, int newMeta,
         CallbackInfoReturnable<Boolean> cir, @Local(name = "block1") Block oldBlock) {
         // This method detects newly placed [IBlockStateNative] Blocks and creates or removes the
         // [BlockStateStorage] as needed.
@@ -140,8 +141,7 @@ public class MixinChunk {
         // This ensures a valid state is present even when a third party places a
         // BlockStateAware block via world.setBlock directly. NativeBlockStates will
         // overwrite this with the caller-supplied state immediately after setBlock returns.
-        if (newAware && storage != null) {
-            IBlockStateNative bsa = (IBlockStateNative) newBlock;
+        if (newAware && storage != null && newBlock instanceof IBlockStateNative bsa) {
 
             // Consume the cached default state, or fetch another one if there is none
             if (okcore$tempState == null) {

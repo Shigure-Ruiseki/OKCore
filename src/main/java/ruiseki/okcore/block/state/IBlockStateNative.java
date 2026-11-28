@@ -20,7 +20,9 @@ public interface IBlockStateNative {
 
     IBlockState getDefaultState();
 
-    Block getBlockFromState(IBlockState state);
+    default Block getBlockFromState(IBlockState state) {
+        return (Block) this;
+    }
 
     default int getMetaFromState(IBlockState state) {
         return state.getValue(MetaProperty.INSTANCE);

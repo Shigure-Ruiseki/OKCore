@@ -100,9 +100,13 @@ public class BSSDataManager
         IBlockState blockState = nativeBlock.getStateById(stateS23.okcore$getStateId());
 
         storage.setBlockState(x & 0xF, y & 0xF, z & 0xF, blockState);
-        int meta = chunk.getBlockMetadata(x & 0xF, y, z & 0xF);
 
-        chunk.func_150807_a(x & 0xF, y, z & 0xF, nativeBlock.getBlockFromState(blockState), meta);
+        chunk.func_150807_a(
+            x & 0xF,
+            y,
+            z & 0xF,
+            nativeBlock.getBlockFromState(blockState),
+            nativeBlock.getMetaFromState(blockState));
 
         chunk.worldObj.markBlockForUpdate((chunk.xPosition << 4) + x, y, (chunk.zPosition << 4) + z);
     }

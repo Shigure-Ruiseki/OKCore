@@ -17,4 +17,10 @@ public class BlockBlockStateTestConfig extends BlockConfig {
         super(OKCore._instance, true, "blockstate_test", null, itemConfig -> new BlockBlockStateTest());
     }
 
+    @Override
+    public void onRegistered() {
+        super.onRegistered();
+
+
+    }
 }

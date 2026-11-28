@@ -12,35 +12,11 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
-import com.gtnewhorizon.gtnhlib.geometry.Axis;
-
-import ruiseki.okcore.block.property.BlockProperty;
-import ruiseki.okcore.block.property.IEnumProperty;
+import ruiseki.okcore.block.state.IBlockState;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 
 public class BlockLogBase extends BlockBase {
-
-    @BlockProperty
-    public static final IEnumProperty<Axis> AXIS = IEnumProperty
-        .construct("axis", Axis.class, Axis.Y, (world, x, y, z) -> {
-            int meta = world.getBlockMetadata(x, y, z);
-            return switch (meta & 0b1100) {
-                case 0b0100 -> Axis.X;
-                case 0b1000 -> Axis.Z;
-                default -> Axis.Y;
-            };
-        }, (world, x, y, z, value) -> {
-            int currentMeta = world.getBlockMetadata(x, y, z);
-            int axisBits = switch (value) {
-                case X -> 0b0100;
-                case Z -> 0b1000;
-                default -> 0b0000;
-            };
-            int newMeta = (currentMeta & ~0b1100) | axisBits;
-            world.setBlockMetadataWithNotify(x, y, z, newMeta, 2);
-        });
 
     public BlockLogBase() {
         super(Material.wood);
@@ -56,11 +32,9 @@ public class BlockLogBase extends BlockBase {
     }
 
     @Override
-    public BlockState getStateForPlacement(World world, BlockPos pos, ForgeDirection facing, float hitX, float hitY,
+    public IBlockState getStateForPlacement(World world, BlockPos pos, ForgeDirection facing, float hitX, float hitY,
         float hitZ, int meta, EntityLivingBase placer) {
-        BlockState state = super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer);
-        state.setPropertyValue(AXIS, Axis.fromDirection(facing));
-        return state;
+        return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer);
     }
 
     public void breakBlock(World worldIn, int x, int y, int z, Block blockBroken, int meta) {

@@ -31,7 +31,6 @@ import ruiseki.okcore.block.state.IBlockState;
 import ruiseki.okcore.block.state.IBlockStateIBA;
 import ruiseki.okcore.block.state.IBlockStateNative;
 import ruiseki.okcore.block.state.property.IUnlistedProperty;
-import ruiseki.okcore.block.state.property.unlisted.MetaProperty;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.BlockStack;
 
@@ -283,39 +282,49 @@ public class BlockStateHelpers {
         return state.resolveUnlistedProperties(access, pos);
     }
 
-    public static boolean setBlockState(World access, BlockPos pos, IBlockState state) {
+    public static boolean setBlockState(World access, BlockPos pos, @Nullable IBlockState state) {
         return setBlockState(access, pos, state, 3);
     }
 
-    public static boolean setBlockState(World world, BlockPos pos, IBlockState newState, int flags) {
-        ExtendedBlockStorage ebs = EBSHelpers.getEBS(world, pos);
-        if (ebs == null) return false;
+    public static boolean setBlockState(World world, BlockPos pos, @Nullable IBlockState newState, int flags) {
+        if (newState == null) {
+            return pos.setBlockToAir(world);
+        } else {
+            if (!(newState.getBlock() instanceof IBlockStateNative nativeBlock)) return false;
 
-        BlockStateStorage storage = BlockStateStorage.getStorage(ebs, true);
-        if (storage == null) return false;
+            ExtendedBlockStorage ebs = EBSHelpers.getEBS(world, pos);
+            if (ebs == null) return false;
 
-        // Store the actual state, including its current Listed Values.
-        storage.setBlockState(pos, newState);
+            BlockStateStorage storage = BlockStateStorage.getStorage(ebs, true);
+            if (storage == null) return false;
 
-        // Apply Unlisted properties to the world.
-        for (Map.Entry<IUnlistedProperty<?>, Optional<?>> entry : newState.getUnlistedProperties()
-            .entrySet()) {
-            Optional<?> optional = entry.getValue();
-            if (optional.isEmpty()) continue;
-            ((IUnlistedProperty) entry.getKey()).setValue(world, pos, (Comparable<?>) optional.get());
-        }
+            // Store the actual state, including its current Listed Values.
+            storage.setBlockState(pos, newState);
 
-        // Update the vanilla block and metadata.
-        // This may trigger MixinChunk to handle logical block transitions
-        // and adjust the stored state through onBlockChanged().
-        pos.setBlock(world, newState.getBlock(), newState.getValue(MetaProperty.INSTANCE), flags & ~2);
+            // Apply Unlisted properties to the world.
+            for (Map.Entry<IUnlistedProperty<?>, Optional<?>> entry : newState.getUnlistedProperties()
+                .entrySet()) {
+                Optional<?> optional = entry.getValue();
+                if (optional.isEmpty()) continue;
+                ((IUnlistedProperty) entry.getKey()).setValue(world, pos, (Comparable<?>) optional.get());
+            }
 
-        // Notify save state to chunk
-        pos.getChunk(world)
-            .setChunkModified();
+            // Update the vanilla block and metadata.
+            // This may trigger MixinChunk to handle logical block transitions
+            // and adjust the stored state through onBlockChanged().
+            pos.setBlock(
+                world,
+                nativeBlock.getBlockFromState(newState),
+                nativeBlock.getMetaFromState(newState),
+                flags & ~2);
 
-        if ((flags & 2) != 0) {
-            pos.markBlockForUpdate(world);
+            // Notify save state to chunk
+            pos.getChunk(world)
+                .setChunkModified();
+
+            if ((flags & 2) != 0) {
+                pos.markBlockForUpdate(world);
+            }
         }
 
         return true;

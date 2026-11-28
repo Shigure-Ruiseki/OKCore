@@ -10,8 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.IBlockRarityProvider;
@@ -81,23 +79,11 @@ public class ItemBlockMetadata extends ItemBlock implements IItemCapability, IIt
     @Override
     public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
         float hitX, float hitY, float hitZ, int metadata) {
-        BlockPos pos = new BlockPos(x, y, z);
-        ForgeDirection dir = ForgeDirection.getOrientation(metadata);
-
-        if (this.field_150939_a instanceof ruiseki.okcore.block.IBlockStateNative stateNative) {
-            BlockState state = stateNative.getStateForPlacement(world, pos, dir, hitX, hitY, hitZ, metadata, player);
-            if (!state.place(world, x, y, z, 3)) {
-                return false;
-            }
-
-            if (world.getBlock(x, y, z) == field_150939_a) {
-                field_150939_a.onBlockPlacedBy(world, x, y, z, player, stack);
-                field_150939_a.onPostBlockPlaced(world, x, y, z, metadata);
-            }
-            return true;
-        }
 
         if (this.field_150939_a instanceof IBlockStateNative stateNative) {
+            BlockPos pos = new BlockPos(x, y, z);
+            ForgeDirection dir = ForgeDirection.getOrientation(metadata);
+
             IBlockState newState = stateNative
                 .getStateForPlacement(world, pos, dir, hitX, hitY, hitZ, metadata, player);
             if (!BlockStateHelpers.setBlockState(world, pos, newState)) return false;

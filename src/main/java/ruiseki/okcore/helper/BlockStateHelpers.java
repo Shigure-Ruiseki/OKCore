@@ -289,7 +289,7 @@ public class BlockStateHelpers {
     }
 
     public static boolean setBlockState(World world, BlockPos pos, IBlockState newState, int flags) {
-        pos.setBlock(world, newState.getBlock(), newState.getValue(MetaProperty.INSTANCE), flags);
+        pos.setBlock(world, newState.getBlock(), newState.getValue(MetaProperty.INSTANCE), flags & ~2);
 
         Chunk chunk = pos.getChunk(world);
 
